@@ -24,7 +24,6 @@ import '../features/authentication/presentation/screens/register_screen.dart';
 
 // Core screens
 import '../features/error/presentation/pages/error_page.dart';
-import '../screens/design_system_demo.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/social/social_screen.dart';
 import '../screens/explore/explore_screen.dart';
@@ -143,7 +142,6 @@ class AppRouter {
       RoutePaths.intentSelection,
       RoutePaths.welcome,
       RoutePaths.setPassword,
-      '/design_system_demo',
       RoutePaths.phoneInput, // Use correct route constant
       RoutePaths.emailInput, // Add email input as auth path
     };
@@ -791,16 +789,6 @@ class AppRouter {
           child: ErrorPage(message: message),
         );
       },
-    ),
-    
-    // Design system demo route
-    GoRoute(
-      path: '/design_system_demo',
-      name: 'design-system-demo',
-      pageBuilder: (context, state) => FadeThroughTransitionPage(
-        key: state.pageKey,
-        child: const DesignSystemDemo(),
-      ),
     ),
   ];
 
