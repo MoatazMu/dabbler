@@ -32,13 +32,6 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-  cupertino_icons: ^1.0.8
-
-  # Ant Design for Flutter - Beautiful, accessible components
-  antd_flutter: ^0.0.1
-  
   # Lucide Icons - Beautiful icon library
   lucide_icons: ^0.257.0
   
@@ -59,23 +52,14 @@ dependencies:
   # Cached Network Image - Beautiful image loading with placeholders
   cached_network_image: ^3.3.0
   
-  # Flutter Staggered Grid View - Beautiful layouts
-  flutter_staggered_grid_view: ^0.7.0
-  
   # FL Chart - Beautiful charts and graphs
   fl_chart: ^0.69.0
-  
-  # Smooth Page Indicator - Elegant page indicators
-  smooth_page_indicator: ^1.2.0
   
   # GoRouter - Clean, minimal navigation
   go_router: ^12.0.0
   
   # Flutter SVG - Beautiful scalable graphics
   flutter_svg: ^2.0.9
-  
-  # Flutter Hooks - Minimal state management
-  flutter_hooks: ^0.20.0
   
   # Riverpod - Minimal, powerful state management
   flutter_riverpod: ^2.4.0
@@ -116,14 +100,11 @@ dependencies:
   share_plus: ^10.0.2
   # URL launcher for opening external apps and links
   url_launcher: ^6.3.0
-  # App review prompts
-  in_app_review: ^2.0.9
   # Connectivity status
   connectivity_plus: ^6.0.5
   # UUID generation
   uuid: ^4.3.3
   # Cryptographic functions
-  crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
