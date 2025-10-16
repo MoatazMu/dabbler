@@ -52,7 +52,6 @@ class VenueModel extends Venue {
         totalRatings: json['total_ratings'] as int? ?? 0,
         pricePerHour: (json['price_per_hour'] as num?)?.toDouble() ?? 0.0,
         currency: json['currency'] as String? ?? 'USD',
-        // TODO: Add supported_sports column to database or create venue_sports table
         supportedSports: _parseStringList(json['supported_sports']) ?? ['Football', 'Padel'], // Default sports
         amenities: _parseAmenities(json['venue_amenities'] ?? json['amenities']) ?? [],
         createdAt: DateTime.parse(json['created_at'] as String),

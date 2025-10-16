@@ -4,7 +4,6 @@ import '../../enums/notification_type_enums.dart';
 import '../../enums/theme_enums.dart';
 
 /// Temporary model class for user settings
-/// TODO: Replace with actual model from features/profile/data/models/
 class UserSettings {
   final String themeMode;
   final String language;

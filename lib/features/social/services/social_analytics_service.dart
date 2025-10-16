@@ -1,13 +1,9 @@
 import 'dart:async';
 import 'dart:math' as math;
 import '../../../core/utils/either.dart';
-// import '../../../core/services/storage_service.dart'; // TODO: Re-enable when implementing storage
-// import '../../utils/social/social_constants.dart'; // TODO: Create social constants file
-// import '../../utils/social/social_helpers.dart'; // TODO: Create social helpers file
 
 /// Comprehensive analytics service for social features
 class SocialAnalyticsService {
-  // final StorageService _storageService; // TODO: Implement proper storage integration
   
   // Event tracking
   final Map<String, List<SocialEvent>> _eventBuffer = {};
@@ -21,7 +17,6 @@ class SocialAnalyticsService {
   static const Duration _flushInterval = Duration(minutes: 5);
   static const Duration _metricsCalculationInterval = Duration(hours: 1);
   static const int _maxEventBufferSize = 1000;
-  // static const int _maxMetricsHistoryDays = 90; // TODO: Use for data retention
 
   SocialAnalyticsService() {
     _initializeService();
@@ -577,7 +572,6 @@ class SocialAnalyticsService {
     
     try {
       // Store events to persistent storage
-      // TODO: Implement proper storage for social events
       // await _storageService.storeList('social_events_$userId', 
       //     events.map((e) => e.toJson()).toList());
       

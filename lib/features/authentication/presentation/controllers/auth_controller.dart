@@ -72,8 +72,6 @@ class AuthController extends StateNotifier<AuthState> {
         }
       },
     );
-    // TODO: Listen to Supabase auth changes and update state
-    // TODO: Persist auth state across restarts
   }
 
   Future<void> signOut() async {

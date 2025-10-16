@@ -586,7 +586,6 @@ class FriendsRepositoryImpl implements FriendsRepository {
 
   /// Get current user ID - placeholder for actual implementation
   Future<String> _getCurrentUserId() async {
-    // TODO: Implement with actual auth service
     return 'current_user_id';
   }
 

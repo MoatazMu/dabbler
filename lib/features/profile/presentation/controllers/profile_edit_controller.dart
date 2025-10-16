@@ -220,7 +220,6 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
 
           // Show warnings if any
           if (uploadResult.warnings.isNotEmpty) {
-            // TODO: Show warnings via snackbar
           }
 
           return true;
@@ -291,7 +290,6 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
 
           // Show warnings if any
           if (updateResult.warnings.isNotEmpty) {
-            // TODO: Show warnings via snackbar
           }
 
           return true;

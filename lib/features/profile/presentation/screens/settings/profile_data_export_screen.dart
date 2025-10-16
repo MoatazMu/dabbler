@@ -67,7 +67,6 @@ class _ProfileDataExportScreenState extends ConsumerState<ProfileDataExportScree
   }
 
   Future<void> _loadExportHistory() async {
-    // TODO: Load from actual user data
     await Future.delayed(const Duration(milliseconds: 300));
     setState(() {
       _lastExportDate = DateTime.now().subtract(const Duration(days: 45));
@@ -562,7 +561,6 @@ class _ProfileDataExportScreenState extends ConsumerState<ProfileDataExportScree
       
       await Future.delayed(const Duration(seconds: 1));
 
-      // TODO: Implement actual data export generation
       
       setState(() {
         _isGenerating = false;
@@ -621,7 +619,6 @@ class _ProfileDataExportScreenState extends ConsumerState<ProfileDataExportScree
     });
 
     try {
-      // TODO: Implement actual download functionality
       await Future.delayed(const Duration(seconds: 2));
       
       // Simulate sharing the file

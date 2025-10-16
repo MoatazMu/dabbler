@@ -436,7 +436,6 @@ class ChatService {
           final fileSize = await file.length();
           if (fileSize > _maxVideoSize) {
             // For now, just reject oversized videos
-            // TODO: Implement video compression
             throw Exception('Video file too large (max ${_maxVideoSize ~/ (1024 * 1024)}MB)');
           }
           compressedFiles.add(file);

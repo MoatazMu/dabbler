@@ -1,15 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../presentation/controllers/games_controller.dart';
-// import '../presentation/controllers/create_game_controller.dart'; // TODO: Uncomment when BookingsRepository implemented
 import '../presentation/controllers/game_detail_controller.dart';
 import '../presentation/controllers/venues_controller.dart';
 import '../presentation/controllers/my_games_controller.dart';
 import '../presentation/controllers/bookings_controller.dart';
 import '../domain/usecases/find_games_usecase.dart';
-// import '../domain/usecases/create_game_usecase.dart'; // TODO: Uncomment when BookingsRepository implemented
 import '../domain/usecases/join_game_usecase.dart';
-// import '../domain/usecases/cancel_game_usecase.dart'; // TODO: Uncomment when BookingsRepository implemented
 import '../domain/entities/game.dart';
 import '../domain/entities/venue.dart';
 import '../domain/repositories/bookings_repository.dart';
@@ -80,7 +77,6 @@ final findGamesUseCaseProvider = Provider<FindGamesUseCase>((ref) {
   );
 });
 
-// TODO: Uncomment when BookingsRepository is implemented
 // final createGameUseCaseProvider = Provider<CreateGameUseCase>((ref) {
 //   final bookingsRepo = ref.watch(bookingsRepositoryProvider);
 //   // Throw error if bookings repo is accessed before implementation
@@ -100,7 +96,6 @@ final joinGameUseCaseProvider = Provider<JoinGameUseCase>((ref) {
   );
 });
 
-// TODO: Uncomment when BookingsRepository is implemented
 // final cancelGameUseCaseProvider = Provider<CancelGameUseCase>((ref) {
 //   final bookingsRepo = ref.watch(bookingsRepositoryProvider);
 //   // Throw error if bookings repo is accessed before implementation
@@ -124,7 +119,6 @@ final gamesControllerProvider = StateNotifierProvider<GamesController, GamesStat
   );
 });
 
-// TODO: Uncomment when BookingsRepository is implemented
 // Create game controller for multi-step game creation
 // final createGameControllerProvider = StateNotifierProvider<CreateGameController, CreateGameState>((ref) {
 //   return CreateGameController(
@@ -141,7 +135,6 @@ final venuesControllerProvider = StateNotifierProvider<VenuesController, VenuesS
 /// My games controller for user's personal game management
 final myGamesControllerProvider = StateNotifierProvider.family<MyGamesController, MyGamesState, String>((ref, userId) {
   return MyGamesController(
-    // TODO: Add cancelGameUseCase when BookingsRepository is implemented
     cancelGameUseCase: null,
     gamesRepository: ref.watch(gamesRepositoryProvider),
     userId: userId,
@@ -404,7 +397,6 @@ final myGamesActionsProvider = Provider.family<MyGamesActions, String>((ref, use
   return MyGamesActions(ref, userId);
 });
 
-// TODO: Uncomment when BookingsRepository and CreateGameController are implemented
 // /// Create game actions provider
 // final createGameActionsProvider = Provider((ref) {
 //   return CreateGameActions(ref);
@@ -525,7 +517,6 @@ class MyGamesActions {
   }
 }
 
-// TODO: Uncomment when BookingsRepository and CreateGameController are implemented
 // class CreateGameActions {
 //   final Ref _ref;
 //   CreateGameActions(this._ref);

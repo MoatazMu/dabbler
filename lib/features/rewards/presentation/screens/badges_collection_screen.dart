@@ -1375,14 +1375,12 @@ class _BadgesCollectionScreenState extends ConsumerState<BadgesCollectionScreen>
   }
 
   void _showShowcaseManager() {
-    // TODO: Implement showcase manager
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Showcase manager not implemented yet')),
     );
   }
 
   void _previewShowcase() {
-    // TODO: Implement showcase preview
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Showcase preview not implemented yet')),
     );
@@ -1398,7 +1396,6 @@ class _BadgesCollectionScreenState extends ConsumerState<BadgesCollectionScreen>
   }
 
   void _exportCollection() async {
-    // TODO: Implement collection export as image
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Export feature coming soon!')),
     );

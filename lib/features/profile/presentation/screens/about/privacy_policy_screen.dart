@@ -368,21 +368,18 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
   }
 
   void _sharePolicy() {
-    // TODO: Implement share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Share functionality coming soon')),
     );
   }
 
   void _contactSupport() {
-    // TODO: Navigate to contact support or open email
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Contact support functionality coming soon')),
     );
   }
 
   void _managePrivacySettings() {
-    // TODO: Navigate to privacy settings
     context.push('/settings/privacy');
   }
 }

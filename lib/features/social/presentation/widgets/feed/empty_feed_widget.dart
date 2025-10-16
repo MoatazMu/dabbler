@@ -58,7 +58,6 @@ class EmptyFeedWidget extends StatelessWidget {
             // Call to action button
             ElevatedButton.icon(
               onPressed: () {
-                // TODO: Navigate to create post screen
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text('Create post functionality coming soon!'),
@@ -83,7 +82,6 @@ class EmptyFeedWidget extends StatelessWidget {
               children: [
                 TextButton.icon(
                   onPressed: () {
-                    // TODO: Navigate to discover people
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Discover people functionality coming soon!'),
@@ -98,7 +96,6 @@ class EmptyFeedWidget extends StatelessWidget {
                 
                 TextButton.icon(
                   onPressed: () {
-                    // TODO: Navigate to games
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Games functionality coming soon!'),

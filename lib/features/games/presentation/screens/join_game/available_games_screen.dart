@@ -285,7 +285,7 @@ class _AvailableGamesScreenState extends ConsumerState<AvailableGamesScreen> {
                     Icon(Icons.location_on, size: 16, color: Colors.grey[600]),
                     const SizedBox(width: 4),
                     Text(
-                      'Venue: ${game.venueId}', // TODO: Get venue name
+                      'Venue: ${game.venueId}',
                       style: TextStyle(color: Colors.grey[600], fontSize: 14),
                     ),
                   ],
@@ -476,7 +476,6 @@ class _AvailableGamesScreenState extends ConsumerState<AvailableGamesScreen> {
                           title: Text('Radius: 10 km'),
                           subtitle: Text('Adjust search radius'),
                         ),
-                        // TODO: Add slider for distance
                       ],
                     ),
                     
@@ -513,7 +512,6 @@ class _AvailableGamesScreenState extends ConsumerState<AvailableGamesScreen> {
                           title: Text('Free - \$50'),
                           subtitle: Text('Adjust price range'),
                         ),
-                        // TODO: Add price range slider
                       ],
                     ),
                     
@@ -582,9 +580,8 @@ class _AvailableGamesScreenState extends ConsumerState<AvailableGamesScreen> {
       padding: const EdgeInsets.only(right: 8, bottom: 8),
       child: FilterChip(
         label: Text(sport),
-        selected: false, // TODO: Track selected sports
+        selected: false,
         onSelected: (selected) {
-          // TODO: Handle sport selection
         },
       ),
     );
@@ -595,26 +592,22 @@ class _AvailableGamesScreenState extends ConsumerState<AvailableGamesScreen> {
       padding: const EdgeInsets.only(right: 8, bottom: 8),
       child: FilterChip(
         label: Text(skill),
-        selected: false, // TODO: Track selected skills
+        selected: false,
         onSelected: (selected) {
-          // TODO: Handle skill selection
         },
       ),
     );
   }
 
   void _performSearch(String query) {
-    // TODO: Implement debounced search
     print('Searching for: $query');
   }
 
   void _applySorting(String sortBy) {
-    // TODO: Apply sorting to games list
     print('Sorting by: $sortBy');
   }
 
   void _applyFilters() {
-    // TODO: Apply selected filters
     print('Applying filters');
   }
 
@@ -625,7 +618,6 @@ class _AvailableGamesScreenState extends ConsumerState<AvailableGamesScreen> {
       lastDate: DateTime.now().add(const Duration(days: 90)),
     );
     if (picked != null) {
-      // TODO: Handle date range selection
       print('Date range: ${picked.start} - ${picked.end}');
     }
   }
@@ -639,7 +631,6 @@ class _AvailableGamesScreenState extends ConsumerState<AvailableGamesScreen> {
   }
 
   void _joinGame(game) {
-    // TODO: Implement join game functionality
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Joining game: ${game.title}')),
     );
@@ -657,7 +648,6 @@ class _AvailableGamesScreenState extends ConsumerState<AvailableGamesScreen> {
   }
 
   int _getGameCount() {
-    // TODO: Get actual game count from state
     return 0;
   }
 

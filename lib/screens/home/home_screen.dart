@@ -199,7 +199,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Thoughts Input
               ThoughtsInput(
                 onTap: () {
-                  // TODO: Navigate to create post or thoughts screen
                   // context.go('/create-post');
                 },
               ),
@@ -283,8 +282,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           title: game.title,
           date: formattedDate,
           timeRange: '${game.startTime} - ${game.endTime}',
-          location: 'Loading venue...', // TODO: Fetch venue details
-          avatarUrls: const [], // TODO: Fetch player avatars
+          location: 'Loading venue...',
+          avatarUrls: const [],
           othersCount: game.currentPlayers,
           onTap: () {
             Navigator.of(context).push(

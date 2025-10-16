@@ -3,7 +3,6 @@ library;
 import '../../constants/profile_constants.dart';
 
 /// Temporary model class for profile validation
-/// TODO: Replace with actual model from features/profile/data/models/
 class UserProfile {
   final String? username;
   final String? fullName;
@@ -451,7 +450,6 @@ class ProfileValidationHelper {
 
   /// Check if username is available (placeholder for API call)
   static Future<bool> isUsernameAvailable(String username) async {
-    // TODO: Implement actual API call to check username availability
     await Future.delayed(const Duration(milliseconds: 500));
     
     // Simulate some unavailable usernames

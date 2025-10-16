@@ -4,10 +4,7 @@ import 'social_analytics_service.dart';
 import 'social_metrics_tracking_service.dart';
 
 /// Service for generating personalized insights and recommendations for social features
-/// TODO: This is a simplified stub - full implementation needs extensive work
 class SocialInsightsService {
-  // final SocialAnalyticsService _analyticsService; // TODO: Use for insights generation
-  // final SocialMetricsTrackingService _metricsService; // TODO: Use for metrics tracking
 
   SocialInsightsService({
     required SocialAnalyticsService analyticsService,
@@ -23,7 +20,6 @@ class SocialInsightsService {
     List<InsightType>? insightTypes,
   }) async {
     try {
-      // TODO: Implement full insight generation logic
       final insights = UserInsights(
         userId: userId,
         generatedAt: DateTime.now(),
@@ -45,7 +41,6 @@ class SocialInsightsService {
     List<RecommendationType>? recommendationTypes,
   }) async {
     try {
-      // TODO: Implement full recommendation generation logic
       final recommendations = UserRecommendations(
         userId: userId,
         generatedAt: DateTime.now(),

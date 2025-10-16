@@ -488,7 +488,6 @@ class _CommentWidgetState extends ConsumerState<CommentWidget>
   }
 
   void _copyCommentText() {
-    // TODO: Copy comment text to clipboard
   }
 
   String _formatTimeAgo(DateTime? dateTime) {

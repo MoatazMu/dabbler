@@ -92,7 +92,6 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
             color: context.colors.onSurface,
           ),
           onPressed: () {
-            // TODO: Implement share functionality
           },
         ),
         IconButton(
@@ -272,7 +271,6 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                   color: context.colors.primary,
                 ),
                 onPressed: () {
-                  // TODO: Open maps
                 },
               ),
             ],
@@ -682,7 +680,6 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
               color: context.colors.primary,
             ),
             onPressed: () {
-              // TODO: Open chat with organizer
             },
           ),
         ],
@@ -732,7 +729,6 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
           CustomButton(
             text: 'Share',
             onPressed: () {
-              // TODO: Implement share functionality
             },
             variant: ButtonVariant.secondary,
             icon: LucideIcons.share2,

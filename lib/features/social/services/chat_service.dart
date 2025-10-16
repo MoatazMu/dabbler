@@ -8,7 +8,6 @@ import '../domain/entities/post.dart'; // For ConversationType
 import '../../../utils/enums/social_enums.dart';
 
 /// Minimal stub implementation of chat service to resolve compilation errors
-/// TODO: Replace with full implementation when dependencies are available
 class ChatService {
   ChatService();
 

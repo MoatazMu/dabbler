@@ -56,7 +56,6 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
 
       // Apply filters
       if (filters != null) {
-        // TODO: Add sport filtering when venue_sports relationship table is created
         // For now, skip sports filtering
         /* 
         final sports = filters['sports'] ?? filters['sport'];
@@ -75,7 +74,6 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
         if (filters['amenities'] != null && filters['amenities'] is List) {
           final amenitiesList = filters['amenities'] as List;
           if (amenitiesList.isNotEmpty) {
-            // TODO: Add amenities filtering when column exists
             // query = query.overlaps('amenities', amenitiesList);
           }
         }

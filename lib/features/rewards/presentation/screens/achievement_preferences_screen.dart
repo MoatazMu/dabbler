@@ -650,35 +650,30 @@ class _AchievementPreferencesScreenState extends ConsumerState<AchievementPrefer
   }
 
   void _showProgressAnalytics(BuildContext context) {
-    // TODO: Navigate to progress analytics screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Progress analytics screen coming soon')),
     );
   }
 
   void _showCategoryStats(BuildContext context) {
-    // TODO: Navigate to category statistics screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Category statistics screen coming soon')),
     );
   }
 
   void _showGoalsManager(BuildContext context) {
-    // TODO: Navigate to goals management screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Goals manager screen coming soon')),
     );
   }
 
   void _showCreateGoal(BuildContext context) {
-    // TODO: Show create goal dialog
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Create goal dialog coming soon')),
     );
   }
 
   void _showReminderSchedule(BuildContext context) {
-    // TODO: Navigate to reminder schedule screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Reminder schedule screen coming soon')),
     );

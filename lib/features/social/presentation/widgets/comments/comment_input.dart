@@ -139,7 +139,6 @@ class _CommentInputState extends State<CommentInput> {
                 const SizedBox(width: 8),
                 IconButton(
                   onPressed: () {
-                    // TODO: Implement emoji picker
                   },
                   icon: Icon(
                     Icons.emoji_emotions_outlined,

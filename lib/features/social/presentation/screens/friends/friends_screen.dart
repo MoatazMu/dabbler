@@ -47,7 +47,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
     setState(() {
       _searchQuery = _searchController.text;
     });
-    // TODO: Implement search functionality in controller
   }
 
   @override
@@ -564,7 +563,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Implement unblock user functionality  
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Unblock functionality coming soon')),
               );
@@ -590,7 +588,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Implement unfriend functionality
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Unfriend functionality coming soon')),
               );
@@ -603,7 +600,6 @@ class _FriendsScreenState extends ConsumerState<FriendsScreen>
   }
 
   void _syncContacts() {
-    // TODO: Implement sync contacts functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Sync contacts functionality coming soon')),
     );

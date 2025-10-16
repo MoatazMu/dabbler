@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:dartz/dartz.dart';
 
 /// Minimal stub implementation of social metrics tracking service to resolve compilation errors
-/// TODO: Replace with full implementation when dependencies are available
 class SocialMetricsTrackingService {
   SocialMetricsTrackingService();
 

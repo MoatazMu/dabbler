@@ -207,7 +207,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
         filteredPosts: _applyFilter(updatedPosts, state.filter),
       );
 
-      // TODO: Implement actual API call to react to post
       await Future.delayed(const Duration(milliseconds: 500)); // Simulate API call
       
     } catch (e) {
@@ -275,7 +274,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
         filteredPosts: _applyFilter(updatedPosts, state.filter),
       );
 
-      // TODO: Implement actual API call to toggle like
       // await postRepository.toggleLike(postId);
     } catch (e) {
       // Handle error
@@ -302,7 +300,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
         filteredPosts: _applyFilter(updatedPosts, state.filter),
       );
 
-      // TODO: Implement actual API call to toggle bookmark
       // await postRepository.toggleBookmark(postId);
     } catch (e) {
       // Handle error
@@ -320,7 +317,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
         filteredPosts: _applyFilter(updatedPosts, state.filter),
       );
 
-      // TODO: Implement actual API call to hide post
       // await postRepository.hidePost(postId);
     } catch (e) {
       // Handle error
@@ -462,9 +458,9 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       // Create new post
       final newPost = PostModel(
         id: 'post_${DateTime.now().millisecondsSinceEpoch}',
-        authorId: 'current_user', // TODO: Get from auth service
-        authorName: 'Current User', // TODO: Get from auth service
-        authorAvatar: '', // TODO: Get from auth service
+        authorId: 'current_user',
+        authorName: 'Current User',
+        authorAvatar: '',
         content: content,
         mediaUrls: mediaUrls,
         createdAt: DateTime.now(),
@@ -499,7 +495,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
       
-      // TODO: Implement actual draft saving logic
       // For now, just return success
       return true;
     } catch (e) {
@@ -514,7 +509,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 300));
       
-      // TODO: Implement actual draft retrieval logic
       // For now, return empty list
       return [];
     } catch (e) {
@@ -529,7 +523,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 300));
       
-      // TODO: Implement actual draft deletion logic
       // For now, just return success
       return true;
     } catch (e) {
@@ -544,7 +537,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 2000));
       
-      // TODO: Implement actual media upload logic
       // For now, return mock URLs
       return filePaths.map((path) => 'https://example.com/media/${path.split('/').last}').toList();
     } catch (e) {

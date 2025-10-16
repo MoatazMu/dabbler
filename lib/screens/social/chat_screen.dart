@@ -47,7 +47,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
 
     try {
-      // TODO: Load messages from chat service
       // For now, add some sample messages
       await Future.delayed(const Duration(milliseconds: 500));
       
@@ -100,7 +99,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _messageController.clear();
     _scrollToBottom();
 
-    // TODO: Send message via chat service
   }
 
   void _scrollToBottom() {
@@ -149,7 +147,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           IconButton(
             icon: const Icon(Icons.video_call),
             onPressed: () {
-              // TODO: Implement video call
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Video call coming soon!')),
               );
@@ -158,7 +155,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           IconButton(
             icon: const Icon(Icons.call),
             onPressed: () {
-              // TODO: Implement voice call
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Voice call coming soon!')),
               );
@@ -167,7 +163,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           IconButton(
             icon: const Icon(Icons.info_outline),
             onPressed: () {
-              // TODO: Show chat info
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Chat info coming soon!')),
               );
@@ -267,16 +262,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           showTimestamp: true,
           showReadReceipts: true,
           onTap: () {
-            // TODO: Handle message tap
           },
           onLongPress: () {
-            // TODO: Show message options
           },
           onReply: () {
-            // TODO: Handle reply
           },
           onReact: () {
-            // TODO: Handle reaction
           },
         );
       },
@@ -299,7 +290,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           IconButton(
             icon: const Icon(Icons.add_circle_outline),
             onPressed: () {
-              // TODO: Implement attachment
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Attachments coming soon!')),
               );

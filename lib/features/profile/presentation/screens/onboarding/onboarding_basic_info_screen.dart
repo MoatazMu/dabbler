@@ -63,7 +63,6 @@ class _OnboardingBasicInfoScreenState extends ConsumerState<OnboardingBasicInfoS
     if (existingData != null) {
       _nameController.text = existingData['display_name'] ?? '';
       _bioController.text = existingData['bio'] ?? '';
-      // TODO: Load existing image if available
     }
   }
   

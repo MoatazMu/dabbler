@@ -35,7 +35,6 @@ class LocationSelector extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   onPressed: () {
-                    // TODO: Implement location picker
                     onLocationChanged('Current Location');
                   },
                   icon: const Icon(Icons.my_location),

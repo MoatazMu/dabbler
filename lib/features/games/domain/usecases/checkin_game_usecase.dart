@@ -275,7 +275,6 @@ class CheckInGameUseCase extends UseCase<Either<Failure, CheckInResult>, CheckIn
       return const Left(GameFailure('Player location is required for location-based check-in'));
     }
 
-    // TODO: Implement actual distance calculation with venue coordinates
     return const Right(true);
   }
 

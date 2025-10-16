@@ -264,14 +264,12 @@ class GamesController extends StateNotifier<GamesState> {
 
   /// Subscribe to real-time game updates (stub for future implementation)
   void subscribeToUpdates() {
-    // TODO: Implement WebSocket subscription for real-time updates
     // This would listen to game changes and update the state accordingly
     print('Subscribing to real-time game updates...');
   }
 
   /// Unsubscribe from real-time updates
   void unsubscribeFromUpdates() {
-    // TODO: Clean up WebSocket subscription
     print('Unsubscribing from real-time game updates...');
   }
 

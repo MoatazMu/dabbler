@@ -500,42 +500,36 @@ class _ChatDetailScreenState extends ConsumerState<ChatDetailScreen>
   }
 
   void _takePicture() {
-    // TODO: Implement camera capture
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Camera feature coming soon')),
     );
   }
 
   void _pickImage() {
-    // TODO: Implement image picker
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Image picker feature coming soon')),
     );
   }
 
   void _pickVideo() {
-    // TODO: Implement video picker
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Video picker feature coming soon')),
     );
   }
 
   void _pickFile() {
-    // TODO: Implement file picker
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('File picker feature coming soon')),
     );
   }
 
   void _pickLocation() {
-    // TODO: Implement location picker
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Location picker feature coming soon')),
     );
   }
 
   void _pickContact() {
-    // TODO: Implement contact picker
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Contact picker feature coming soon')),
     );

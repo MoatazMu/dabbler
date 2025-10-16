@@ -150,7 +150,6 @@ class _SocialOnboardingPrivacyScreenState extends State<SocialOnboardingPrivacyS
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      // TODO: Save privacy settings
                       context.push('/social/onboarding/notifications');
                     },
                     child: const Text('Continue'),

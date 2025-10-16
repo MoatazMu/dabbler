@@ -181,7 +181,6 @@ class ProfileController extends StateNotifier<ProfileState> {
           
           // Show warnings if any
           if (updateResult.warnings.isNotEmpty) {
-            // TODO: Show warnings via snackbar or notification system
           }
           
           return true;

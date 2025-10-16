@@ -7,7 +7,6 @@ import '../domain/entities/friend_request.dart';
 import '../../../features/profile/domain/entities/user_profile.dart';
 
 /// Minimal stub implementation of friends service to resolve compilation errors
-/// TODO: Replace with full implementation when dependencies are available
 class FriendsService {
   FriendsService();
 

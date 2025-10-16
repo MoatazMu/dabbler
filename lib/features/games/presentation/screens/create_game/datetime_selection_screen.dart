@@ -27,7 +27,6 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
   int _durationMinutes = 90; // Default duration
   bool _isRecurring = false;
   
-  // Sample existing games/bookings - TODO: Replace with actual data
   final Map<DateTime, List<Map<String, dynamic>>> _existingBookings = {
     DateTime(2025, 8, 12): [
       {'time': '14:00', 'title': 'Basketball Game', 'type': 'game'},

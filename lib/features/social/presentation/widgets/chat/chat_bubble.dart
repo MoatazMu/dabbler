@@ -315,11 +315,9 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // TODO: Add reply support when replyTo property is available
               // if (widget.message.replyTo != null)
               //   _buildReplyPreview(),
               _buildMessageContent(),
-              // TODO: Add reactions support when reactions are available
               // if (widget.message.reactions?.isNotEmpty == true)
               //   _buildReactions(),
             ],
@@ -352,7 +350,6 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
     );
   }
 
-  // TODO: Add _buildReplyPreview method when replyTo support is added
 
   Widget _buildMessageContent() {
     return Padding(
@@ -394,7 +391,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
               child: const Center(
                 child: Icon(Icons.image, size: 48),
               ),
-            ) // TODO: Implement proper image widget
+            )
           : const SizedBox.shrink(),
     );
   }
@@ -483,7 +480,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
           ),
           const SizedBox(width: 8),
           Text(
-            '0:00', // TODO: Add duration property to ChatMessageModel
+            '0:00',
             style: AppTextStyles.bodySmall.copyWith(
               color: _bubbleType == MessageBubbleType.sent
                   ? Colors.white.withOpacity(0.8)
@@ -548,7 +545,6 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
     );
   }
 
-  // TODO: Add _buildReactions method when reactions support is added
 
   Widget _buildMessageInfo() {
     return Padding(

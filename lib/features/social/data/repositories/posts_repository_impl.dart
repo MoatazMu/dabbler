@@ -1185,19 +1185,16 @@ class PostsRepositoryImpl implements PostsRepository {
 
   /// Get current user ID - placeholder for actual implementation
   Future<String> _getCurrentUserId() async {
-    // TODO: Implement with actual auth service
     return 'current_user_id';
   }
 
   /// Get current user name - placeholder for actual implementation
   Future<String> _getCurrentUserName() async {
-    // TODO: Implement with actual auth service
     return 'Current User';
   }
 
   /// Get current user avatar - placeholder for actual implementation
   Future<String> _getCurrentUserAvatar() async {
-    // TODO: Implement with actual auth service
     return '';
   }
 

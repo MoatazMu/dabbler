@@ -2,8 +2,6 @@ import 'dart:async';
 import '../../../core/utils/either.dart';
 import 'social_analytics_service.dart';
 import 'social_insights_service.dart';
-// import '../../utils/social/social_constants.dart'; // TODO: Create social constants file
-// import '../../utils/social/social_helpers.dart'; // TODO: Create social helpers file
 
 /// Service for managing social gamification features including achievements, badges, and challenges
 class SocialGamificationService {
@@ -330,7 +328,6 @@ class SocialGamificationService {
       
       final insights = insightsResult.rightOrNull()!;
       
-      // TODO: Use insights for generating personalized recommendations
       // Currently using simplified logic without insights analysis
       
       // Get user profile
@@ -339,13 +336,11 @@ class SocialGamificationService {
         return Left(profileResult.leftOrNull()!);
       }
       
-      // TODO: Use profile for recommendation logic
       // final profile = profileResult.rightOrNull()!;
       
       // Generate challenge recommendations based on insights and profile
       final recommendations = <ChallengeRecommendation>[];
       
-      // TODO: Implement engagement-based challenges when UserInsights has keyMetrics
       // Engagement-based challenges
       // if (insights.keyMetrics.engagementRate < 0.05) {
       //   recommendations.add(ChallengeRecommendation(
@@ -361,7 +356,6 @@ class SocialGamificationService {
       //   ));
       // }
       
-      // TODO: Implement friendship challenges when UserInsights has keyMetrics
       // Friendship challenges
       // if (insights.keyMetrics.friendsCount < 50) {
       //   recommendations.add(ChallengeRecommendation(

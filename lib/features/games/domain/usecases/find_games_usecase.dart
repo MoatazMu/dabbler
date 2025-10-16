@@ -177,7 +177,6 @@ class FindGamesUseCase extends UseCase<Either<Failure, List<GameWithDistance>>, 
       if (params.userLatitude != null && 
           params.userLongitude != null && 
           game.venueId != null) {
-        // TODO: Fetch venue coordinates from VenuesRepository
         // For now, we'll set distance to 0 and note this limitation
         distance = 0.0;
         
@@ -221,7 +220,6 @@ class FindGamesUseCase extends UseCase<Either<Failure, List<GameWithDistance>>, 
   }
 
   /// Calculates distance between two points using Haversine formula
-  /// Used when venue coordinates are available (see TODO in _processGames)
   // ignore: unused_element
   double _calculateDistance(double lat1, double lon1, double lat2, double lon2) {
     const double earthRadius = 6371; // Earth's radius in kilometers

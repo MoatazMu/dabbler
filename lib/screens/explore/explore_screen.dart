@@ -639,7 +639,7 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
                       LucideIcons.filter,
                       color: context.colors.primary,
                     ),
-                    onPressed: () {}, // TODO: Connect to filter modal logic in _VenuesTabContent
+                    onPressed: () {},
                     tooltip: 'Open Filters',
                     splashRadius: 20,
                   ),
@@ -1098,10 +1098,10 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                         'name': venue.name,
                         'location': '${venue.city}, ${venue.country}',
                         'sports': venue.supportedSports,
-                        'images': [], // TODO: Add venue images
+                        'images': [],
                         'rating': venue.rating,
-                        'isOpen': true, // TODO: Check actual operating hours
-                        'slots': [], // TODO: Add available slots
+                        'isOpen': true,
+                        'slots': [],
                         'reviews': List.generate(venue.totalRatings, (_) => {}),
                         'distance': venueWithDistance.formattedDistance,
                         'price': venue.pricePerHour.toString(),

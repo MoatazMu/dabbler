@@ -60,7 +60,6 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       setState(() {
         _successMessage = 'OTP sent! Please check your phone.';
       });
-      // TODO: Navigate to OTP verification screen
     } catch (e) {
       setState(() {
         _errorMessage = 'Failed to send OTP: $e';

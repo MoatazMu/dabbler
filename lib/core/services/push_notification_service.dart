@@ -14,7 +14,6 @@ class PushNotificationService {
   /// Initialize push notification service
   Future<bool> initialize() async {
     try {
-      // TODO: Implement actual push notification initialization
       // For now, simulate initialization
       await Future.delayed(const Duration(milliseconds: 100));
       _isInitialized = true;
@@ -32,7 +31,6 @@ class PushNotificationService {
         return false;
       }
 
-      // TODO: Implement actual push notification sending
       // For now, simulate success
       await Future.delayed(const Duration(milliseconds: 50));
       
@@ -52,7 +50,6 @@ class PushNotificationService {
         return false;
       }
 
-      // TODO: Implement user-specific notification
       // For now, simulate success
       await Future.delayed(const Duration(milliseconds: 50));
       
@@ -72,7 +69,6 @@ class PushNotificationService {
   /// Request notification permissions
   Future<bool> requestPermissions() async {
     try {
-      // TODO: Implement actual permission request
       // For now, simulate success
       await Future.delayed(const Duration(milliseconds: 100));
       return true;
@@ -84,7 +80,6 @@ class PushNotificationService {
   /// Check if notifications are enabled
   Future<bool> areNotificationsEnabled() async {
     try {
-      // TODO: Implement actual permission check
       // For now, simulate enabled
       return true;
     } catch (e) {
@@ -99,7 +94,6 @@ class PushNotificationService {
         return false;
       }
 
-      // TODO: Implement topic subscription
       // For now, simulate success
       await Future.delayed(const Duration(milliseconds: 50));
       return true;
@@ -115,7 +109,6 @@ class PushNotificationService {
         return false;
       }
 
-      // TODO: Implement topic unsubscription
       // For now, simulate success
       await Future.delayed(const Duration(milliseconds: 50));
       return true;

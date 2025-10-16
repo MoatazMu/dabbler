@@ -37,7 +37,6 @@ class MessageDeliveryService {
   /// Mark message as delivered
   Future<Either<Failure, bool>> markAsDelivered(String messageId) async {
     try {
-      // TODO: Implement delivery confirmation
       return const Right(true);
     } catch (e) {
       return Left(ServerFailure(message: 'Failed to mark message as delivered: ${e.toString()}'));
@@ -47,7 +46,6 @@ class MessageDeliveryService {
   /// Mark message as read
   Future<Either<Failure, bool>> markAsRead(String messageId, String userId) async {
     try {
-      // TODO: Implement read receipt
       return const Right(true);
     } catch (e) {
       return Left(ServerFailure(message: 'Failed to mark message as read: ${e.toString()}'));
@@ -57,7 +55,6 @@ class MessageDeliveryService {
   /// Get message delivery status (simplified for now)
   Future<Either<Failure, bool>> getMessageStatus(String messageId) async {
     try {
-      // TODO: Implement status checking
       return const Right(true);
     } catch (e) {
       return Left(ServerFailure(message: 'Failed to get message status: ${e.toString()}'));

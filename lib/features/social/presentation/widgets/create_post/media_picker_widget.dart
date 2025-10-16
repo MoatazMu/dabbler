@@ -39,7 +39,6 @@ class MediaPickerWidget extends StatelessWidget {
                 const Spacer(),
                 IconButton(
                   onPressed: () {
-                    // TODO: Implement media picker
                     onMediaSelected({'type': 'image', 'url': 'placeholder'});
                   },
                   icon: const Icon(Icons.add_photo_alternate),

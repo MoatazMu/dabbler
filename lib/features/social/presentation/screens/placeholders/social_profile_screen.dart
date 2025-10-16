@@ -19,13 +19,11 @@ class SocialProfileScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(LucideIcons.share),
             onPressed: () {
-              // TODO: Share profile
             },
           ),
           IconButton(
             icon: const Icon(LucideIcons.moreHorizontal),
             onPressed: () {
-              // TODO: Show profile options
             },
           ),
         ],
@@ -97,7 +95,6 @@ class SocialProfileScreen extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            // TODO: Add friend or send message
                           },
                           icon: const Icon(LucideIcons.userPlus),
                           label: const Text('Add Friend'),
@@ -107,7 +104,6 @@ class SocialProfileScreen extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {
-                            // TODO: Send message
                           },
                           icon: const Icon(LucideIcons.messageCircle),
                           label: const Text('Message'),

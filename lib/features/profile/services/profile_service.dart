@@ -448,8 +448,8 @@ final profileServiceProvider = Provider<ProfileService>((ref) {
   return ProfileService(
     profileRepository: ref.watch(profileRepositoryProvider),
     statsRepository: ref.watch(profileStatsRepositoryProvider),
-    imageUploadService: ImageUploadService(), // TODO: Add provider
-    analyticsService: AnalyticsService(), // TODO: Add provider  
-    cacheService: CacheService(), // TODO: Add provider
+    imageUploadService: ImageUploadService(),
+    analyticsService: AnalyticsService(),
+    cacheService: CacheService(),
   );
 });

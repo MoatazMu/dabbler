@@ -477,7 +477,6 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
           
           Consumer(
             builder: (context, ref, child) {
-              // TODO: Implement recentConversationMediaProvider
               const recentMedia = AsyncValue.data(<dynamic>[]);
               
               return recentMedia.when(
@@ -591,7 +590,6 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
             
             Consumer(
               builder: (context, ref, child) {
-                // TODO: Implement conversationStatsProvider
                 final mockStats = {
                   'totalMessages': 0, 
                   'mediaCount': 0, 
@@ -748,7 +746,6 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
   }
 
   void _editChatInfo() {
-    // TODO: Implement edit chat info
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Edit chat info feature coming soon')),
     );
@@ -781,7 +778,6 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
   }
 
   void _editChatAvatar(dynamic conversation) {
-    // TODO: Implement edit chat avatar
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Edit avatar feature coming soon')),
     );
@@ -900,7 +896,6 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
             title: const Text('Download'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Implement download
             },
           ),
           ListTile(
@@ -908,7 +903,6 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
             title: const Text('Share'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Implement share
             },
           ),
           ListTile(
@@ -916,7 +910,6 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
             title: const Text('Delete'),
             onTap: () {
               Navigator.pop(context);
-              // TODO: Implement delete media
             },
           ),
         ],
@@ -933,7 +926,6 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
   }
 
   void _customizeNotifications(dynamic conversation) {
-    // TODO: Implement custom notifications
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Custom notifications feature coming soon')),
     );
@@ -1057,7 +1049,6 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
     );
 
     if (confirm == true) {
-      // TODO: Implement block user
       Navigator.popUntil(context, (route) => route.isFirst);
     }
   }
@@ -1107,14 +1098,12 @@ class _ChatSettingsScreenState extends ConsumerState<ChatSettingsScreen>
   }
 
   void _exportChat(dynamic conversation) {
-    // TODO: Implement export chat
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Export chat feature coming soon')),
     );
   }
 
   void _shareChat(dynamic conversation) {
-    // TODO: Implement share chat
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Share chat feature coming soon')),
     );

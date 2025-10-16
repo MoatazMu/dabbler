@@ -450,7 +450,6 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
                 width: double.infinity,
                 child: OutlinedButton(
                   onPressed: () {
-                    // TODO: Open URL
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text('Opening ${license.url}')),
                     );

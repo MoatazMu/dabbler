@@ -57,7 +57,6 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
       _isLoading = true;
     });
 
-    // TODO: Load actual user data
     await Future.delayed(const Duration(milliseconds: 500));
     
     setState(() {
@@ -285,7 +284,6 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
   }
 
   void _updateEmail() {
-    // TODO: Implement email update
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Email update functionality coming soon')),
     );
@@ -302,14 +300,12 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
       return;
     }
 
-    // TODO: Implement password change
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Password change functionality coming soon')),
     );
   }
 
   void _toggleTwoFactor(bool enabled) {
-    // TODO: Implement two-factor authentication toggle
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(enabled 
@@ -321,14 +317,12 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
   }
 
   void _manageDevices() {
-    // TODO: Navigate to device management screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Device management coming soon')),
     );
   }
 
   void _viewLoginHistory() {
-    // TODO: Navigate to login history screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Login history coming soon')),
     );
@@ -350,7 +344,6 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              // TODO: Implement account deletion
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Account deletion functionality coming soon')),
               );

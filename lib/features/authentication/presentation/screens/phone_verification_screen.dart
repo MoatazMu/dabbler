@@ -20,7 +20,6 @@ class PhoneVerificationScreen extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () {
-                // TODO: Call verify OTP and navigate to profile completion if new user
                 Navigator.pushReplacementNamed(context, '/complete-profile');
               },
               child: const Text('Verify'),

@@ -5,7 +5,6 @@ import '../../enums/profile_enums.dart';
 import '../../enums/skill_level_enums.dart';
 
 /// Temporary model classes for skill calculations
-/// TODO: Replace with actual models from features/profile/data/models/
 class SportProfile {
   final String sport;
   final int skillLevel;

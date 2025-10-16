@@ -246,7 +246,6 @@ class BookingSuccessScreen extends StatelessWidget {
   }
 
   void _addToCalendar(BuildContext context) {
-    // TODO: Implement calendar integration
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Added to calendar'),

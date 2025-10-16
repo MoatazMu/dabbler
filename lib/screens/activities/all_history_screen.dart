@@ -258,7 +258,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
         'displayDate': dateFormat.format(game.scheduledDate),
         'time': timeFormat.format(game.getScheduledStartDateTime()),
         'price': '${game.pricePerPlayer.toStringAsFixed(0)} ${game.currency}',
-        'rating': '0.0', // TODO: Add rating system
+        'rating': '0.0',
         'status': 'completed',
         'players': '${game.currentPlayers}/${game.maxPlayers}',
       });

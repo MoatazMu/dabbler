@@ -18,7 +18,6 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
   late TabController _tabController;
   int _currentImageIndex = 0;
   
-  // Sample venue data - TODO: Replace with actual data from state management
   final Map<String, dynamic> _venueData = {
     'id': '1',
     'name': 'Central Park Basketball Court',
@@ -128,7 +127,6 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
           child: const Center(
             child: Icon(Icons.image, size: 80, color: Colors.grey),
           ),
-          // TODO: Replace with actual image loading
           // child: Image.network(
           //   images[index],
           //   fit: BoxFit.cover,

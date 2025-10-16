@@ -33,13 +33,11 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
           IconButton(
             icon: const Icon(LucideIcons.search),
             onPressed: () {
-              // TODO: Search friends
             },
           ),
           IconButton(
             icon: const Icon(LucideIcons.userPlus),
             onPressed: () {
-              // TODO: Add friend
             },
           ),
         ],
@@ -118,11 +116,9 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
               ),
             ],
             onSelected: (value) {
-              // TODO: Handle friend actions
             },
           ),
           onTap: () {
-            // TODO: View friend profile
           },
         ),
       ),
@@ -167,7 +163,6 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
                         Expanded(
                           child: ElevatedButton(
                             onPressed: () {
-                              // TODO: Accept friend request
                             },
                             child: const Text('Accept'),
                           ),
@@ -176,7 +171,6 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
                         Expanded(
                           child: OutlinedButton(
                             onPressed: () {
-                              // TODO: Decline friend request
                             },
                             child: const Text('Decline'),
                           ),
@@ -231,7 +225,6 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () {
-                              // TODO: Send friend request
                             },
                             icon: const Icon(LucideIcons.userPlus, size: 16),
                             label: const Text('Add Friend'),
@@ -240,7 +233,6 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
                         const SizedBox(width: 8),
                         IconButton(
                           onPressed: () {
-                            // TODO: Remove suggestion
                           },
                           icon: const Icon(LucideIcons.x, size: 16),
                         ),

@@ -25,7 +25,6 @@ class WebSocketService {
   /// Initialize WebSocket connection
   Future<bool> connect() async {
     try {
-      // TODO: Implement actual WebSocket connection
       // For now, simulate connection
       await Future.delayed(const Duration(milliseconds: 100));
       _isConnected = true;
@@ -45,7 +44,6 @@ class WebSocketService {
       _stopHeartbeat();
       _isConnected = false;
       _connectionController?.add(false);
-      // TODO: Implement actual disconnection
     } catch (e) {
       // Handle disconnection error
     }
@@ -58,7 +56,6 @@ class WebSocketService {
         return false;
       }
 
-      // TODO: Implement actual message sending
       // For now, simulate success
       await Future.delayed(const Duration(milliseconds: 50));
       return true;
@@ -71,7 +68,6 @@ class WebSocketService {
   void _startHeartbeat() {
     _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (_isConnected) {
-        // TODO: Send heartbeat message
       }
     });
   }

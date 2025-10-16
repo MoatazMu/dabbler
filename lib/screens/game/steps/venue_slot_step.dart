@@ -92,7 +92,6 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
               fillColor: context.violetWidgetBg,
             ),
             onChanged: (value) {
-              // TODO: Implement search functionality
             },
           ),
           const SizedBox(height: 16),

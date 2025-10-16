@@ -54,7 +54,6 @@ class _ProfileStatsScreenState extends ConsumerState<ProfileStatsScreen>
 
   Future<void> _loadStatistics() async {
     try {
-      // TODO: Load from actual data source
       await Future.delayed(const Duration(milliseconds: 800)); // Simulate API call
       
       setState(() {
@@ -503,7 +502,6 @@ class _ProfileStatsScreenState extends ConsumerState<ProfileStatsScreen>
             const SizedBox(height: 16),
             TextButton.icon(
               onPressed: () {
-                // TODO: Navigate to full achievements screen
               },
               icon: const Icon(Icons.arrow_forward),
               label: const Text('View All Achievements'),
@@ -591,7 +589,6 @@ class _ProfileStatsScreenState extends ConsumerState<ProfileStatsScreen>
   void _shareStats() {
     if (_statistics == null) return;
     
-    // TODO: Implement share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Share functionality coming soon!'),

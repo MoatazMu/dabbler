@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 /// Temporary model class for user settings
-/// TODO: Replace with actual model from features/profile/data/models/
 class UserSettings {
   final String themeMode;
   final String language;
@@ -357,7 +356,6 @@ mixin SettingsMixin<T extends StatefulWidget> on State<T> {
     
     setState(() {
       // Clear dirty settings without restoring values
-      // TODO: Implement restoration from last saved state when needed
       _dirtySettings.clear();
     });
     

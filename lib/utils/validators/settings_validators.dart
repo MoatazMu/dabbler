@@ -2,7 +2,6 @@
 library;
 
 /// Temporary model class for user preferences
-/// TODO: Replace with actual model from features/profile/data/models/
 class UserPreferences {
   final int? preferredRadiusKm;
   final int? preferredGameDuration; // in minutes

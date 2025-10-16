@@ -828,7 +828,6 @@ class RewardsService extends ChangeNotifier {
   /// Update leaderboard position for a user
   Future<void> updateLeaderboardPosition(String userId, String sport, int points) async {
     try {
-      // TODO: Implement actual leaderboard update
       debugPrint('Updated leaderboard for user $userId in $sport with $points points');
     } catch (e) {
       debugPrint('Error updating leaderboard position: $e');
@@ -838,7 +837,6 @@ class RewardsService extends ChangeNotifier {
   /// Update sport-specific leaderboard
   Future<void> updateSportLeaderboard(String userId, String sport, int points) async {
     try {
-      // TODO: Implement actual sport leaderboard update
       debugPrint('Updated sport leaderboard for user $userId in $sport with $points points');
     } catch (e) {
       debugPrint('Error updating sport leaderboard: $e');
@@ -848,7 +846,6 @@ class RewardsService extends ChangeNotifier {
   /// Update friends leaderboard
   Future<void> updateFriendsLeaderboard(String userId, int points) async {
     try {
-      // TODO: Implement actual friends leaderboard update
       debugPrint('Updated friends leaderboard for user $userId with $points points');
     } catch (e) {
       debugPrint('Error updating friends leaderboard: $e');
@@ -858,7 +855,6 @@ class RewardsService extends ChangeNotifier {
   /// Get user's current tier
   Future<BadgeTier> getUserTier(String userId) async {
     try {
-      // TODO: Implement actual user tier retrieval
       // For now return bronze tier
       return BadgeTier.bronze;
     } catch (e) {

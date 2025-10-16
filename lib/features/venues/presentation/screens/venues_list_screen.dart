@@ -13,7 +13,6 @@ class _VenuesListScreenState extends ConsumerState<VenuesListScreen> {
   String _sortBy = 'distance'; // distance, rating, name, price
   final _searchController = TextEditingController();
   
-  // Sample venues data - TODO: Replace with actual data from state management
   final List<Map<String, dynamic>> _venues = [
     {
       'id': '1',
@@ -552,7 +551,6 @@ class _VenuesListScreenState extends ConsumerState<VenuesListScreen> {
   }
 
   void _performSearch(String query) {
-    // TODO: Implement venue search
     print('Searching venues: $query');
   }
 
@@ -576,22 +574,18 @@ class _VenuesListScreenState extends ConsumerState<VenuesListScreen> {
   }
 
   void _filterBySport(String sport, bool selected) {
-    // TODO: Implement sport filtering
     print('Filter by sport: $sport, selected: $selected');
   }
 
   void _filterByPrice(bool freeOnly) {
-    // TODO: Implement price filtering
     print('Filter free only: $freeOnly');
   }
 
   void _filterByOpenStatus(bool openOnly) {
-    // TODO: Implement open status filtering
     print('Filter open only: $openOnly');
   }
 
   Future<void> _refreshVenues() async {
-    // TODO: Refresh venues data
     await Future.delayed(const Duration(seconds: 1));
   }
 
@@ -604,14 +598,12 @@ class _VenuesListScreenState extends ConsumerState<VenuesListScreen> {
   }
 
   void _bookVenue(String venueId) {
-    // TODO: Navigate to booking screen
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Booking venue $venueId...')),
     );
   }
 
   void _getDirections(Map<String, dynamic> venue) {
-    // TODO: Open maps app with directions
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Opening directions to ${venue['name']}')),
     );

@@ -59,7 +59,7 @@ class PinnedChatsSection extends StatelessWidget {
               lastMessage: conversation.lastMessage,
               unreadCount: unreadCount,
               isPinned: true,
-              isMuted: false, // TODO: Get from conversation settings
+              isMuted: false,
               isArchived: false,
               onTap: () => onConversationTap(conversation),
               onLongPress: () => _showConversationOptions(context, conversation),

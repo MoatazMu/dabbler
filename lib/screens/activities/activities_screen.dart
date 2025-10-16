@@ -57,7 +57,6 @@ class _ActivitiesScreenState extends ConsumerState<ActivitiesScreen> with Single
   }
 
   Future<void> _refreshBookings() async {
-    // TODO: Implement bookings refresh when BookingsRepository is ready
     await Future.delayed(const Duration(seconds: 1));
     
     if (mounted) {
@@ -487,7 +486,6 @@ class _ActivitiesScreenState extends ConsumerState<ActivitiesScreen> with Single
     );
   }
 
-  // TODO: Remove legacy _buildGameCard method - no longer needed as we use _buildGameCardFromEntity with real data
 
   Widget _buildActiveBookingsList(BuildContext context) {
     final user = _authService.getCurrentUser();

@@ -125,7 +125,6 @@ class SharePostBottomSheet extends StatelessWidget {
   }
 
   void _copyLink(BuildContext context) {
-    // TODO: Implement copy link functionality
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Link copied to clipboard')),
@@ -133,7 +132,6 @@ class SharePostBottomSheet extends StatelessWidget {
   }
 
   void _shareToFeed(BuildContext context) {
-    // TODO: Implement share to feed functionality
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Post shared to your feed')),
@@ -141,19 +139,16 @@ class SharePostBottomSheet extends StatelessWidget {
   }
 
   void _sendInMessage(BuildContext context) {
-    // TODO: Implement send in message functionality
     Navigator.pop(context);
     Navigator.pushNamed(context, '/social/chat');
   }
 
   void _shareToGroup(BuildContext context) {
-    // TODO: Implement share to group functionality
     Navigator.pop(context);
     Navigator.pushNamed(context, '/social/groups');
   }
 
   void _shareExternally(BuildContext context) {
-    // TODO: Implement external sharing functionality
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Opening external share options...')),

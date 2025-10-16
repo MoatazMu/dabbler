@@ -25,7 +25,6 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final response = await remoteDataSource.signInWithEmail(email: email, password: password);
       _cacheUser(response.user as User?);
-      // TODO: Persist token for single-session enforcement
       if (response.session == null) {
         return left(AuthFailure('No session returned from authentication'));
       }
@@ -51,7 +50,6 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final response = await remoteDataSource.signInWithPhone(phone: phone);
       _cacheUser(response.user as User?);
-      // TODO: Persist token for single-session enforcement
       return right(response.session!);
     } on AuthException catch (e) {
       return left(AuthFailure(e.message));
@@ -68,7 +66,6 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final response = await remoteDataSource.signUp(email: email, password: password);
       _cacheUser(response.user as User?);
-      // TODO: Persist token for single-session enforcement
       return right(response.session!);
     } on EmailAlreadyExistsException {
       return left(EmailAlreadyExistsFailure());
@@ -86,7 +83,6 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await remoteDataSource.signOut();
       _cachedUser = null;
-      // TODO: Remove persisted token for single-session enforcement
       return right(null);
     } on AuthException catch (e) {
       return left(AuthFailure(e.message));
@@ -152,7 +148,6 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final response = await remoteDataSource.verifyOTP(phone: phone, token: token);
       _cacheUser(response.user as User?);
-      // TODO: Persist token for single-session enforcement
       return right(response.session!);
     } on AuthException catch (e) {
       return left(AuthFailure(e.message));

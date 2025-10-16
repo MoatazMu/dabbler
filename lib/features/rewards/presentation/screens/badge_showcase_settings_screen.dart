@@ -807,28 +807,24 @@ class _BadgeShowcaseSettingsScreenState extends ConsumerState<BadgeShowcaseSetti
   }
 
   void _showCustomSortScreen(BuildContext context) {
-    // TODO: Navigate to custom sort screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Custom sort screen coming soon')),
     );
   }
 
   void _showAnimationSettings(BuildContext context) {
-    // TODO: Show animation settings dialog
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Animation settings coming soon')),
     );
   }
 
   void _testAnimations(BuildContext context) {
-    // TODO: Test animations
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('✨ Testing badge animations...')),
     );
   }
 
   void _showProfilePositionSettings(BuildContext context) {
-    // TODO: Show profile position settings
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Profile position settings coming soon')),
     );

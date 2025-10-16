@@ -19,13 +19,11 @@ class PostDetailScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(LucideIcons.share),
             onPressed: () {
-              // TODO: Implement share post
             },
           ),
           IconButton(
             icon: const Icon(LucideIcons.moreHorizontal),
             onPressed: () {
-              // TODO: Show post options
             },
           ),
         ],
@@ -197,7 +195,6 @@ class PostDetailScreen extends StatelessWidget {
             IconButton(
               icon: const Icon(LucideIcons.send),
               onPressed: () {
-                // TODO: Send comment
               },
             ),
           ],

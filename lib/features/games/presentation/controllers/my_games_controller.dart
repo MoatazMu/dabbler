@@ -351,11 +351,11 @@ class MyGamesController extends StateNotifier<MyGamesState> {
         totalGamesPlayed: played,
         totalGamesOrganized: organized,
         gamesThisMonth: thisMonth,
-        averageRating: 0.0, // TODO: Calculate from game ratings
-        favoritesSport: 'basketball', // TODO: Find most played sport
+        averageRating: 0.0,
+        favoritesSport: 'basketball',
         totalPlayTime: Duration(hours: played * 2), // Estimate 2 hours per game
-        cancelledGames: 0, // TODO: Count cancelled games
-        attendanceRate: played > 0 ? 1.0 : 0.0, // TODO: Calculate actual rate
+        cancelledGames: 0,
+        attendanceRate: played > 0 ? 1.0 : 0.0,
       );
       
       state = state.copyWith(
@@ -427,7 +427,6 @@ class MyGamesController extends StateNotifier<MyGamesState> {
         throw Exception('Game not found');
       }
       
-      // TODO: Implement ShareGameUseCase
       final shareText = _generateShareText(game);
       
       // For now, just return the share text
@@ -442,7 +441,6 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   /// Check in to a game
   Future<void> checkInToGame(String gameId) async {
     try {
-      // TODO: Implement CheckInGameUseCase integration
       await Future.delayed(const Duration(milliseconds: 500));
       
       // Update game status or refresh data

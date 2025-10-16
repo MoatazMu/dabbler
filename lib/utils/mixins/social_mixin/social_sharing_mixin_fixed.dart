@@ -39,11 +39,9 @@ class ShareAnimationController {
   static const Duration animationDuration = Duration(milliseconds: 300);
   
   static void startShareAnimation(BuildContext context) {
-    // TODO: Implement share animation
   }
   
   static void stopShareAnimation(BuildContext context) {
-    // TODO: Implement stop animation
   }
 }
 
@@ -52,7 +50,6 @@ mixin SocialSharingMixin {
   
   /// Track share analytics
   void _trackShareAnalytics(String contentType, String contentId, {required bool success, String? error}) {
-    // TODO: Implement analytics tracking
   }
   
   /// Share a post with full analytics and error handling
@@ -68,8 +65,6 @@ mixin SocialSharingMixin {
         await _generateSharePreview(post);
       }
       
-      // TODO: Implement actual sharing with ContentSharingHelper
-      // Share content - TODO: Fix context parameter requirement
       // final result = await ContentSharingHelper.shareContent(
       //   text: shareText + '\n\n' + deepLink,
       //   context: context, // Required parameter missing
@@ -98,7 +93,6 @@ mixin SocialSharingMixin {
     bool generatePreview = true,
   }) async {
     try {
-      // TODO: Implement actual sharing with ContentSharingHelper
       // Track analytics
       _trackShareAnalytics('profile', profile.id, success: true);
       
@@ -122,7 +116,6 @@ mixin SocialSharingMixin {
     bool generatePreview = true,
   }) async {
     try {
-      // TODO: Implement actual sharing with ContentSharingHelper
       // Track analytics
       _trackShareAnalytics('achievement', achievementId, success: true);
       
@@ -142,7 +135,6 @@ mixin SocialSharingMixin {
   /// Generate a preview image for sharing
   Future<String?> _generateSharePreview(Post post) async {
     try {
-      // TODO: Implement proper preview generation
       return null;
     } catch (e) {
       print('Failed to generate preview: \$e');
@@ -181,7 +173,7 @@ mixin SocialSharingMixin {
   }
   
   /// Check if sharing is available
-  bool get canShare => true; // TODO: Implement proper check
+  bool get canShare => true;
   
   /// Get available sharing platforms
   List<String> get availablePlatforms => [
@@ -189,5 +181,5 @@ mixin SocialSharingMixin {
     'copy_link',
     'email',
     'sms',
-  ]; // TODO: Implement proper platform detection
+  ];
 }

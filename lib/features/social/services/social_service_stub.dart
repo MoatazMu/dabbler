@@ -9,19 +9,9 @@ import '../../../utils/enums/social_enums.dart';
 // import '../../../core/services/storage_service.dart';
 // import '../../../core/analytics/analytics_service.dart';
 // import '../../../core/services/notification_service.dart';
-// import '../content_sharing/content_sharing_service.dart'; // TODO: Create content sharing service
-// import '../notifications/social_notifications_service.dart'; // TODO: Create social notifications service  
-// import '../real_time/real_time_service.dart'; // TODO: Create real time service
 
 /// Minimal stub implementation of social service to resolve compilation errors
 class SocialService {
-  // final SocialRepository _repository; // TODO: Use for data operations
-  // final StorageService _storageService; // TODO: Use for caching
-  // final AnalyticsService _analyticsService; // TODO: Use for tracking
-  // final NotificationService _notificationService; // TODO: Use for notifications
-  // final ContentSharingService _contentSharingService; // TODO: Create service
-  // final SocialNotificationsService _socialNotificationsService; // TODO: Create service
-  // final RealTimeService _realTimeService; // TODO: Create service
 
   // Cache management (commented for now)
   // final Map<String, PostModel> _postCache = {};
@@ -36,11 +26,9 @@ class SocialService {
   // final Map<String, String?> _feedCursors = {};
 
   SocialService() {
-    // TODO: Initialize services when dependencies are available
     _initializeService();
   }
   
-  // TODO: Add proper constructor when dependencies are created
   // SocialService({
   //   required SocialRepository repository,
   //   required StorageService storageService,

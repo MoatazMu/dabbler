@@ -3,7 +3,6 @@ library;
 import 'dart:ui';
 
 /// Temporary model class for profile statistics
-/// TODO: Replace with actual model from features/profile/data/models/
 class ProfileStatistics {
   final int totalGames;
   final int gamesWon;

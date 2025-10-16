@@ -226,7 +226,6 @@ class DataRetentionService {
 
       final userEmail = userResponse['email'];
 
-      // TODO: Replace with actual email service implementation
       // This would integrate with your email service (e.g., SendGrid, AWS SES, etc.)
       Logger.info('$_logTag: Would send cleanup notification to $userEmail for $dataType data');
       
@@ -380,7 +379,6 @@ class DataRetentionService {
           .eq('user_id', userId)
           .lt('created_at', cutoffDate.toIso8601String());
 
-      // Delete from storage (TODO: implement actual storage deletion)
       for (final file in mediaFiles) {
         Logger.info('$_logTag: Would delete media file: ${file['file_path']}');
       }

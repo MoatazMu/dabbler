@@ -96,7 +96,6 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
     });
 
     try {
-      // TODO: Load from actual user data
       await Future.delayed(const Duration(milliseconds: 500));
       
       setState(() {
@@ -595,7 +594,6 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
       _imageBytes = null;
     });
     
-    // TODO: Update user profile with selected default avatar
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Avatar updated successfully'),
@@ -612,7 +610,6 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
     });
 
     try {
-      // TODO: Implement actual upload to backend/storage
       await Future.delayed(const Duration(seconds: 2)); // Simulate upload
       
       setState(() {

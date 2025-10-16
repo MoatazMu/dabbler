@@ -322,14 +322,12 @@ class _TermsOfServiceScreenState extends ConsumerState<TermsOfServiceScreen>
   }
 
   void _shareTerms() {
-    // TODO: Implement share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Share functionality coming soon')),
     );
   }
 
   void _contactSupport() {
-    // TODO: Navigate to contact support or open email
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Contact support functionality coming soon')),
     );

@@ -649,7 +649,6 @@ class AwardAchievementUseCase {
         if (userTier != null && userStats != null) {
           // Simplified tier checking - would need proper implementation
           // For now, just return null to avoid compilation errors
-          // TODO: Implement proper tier calculation
         }
       }
     } catch (error) {

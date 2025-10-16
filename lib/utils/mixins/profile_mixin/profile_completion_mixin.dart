@@ -411,7 +411,6 @@ mixin ProfileCompletionMixin<T extends StatefulWidget> on State<T> {
   /// Navigate to appropriate field editing screen
   void _navigateToField(String field) {
     // This should be overridden by the implementing widget or use a router
-    // TODO: Implement navigation logic
     
     // Example navigation (would be customized per app)
     switch (field.toLowerCase()) {

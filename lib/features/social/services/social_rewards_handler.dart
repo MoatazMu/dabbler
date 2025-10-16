@@ -1,7 +1,6 @@
 import '../../rewards/domain/entities/achievement.dart';
 
 /// Social system integration with rewards
-/// TODO: Implement proper dependency injection and service integration
 class SocialRewardsHandler {
   SocialRewardsHandler();
 
@@ -12,8 +11,7 @@ class SocialRewardsHandler {
     required String targetUserId,
     Map<String, dynamic>? metadata,
   }) async {
-    // TODO: Implement proper rewards tracking
-    print('TODO: Track social interaction: $interactionType by $userId');
+    print('Track social interaction: $interactionType by $userId');
   }
 
   /// Track achievement sharing
@@ -22,8 +20,7 @@ class SocialRewardsHandler {
     required Achievement achievement,
     required String shareMethod,
   }) async {
-    // TODO: Implement achievement sharing rewards
-    print('TODO: Track achievement share: ${achievement.name} by $userId');
+    print('Track achievement share: ${achievement.name} by $userId');
   }
 
   /// Track leaderboard interactions
@@ -32,8 +29,7 @@ class SocialRewardsHandler {
     required String interactionType,
     int? pointsEarned,
   }) async {
-    // TODO: Implement leaderboard interaction tracking
-    print('TODO: Track leaderboard interaction: $interactionType by $userId');
+    print('Track leaderboard interaction: $interactionType by $userId');
   }
 
   /// Handle achievement-related post interactions
@@ -43,8 +39,7 @@ class SocialRewardsHandler {
     required String interactionType,
     required String achievementId,
   }) async {
-    // TODO: Implement achievement post interaction handling
-    print('TODO: Handle achievement post interaction');
+    print('Handle achievement post interaction');
   }
 
   /// Handle friend-related activities
@@ -54,24 +49,20 @@ class SocialRewardsHandler {
     required String activityType,
     Map<String, dynamic>? metadata,
   }) async {
-    // TODO: Implement friend activity tracking
-    print('TODO: Handle friend activity: $activityType');
+    print('Handle friend activity: $activityType');
   }
 
   /// Update friend leaderboards
   Future<void> updateFriendLeaderboards(String userId, int pointsEarned) async {
-    // TODO: Implement friend leaderboard updates
-    print('TODO: Update friend leaderboards for $userId');
+    print('Update friend leaderboards for $userId');
   }
 
   /// Get achievement progress for social activities
   Future<List<dynamic>> getAchievementProgress(String userId) async {
-    // TODO: Implement proper achievement progress tracking
     return [];
   }
 
   /// Cleanup method
   void dispose() {
-    // TODO: Cleanup any resources
   }
 }

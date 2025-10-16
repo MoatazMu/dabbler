@@ -597,42 +597,36 @@ class _RewardsSettingsScreenState extends ConsumerState<RewardsSettingsScreen> {
   }
 
   void _showAnimationPreview(BuildContext context) {
-    // TODO: Implement animation preview dialog
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('🎉 Animation preview coming soon!')),
     );
   }
 
   void _testSound(BuildContext context) {
-    // TODO: Implement sound test
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('🔊 Testing achievement sound...')),
     );
   }
 
   void _showSharingSettings(BuildContext context) {
-    // TODO: Navigate to detailed sharing settings
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Sharing settings screen coming soon')),
     );
   }
 
   void _showPrivacyDetails(BuildContext context) {
-    // TODO: Navigate to privacy details screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Privacy details screen coming soon')),
     );
   }
 
   void _exportData(BuildContext context) {
-    // TODO: Implement data export
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Data export coming soon')),
     );
   }
 
   void _showThemeSettings(BuildContext context) {
-    // TODO: Navigate to theme customization
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Theme customization coming soon')),
     );
@@ -672,7 +666,6 @@ class _RewardsSettingsScreenState extends ConsumerState<RewardsSettingsScreen> {
   }
 
   void _showRegionalSettings(BuildContext context) {
-    // TODO: Navigate to regional settings
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Regional settings coming soon')),
     );

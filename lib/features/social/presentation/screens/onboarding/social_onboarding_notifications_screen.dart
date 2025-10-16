@@ -207,7 +207,6 @@ class _SocialOnboardingNotificationsScreenState extends State<SocialOnboardingNo
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      // TODO: Save notification settings
                       context.push('/social/onboarding/complete');
                     },
                     child: const Text('Finish'),

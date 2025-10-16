@@ -257,12 +257,11 @@ class CreateGameController extends StateNotifier<CreateGameState> {
     state = state.copyWith(isLoadingVenues: true);
     
     try {
-      // TODO: Implement venue loading from repository
       // For now, using placeholder
       await Future.delayed(const Duration(seconds: 1));
       
       state = state.copyWith(
-        nearbyVenues: [], // TODO: Load from repository
+        nearbyVenues: [],
         isLoadingVenues: false,
       );
     } catch (e) {

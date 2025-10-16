@@ -406,7 +406,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
               trailing: Switch(
                 value: true,
                 onChanged: (value) {
-                  // TODO: Implement auto-join setting
                 },
               ),
             ),
@@ -418,7 +417,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
               trailing: Switch(
                 value: true,
                 onChanged: (value) {
-                  // TODO: Implement location setting
                 },
               ),
             ),
@@ -430,7 +428,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
               trailing: Switch(
                 value: false,
                 onChanged: (value) {
-                  // TODO: Implement flexible timing setting
                 },
               ),
             ),
@@ -459,7 +456,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
     });
 
     try {
-      // TODO: Implement save functionality with backend
       await Future.delayed(const Duration(seconds: 1)); // Simulate API call
       
       if (mounted) {

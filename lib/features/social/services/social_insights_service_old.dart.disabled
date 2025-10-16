@@ -2,8 +2,6 @@ import 'dart:async';
 import '../../../core/utils/either.dart';
 import 'social_analytics_service.dart';
 import 'social_metrics_tracking_service.dart';
-// import '../../utils/social/social_constants.dart'; // TODO: Create social constants file
-// import '../../utils/social/social_helpers.dart'; // TODO: Create social helpers file
 
 /// Service for generating personalized insights and recommendations for social features
 class SocialInsightsService {
@@ -117,7 +115,6 @@ class SocialInsightsService {
   }) async {
     try {
       final recommendationTypes = types.isEmpty ? RecommendationType.values.toSet() : types;
-      // TODO: Fix Either usage patterns throughout this service
       // Gather data for recommendations
       // final dataResults = await _gatherRecommendationData(userId, analysisWindow);
       // if (dataResults.isLeft) {
@@ -129,7 +126,6 @@ class SocialInsightsService {
       // Generate recommendations by type
       final recommendations = <SocialRecommendation>[];
       
-      // TODO: Implement recommendation generation logic
       
       return Right(recommendations);
       for (final type in recommendationTypes) {

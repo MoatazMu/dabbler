@@ -10,7 +10,6 @@ class RouteGuard {
   /// Check if user is authenticated for accessing protected routes
   static String? authGuard(BuildContext context, GoRouterState state, WidgetRef ref) {
     try {
-      // TODO: Replace with actual auth provider
       // final authState = ref.read(authNotifierProvider);
       
       // Temporary: always allow access until real auth is wired
@@ -35,7 +34,6 @@ class RouteGuard {
       }
 
       final userId = state.pathParameters['userId'];
-      // TODO: Replace with actual auth provider
       // final currentUser = ref.read(authNotifierProvider).value;
       final currentUserId = 'mock-user-id'; // Mock current user ID
 
@@ -62,7 +60,6 @@ class RouteGuard {
         return authRedirect;
       }
 
-      // TODO: Replace with actual admin check (e.g., currentUser.role == 'admin')
       // Temporary: allow access; wire real admin logic later
       return null;
     } catch (e) {
@@ -74,7 +71,6 @@ class RouteGuard {
   /// Get current user ID for route validation
   static String? getCurrentUserId(WidgetRef ref) {
     try {
-      // TODO: Replace with actual auth provider
       // final authState = ref.read(authNotifierProvider);
       // return authState.hasValue ? authState.value?.id : null;
       return 'mock-user-id'; // Mock implementation

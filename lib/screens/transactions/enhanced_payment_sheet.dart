@@ -592,7 +592,6 @@ class _EnhancedPaymentSheetState extends State<EnhancedPaymentSheet>
     final isSuccess = DateTime.now().millisecond % 10 != 0;
 
     if (isSuccess) {
-      // TODO: Save transaction to database
       final transactionId = 'TXN${DateTime.now().millisecondsSinceEpoch}';
       print('Transaction successful: $transactionId');
       

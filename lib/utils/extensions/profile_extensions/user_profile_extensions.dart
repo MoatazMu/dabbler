@@ -4,7 +4,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 /// Temporary model classes for extensions
-/// TODO: Replace with actual models from features/profile/data/models/
 class UserProfile {
   final String? username;
   final String? fullName;

@@ -705,7 +705,6 @@ class _PostCardState extends ConsumerState<PostCard>
   }
 
   void _shareToSocialPlatform(String platform) {
-    // TODO: Implement social platform sharing
   }
 
   void _shareViaChat() {
@@ -892,7 +891,6 @@ class PostMenuBottomSheet extends StatelessWidget {
             title: 'Save post',
             onTap: () {
               Navigator.pop(context);
-              // TODO: Save post
             },
           ),
         ],

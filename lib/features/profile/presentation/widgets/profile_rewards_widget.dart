@@ -36,7 +36,6 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
     setState(() => _isLoading = true);
     
     try {
-      // Use stub service for now - TODO: implement proper service integration
       final rewardsService = rewards.RewardsService();
       
       final totalPoints = await rewardsService.getUserPoints(widget.userId);
@@ -341,7 +340,6 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
   }
 
   void _navigateToAchievements() {
-    // TODO: Navigate to achievements screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Achievements screen coming soon!'),

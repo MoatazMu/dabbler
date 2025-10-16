@@ -488,7 +488,6 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   }
 
   /// Manages cache size and cleanup
-  /// TODO: Call this method periodically or when cache operations are performed
   // ignore: unused_element
   Future<void> _manageCacheSize() async {
     try {
@@ -498,7 +497,6 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       }
     } catch (e) {
       // Cache management errors are non-critical
-      // TODO: Replace with proper logging when logger is available
       // print('Cache management error: $e');
     }
   }
@@ -514,7 +512,6 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       ]);
     } catch (e) {
       // Preloading errors are non-critical
-      // TODO: Replace with proper logging when logger is available
       // print('Preload error: $e');
     }
   }

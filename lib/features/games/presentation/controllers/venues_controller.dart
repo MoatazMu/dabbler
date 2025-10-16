@@ -246,7 +246,7 @@ class VenuesController extends StateNotifier<VenuesState> {
             return VenueWithDistance(
               venue: venue,
               distanceKm: distance,
-              isAvailable: true, // TODO: Check actual availability
+              isAvailable: true,
               isFavorite: false, // Will be updated by _updateFavoriteStatus
             );
           }).toList();
@@ -302,7 +302,6 @@ class VenuesController extends StateNotifier<VenuesState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      // TODO: Implement text search in repository
       await Future.delayed(const Duration(milliseconds: 500));
 
       final filteredVenues = state.venues.where((venueWithDistance) {
@@ -335,7 +334,6 @@ class VenuesController extends StateNotifier<VenuesState> {
     required String endTime,
   }) async {
     try {
-      // TODO: Implement availability check in repository
       await Future.delayed(const Duration(milliseconds: 300));
       
       // Mock implementation - randomly return availability
@@ -352,7 +350,6 @@ class VenuesController extends StateNotifier<VenuesState> {
     state = state.copyWith(isLoadingFavorites: true);
 
     try {
-      // TODO: Integrate with venuesRepository.getFavoriteVenues(userId)
       // For now, favorites feature is disabled
       
       state = state.copyWith(
@@ -371,7 +368,6 @@ class VenuesController extends StateNotifier<VenuesState> {
   /// Add venue to favorites
   Future<void> addToFavorites(String venueId) async {
     try {
-      // TODO: Implement in repository
       await Future.delayed(const Duration(milliseconds: 200));
 
       final venue = state.venues
@@ -391,7 +387,6 @@ class VenuesController extends StateNotifier<VenuesState> {
   /// Remove venue from favorites
   Future<void> removeFromFavorites(String venueId) async {
     try {
-      // TODO: Implement in repository
       await Future.delayed(const Duration(milliseconds: 200));
 
       final updatedFavorites = state.favoriteVenues

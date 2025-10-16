@@ -33,7 +33,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
           IconButton(
             icon: const Icon(LucideIcons.settings),
             onPressed: () {
-              // TODO: Notification settings
             },
           ),
         ],
@@ -140,7 +139,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
                   )
                 : null,
             onTap: () {
-              // TODO: Handle notification tap
               setState(() {
                 notification['isUnread'] = false;
               });

@@ -838,7 +838,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
 
   void _onLeaderboardEntryTapped(LeaderboardEntry entry) {
     HapticFeedback.lightImpact();
-    // TODO: Show detailed entry view or user stats
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${entry.username} - ${entry.getFormattedRank()}'),
@@ -883,7 +882,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   }
 
   void _exportLeaderboard() {
-    // TODO: Implement leaderboard export
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Export feature coming soon!'),
@@ -938,7 +936,6 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   }
 
   String _getCurrentUserId() {
-    // TODO: Get from auth service
     return 'current_user_id';
   }
 
@@ -952,13 +949,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
       tier: _convertTierLevelToBadgeTier(entry.tier),
       rank: entry.currentRank,
       previousRank: entry.previousRank,
-      achievements: const [], // TODO: Load achievements if needed
-      isFriend: false, // TODO: Check if user is friend
+      achievements: const [],
+      isFriend: false,
       isCurrentUser: entry.userId == _getCurrentUserId(),
       lastActive: entry.lastActiveAt,
-      weeklyPoints: 0, // TODO: Get weekly points if available
-      monthlyPoints: 0, // TODO: Get monthly points if available
-      pointsPerDay: 0.0, // TODO: Calculate if needed
+      weeklyPoints: 0,
+      monthlyPoints: 0,
+      pointsPerDay: 0.0,
     );
   }
 

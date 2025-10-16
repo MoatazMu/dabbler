@@ -136,7 +136,6 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
         IconButton(
           icon: const Icon(Icons.favorite_border),
           onPressed: () {
-            // TODO: Implement favorite functionality
           },
         ),
       ],
@@ -881,7 +880,6 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
   }
 
   void _startTracking() {
-    // TODO: Implement start tracking functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Started tracking progress!'),

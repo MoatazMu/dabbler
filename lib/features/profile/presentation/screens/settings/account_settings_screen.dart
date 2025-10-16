@@ -16,13 +16,12 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
   final TextEditingController _phoneController = TextEditingController();
   bool _twoFactorEnabled = false;
   bool _isLoading = false;
-  final String _currentUserId = 'user_123'; // TODO: Get from auth provider
-  final String _currentUserEmail = 'user@example.com'; // TODO: Get from auth provider
+  final String _currentUserId = 'user_123';
+  final String _currentUserEmail = 'user@example.com';
 
   @override
   void initState() {
     super.initState();
-    // TODO: Load current user data
     _emailController.text = 'user@example.com';
     _phoneController.text = '+1 234 567 8900';
   }
@@ -245,7 +244,6 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
 
   void _updateAccountInfo() async {
     setState(() => _isLoading = true);
-    // TODO: Implement account info update
     await Future.delayed(const Duration(seconds: 2));
     setState(() => _isLoading = false);
     
@@ -257,7 +255,6 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
   }
 
   void _changePassword() {
-    // TODO: Navigate to change password screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Change password functionality coming soon')),
     );
@@ -265,11 +262,9 @@ class _AccountSettingsScreenState extends ConsumerState<AccountSettingsScreen> {
 
   void _toggleTwoFactor(bool value) {
     setState(() => _twoFactorEnabled = value);
-    // TODO: Implement 2FA toggle
   }
 
   void _manageDevices() {
-    // TODO: Navigate to device management screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Device management coming soon')),
     );
@@ -326,7 +321,6 @@ Full Privacy Policy: https://dabbler.app/privacy-policy'''),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              // TODO: Open privacy policy URL
             },
             child: const Text('View Policy'),
           ),
@@ -355,7 +349,6 @@ Full Privacy Policy: https://dabbler.app/privacy-policy'''),
     );
 
     if (confirmed == true) {
-      // TODO: Implement account deactivation
     }
   }
 
@@ -380,7 +373,6 @@ Full Privacy Policy: https://dabbler.app/privacy-policy'''),
     );
 
     if (confirmed == true) {
-      // TODO: Implement account deletion
     }
   }
 

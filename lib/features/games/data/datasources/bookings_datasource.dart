@@ -686,7 +686,6 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
   @override
   Future<bool> sendBookingReminder(String bookingId) async {
     try {
-      // TODO: Implement reminder sending via Supabase Edge Function or email service
       // For now, return true as a placeholder
       return true;
     } catch (e) {
@@ -697,7 +696,6 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
   @override
   Future<String> getBookingQRCode(String bookingId) async {
     try {
-      // TODO: Implement QR code generation
       // For now, return a placeholder URL
       return 'https://api.qrserver.com/v1/create-qr-code/?data=$bookingId&size=200x200';
     } catch (e) {

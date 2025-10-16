@@ -28,7 +28,6 @@ class _VenueSelectionScreenState extends State<VenueSelectionScreen> {
   String _selectedOption = 'find_venue'; // 'find_venue' or 'no_venue'
   Map<String, dynamic>? _selectedVenue;
 
-  // Sample venues data - TODO: Replace with actual API call
   final List<Map<String, dynamic>> _allVenues = [
     {
       'id': '1',

@@ -63,7 +63,6 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
   }
 
   void _loadUserEmail() {
-    // TODO: Load actual user email
     _emailController.text = 'user@example.com';
   }
 
@@ -272,7 +271,6 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
               subtitle: const Text('Find answers to common questions'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // TODO: Navigate to FAQ
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('FAQ section coming soon')),
                 );
@@ -287,7 +285,6 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
               subtitle: const Text('Chat with our support team'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // TODO: Open live chat
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Live chat coming soon')),
                 );
@@ -302,7 +299,6 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
               subtitle: const Text('+1 (555) 123-4567'),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: () {
-                // TODO: Make phone call
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Phone call functionality coming soon')),
                 );
@@ -343,7 +339,6 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
     });
 
     try {
-      // TODO: Implement actual form submission
       await Future.delayed(const Duration(seconds: 2));
       
       if (mounted) {

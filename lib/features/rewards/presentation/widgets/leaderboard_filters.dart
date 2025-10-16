@@ -638,7 +638,6 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
   void _exportData(String format) {
     HapticFeedback.lightImpact();
     
-    // TODO: Implement actual export functionality
     String message;
     switch (format) {
       case 'csv':

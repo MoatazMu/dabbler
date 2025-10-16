@@ -8,12 +8,10 @@ import '../../../core/analytics/analytics_service.dart';
 /// Service for detecting and monitoring abuse in social features
 class SocialAbuseDetectionService {
   final AnalyticsService _analytics;
-  // final StorageService _storage; // TODO: Use for persistence
 
   // Detection data
   final Map<String, UserBehaviorProfile> _userProfiles = {};
   final Map<String, List<AbuseSignal>> _abuseSignals = {};
-  // final Map<String, List<ContentAnalysis>> _contentAnalyses = {}; // TODO: Define ContentAnalysis class
   final List<AbuseIncident> _recentIncidents = [];
 
   // Detection timers
@@ -29,7 +27,6 @@ class SocialAbuseDetectionService {
   static const Duration _cleanupInterval = Duration(days: 1);
   static const int _maxSignalHistory = 10000;
 
-  // Detection thresholds (TODO: Use these in detection algorithms)
   // static const double _spamThreshold = 0.7;
   // static const double _harassmentThreshold = 0.8;
   // static const double _botBehaviorThreshold = 0.75;
@@ -37,7 +34,7 @@ class SocialAbuseDetectionService {
 
   SocialAbuseDetectionService({
     required AnalyticsService analytics,
-    required StorageService storage, // TODO: Use storage for persistence
+    required StorageService storage,
   })  : _analytics = analytics {
     _initializeAbuseDetection();
   }

@@ -496,7 +496,6 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
   }
 
   void _downloadMedia(dynamic media) {
-    // TODO: Implement media download
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Download feature coming soon')),
     );
@@ -844,7 +843,6 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
   }
 
   void _downloadCurrentMedia() {
-    // TODO: Implement media download
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Download feature coming soon'),

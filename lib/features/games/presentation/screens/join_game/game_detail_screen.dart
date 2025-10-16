@@ -935,7 +935,6 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   }
 
   void _shareGame() {
-    // TODO: Implement share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Sharing game...')),
     );
@@ -968,14 +967,12 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   }
 
   void _showDirections() {
-    // TODO: Open maps app with directions
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Opening directions...')),
     );
   }
 
   void _viewAllPlayers() {
-    // TODO: Navigate to players list
     print('Viewing all players');
   }
 
@@ -984,14 +981,12 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   }
 
   void _messageOrganizer() {
-    // TODO: Open chat with organizer
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Opening message...')),
     );
   }
 
   void _viewOrganizerProfile() {
-    // TODO: Navigate to organizer profile
     print('Viewing organizer profile');
   }
 

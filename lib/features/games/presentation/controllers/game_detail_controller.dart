@@ -311,7 +311,6 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     state = state.copyWith(isLoadingWeather: true);
     
     try {
-      // TODO: Integrate weather API (OpenWeather, WeatherAPI, etc.)
       // For now, weather feature is disabled
       // final result = await _weatherService.getWeather(
       //   latitude: state.venue!.latitude,
@@ -375,7 +374,6 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     state = state.copyWith(isJoining: true, error: null);
     
     try {
-      // TODO: Implement LeaveGameUseCase
       // final result = await _leaveGameUseCase(LeaveGameParams(
       //   gameId: gameId,
       //   playerId: currentUserId!,

@@ -78,7 +78,6 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
   void _performSearch(String query) {
     if (query.isEmpty) return;
     
-    // TODO: Implement actual search logic
     print('Searching for: $query in ${_searchTabs[_tabController.index].key}');
   }
 
@@ -222,7 +221,6 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
               const Spacer(),
               TextButton.icon(
                 onPressed: () {
-                  // TODO: Show filter options
                 },
                 icon: const Icon(LucideIcons.filter, size: 16),
                 label: const Text('Filter'),
@@ -304,7 +302,6 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
           children: filters.map((filter) => FilterChip(
             label: Text(filter),
             onSelected: (selected) {
-              // TODO: Apply filter
             },
           )).toList(),
         ),

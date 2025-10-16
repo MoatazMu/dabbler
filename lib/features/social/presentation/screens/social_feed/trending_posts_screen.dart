@@ -484,7 +484,6 @@ class _TrendingPostsScreenState extends ConsumerState<TrendingPostsScreen>
   }
 
   void _handlePostShare(dynamic post) {
-    // TODO: Implement share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Share functionality coming soon')),
     );

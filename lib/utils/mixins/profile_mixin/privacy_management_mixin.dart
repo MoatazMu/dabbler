@@ -3,7 +3,6 @@ library;
 import 'package:flutter/material.dart';
 
 /// Temporary model class for privacy settings
-/// TODO: Replace with actual model from features/profile/data/models/
 class PrivacySettings {
   final String profileVisibility; // 'public', 'friends', 'private'
   final bool showEmail;

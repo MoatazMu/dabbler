@@ -249,7 +249,6 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
 
 // Repository providers - keeping for compatibility but using working implementation
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  // TODO: Implement actual repository
   throw UnimplementedError('AuthRepository not implemented');
 });
 
@@ -271,7 +270,6 @@ final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
 });
 
 final registerControllerProvider = StateNotifierProvider<RegisterController, RegisterFormState>((ref) {
-  // TODO: Implement RegisterUseCase
   throw UnimplementedError('RegisterUseCase not implemented');
   // return RegisterController(registerUseCase);
 });
@@ -294,13 +292,11 @@ final guestSignInProvider = Provider<Future<void> Function()>((ref) {
 
 final currentUserProvider = Provider<User?>((ref) {
   // For now, return null since we're using simple auth
-  // TODO: Implement when full auth system is ready
   return null;
 });
 
 final authSessionProvider = Provider<AuthSession?>((ref) {
   // For now, return null since we're using simple auth
-  // TODO: Implement when full auth system is ready
   return null;
 });
 

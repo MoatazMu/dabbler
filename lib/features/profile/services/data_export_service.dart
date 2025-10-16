@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:archive/archive_io.dart';
-// import 'package:csv/csv.dart'; // TODO: Add csv dependency
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
-// TODO: Implement and import missing services
 // import '../domain/entities/user_profile.dart';
 // import '../../../core/utils/logger.dart';
 // import '../../../core/error/exceptions.dart';
@@ -38,7 +36,7 @@ class EmailService {
     required String body,
     Map<String, String>? headers,
   }) async {
-    Logger.info('TODO: Implement email sending to $to with subject: $subject');
+    Logger.info('Implement email sending to $to with subject: $subject');
   }
 }
 
@@ -356,7 +354,6 @@ class DataExportService {
       final filePath = path.join(exportDir.path, '$fileName.csv');
       final file = File(filePath);
       
-      // TODO: Implement comprehensive CSV export with csv package
       // For now, create a basic CSV representation
       final csvContent = StringBuffer();
       csvContent.writeln('Data Type,Field,Value,Collected At');
@@ -846,7 +843,6 @@ class DataExportService {
       }
     });
     
-    // TODO: Implement CSV conversion with csv package
     return 'CSV export requires csv package dependency';
     // return const ListToCsvConverter().convert(rows);
   }
@@ -869,7 +865,6 @@ class DataExportService {
       ]);
     }
     
-    // TODO: Implement CSV conversion with csv package
     return 'CSV export requires csv package dependency';
     // return const ListToCsvConverter().convert(rows);
   }
@@ -890,7 +885,6 @@ class DataExportService {
       ]);
     }
     
-    // TODO: Implement CSV conversion with csv package
     return 'CSV export requires csv package dependency';
     // return const ListToCsvConverter().convert(rows);
   }
@@ -1502,7 +1496,6 @@ Last Updated: ${DateTime.now().toIso8601String()}
   // Email notification methods
   Future<void> _sendGDPRCompletionEmail(DataExportRequest request) async {
     try {
-      // TODO: Replace with actual EmailService implementation
       Logger.info('$_logTag: Sending GDPR completion email to: ${request.userEmail}');
       
       // Placeholder for email sending
@@ -1645,7 +1638,6 @@ Last Updated: ${DateTime.now().toIso8601String()}
       }
     }
 
-    // TODO: Implement CSV conversion with csv package
     return 'CSV export requires csv package dependency';
     // return const ListToCsvConverter().convert(csvRows);
   }

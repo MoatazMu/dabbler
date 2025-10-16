@@ -77,7 +77,6 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
   }
 
   void _loadUserEmail() {
-    // TODO: Load actual user email
     _emailController.text = 'user@example.com';
   }
 
@@ -447,7 +446,6 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
     });
 
     try {
-      // TODO: Implement actual bug report submission
       await Future.delayed(const Duration(seconds: 2));
       
       if (mounted) {

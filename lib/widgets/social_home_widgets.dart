@@ -77,7 +77,6 @@ class SocialHomeWidgets {
   static Widget unreadMessagesCount(BuildContext context) {
     return Consumer(
       builder: (context, ref, child) {
-        // TODO: Replace with actual unread count from social services
         const unreadCount = 3;
         
         if (unreadCount == 0) return const SizedBox.shrink();
@@ -217,7 +216,6 @@ class SocialHomeWidgets {
     );
   }
 
-  // TODO: Replace with real friend suggestions from FriendsRepository.getFriendSuggestions()
   // This widget needs to be converted to use Riverpod and fetch real data
   static const List<String> _mockNames = [
     'No suggestions available',

@@ -66,7 +66,6 @@ class ExploreViewModel extends ChangeNotifier {
         return false;
       }
 
-      // TODO: Replace with real Supabase API implementation
       // For now, return empty list - use GamesHomeScreen for real data
       await Future.delayed(const Duration(seconds: 1));
       

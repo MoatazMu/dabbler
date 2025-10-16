@@ -522,34 +522,24 @@ class AppRoutes {
       case settingsScreen:
         return const SettingsScreen();
       case profileSettings:
-        // TODO: Create ProfileSettingsScreen
         return const Scaffold(body: Center(child: Text('Profile Settings - Coming Soon')));
       case profilePrivacy:
-        // TODO: Create ProfilePrivacyScreen
         return const Scaffold(body: Center(child: Text('Privacy Settings - Coming Soon')));
       case profileSports:
-        // TODO: Create ProfileSportsScreen  
         return const Scaffold(body: Center(child: Text('Sports Profile - Coming Soon')));
       case profileStats:
-        // TODO: Create ProfileStatsScreen
         return const Scaffold(body: Center(child: Text('Profile Stats - Coming Soon')));
       case profileAvatar:
-        // TODO: Create ProfileAvatarScreen
         return const Scaffold(body: Center(child: Text('Avatar Upload - Coming Soon')));
       case profileDataExport:
-        // TODO: Create ProfileDataExportScreen
         return const Scaffold(body: Center(child: Text('Data Export - Coming Soon')));
       case profileAccountDeletion:
-        // TODO: Create ProfileAccountDeletionScreen
         return const Scaffold(body: Center(child: Text('Account Deletion - Coming Soon')));
       case profileViewProfile:
-        // TODO: Create ViewProfileScreen
         return const Scaffold(body: Center(child: Text('View Profile - Coming Soon')));
       case profileCompletion:
-        // TODO: Create ProfileCompletionScreen
         return const Scaffold(body: Center(child: Text('Profile Completion - Coming Soon')));
       case profileOnboarding:
-        // TODO: Create ProfileOnboardingScreen
         return const Scaffold(body: Center(child: Text('Profile Onboarding - Coming Soon')));
       default:
         return const Scaffold(body: Center(child: Text('Page not found')));
@@ -619,7 +609,6 @@ class AppRoutes {
 
   static void navigateWithAuthCheck(BuildContext context, String routeName, {Map<String, dynamic>? arguments}) {
     if (isProtectedRoute(routeName)) {
-      // TODO: Check authentication status
       // For now, assume user is authenticated
       Navigator.pushNamed(context, routeName, arguments: arguments);
     } else {

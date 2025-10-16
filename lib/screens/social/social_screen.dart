@@ -145,7 +145,6 @@ class _SocialScreenState extends State<SocialScreen> {
       );
     }
     
-    // TODO: Navigate to comments screen
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Opening comments for post $postId'),
@@ -166,7 +165,6 @@ class _SocialScreenState extends State<SocialScreen> {
       );
     }
     
-    // TODO: Implement share functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Share functionality coming soon!'),

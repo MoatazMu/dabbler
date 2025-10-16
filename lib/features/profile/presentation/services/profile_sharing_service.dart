@@ -23,7 +23,6 @@ class ProfileSharingService {
       final message = customMessage ?? 
           'Check out $userName\'s profile on Dabbler! $profileLink';
 
-      // TODO: Implement share functionality when share_plus package is added
       debugPrint('Would share: $message');
 
       await _trackSharingEvent('profile_shared', {
@@ -85,7 +84,6 @@ class ProfileSharingService {
     Color backgroundColor = Colors.white,
   }) {
     try {
-      // TODO: Implement QR code generation when qr_flutter package is added
       return Container(
         width: size,
         height: size,
@@ -256,7 +254,6 @@ class ProfileSharingService {
       }
 
       if (shareUrl.isNotEmpty) {
-        // TODO: Use url_launcher to open the URL
         debugPrint('$_logTag: Would open URL: $shareUrl');
       }
 
@@ -323,7 +320,6 @@ class ProfileSharingService {
   
   static Future<void> _trackSharingEvent(String event, Map<String, dynamic> parameters) async {
     try {
-      // TODO: Implement analytics tracking
       debugPrint('$_logTag: Sharing event: $event, params: $parameters');
     } catch (e) {
       debugPrint('$_logTag: Error tracking sharing event: $e');

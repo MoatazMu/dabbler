@@ -799,13 +799,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
   }
 
   Future<void> _refreshTransactions() async {
-    // TODO: Implement actual data refresh
     await Future.delayed(const Duration(seconds: 1));
     setState(() {});
   }
 
   void _exportTransactions() {
-    // TODO: Implement export functionality
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('📊 Exporting transactions...'),
@@ -937,7 +935,6 @@ class TransactionDetailsSheet extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () {
-                          // TODO: Implement download receipt
                         },
                         icon: const Icon(LucideIcons.download, size: 18),
                         label: const Text('Download Receipt'),
@@ -950,7 +947,6 @@ class TransactionDetailsSheet extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          // TODO: Implement support
                         },
                         icon: const Icon(LucideIcons.messageCircle, size: 18),
                         label: const Text('Get Help'),

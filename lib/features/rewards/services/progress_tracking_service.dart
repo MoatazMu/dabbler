@@ -1087,7 +1087,6 @@ class ProgressTrackingService extends ChangeNotifier {
   /// Get the count of games played for a specific sport
   Future<int> getSportGamesCount(String userId, String sport) async {
     try {
-      // TODO: Implement actual database query
       // For now return a stub value
       return 0;
     } catch (e) {
@@ -1099,7 +1098,6 @@ class ProgressTrackingService extends ChangeNotifier {
   /// Get the current win streak for a user in a specific sport
   Future<int> getCurrentWinStreak(String userId, String sport) async {
     try {
-      // TODO: Implement actual database query
       // For now return a stub value
       return 0;
     } catch (e) {

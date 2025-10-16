@@ -667,35 +667,30 @@ class _LeaderboardPrivacyScreenState extends ConsumerState<LeaderboardPrivacyScr
   }
 
   void _showAnonymousNameEditor(BuildContext context) {
-    // TODO: Show anonymous name editor dialog
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Anonymous name editor coming soon')),
     );
   }
 
   void _showDataUsageDetails(BuildContext context) {
-    // TODO: Navigate to data usage details screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Data usage details screen coming soon')),
     );
   }
 
   void _downloadUserData(BuildContext context) {
-    // TODO: Implement data download
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Data download coming soon')),
     );
   }
 
   void _showBlockList(BuildContext context) {
-    // TODO: Navigate to block list screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Block list screen coming soon')),
     );
   }
 
   void _showPrivacyAuditLog(BuildContext context) {
-    // TODO: Navigate to privacy audit log screen
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Privacy audit log screen coming soon')),
     );

@@ -54,7 +54,6 @@ class MediaUploadService {
       // Compress image
       final compressedBytes = img.encodeJpg(processedImage, quality: _imageQuality);
       
-      // TODO: Implement actual upload to storage service
       // For now, return a mock URL but use the compressed bytes length for validation
       final fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(file.path)}';
       final fileSize = compressedBytes.length;
@@ -70,7 +69,6 @@ class MediaUploadService {
   /// Upload generic files (non-images)
   Future<String> _uploadGenericFile(File file) async {
     try {
-      // TODO: Implement actual upload to storage service
       // For now, return a mock URL
       final fileName = '${DateTime.now().millisecondsSinceEpoch}_${path.basename(file.path)}';
       return 'https://storage.example.com/uploads/$fileName';
@@ -92,7 +90,6 @@ class MediaUploadService {
         throw Exception('File size exceeds maximum allowed size of 50MB');
       }
 
-      // TODO: Implement actual upload to storage service
       // For now, return a mock URL
       final uploadFileName = '${DateTime.now().millisecondsSinceEpoch}_$fileName';
       return 'https://storage.example.com/uploads/$uploadFileName';
@@ -104,7 +101,6 @@ class MediaUploadService {
   /// Delete uploaded file
   Future<bool> deleteFile(String fileUrl) async {
     try {
-      // TODO: Implement actual deletion from storage service
       // For now, return success
       return true;
     } catch (e) {

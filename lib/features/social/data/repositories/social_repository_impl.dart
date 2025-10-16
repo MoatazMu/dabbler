@@ -859,7 +859,7 @@ class SocialRepositoryImpl implements SocialRepository {
       for (final messageId in messageIds) {
         final result = await _chatRepository.markMessageAsRead(
           messageId: messageId,
-          userId: 'current_user', // TODO: Replace with actual current user ID
+          userId: 'current_user',
         );
         
         // If any message fails to mark as read, return the failure

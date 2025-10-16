@@ -5,7 +5,6 @@ import '../../enums/profile_enums.dart';
 import '../../constants/profile_constants.dart';
 
 /// Temporary model classes for profile helpers
-/// TODO: Replace with actual models from features/profile/data/models/
 class UserProfile {
   final String? fullName;
   final String? avatarUrl;

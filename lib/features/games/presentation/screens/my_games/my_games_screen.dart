@@ -155,7 +155,7 @@ class _MyGamesScreenState extends ConsumerState<MyGamesScreen>
           Expanded(
             child: _buildStatCard(
               'This Month',
-              '0', // TODO: Calculate from real games
+              '0',
               Icons.calendar_today,
               Colors.green,
             ),
@@ -252,14 +252,12 @@ class _MyGamesScreenState extends ConsumerState<MyGamesScreen>
   }
 
   Widget _buildCalendarView(List games) {
-    // TODO: Implement calendar view with real Game entities
     return const Center(
       child: Text('Calendar view coming soon'),
     );
   }
   
   Widget _buildUpcomingGameCard(dynamic game) {
-    // Simple card for now - TODO: Full implementation with Game entity
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -279,7 +277,6 @@ class _MyGamesScreenState extends ConsumerState<MyGamesScreen>
   }
   
   Widget _buildPastGameCard(dynamic game) {
-    // Simple card for now - TODO: Full implementation with Game entity
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
@@ -353,7 +350,6 @@ class _MyGamesScreenState extends ConsumerState<MyGamesScreen>
   }
   */  // End of old calendar view implementation
   
-  /* OLD CARD IMPLEMENTATIONS - TODO: Update for Game entities
   Widget _buildUpcomingGameCard(dynamic game) {
     final isToday = _isToday(game.scheduledDate);
     final isTomorrow = _isTomorrow(game.scheduledDate);

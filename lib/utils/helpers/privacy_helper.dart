@@ -4,7 +4,6 @@ import '../enums/privacy_level_enums.dart';
 import '../constants/privacy_constants.dart';
 
 /// Temporary model classes for privacy helper
-/// TODO: Replace with actual models from features/profile/data/models/
 class PrivacySettings {
   final String profileVisibility;
   final bool showRealName;

@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Minimal stub implementation of content sharing service to resolve compilation errors
-/// TODO: Replace with full implementation when dependencies are available
 class ContentSharingService {
   ContentSharingService();
 

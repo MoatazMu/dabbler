@@ -179,7 +179,6 @@ class ProfileNavigationService {
   /// Check if user is viewing their own profile
   static bool isOwnProfile(String? userId, WidgetRef ref) {
     try {
-      // TODO: Replace with actual auth provider
       // final user = ref.read(authNotifierProvider).value;
       // return userId == null || userId == user?.id;
       return userId == null; // Mock implementation
@@ -193,7 +192,6 @@ class ProfileNavigationService {
   
   static Future<bool> _checkAuthentication(WidgetRef ref) async {
     try {
-      // TODO: Replace with actual auth provider
       // final authState = ref.read(authNotifierProvider);
       // return authState.hasValue && authState.value != null;
       return true; // Mock implementation - assume authenticated
@@ -213,7 +211,6 @@ class ProfileNavigationService {
 
   static Future<void> _trackNavigation(String event, Map<String, dynamic> parameters) async {
     try {
-      // TODO: Implement analytics tracking
       debugPrint('$_logTag: Navigation event: $event, params: $parameters');
     } catch (e) {
       debugPrint('$_logTag: Error tracking navigation: $e');

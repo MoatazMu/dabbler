@@ -14,13 +14,11 @@ class MessagesScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(LucideIcons.search),
             onPressed: () {
-              // TODO: Search conversations
             },
           ),
           IconButton(
             icon: const Icon(LucideIcons.edit),
             onPressed: () {
-              // TODO: New conversation
             },
           ),
         ],
@@ -206,7 +204,6 @@ class MessagesScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: New message
         },
   child: Icon(Icons.message),
       ),

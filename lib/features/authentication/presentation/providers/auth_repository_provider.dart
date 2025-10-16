@@ -4,7 +4,6 @@ import '../../data/datasources/supabase_auth_datasource.dart';
 import '../../domain/repositories/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-// TODO: Provide a real NetworkInfo implementation
 class SimpleNetworkInfo implements NetworkInfo {
   @override
   Future<bool> get isConnected async => true; // Always true for now

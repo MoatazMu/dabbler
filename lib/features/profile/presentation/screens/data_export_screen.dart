@@ -513,7 +513,6 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
   }
 
   void _showPrivacyPolicy() {
-    // TODO: Open privacy policy URL
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -530,7 +529,6 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
   }
 
   void _contactSupport() {
-    // TODO: Open support contact method
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
