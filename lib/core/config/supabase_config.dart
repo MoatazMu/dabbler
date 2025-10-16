@@ -1,8 +1,4 @@
 class SupabaseConfig {
-  // Supabase project credentials
-  static const String url = 'https://ekmhrxdwgegxkdkdukgq.supabase.co';
-  static const String anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrbWhyeGR3Z2VneGtka2R1a2dxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQyMjcyNjIsImV4cCI6MjA2OTgwMzI2Mn0.xzE24mCrAJsZk58Hni4TfXvbHYgf-LHJjCzpgCmuaFA';
-  
   // Storage bucket names
   static const String avatarsBucket = 'avatars';
   static const String venueImagesBucket = 'venue-images';

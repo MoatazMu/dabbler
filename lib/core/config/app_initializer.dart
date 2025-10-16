@@ -87,13 +87,15 @@ class AppInitializer {
 
   Future<void> _initializeSupabase() async {
     try {
-      await Supabase.initialize(
-        url: Environment.supabaseUrl,
-        anonKey: Environment.supabaseAnonKey,
-      );
-      Logger.info('Supabase initialized');
+      // Ensure Supabase was initialized during application startup.
+      Supabase.instance.client;
+      Logger.info('Supabase already initialized');
     } catch (e, stackTrace) {
-      Logger.error('Failed to initialize Supabase', e, stackTrace);
+      Logger.error(
+        'Supabase has not been initialized. Initialize it in main.dart before running AppInitializer.',
+        e,
+        stackTrace,
+      );
       rethrow;
     }
   }
