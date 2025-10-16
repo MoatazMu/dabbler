@@ -28,7 +28,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       isEnabled: true,
       skillLevel: SkillLevel.intermediate,
       preferredPosition: 'Midfielder',
-      notifications: true,
     ),
     'basketball': SportPreference(
       name: 'Basketball',
@@ -36,7 +35,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       isEnabled: true,
       skillLevel: SkillLevel.beginner,
       preferredPosition: 'Point Guard',
-      notifications: true,
     ),
     'tennis': SportPreference(
       name: 'Tennis',
@@ -44,7 +42,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       isEnabled: false,
       skillLevel: SkillLevel.beginner,
       preferredPosition: null,
-      notifications: false,
     ),
     'badminton': SportPreference(
       name: 'Badminton',
@@ -52,7 +49,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       isEnabled: true,
       skillLevel: SkillLevel.advanced,
       preferredPosition: null,
-      notifications: true,
     ),
     'volleyball': SportPreference(
       name: 'Volleyball',
@@ -60,7 +56,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       isEnabled: false,
       skillLevel: SkillLevel.beginner,
       preferredPosition: 'Setter',
-      notifications: false,
     ),
   };
 
@@ -190,7 +185,7 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
             ),
             const SizedBox(height: 8),
             Text(
-              'Customize your sports preferences, skill levels, and notification settings to get the best game recommendations.',
+              'Customize your sports preferences and skill levels to get the best game recommendations.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
@@ -252,7 +247,7 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
         ),
         subtitle: Text(
           preference.isEnabled 
-            ? '${preference.skillLevel.displayName} • Notifications ${preference.notifications ? "on" : "off"}'
+            ? preference.skillLevel.displayName
             : 'Disabled',
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -277,7 +272,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
                   _buildPositionSelector(sportKey, preference),
                 ],
                 const SizedBox(height: 16),
-                _buildNotificationToggle(sportKey, preference),
               ],
             ),
           ),
@@ -351,33 +345,6 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
           onChanged: (value) {
             setState(() {
               _sportPreferences[sportKey] = preference.copyWith(preferredPosition: value);
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNotificationToggle(String sportKey, SportPreference preference) {
-    return Row(
-      children: [
-        Icon(
-          Icons.notifications_outlined,
-          size: 20,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            'Game notifications for ${preference.name}',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ),
-        Switch(
-          value: preference.notifications,
-          onChanged: (value) {
-            setState(() {
-              _sportPreferences[sportKey] = preference.copyWith(notifications: value);
             });
           },
         ),
@@ -492,7 +459,6 @@ class SportPreference {
   final bool isEnabled;
   final SkillLevel skillLevel;
   final String? preferredPosition;
-  final bool notifications;
 
   const SportPreference({
     required this.name,
@@ -500,7 +466,6 @@ class SportPreference {
     required this.isEnabled,
     required this.skillLevel,
     this.preferredPosition,
-    required this.notifications,
   });
 
   SportPreference copyWith({
@@ -509,7 +474,6 @@ class SportPreference {
     bool? isEnabled,
     SkillLevel? skillLevel,
     String? preferredPosition,
-    bool? notifications,
   }) {
     return SportPreference(
       name: name ?? this.name,
@@ -517,7 +481,6 @@ class SportPreference {
       isEnabled: isEnabled ?? this.isEnabled,
       skillLevel: skillLevel ?? this.skillLevel,
       preferredPosition: preferredPosition ?? this.preferredPosition,
-      notifications: notifications ?? this.notifications,
     );
   }
 }

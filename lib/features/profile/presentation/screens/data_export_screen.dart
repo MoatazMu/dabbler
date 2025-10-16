@@ -23,7 +23,6 @@ class DataExportScreen extends ConsumerStatefulWidget {
 
 class _DataExportScreenState extends ConsumerState<DataExportScreen> {
   DataExportFormat _selectedFormat = DataExportFormat.zip;
-  bool _emailNotification = true;
   bool _isLoading = false;
   List<DataExportRequest> _exportHistory = [];
   final DataExportService _dataExportService = DataExportService();
@@ -57,7 +56,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         userId: widget.userId,
         format: _selectedFormat,
         userEmail: widget.userEmail,
-        sendEmailNotification: _emailNotification,
+        sendEmailNotification: false,
       );
 
       if (mounted) {
@@ -83,8 +82,7 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
         message: 'Your data export request has been submitted successfully.\n\n'
             'Export ID: ${request.id}\n'
             'Format: ${request.format.name.toUpperCase()}\n'
-            'Expected completion: Within 24 hours\n\n'
-            'You will receive an email notification when your export is ready for download.',
+            'Expected completion: Within 24 hours.',
         type: InfoType.success,
       ),
     );
@@ -223,16 +221,6 @@ class _DataExportScreenState extends ConsumerState<DataExportScreen> {
               groupValue: _selectedFormat,
               onChanged: (value) => setState(() => _selectedFormat = value!),
             )),
-            
-            const SizedBox(height: 16),
-            
-            // Email notification option
-            CheckboxListTile(
-              title: const Text('Email notification when ready'),
-              subtitle: const Text('Receive an email when your export is ready for download'),
-              value: _emailNotification,
-              onChanged: (value) => setState(() => _emailNotification = value!),
-            ),
             
             const SizedBox(height: 16),
             

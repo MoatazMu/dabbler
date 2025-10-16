@@ -46,13 +46,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       title: 'Preferences',
       items: [
         SettingsItem(
-          title: 'Notifications',
-          subtitle: 'Push, email, and SMS settings',
-          icon: Icons.notifications_outlined,
-          route: '/settings/notifications',
-          searchTerms: ['notifications', 'alerts', 'push', 'email', 'sms'],
-        ),
-        SettingsItem(
           title: 'Game Preferences',
           subtitle: 'Game types, duration, competition',
           icon: Icons.sports_esports_outlined,

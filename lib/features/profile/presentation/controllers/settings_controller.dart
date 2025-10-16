@@ -55,7 +55,6 @@ class SettingsController extends StateNotifier<SettingsState> {
   
   static const _categories = {
     'display': 'Display & Theme',
-    'notifications': 'Notifications',
     'game_defaults': 'Game Defaults',
     'units': 'Units & Formats',
     'map': 'Map Preferences',
@@ -146,11 +145,6 @@ class SettingsController extends StateNotifier<SettingsState> {
   /// Update theme mode
   Future<void> updateThemeMode(ThemeMode themeMode) async {
     await _updateField('themeMode', themeMode.toString().split('.').last);
-  }
-
-  /// Update notification settings
-  Future<void> updateNotificationSetting(String key, bool value) async {
-    await _updateField(key, value);
   }
 
   /// Update language
@@ -280,36 +274,6 @@ class SettingsController extends StateNotifier<SettingsState> {
           subtitle: 'Adjust text size for readability',
           value: settings.textScale,
           type: SettingType.number,
-        ),
-      ],
-      'notifications': [
-        SettingItem(
-          key: 'enablePushNotifications',
-          title: 'Push Notifications',
-          subtitle: 'Receive push notifications',
-          value: settings.enablePushNotifications,
-          type: SettingType.boolean,
-        ),
-        SettingItem(
-          key: 'gameInviteNotifications',
-          title: 'Game Invites',
-          subtitle: 'Get notified about game invites',
-          value: settings.gameInviteNotifications,
-          type: SettingType.boolean,
-        ),
-        SettingItem(
-          key: 'gameReminderNotifications',
-          title: 'Game Reminders',
-          subtitle: 'Get reminded about upcoming games',
-          value: settings.gameReminderNotifications,
-          type: SettingType.boolean,
-        ),
-        SettingItem(
-          key: 'vibrationEnabled',
-          title: 'Vibration',
-          subtitle: 'Enable vibration feedback',
-          value: settings.vibrationEnabled,
-          type: SettingType.boolean,
         ),
       ],
       'game_defaults': [

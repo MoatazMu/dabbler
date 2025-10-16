@@ -457,7 +457,6 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
             
             ...[
               'Data is automatically deleted based on your retention settings',
-              'You will receive notifications before data deletion',
               'Grace periods can be requested to delay deletion',
               'Some data may be retained longer for legal compliance',
               'Critical security logs are kept for minimum required periods',
@@ -646,7 +645,6 @@ Analytics Data: Usage statistics and app interaction data.
 Our data retention policy ensures your data is kept only as long as necessary:
 
 • Data is automatically deleted based on your preferences
-• You receive notifications before any deletion
 • Grace periods can be requested to delay deletion
 • Some data may be kept longer for legal compliance
 • Security logs have minimum retention requirements

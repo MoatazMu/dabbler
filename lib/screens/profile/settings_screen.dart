@@ -24,7 +24,6 @@ class SettingsScreen extends StatelessWidget {
           children: [
             _buildAccountSection(context),
             const SizedBox(height: 24),
-            _buildNotificationSection(context),
             const SizedBox(height: 24),
             _buildPrivacySection(context),
             const SizedBox(height: 24),
@@ -78,66 +77,6 @@ class SettingsScreen extends StatelessWidget {
               const SnackBar(
                 content: Text('🔗 Connected Accounts - Link your social media!'),
                 backgroundColor: Colors.indigo,
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildNotificationSection(BuildContext context) {
-    return _buildSettingsCard(
-      context,
-      'Notifications',
-      [
-        _buildSwitchItem(
-          context,
-          'Push Notifications',
-          'Receive notifications on your device',
-          LucideIcons.bell,
-          true,
-          (value) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(value 
-                  ? '🔔 Push notifications enabled!'
-                  : '🔕 Push notifications disabled!'),
-                backgroundColor: value ? Colors.green : Colors.grey,
-              ),
-            );
-          },
-        ),
-        _buildSwitchItem(
-          context,
-          'Email Notifications',
-          'Receive updates via email',
-          LucideIcons.mail,
-          false,
-          (value) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(value 
-                  ? '📧 Email notifications enabled!'
-                  : '📧 Email notifications disabled!'),
-                backgroundColor: value ? Colors.green : Colors.grey,
-              ),
-            );
-          },
-        ),
-        _buildSwitchItem(
-          context,
-          'SMS Notifications',
-          'Receive updates via SMS',
-          LucideIcons.messageSquare,
-          false,
-          (value) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(value 
-                  ? '📱 SMS notifications enabled!'
-                  : '📱 SMS notifications disabled!'),
-                backgroundColor: value ? Colors.green : Colors.grey,
               ),
             );
           },
