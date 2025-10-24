@@ -1,3 +1,4 @@
+export 'features/sport_profiles/providers.dart';
 export 'services/supabase_service.dart';
 export 'features/profile/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
