@@ -84,6 +84,15 @@ class AuthenticationFailure extends Failure {
   });
 }
 
+/// Simple auth failure used by repositories when a user is not authenticated.
+class AuthFailure extends Failure {
+  const AuthFailure({
+    required super.message,
+    super.code,
+    super.details,
+  });
+}
+
 class AuthorizationFailure extends Failure {
   const AuthorizationFailure({
     required super.message,
