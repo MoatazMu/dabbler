@@ -76,6 +76,14 @@ class DatabaseFailure extends Failure {
 }
 
 // Authentication failures
+class AuthFailure extends Failure {
+  const AuthFailure({
+    required super.message,
+    super.code,
+    super.details,
+  });
+}
+
 class AuthenticationFailure extends Failure {
   const AuthenticationFailure({
     required super.message,

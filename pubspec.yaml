@@ -63,6 +63,9 @@ dependencies:
   
   # Riverpod - Minimal, powerful state management
   flutter_riverpod: ^2.4.0
+  freezed_annotation: ^2.4.1
+  json_annotation: ^4.9.0
+  fpdart: ^1.1.0
   geolocator: ^10.0.0
   geocoding: ^2.1.0
 
