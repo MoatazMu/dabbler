@@ -3,22 +3,18 @@ import '../models/wallet.dart';
 import '../models/payout.dart';
 
 abstract class WalletRepository {
-  /// Current user’s wallet (fail if not signed in or not found).
-  Future<Result<Wallet>> getMyWallet();
+  /// Current user's wallet (RLS-scoped). Null if not created yet.
+  Future<Result<Wallet?>> getWallet();
 
-  /// List payouts for current user, newest first.
-  Future<Result<List<Payout>>> listMyPayouts({
+  /// Current user's ledger entries, newest first.
+  Future<Result<List<WalletLedgerEntry>>> getLedger({
     int limit = 50,
     int offset = 0,
   });
 
-  /// Server-side action to request a payout for current user’s wallet.
-  Future<Result<Payout>> requestPayout({
-    required int amountCents,
-    required String currency,
-    String? note,
+  /// Current user's payout history, newest first.
+  Future<Result<List<Payout>>> getPayouts({
+    int limit = 50,
+    int offset = 0,
   });
-
-  /// Optional helper to trigger a server recompute and fetch the updated wallet.
-  Future<Result<Wallet>> refreshWallet();
 }

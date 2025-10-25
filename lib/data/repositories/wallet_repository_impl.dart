@@ -1,115 +1,60 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:meta/meta.dart';
 
-import '../../core/error/failure.dart';
 import '../../core/types/result.dart';
+import '../../core/utils/json.dart';
 import '../../services/supabase_service.dart';
 import '../models/payout.dart';
 import '../models/wallet.dart';
 import 'base_repository.dart';
 import 'wallet_repository.dart';
 
+@immutable
 class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
-  WalletRepositoryImpl(SupabaseService service) : super(service);
-
-  SupabaseClient get _client => svc.client;
-
-  void _ensureSignedIn() {
-    if (_client.auth.currentUser?.id == null) {
-      throw AuthFailure('Not signed in');
-    }
-  }
-
-  String get _uid => _client.auth.currentUser!.id;
+  WalletRepositoryImpl(SupabaseService svc) : super(svc);
 
   @override
-  Future<Result<Wallet>> getMyWallet() {
-    return guard(() async {
-      _ensureSignedIn();
-
-      final dynamic row = await _client
+  Future<Result<Wallet?>> getWallet() {
+    return guard<Wallet?>(() async {
+      // RLS should scope to the caller's row; we fetch one.
+      final row = await svc.client
           .from('wallets')
-          .select()
-          .eq('user_id', _uid)
+          .select<Map<String, dynamic>>()
           .maybeSingle();
 
-      if (row == null) {
-        throw NotFoundFailure('Wallet not found');
-      }
-
-      return Wallet.fromJson(Map<String, dynamic>.from(row as Map));
+      if (row == null) return null;
+      return Wallet.fromMap(asMap(row));
     });
   }
 
   @override
-  Future<Result<List<Payout>>> listMyPayouts({
+  Future<Result<List<WalletLedgerEntry>>> getLedger({
     int limit = 50,
     int offset = 0,
   }) {
-    return guard(() async {
-      _ensureSignedIn();
-
-      final dynamic rows = await _client
-          .from('payouts')
-          .select()
-          .eq('user_id', _uid)
+    return guard<List<WalletLedgerEntry>>(() async {
+      final rows = await svc.client
+          .from('wallet_ledger')
+          .select<List<Map<String, dynamic>>>()
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 
-      final list = (rows as List)
-          .map((entry) => Payout.fromJson(Map<String, dynamic>.from(entry as Map)))
-          .toList();
-
-      return list;
+      return rows.map((m) => WalletLedgerEntry.fromMap(asMap(m))).toList();
     });
   }
 
   @override
-  Future<Result<Payout>> requestPayout({
-    required int amountCents,
-    required String currency,
-    String? note,
+  Future<Result<List<Payout>>> getPayouts({
+    int limit = 50,
+    int offset = 0,
   }) {
-    return guard(() async {
-      _ensureSignedIn();
+    return guard<List<Payout>>(() async {
+      final rows = await svc.client
+          .from('payouts')
+          .select<List<Map<String, dynamic>>>()
+          .order('created_at', ascending: false)
+          .range(offset, offset + limit - 1);
 
-      final response = await _client.rpc(
-        'request_payout',
-        params: {
-          'amount_cents': amountCents,
-          'currency': currency,
-          if (note != null) 'note': note,
-        },
-      );
-
-      if (response == null) {
-        throw UnknownFailure('Empty response from request_payout');
-      }
-
-      return Payout.fromJson(Map<String, dynamic>.from(response as Map));
-    });
-  }
-
-  @override
-  Future<Result<Wallet>> refreshWallet() {
-    return guard(() async {
-      _ensureSignedIn();
-
-      final response = await _client.rpc('wallet_refresh');
-      if (response != null) {
-        return Wallet.fromJson(Map<String, dynamic>.from(response as Map));
-      }
-
-      final dynamic row = await _client
-          .from('wallets')
-          .select()
-          .eq('user_id', _uid)
-          .maybeSingle();
-
-      if (row == null) {
-        throw NotFoundFailure('Wallet not found');
-      }
-
-      return Wallet.fromJson(Map<String, dynamic>.from(row as Map));
+      return rows.map((m) => Payout.fromMap(asMap(m))).toList();
     });
   }
 }
