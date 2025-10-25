@@ -1,93 +1,66 @@
-import 'package:flutter/foundation.dart';
+import '../../core/utils/json.dart';
 
-/// Immutable representation of a row in `public.notifications`.
-@immutable
+/// Keep the name distinct from platform classes.
 class AppNotification {
+  final String id;
+  final String userId;
+  final String type; // e.g. 'friend_request', 'invite', etc.
+  final Map<String, dynamic> payload; // arbitrary jsonb payload from DB
+  final DateTime createdAt;
+  final DateTime? readAt;
+  final DateTime? seenAt;
+
+  // Optional denormalized presentation fields (if your view exposes them)
+  final String? title;
+  final String? body;
+
   const AppNotification({
     required this.id,
     required this.userId,
     required this.type,
-    this.payload,
+    required this.payload,
     required this.createdAt,
     this.readAt,
+    this.seenAt,
+    this.title,
+    this.body,
   });
 
-  final String id;
-  final String userId;
-  final String type;
-  final Map<String, dynamic>? payload;
-  final DateTime createdAt;
-  final DateTime? readAt;
-
-  factory AppNotification.fromJson(Map<String, dynamic> json) {
+  factory AppNotification.fromMap(Map<String, dynamic> row) {
+    final m = asMap(row);
     return AppNotification(
-      id: json['id'] as String,
-      userId: json['user_id'] as String,
-      type: json['type'] as String,
-      payload: _mapPayload(json['payload']),
-      createdAt: _parseDateTime(json['created_at'])!,
-      readAt: _parseDateTime(json['read_at']),
+      id: (m['id'] ?? m['notification_id']).toString(),
+      userId: (m['user_id'] ?? m['uid']).toString(),
+      type: (m['type'] ?? m['notification_type'] ?? m['type_code'] ?? '').toString(),
+      payload: asMap(m['payload'] ?? m['data'] ?? m['meta']),
+      createdAt: asDateTime(m['created_at']) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      readAt: asDateTime(m['read_at']),
+      seenAt: asDateTime(m['seen_at']),
+      title: m['title']?.toString(),
+      body: m['body']?.toString(),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return <String, dynamic>{
-      'id': id,
-      'user_id': userId,
-      'type': type,
-      'payload': payload == null ? null : Map<String, dynamic>.from(payload!),
-      'created_at': createdAt.toIso8601String(),
-      'read_at': readAt?.toIso8601String(),
-    };
-  }
+  bool get isRead => readAt != null;
+  bool get isSeen => seenAt != null;
 
-  static Map<String, dynamic>? _mapPayload(dynamic value) {
-    if (value == null) {
-      return null;
-    }
-    if (value is Map<String, dynamic>) {
-      return value;
-    }
-    if (value is Map) {
-      return value.map(
-        (key, dynamic v) => MapEntry(key as String, v),
-      );
-    }
-    return null;
+  AppNotification copyWith({
+    DateTime? readAt,
+    DateTime? seenAt,
+    String? title,
+    String? body,
+  }) {
+    return AppNotification(
+      id: id,
+      userId: userId,
+      type: type,
+      payload: payload,
+      createdAt: createdAt,
+      readAt: readAt ?? this.readAt,
+      seenAt: seenAt ?? this.seenAt,
+      title: title ?? this.title,
+      body: body ?? this.body,
+    );
   }
-
-  static DateTime? _parseDateTime(dynamic value) {
-    if (value == null) {
-      return null;
-    }
-    if (value is DateTime) {
-      return value;
-    }
-    if (value is String && value.isNotEmpty) {
-      return DateTime.parse(value).toUtc();
-    }
-    return null;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is AppNotification &&
-        other.id == id &&
-        other.userId == userId &&
-        other.type == type &&
-        mapEquals(other.payload, payload) &&
-        other.createdAt == createdAt &&
-        other.readAt == readAt;
-  }
-
-  @override
-  int get hashCode => Object.hash(
-        id,
-        userId,
-        type,
-        payload == null ? null : Object.hashAll(payload!.entries),
-        createdAt,
-        readAt,
-      );
 }
+
