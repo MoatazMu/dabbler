@@ -1,21 +1,50 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+/// Immutable representation of a venue space row.
+class VenueSpace {
+  const VenueSpace({
+    required this.id,
+    required this.venueId,
+    required this.name,
+    this.description,
+    required this.isActive,
+    required this.createdAt,
+  });
 
-part 'venue_space.freezed.dart';
-part 'venue_space.g.dart';
+  factory VenueSpace.fromJson(Map<String, dynamic> json) {
+    return VenueSpace(
+      id: json['id'] as String,
+      venueId: json['venue_id'] as String,
+      name: json['name'] as String,
+      description: json['description'] as String?,
+      isActive: json['is_active'] as bool,
+      createdAt: _parseDateTime(json['created_at']),
+    );
+  }
 
-@freezed
-class VenueSpace with _$VenueSpace {
-  const factory VenueSpace({
-    required String id,
-    @JsonKey(name: 'venue_id') required String venueId,
-    required String name,
-    @JsonKey(name: 'sport_key') String? sportKey,
-    @JsonKey(name: 'is_active') bool? isActive,
-    int? capacity,
-    @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'updated_at') DateTime? updatedAt,
-  }) = _VenueSpace;
+  final String id;
+  final String venueId;
+  final String name;
+  final String? description;
+  final bool isActive;
+  final DateTime createdAt;
 
-  factory VenueSpace.fromJson(Map<String, dynamic> json) =>
-      _$VenueSpaceFromJson(json);
+  Map<String, dynamic> toJson() {
+    return <String, dynamic>{
+      'id': id,
+      'venue_id': venueId,
+      'name': name,
+      'description': description,
+      'is_active': isActive,
+      'created_at': createdAt.toIso8601String(),
+    };
+  }
+
+  static DateTime _parseDateTime(dynamic value) {
+    if (value is DateTime) {
+      return value;
+    }
+    if (value is String) {
+      return DateTime.parse(value);
+    }
+    throw ArgumentError('Unsupported date value: $value');
+  }
 }
