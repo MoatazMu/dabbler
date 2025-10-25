@@ -1,98 +1,84 @@
+
+import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/error/failure.dart';
 import '../../core/types/result.dart';
+import '../../core/utils/json.dart';
 import '../../services/supabase_service.dart';
 import '../models/vibe.dart';
 import 'base_repository.dart';
 import 'vibes_repository.dart';
 
+@immutable
 class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
-  VibesRepositoryImpl(SupabaseService service) : super(service);
+  VibesRepositoryImpl(SupabaseService svc) : super(svc);
 
-  SupabaseClient get _client => svc.client;
+  SupabaseClient get _db => svc.client;
 
   static const _table = 'post_vibes';
 
   @override
-  Future<Result<List<Vibe>>> getVibesForPost(String postId) {
-    return guard(() async {
-      _assertSignedIn();
-
-      final response = await _client
+  Future<Result<Vibe?>> getForPost(String postId) async {
+    return guard<Vibe?>(() async {
+      final rows = await _db
           .from(_table)
-          .select(
-              'id, post_id, key, label, emoji, sort_order, created_at')
+          .select<List<Map<String, dynamic>>>()
           .eq('post_id', postId)
-          .order('sort_order', ascending: true)
-          .order('id', ascending: true);
+          .order('created_at', ascending: false)
+          .limit(1);
 
-      final data = response as List<dynamic>;
-
-      return data
-          .map((dynamic row) => Vibe.fromJson(
-                Map<String, dynamic>.from(row as Map<String, dynamic>),
-              ))
-          .toList();
+      if (rows.isEmpty) return null;
+      return Vibe.fromMap(asMap(rows.first));
     });
   }
 
   @override
-  Future<Result<Vibe>> upsertVibe(Vibe vibe) {
-    return guard(() async {
-      _assertSignedIn();
-
-      final payload = <String, dynamic>{
-        'id': vibe.id,
-        'post_id': vibe.postId,
-        if (vibe.key != null) 'key': vibe.key,
-        if (vibe.label != null) 'label': vibe.label,
-        if (vibe.emoji != null) 'emoji': vibe.emoji,
-        'sort_order': vibe.sortOrder,
-      };
-
-      final result = await _client
+  Future<Result<Map<String, int>>> countsForPost(String postId) async {
+    return guard<Map<String, int>>(() async {
+      final rows = await _db
           .from(_table)
-          .upsert(payload, onConflict: 'id')
-          .select(
-              'id, post_id, key, label, emoji, sort_order, created_at')
-          .single();
+          .select<List<Map<String, dynamic>>>('vibe')
+          .eq('post_id', postId);
 
-      return Vibe.fromJson(
-          Map<String, dynamic>.from(result as Map<String, dynamic>));
+      final Map<String, int> counts = {};
+      for (final r in rows) {
+        final k = asString(r['vibe']);
+        counts[k] = (counts[k] ?? 0) + 1;
+      }
+      return counts;
     });
   }
 
   @override
-  Future<Result<void>> deleteVibe(String id) {
-    return guard(() async {
-      _assertSignedIn();
-      await _client.from(_table).delete().eq('id', id);
-      return null;
-    });
-  }
-
-  @override
-  Future<Result<void>> reorder(String postId, List<Vibe> ordered) {
-    return guard(() async {
-      _assertSignedIn();
-
-      for (var i = 0; i < ordered.length; i++) {
-        final vibe = ordered[i];
-        await _client
-            .from(_table)
-            .update({'sort_order': i})
-            .eq('id', vibe.id)
-            .eq('post_id', postId);
+  Future<Result<void>> setVibe({
+    required String postId,
+    required String vibe,
+  }) async {
+    return guard<void>(() async {
+      if (postId.isEmpty || vibe.isEmpty) {
+        throw Failure.badRequest('postId and vibe are required');
       }
 
-      return null;
+      // Conservative, RLS-safe approach:
+      // 1) delete existing rows for this post_id (author only)
+      // 2) insert the new vibe
+      await _db.from(_table).delete().eq('post_id', postId);
+
+      await _db.from(_table).insert({
+        'post_id': postId,
+        'vibe': vibe,
+        // created_at defaults server-side; omit to let DB fill it
+      });
     });
   }
 
-  void _assertSignedIn() {
-    if (_client.auth.currentUser?.id == null) {
-      throw const AuthFailure('Not signed in');
-    }
+  @override
+  Future<Result<void>> clearVibe(String postId) async {
+    return guard<void>(() async {
+      if (postId.isEmpty) throw Failure.badRequest('postId is required');
+      await _db.from(_table).delete().eq('post_id', postId);
+    });
   }
 }
+

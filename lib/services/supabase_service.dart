@@ -4,172 +4,60 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:dabbler/core/error/failures.dart';
+import '../core/error/failure.dart';
 
-/// Lightweight wrapper around [SupabaseClient] that centralizes
-/// authentication helpers and error mapping for repositories.
-class SupabaseService {
-  SupabaseService(this._client);
-
-  final SupabaseClient _client;
-
-  /// Exposes the raw Supabase client for advanced operations.
-  SupabaseClient get client => _client;
-
-  /// Returns the currently authenticated user's id or `null` when not signed in.
-  String? authUserId() => _client.auth.currentUser?.id;
-
-  /// Maps Supabase/Postgrest errors into domain [Failure] types.
-  Failure mapPostgrestError(Object error) {
-    if (error is TimeoutException) {
-      return TimeoutFailure(message: error.message ?? 'Request timed out');
-    }
-
-    if (error is SocketException) {
-      return NetworkFailure(message: error.message);
-    }
-
-    if (error is AuthException) {
-      return AuthenticationFailure(message: error.message, details: error.details);
-    }
-
-    if (error is PostgrestException) {
-      final code = error.code != null ? int.tryParse(error.code!) : null;
-      final message = error.message.isNotEmpty
-          ? error.message
-          : 'Unexpected database error occurred';
-      if (error.code == '23505') {
-        return ConflictFailure(message: message, code: code, details: error.details);
-      }
-      return DatabaseFailure(message: message, code: code, details: error.details);
-    }
-
-    return ServerFailure(message: error.toString());
-  }
-}
-
-/// Global provider exposing a singleton [SupabaseService] instance.
-final supabaseServiceProvider = Provider<SupabaseService>((ref) {
-  return SupabaseService(Supabase.instance.client);
-});
-import '../core/error/failures.dart';
-
-final supabaseServiceProvider = Provider<SupabaseService>((ref) {
-  final client = Supabase.instance.client;
-  return SupabaseService(client);
-});
+final supabaseServiceProvider =
+    Provider<SupabaseService>((ref) => SupabaseService());
 
 class SupabaseService {
-  SupabaseService(this.client);
-
-  final SupabaseClient client;
-
-  String? authUserId() => client.auth.currentUser?.id;
-
-  Failure mapPostgrestError(Object error) {
-    if (error is Failure) {
-      return error;
-    }
-
-    if (error is SocketException) {
-      return NetworkFailure(
-        message: 'No internet connection',
-        details: error,
-      );
-    }
-
-    if (error is AuthException) {
-      return AuthFailure(
-        message: error.message,
-        code: error.statusCode,
-        details: error,
-      );
-    }
-
-    if (error is PostgrestException) {
-      final message = error.message ?? 'Unexpected database error';
-      if (error.code == 'PGRST116') {
-        return NotFoundFailure(
-          message: message,
-          code: error.code != null ? int.tryParse(error.code!) : null,
-          details: error,
-        );
-      }
-      if (error.code == '23505') {
-        return ConflictFailure(
-          message: message,
-          code: error.code != null ? int.tryParse(error.code!) : null,
-          details: error,
-        );
-      }
-      return ServerFailure(
-        message: message,
-        code: error.code != null ? int.tryParse(error.code!) : null,
-        details: error,
-      );
-    }
-
-    if (error is RealtimeException) {
-      return ServerFailure(
-        message: error.message,
-        details: error,
-      );
-    }
-
-    return UnknownFailure(
-      message: error.toString(),
-      details: error,
-    );
-import 'package:supabase_flutter/supabase_flutter.dart';
-
-import 'package:dabbler/core/error/failure.dart';
-
-/// A thin wrapper around the global [Supabase] singleton.
-class SupabaseService {
-  /// Lazily retrieves the configured [SupabaseClient].
   SupabaseClient get client => Supabase.instance.client;
 
-  /// Initializes the Supabase client for the application.
-  static Future<void> init({
-    required String url,
-    required String anonKey,
-  }) {
-    return Supabase.initialize(url: url, anonKey: anonKey);
+  /// Map PostgREST errors into domain Failures.
+  Failure mapPostgrest(PostgrestException e) {
+    // Not all versions expose statusCode; use dynamic guard.
+    int? status;
+    try {
+      final dyn = e as dynamic;
+      if (dyn.statusCode is int) status = dyn.statusCode as int;
+    } catch (_) {/* ignore */}
+
+    final String msg = e.message ?? 'Request failed';
+    final String? code = e.code;
+
+    if (status == 401) return UnauthenticatedFailure(message: msg);
+    if (status == 403) return ForbiddenFailure(message: msg);
+    if (status == 404) return NotFoundFailure(message: msg);
+
+    // Treat common validation shapes as ValidationFailure
+    if (status == 409 || status == 422 || code == 'PGRST116' || code == 'PGRST204') {
+      Map<String, List<String>>? fields;
+      try {
+        final details = e.details;
+        if (details is Map && details['errors'] is Map) {
+          fields = (details['errors'] as Map).map<String, List<String>>(
+            (k, v) => MapEntry(k.toString(), List<String>.from(v ?? const [])),
+          );
+        }
+      } catch (_) {/* ignore */}
+      return ValidationFailure(message: msg, fieldErrors: fields);
+    }
+
+    return NetworkFailure(message: msg, status: status);
   }
 
-  /// Returns the identifier of the currently authenticated user, if any.
-  String? authUserId() => client.auth.currentUser?.id;
-
-  /// Maps PostgREST and network errors into a domain level [Failure].
-  Failure mapPostgrestError(Object error) {
-    if (error is PostgrestException) {
-      final statusSource = error.code ?? error.status;
-      final statusCode = int.tryParse(statusSource ?? '');
-      final message = error.message ?? 'An unexpected error occurred.';
-      final code = error.code;
-
-      if (statusCode == 401 || statusCode == 403) {
-        return PermissionFailure(message, code: code);
-      }
-      if (statusCode == 404) {
-        return NotFoundFailure(message, code: code);
-      }
-      if (statusCode == 409) {
-        return ConflictFailure(message, code: code);
-      }
-
-      return UnknownFailure(message, code: code);
-    }
-
+  /// Generic fallback mapper for any thrown error.
+  Failure mapGeneric(Object error, StackTrace st) {
     if (error is AuthException) {
-      final code = error.statusCode?.toString();
-      return AuthFailure(error.message, code: code);
+      // Supabase auth exceptions: often 401/400; treat as unauthenticated by default.
+      return UnauthenticatedFailure(message: error.message);
     }
-
-    if (error is SocketException) {
-      return NetworkFailure(error.message, code: 'network');
+    if (error is PostgrestException) {
+      return mapPostgrest(error);
     }
-
-    return UnknownFailure(error.toString());
+    if (error is SocketException || error is TimeoutException) {
+      return NetworkFailure(message: error.toString());
+    }
+    return UnknownFailure(message: error.toString(), error: error, stackTrace: st);
   }
 }
+
