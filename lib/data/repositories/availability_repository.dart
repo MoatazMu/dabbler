@@ -1,45 +1,35 @@
+
 import '../../core/types/result.dart';
 import '../models/slot.dart';
 
 abstract class AvailabilityRepository {
-  /// Raw grid (does not subtract holds).
-  Future<Result<List<Slot>>> listGrid({
+  /// Read grid slots for a space within [from, to).
+  /// When [onlyAvailable] is true, filter out held/booked/closed slots.
+  Future<Result<List<Slot>>> listSlots({
     required String venueSpaceId,
     required DateTime from,
     required DateTime to,
-    int? limit,
+    bool onlyAvailable = true,
+    int limit = 500,
   });
 
-  /// Available slots (client-side subtracts visible holds; server will still
-  /// enforce conflicts you can’t see due to RLS).
-  Future<Result<List<Slot>>> listAvailability({
-    required String venueSpaceId,
-    required DateTime from,
-    required DateTime to,
-    int? limit,
+  /// List my active holds (optionally limited by space and/or window).
+  Future<Result<List<SlotHold>>> listMyHolds({
+    String? venueSpaceId,
+    DateTime? from,
+    DateTime? to,
+    int limit = 200,
   });
 
-  /// Create a temporary hold. Server may reject overlapping holds with 409/constraint.
-  /// Returns inserted row (at least: id, venue_space_id, slot_start, slot_end, expires_at).
-  Future<Result<Map<String, dynamic>>> placeHold({
+  /// Create a hold (soft-reservation). Server enforces conflicts and RLS.
+  Future<Result<SlotHold>> createHold({
     required String venueSpaceId,
     required DateTime start,
     required DateTime end,
-    Duration ttl = const Duration(minutes: 10),
+    String? note,
   });
 
-  /// Release a hold you created.
+  /// Release (delete) a hold I created.
   Future<Result<void>> releaseHold(String holdId);
-
-  /// Extend a hold’s expiry (best-effort, only your holds).
-  Future<Result<Map<String, dynamic>>> extendHold({
-    required String holdId,
-    required Duration by,
-  });
-
-  /// Your holds for a space (filters out expired client-side).
-  Future<Result<List<Map<String, dynamic>>>> listMyHolds({
-    required String venueSpaceId,
-    DateTime? nowUtc,
-  });
 }
+

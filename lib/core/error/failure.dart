@@ -1,59 +1,42 @@
-/// Base contract for failures surfaced by the data layer.
+import 'package:meta/meta.dart';
+
+@immutable
 abstract class Failure {
-  /// Creates a new [Failure] with an optional machine readable [code].
-  const Failure(this.message, {this.code});
+  final String? message;
+  const Failure([this.message]);
 
-  /// Human readable description of the failure.
-  final String message;
+  /// A human-friendly message with a fallback.
+  String get displayMessage => message ?? 'Something went wrong';
 
-  /// Optional machine readable error code.
-  final String? code;
+  @override
+  String toString() => '$runtimeType(${displayMessage})';
 }
 
-/// Represents a connectivity related failure.
-class NetworkFailure extends Failure {
-  /// Creates a [NetworkFailure] with an optional [code].
-  const NetworkFailure(String message, {String? code})
-      : super(message, code: code);
+class UnauthenticatedFailure extends Failure {
+  const UnauthenticatedFailure({String? message}) : super(message);
 }
 
-/// Represents an authentication failure.
-class AuthFailure extends Failure {
-  /// Creates an [AuthFailure] with an optional [code].
-  const AuthFailure(String message, {String? code}) : super(message, code: code);
+class ForbiddenFailure extends Failure {
+  const ForbiddenFailure({String? message}) : super(message);
 }
 
-/// Represents an authorization/permission failure.
-class PermissionFailure extends Failure {
-  /// Creates a [PermissionFailure] with an optional [code].
-  const PermissionFailure(String message, {String? code})
-      : super(message, code: code);
-}
-
-/// Represents a not found failure.
 class NotFoundFailure extends Failure {
-  /// Creates a [NotFoundFailure] with an optional [code].
-  const NotFoundFailure(String message, {String? code})
-      : super(message, code: code);
+  const NotFoundFailure({String? message}) : super(message);
 }
 
-/// Represents a conflict failure.
-class ConflictFailure extends Failure {
-  /// Creates a [ConflictFailure] with an optional [code].
-  const ConflictFailure(String message, {String? code})
-      : super(message, code: code);
-}
-
-/// Represents a validation failure.
 class ValidationFailure extends Failure {
-  /// Creates a [ValidationFailure] with an optional [code].
-  const ValidationFailure(String message, {String? code})
-      : super(message, code: code);
+  final Map<String, List<String>>? fieldErrors;
+  const ValidationFailure({String? message, this.fieldErrors}) : super(message);
 }
 
-/// Represents an unknown failure.
+class NetworkFailure extends Failure {
+  final int? status;
+  const NetworkFailure({String? message, this.status}) : super(message);
+}
+
 class UnknownFailure extends Failure {
-  /// Creates an [UnknownFailure] with an optional [code].
-  const UnknownFailure(String message, {String? code})
-      : super(message, code: code);
+  final Object? error;
+  final StackTrace? stackTrace;
+  const UnknownFailure({String? message, this.error, this.stackTrace})
+      : super(message);
 }

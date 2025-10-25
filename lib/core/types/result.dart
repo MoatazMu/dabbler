@@ -1,6 +1,4 @@
-import 'package:fpdart/fpdart.dart';
+import 'package:dartz/dartz.dart';
+import '../error/failure.dart';
 
-import 'package:dabbler/core/error/failure.dart';
-
-/// Convenient alias for returning domain aware results from repositories.
 typedef Result<T> = Either<Failure, T>;
