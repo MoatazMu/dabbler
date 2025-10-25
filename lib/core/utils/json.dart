@@ -20,3 +20,15 @@ String? parseString(dynamic value) {
   if (value is String) return value;
   return value.toString();
 }
+
+/// Casts dynamic map-like objects into a [Map<String, dynamic>].
+Map<String, dynamic> asMap(dynamic value) {
+  if (value == null) return <String, dynamic>{};
+  if (value is Map<String, dynamic>) return value;
+  if (value is Map) {
+    return value.map(
+      (dynamic key, dynamic v) => MapEntry(key.toString(), v),
+    );
+  }
+  throw ArgumentError('Expected Map but got ${value.runtimeType}');
+}
