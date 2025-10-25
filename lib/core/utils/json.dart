@@ -1,22 +1,44 @@
-/// Safely parses a [DateTime] value from dynamic JSON input.
-DateTime? parseDateTime(dynamic value) {
-  if (value == null) return null;
-  if (value is DateTime) return value;
-  if (value is String) return DateTime.tryParse(value);
+/// Tiny casting helpers for JSON maps coming from Supabase/PostgREST.
+
+T? asT<T>(Object? v) => v is T ? v : null;
+
+int? asInt(Object? v) {
+  if (v is int) return v;
+  if (v is double) return v.toInt();
+  if (v is String) return int.tryParse(v);
   return null;
 }
 
-/// Safely parses a [double] from dynamic JSON input.
-double? parseDouble(dynamic value) {
-  if (value == null) return null;
-  if (value is num) return value.toDouble();
-  if (value is String) return double.tryParse(value);
+double? asDouble(Object? v) {
+  if (v is double) return v;
+  if (v is int) return v.toDouble();
+  if (v is String) return double.tryParse(v);
   return null;
 }
 
-/// Safely parses a [String] from dynamic JSON input.
-String? parseString(dynamic value) {
-  if (value == null) return null;
-  if (value is String) return value;
-  return value.toString();
+bool? asBool(Object? v) {
+  if (v is bool) return v;
+  if (v is String) {
+    final s = v.toLowerCase().trim();
+    if (s == 'true' || s == '1') return true;
+    if (s == 'false' || s == '0') return false;
+  }
+  if (v is num) return v != 0;
+  return null;
 }
+
+DateTime? asDateTime(Object? v) {
+  if (v is DateTime) return v;
+  if (v is int) return DateTime.fromMillisecondsSinceEpoch(v);
+  if (v is String) return DateTime.tryParse(v);
+  return null;
+}
+
+Map<String, dynamic> asMap(Object? v) {
+  if (v is Map<String, dynamic>) return v;
+  if (v is Map) {
+    return v.map((k, val) => MapEntry(k.toString(), val));
+  }
+  return <String, dynamic>{};
+}
+
