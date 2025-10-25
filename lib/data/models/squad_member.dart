@@ -15,6 +15,5 @@ class SquadMember with _$SquadMember {
     required String status,
   }) = _SquadMember;
 
-  factory SquadMember.fromJson(Map<String, dynamic> json) =>
-      _$SquadMemberFromJson(json);
+  factory SquadMember.fromJson(Map<String, dynamic> json) => _$SquadMemberFromJson(json);
 }

@@ -17,6 +17,5 @@ class SquadLinkToken with _$SquadLinkToken {
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _SquadLinkToken;
 
-  factory SquadLinkToken.fromJson(Map<String, dynamic> json) =>
-      _$SquadLinkTokenFromJson(json);
+  factory SquadLinkToken.fromJson(Map<String, dynamic> json) => _$SquadLinkTokenFromJson(json);
 }
