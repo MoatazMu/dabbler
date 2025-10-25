@@ -2,15 +2,48 @@ import '../../core/types/result.dart';
 import '../models/benefit.dart';
 
 abstract class OrganiserBenefitsRepository {
-  /// Benefits available/applicable to the current user (organiser).
-  Future<Result<List<Benefit>>> listMyBenefits();
-
-  /// Fetch a single benefit by slug (RLS may still restrict).
-  Future<Result<Benefit>> getBenefitBySlug(String slug);
-
-  /// Admin-only: list all benefits (may return unauthorized for non-admins).
-  Future<Result<List<Benefit>>> listAllBenefits({
-    int limit = 100,
+  /// List benefits owned by the current user (RLS should scope correctly).
+  Future<Result<List<Benefit>>> listMine({
+    bool onlyActive = true,
+    int limit = 50,
     int offset = 0,
   });
+
+  /// List benefits for a venue (if RLS permits).
+  Future<Result<List<Benefit>>> listForVenue(
+    String venueId, {
+    bool onlyActive = true,
+    int limit = 50,
+    int offset = 0,
+  });
+
+  /// Get a single benefit by id.
+  Future<Result<Benefit?>> getById(String id);
+
+  /// Create and return the created row (or at least its id).
+  Future<Result<Benefit>> create({
+    required String title,
+    String? description,
+    String? venueId,
+    bool isActive = true,
+    DateTime? startsAt,
+    DateTime? endsAt,
+    String? imageUrl,
+  });
+
+  /// Patch fields on a benefit.
+  Future<Result<void>> update(
+    String id, {
+    String? title,
+    String? description,
+    String? venueId,
+    bool? isActive,
+    DateTime? startsAt,
+    DateTime? endsAt,
+    String? imageUrl,
+  });
+
+  /// Delete a benefit (RLS-protected).
+  Future<Result<void>> delete(String id);
 }
+
