@@ -1,141 +1,156 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:meta/meta.dart';
 
-import '../../core/result.dart';
+import '../../core/types/result.dart';
+import '../../core/utils/json.dart';
 import '../../services/supabase_service.dart';
 import 'base_repository.dart';
+import '../models/localized_error.dart';
 import 'localization_repository.dart';
 
+@immutable
 class LocalizationRepositoryImpl extends BaseRepository
     implements LocalizationRepository {
+  static const _table = 'localized_errors';
+
+  /// Cache key is locale::code
+  final Map<String, LocalizedError> _cache = {};
+
   LocalizationRepositoryImpl(SupabaseService svc) : super(svc);
 
-  SupabaseClient get _client => svc.client;
+  String _k(String locale, String code) => '$locale::$code';
 
   @override
-  Future<Result<String>> message(
-    String key, {
-    String? locale,
-    Map<String, String>? params,
-    String? defaultValue,
+  void primeCache(List<LocalizedError> items) {
+    for (final e in items) {
+      _cache[_k(e.locale, e.code)] = e;
+    }
+  }
+
+  @override
+  void clearCache({String? locale}) {
+    if (locale == null) {
+      _cache.clear();
+      return;
+    }
+    _cache.removeWhere((k, _) => k.startsWith('$locale::'));
+  }
+
+  @override
+  Future<Result<LocalizedError?>> getError(
+    String code, {
+    String locale = 'en',
+    List<String> fallbackLocales = const ['en'],
   }) {
-    return guard(() async {
-      final normalized = _normalizeLocale(locale);
-      final candidates = _fallbackLocales(normalized);
-      String? resolved;
+    return guard<LocalizedError?>(() async {
+      // 1) Cache
+      final ck = _k(locale, code);
+      if (_cache.containsKey(ck)) return _cache[ck];
 
-      for (final candidate in candidates) {
-        final response = await _client.rpc(
-          'i18n_message',
-          params: {
-            'locale': candidate,
-            'key': key,
-          },
-        );
+      // 2) Primary locale
+      final primary = await _fetchSingle(code, locale);
+      if (primary != null) return primary;
 
-        if (response is String && response.isNotEmpty) {
-          resolved = response;
-          break;
-        }
+      // 3) Fallbacks (in order)
+      for (final fb in fallbackLocales) {
+        final fk = _k(fb, code);
+        if (_cache.containsKey(fk)) return _cache[fk];
+        final hit = await _fetchSingle(code, fb);
+        if (hit != null) return hit;
       }
-
-      resolved ??= defaultValue ?? key;
-
-      if (params != null && params.isNotEmpty) {
-        resolved = _interpolate(resolved, params);
-      }
-
-      return resolved;
+      return null;
     });
   }
 
   @override
-  Future<Result<Map<String, String>>> messages(
-    List<String> keys, {
-    String? locale,
+  Future<Result<Map<String, LocalizedError>>> getErrors(
+    List<String> codes, {
+    String locale = 'en',
+    List<String> fallbackLocales = const ['en'],
   }) {
-    return guard(() async {
-      if (keys.isEmpty) {
-        return <String, String>{};
+    return guard<Map<String, LocalizedError>>(() async {
+      final out = <String, LocalizedError>{};
+      final missing = <String>[];
+
+      // 1) Cache for primary locale
+      for (final code in codes) {
+        final ck = _k(locale, code);
+        final cached = _cache[ck];
+        if (cached != null) {
+          out[code] = cached;
+        } else {
+          missing.add(code);
+        }
       }
 
-      final normalized = _normalizeLocale(locale);
-      final candidates = _fallbackLocales(normalized);
-      final Map<String, String> resolved = {};
+      // 2) Fetch missing for primary
+      if (missing.isNotEmpty) {
+        final prim = await _fetchMany(missing, locale);
+        out.addAll(prim);
+        // Compute still missing
+        missing
+          ..clear()
+          ..addAll(codes.where((c) => !out.containsKey(c)));
+      }
 
-      for (final candidate in candidates) {
-        final response = await _client.rpc(
-          'i18n_messages_by_locale',
-          params: {
-            'locale': candidate,
-            'keys': keys,
-          },
-        );
-
-        if (response is List) {
-          for (final row in response) {
-            if (row is Map) {
-              final map = Map<String, dynamic>.from(row);
-              final keyValue = map['key']?.toString();
-              final value = map['value']?.toString();
-              if (keyValue != null && value != null && !resolved.containsKey(keyValue)) {
-                resolved[keyValue] = value;
-              }
-            }
+      // 3) Fallbacks in order
+      for (final fb in fallbackLocales) {
+        if (missing.isEmpty) break;
+        final fromCache = <String>[];
+        for (final code in List<String>.from(missing)) {
+          final fk = _k(fb, code);
+          final cached = _cache[fk];
+          if (cached != null) {
+            out[code] = cached;
+            fromCache.add(code);
           }
         }
-
-        if (resolved.length == keys.length) {
-          break;
+        if (fromCache.isNotEmpty) {
+          missing.removeWhere(fromCache.contains);
         }
+        if (missing.isEmpty) break;
+
+        final hits = await _fetchMany(missing, fb);
+        out.addAll(hits);
+        missing
+          ..clear()
+          ..addAll(codes.where((c) => !out.containsKey(c)));
       }
 
-      for (final key in keys) {
-        resolved.putIfAbsent(key, () => key);
-      }
-
-      return resolved;
+      return out;
     });
   }
 
-  @override
-  Future<Result<List<String>>> supportedLocales() {
-    return guard(() async {
-      final response = await _client.rpc('i18n_supported_locales');
-      if (response is List) {
-        return response.map((e) => e.toString()).toList();
-      }
-      return <String>['en'];
-    });
+  Future<LocalizedError?> _fetchSingle(String code, String locale) async {
+    final row = await svc.client
+        .from(_table)
+        .select<Map<String, dynamic>>()
+        .eq('code', code)
+        .eq('locale', locale)
+        .maybeSingle();
+
+    if (row == null) return null;
+    final e = LocalizedError.fromMap(asMap(row));
+    _cache[_k(locale, code)] = e;
+    return e;
   }
 
-  String _normalizeLocale(String? locale) {
-    final value = (locale ?? 'en').trim();
-    if (value.isEmpty) {
-      return 'en';
+  Future<Map<String, LocalizedError>> _fetchMany(
+    List<String> codes,
+    String locale,
+  ) async {
+    if (codes.isEmpty) return {};
+    final rows = await svc.client
+        .from(_table)
+        .select<List<Map<String, dynamic>>>()
+        .eq('locale', locale)
+        .in_('code', codes);
+
+    final map = <String, LocalizedError>{};
+    for (final r in rows) {
+      final e = LocalizedError.fromMap(asMap(r));
+      map[e.code] = e;
+      _cache[_k(locale, e.code)] = e;
     }
-    return value.replaceAll('_', '-');
-  }
-
-  List<String> _fallbackLocales(String locale) {
-    final fallbacks = <String>{};
-    final normalized = _normalizeLocale(locale);
-    fallbacks.add(normalized);
-
-    final parts = normalized.split('-');
-    if (parts.length > 1) {
-      fallbacks.add(parts.first);
-    }
-
-    fallbacks.add('en');
-
-    return fallbacks.toList();
-  }
-
-  String _interpolate(String template, Map<String, String> params) {
-    var output = template;
-    params.forEach((key, value) {
-      output = output.replaceAll('{$key}', value);
-    });
-    return output;
+    return map;
   }
 }

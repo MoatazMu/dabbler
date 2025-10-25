@@ -1,21 +1,25 @@
-import '../../core/result.dart';
+import '../../core/types/result.dart';
+import '../models/localized_error.dart';
 
 abstract class LocalizationRepository {
-  /// Get a localized message by key with optional interpolation.
-  /// If not found, returns [defaultValue] when provided, otherwise the key.
-  Future<Result<String>> message(
-    String key, {
-    String? locale,
-    Map<String, String>? params,
-    String? defaultValue,
+  /// Fetch a single error, with fallback locales (first hit wins).
+  Future<Result<LocalizedError?>> getError(
+    String code, {
+    String locale = 'en',
+    List<String> fallbackLocales = const ['en'],
   });
 
-  /// Batch lookup of localized messages; missing keys map to the key itself.
-  Future<Result<Map<String, String>>> messages(
-    List<String> keys, {
-    String? locale,
+  /// Batch fetch; returns map by code (missing codes omitted).
+  Future<Result<Map<String, LocalizedError>>> getErrors(
+    List<String> codes, {
+    String locale = 'en',
+    List<String> fallbackLocales = const ['en'],
   });
 
-  /// List supported locales as exposed by the server.
-  Future<Result<List<String>>> supportedLocales();
+  /// Prime the in-memory cache.
+  void primeCache(List<LocalizedError> items);
+
+  /// Clear cache; if [locale] provided, only that locale is cleared.
+  void clearCache({String? locale});
 }
+

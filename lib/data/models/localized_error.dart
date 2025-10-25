@@ -1,29 +1,55 @@
+import 'package:meta/meta.dart';
+
+@immutable
 class LocalizedError {
   final String code;
-  final String message;
   final String locale;
-  final String? details;
+  final String message;
+  final String? title;
+  final String? hint;
+  final String? severity;
+  final DateTime? updatedAt;
 
   const LocalizedError({
     required this.code,
-    required this.message,
     required this.locale,
-    this.details,
+    required this.message,
+    required this.title,
+    required this.hint,
+    required this.severity,
+    required this.updatedAt,
   });
 
-  factory LocalizedError.fromJson(Map<String, dynamic> json) {
-    return LocalizedError(
-      code: json['code']?.toString() ?? 'unknown',
-      message: json['message']?.toString() ?? 'Unknown error',
-      locale: json['locale']?.toString() ?? 'en',
-      details: json['details']?.toString(),
-    );
-  }
+  static DateTime? _dt(dynamic v) =>
+      v == null ? null : DateTime.tryParse(v.toString());
 
-  Map<String, dynamic> toJson() => {
+  factory LocalizedError.fromMap(Map<String, dynamic> m) => LocalizedError(
+        code: (m['code'] ?? m['key'] ?? '').toString(),
+        locale: (m['locale'] ?? m['lang'] ?? 'en').toString(),
+        message: (m['message'] ?? m['text'] ?? m['value'] ?? '').toString(),
+        title: m['title']?.toString(),
+        hint: m['hint']?.toString(),
+        severity: (m['severity'] ?? m['level'])?.toString(),
+        updatedAt: _dt(m['updated_at']),
+      );
+
+  Map<String, dynamic> toMap() => {
         'code': code,
-        'message': message,
         'locale': locale,
-        if (details != null) 'details': details,
+        'message': message,
+        'title': title,
+        'hint': hint,
+        'severity': severity,
+        'updated_at': updatedAt?.toIso8601String(),
       };
+
+  /// `{name}` style interpolation.
+  String format([Map<String, String> vars = const {}]) {
+    var out = message;
+    vars.forEach((k, v) {
+      out = out.replaceAll('{$k}', v);
+    });
+    return out;
+  }
 }
+
