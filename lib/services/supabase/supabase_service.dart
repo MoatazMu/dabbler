@@ -14,6 +14,22 @@ class SupabaseService {
 
   SupabaseClient get client => _client;
 
+  /// Returns the authenticated user's id if available.
+  String? authUserId() {
+    return _client.auth.currentUser?.id;
+  }
+
+  /// Maps Supabase/Postgrest errors into domain specific failures.
+  Failure mapPostgrestError(
+    Object error, {
+    StackTrace? stackTrace,
+  }) {
+    return _errorMapper.map(
+      error,
+      stackTrace: stackTrace,
+    );
+  }
+
   /// Returns a query builder for the provided [table].
   PostgrestFilterBuilder<Map<String, dynamic>> from(String table) {
     return _client.from(table);
