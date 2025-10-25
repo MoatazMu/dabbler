@@ -1,180 +1,65 @@
+import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../services/supabase_service.dart';
-import '../../core/types/result.dart';
 import '../../core/error/failure.dart';
+import '../../core/types/result.dart';
+import '../../core/utils/json.dart';
+import '../../services/supabase_service.dart';
 import '../models/feed_item.dart';
+import '../models/post.dart';
 import 'base_repository.dart';
 import 'feed_repository.dart';
 
+@immutable
 class FeedRepositoryImpl extends BaseRepository implements FeedRepository {
-  final SupabaseService service;
-  FeedRepositoryImpl(this.service) : super(service);
+  FeedRepositoryImpl(SupabaseService svc) : super(svc);
 
-  SupabaseClient get client => service.client;
+  SupabaseClient get _db => svc.client;
 
-  static const _viewNames = ['vw_feed', 'feed_items'];
-  static const _viewCols =
-      'id,author_user_id,visibility,squad_id,content,media_url,created_at,author_display_name,author_avatar_url,like_count,comment_count';
-  static const _postCols =
-      'id,author_user_id,visibility,squad_id,content,media_url,created_at';
+  static const _posts = 'posts';
 
   @override
-  Future<Result<List<FeedItem>>> getHomeFeed({
-    String? cursor,
-    int limit = 20,
-  }) {
-    return guard(() async {
-      _assertSignedIn();
-
-      final rows = await _tryViewThenPosts(
-        build: (from, cols) {
-          final query = client
-              .from(from)
-              .select(cols)
-                ..order('created_at', ascending: false)
-                ..order('id', ascending: false)
-                ..limit(limit);
-          _applyCursor(query, cursor);
-          return query;
-        },
-      );
-
-      return _mapRows(rows);
-    });
-  }
-
-  @override
-  Future<Result<List<FeedItem>>> getUserFeed(
-    String userId, {
-    String? cursor,
-    int limit = 20,
-  }) {
-    return guard(() async {
-      _assertSignedIn();
-
-      final rows = await _tryViewThenPosts(
-        build: (from, cols) {
-          final query = client
-              .from(from)
-              .select(cols)
-                ..eq('author_user_id', userId)
-                ..order('created_at', ascending: false)
-                ..order('id', ascending: false)
-                ..limit(limit);
-          _applyCursor(query, cursor);
-          return query;
-        },
-      );
-
-      return _mapRows(rows);
-    });
-  }
-
-  @override
-  Future<Result<List<FeedItem>>> getSquadFeed(
-    String squadId, {
-    String? cursor,
-    int limit = 20,
-  }) {
-    return guard(() async {
-      _assertSignedIn();
-
-      final rows = await _tryViewThenPosts(
-        build: (from, cols) {
-          final query = client
-              .from(from)
-              .select(cols)
-                ..eq('squad_id', squadId)
-                ..order('created_at', ascending: false)
-                ..order('id', ascending: false)
-                ..limit(limit);
-          _applyCursor(query, cursor);
-          return query;
-        },
-      );
-
-      return _mapRows(rows);
-    });
-  }
-
-  @override
-  String makeCursor(FeedItem item) {
-    final ts = item.post.createdAt.toUtc().toIso8601String();
-    return '$ts|${item.post.id}';
-  }
-
-  // ---------- helpers ----------
-
-  void _assertSignedIn() {
-    if (client.auth.currentUser?.id == null) {
-      throw Failure.unauthorized(message: 'Not signed in');
-    }
-  }
-
-  void _applyCursor(
-    PostgrestFilterBuilder<Map<String, dynamic>> query,
-    String? cursor,
-  ) {
-    if (cursor == null) return;
-    final parts = cursor.split('|');
-    if (parts.length != 2) return;
-
-    final createdAt = DateTime.tryParse(parts[0])?.toUtc();
-    final id = parts[1];
-
-    if (createdAt != null) {
-      query
-        ..lte('created_at', createdAt.toIso8601String())
-        ..neq('id', id);
-    }
-  }
-
-  Future<List<dynamic>> _tryViewThenPosts({
-    required PostgrestFilterBuilder<Map<String, dynamic>> Function(
-            String from, String cols)
-        build,
+  Future<Result<List<FeedItem>>> listRecent({
+    int limit = 50,
+    String? afterCursor,
+    String? beforeCursor,
   }) async {
-    for (final view in _viewNames) {
-      try {
-        final query = build(view, _viewCols);
-        final rows = await query;
-        return rows as List<dynamic>;
-      } on PostgrestException catch (e) {
-        if (_isRelationOrColumnMissing(e)) {
-          continue;
-        }
-        rethrow;
+    return guard<List<FeedItem>>(() async {
+      if (limit <= 0) throw Failure.badRequest('limit must be > 0');
+
+      final q = _db
+          .from(_posts)
+          .select<List<Map<String, dynamic>>>()
+          .order('created_at', ascending: false) // DESC timeline
+          .order('id', ascending: false)         // tie-breaker for stable order
+          .limit(limit);
+
+      final before = FeedItem.decodeCursor(beforeCursor);
+      if (before != null) {
+        // Fetch strictly older-than cursor (created_at DESC, id DESC)
+        // For composite key pagination, we need (created_at, id) lexicographic condition.
+        // Supabase client lacks tuple compare; emulate:
+        //   (created_at < cursor.created_at) OR
+        //   (created_at = cursor.created_at AND id < cursor.id)
+        q.or(
+          'and(created_at.lt.${before.createdAt.toIso8601String()}),'
+          'and(created_at.eq.${before.createdAt.toIso8601String()},id.lt.${before.id})',
+        );
       }
-    }
 
-    final fallbackQuery = build('posts', _postCols);
-    final fallbackRows = await fallbackQuery;
-    return fallbackRows as List<dynamic>;
+      // Note: afterCursor is reserved (for asc pagination). Not used now.
+
+      final rows = await q;
+      return rows.map((m) => FeedItem.fromPostRow(asMap(m))).toList();
+    });
   }
 
-  bool _isRelationOrColumnMissing(PostgrestException e) {
-    if (e.code == '42P01' || e.code == '42703') {
-      return true;
-    }
-    final message = (e.message ?? '').toLowerCase();
-    if (message.isEmpty) return false;
-    if (message.contains('relation') && message.contains('does not exist')) {
-      return true;
-    }
-    if (message.contains('column') && message.contains('does not exist')) {
-      return true;
-    }
-    if (message.contains('pgrst') && message.contains('not found')) {
-      return true;
-    }
-    return false;
-  }
-
-  List<FeedItem> _mapRows(List<dynamic> rows) {
-    return rows
-        .map((row) => Map<String, dynamic>.from(row as Map))
-        .map(FeedItem.fromJson)
-        .toList(growable: false);
+  @override
+  String? nextCursorFrom(List<FeedItem> page) {
+    if (page.isEmpty) return null;
+    // With DESC sort, the last item is the "oldest" in this page,
+    // so the next page should start strictly before it.
+    return page.last.toCursor();
   }
 }
+
