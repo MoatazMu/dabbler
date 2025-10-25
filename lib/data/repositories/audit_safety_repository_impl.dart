@@ -1,265 +1,108 @@
-import '../../services/supabase/supabase_service.dart';
-import '../models/abuse_flag.dart';
-import '../models/ban_term.dart';
-import '../models/moderation_action.dart';
-import '../models/moderation_ticket.dart';
-import 'audit_safety_repository.dart';
-import 'base_repository.dart';
 
+import 'package:meta/meta.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../core/error/failure.dart';
+import '../../core/types/result.dart';
+import '../../core/utils/json.dart';
+import '../models/abuse_flag.dart';
+import '../../services/supabase_service.dart';
+import 'audit_safety_repository.dart';
+
+@immutable
 class AuditSafetyRepositoryImpl extends BaseRepository
     implements AuditSafetyRepository {
   AuditSafetyRepositoryImpl(SupabaseService svc) : super(svc);
 
-  static const _flagsTable = 'moderation_flags';
-  static const _ticketsTable = 'moderation_tickets';
-  static const _actionsTable = 'moderation_actions';
-  static const _banTermsTable = 'moderation_ban_terms';
+  SupabaseClient get _db => svc.client;
 
-  static const _flagColumns =
-      'id,subject_type,subject_id,reason,reporter_user_id,status,created_at';
-  static const _ticketColumns =
-      'id,flag_id,category,notes,status,created_at';
-  static const _actionColumns =
-      'id,ticket_id,subject_type,subject_id,action,reason,meta,created_at';
-  static const _banTermColumns = 'id,term,kind,enabled,created_at';
+  String? get _uid => _db.auth.currentUser?.id;
 
   @override
-  Future<Result<List<AbuseFlag>>> listFlags({
-    String? status,
-    String? subjectType,
-    int limit = 50,
-    DateTime? before,
-  }) {
-    return guard(() async {
-      var query = svc
-          .from(_flagsTable)
-          .select(_flagColumns)
-          .order('created_at', ascending: false)
-          .limit(limit);
-
-      if (status != null) {
-        query = query.eq('status', status);
-      }
-      if (subjectType != null) {
-        query = query.eq('subject_type', subjectType);
-      }
-      if (before != null) {
-        query = query.lt('created_at', before.toUtc().toIso8601String());
-      }
-
-      final response = await query;
-      final data = (response as List<dynamic>)
-          .map((dynamic item) => AbuseFlag.fromJson(
-                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
-              ))
-          .toList();
-
-      return data;
-    });
-  }
-
-  @override
-  Future<Result<AbuseFlag>> getFlag(String id) {
-    return guard(() async {
-      final response = await svc
-          .from(_flagsTable)
-          .select(_flagColumns)
-          .eq('id', id)
-          .single();
-
-      return AbuseFlag.fromJson(
-        Map<String, dynamic>.from(response as Map<dynamic, dynamic>),
-      );
-    });
-  }
-
-  @override
-  Future<Result<AbuseFlag>> setFlagStatus({
-    required String id,
-    required String status,
-  }) {
-    return guard(() async {
-      final response = await svc
-          .from(_flagsTable)
-          .update({'status': status})
-          .eq('id', id)
-          .select(_flagColumns)
-          .single();
-
-      return AbuseFlag.fromJson(
-        Map<String, dynamic>.from(response as Map<dynamic, dynamic>),
-      );
-    });
-  }
-
-  @override
-  Future<Result<ModerationTicket>> createTicket({
-    required String flagId,
-    required String category,
-    String? notes,
-  }) {
-    return guard(() async {
-      final payload = <String, dynamic>{
-        'flag_id': flagId,
-        'category': category,
-        'status': 'open',
-        if (notes != null) 'notes': notes,
-      };
-
-      final response = await svc
-          .from(_ticketsTable)
-          .insert(payload)
-          .select(_ticketColumns)
-          .single();
-
-      return ModerationTicket.fromJson(
-        Map<String, dynamic>.from(response as Map<dynamic, dynamic>),
-      );
-    });
-  }
-
-  @override
-  Future<Result<List<ModerationTicket>>> listTickets({
-    String? status,
-    int limit = 50,
-    DateTime? before,
-  }) {
-    return guard(() async {
-      var query = svc
-          .from(_ticketsTable)
-          .select(_ticketColumns)
-          .order('created_at', ascending: false)
-          .limit(limit);
-
-      if (status != null) {
-        query = query.eq('status', status);
-      }
-      if (before != null) {
-        query = query.lt('created_at', before.toUtc().toIso8601String());
-      }
-
-      final response = await query;
-      final data = (response as List<dynamic>)
-          .map((dynamic item) => ModerationTicket.fromJson(
-                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
-              ))
-          .toList();
-
-      return data;
-    });
-  }
-
-  @override
-  Future<Result<ModerationAction>> createAction({
-    String? ticketId,
-    required String subjectType,
-    required String subjectId,
-    required String action,
+  Future<Result<AbuseFlag>> submitPostReport({
+    required String postId,
     String? reason,
-    Map<String, dynamic>? meta,
-  }) {
-    return guard(() async {
-      final payload = <String, dynamic>{
-        'subject_type': subjectType,
-        'subject_id': subjectId,
-        'action': action,
-        if (ticketId != null) 'ticket_id': ticketId,
-        if (reason != null) 'reason': reason,
-        if (meta != null) 'meta': meta,
+    String? details,
+  }) async {
+    return guard<AbuseFlag>(() async {
+      final uid = _uid;
+      if (uid == null) throw AuthException('Not authenticated');
+
+      // RLS: INSERT allowed when reporter_user_id = auth.uid()
+      final payload = {
+        'reporter_user_id': uid,
+        'post_id': postId,
+        if (reason != null && reason.isNotEmpty) 'reason': reason,
+        if (details != null && details.isNotEmpty) 'details': details,
       };
 
-      final response = await svc
-          .from(_actionsTable)
+      final inserted = await _db
+          .from('post_reports')
           .insert(payload)
-          .select(_actionColumns)
+          .select<Map<String, dynamic>>()
           .single();
 
-      return ModerationAction.fromJson(
-        Map<String, dynamic>.from(response as Map<dynamic, dynamic>),
-      );
+      return AbuseFlag.fromMap(inserted);
     });
   }
 
   @override
-  Future<Result<List<ModerationAction>>> listActions({
-    String? subjectType,
-    String? subjectId,
-    int limit = 50,
-    DateTime? before,
-  }) {
-    return guard(() async {
-      var query = svc
-          .from(_actionsTable)
-          .select(_actionColumns)
+  Future<Result<List<AbuseFlag>>> getMyReports({int limit = 50}) async {
+    return guard<List<AbuseFlag>>(() async {
+      final uid = _uid;
+      if (uid == null) throw AuthException('Not authenticated');
+
+      // RLS: reporter_user_id = auth.uid() OR admin
+      final rows = await _db
+          .from('post_reports')
+          .select<List<Map<String, dynamic>>>()
+          .eq('reporter_user_id', uid)
           .order('created_at', ascending: false)
           .limit(limit);
 
-      if (subjectType != null) {
-        query = query.eq('subject_type', subjectType);
-      }
-      if (subjectId != null) {
-        query = query.eq('subject_id', subjectId);
-      }
-      if (before != null) {
-        query = query.lt('created_at', before.toUtc().toIso8601String());
-      }
-
-      final response = await query;
-      final data = (response as List<dynamic>)
-          .map((dynamic item) => ModerationAction.fromJson(
-                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
-              ))
-          .toList();
-
-      return data;
+      return rows.map((r) => AbuseFlag.fromMap(r)).toList();
     });
   }
 
   @override
-  Future<Result<List<BanTerm>>> listBanTerms({bool? enabled}) {
-    return guard(() async {
-      var query = svc
-          .from(_banTermsTable)
-          .select(_banTermColumns)
-          .order('created_at', ascending: false);
+  Future<Result<List<AbuseFlag>>> getAllReports({
+    int limit = 100,
+    DateTime? since,
+  }) async {
+    return guard<List<AbuseFlag>>(() async {
+      // If the caller isn't admin, RLS will naturally reduce the set to their own reports.
+      final query = _db
+          .from('post_reports')
+          .select<List<Map<String, dynamic>>>()
+          .order('created_at', ascending: false)
+          .limit(limit);
 
-      if (enabled != null) {
-        query = query.eq('enabled', enabled);
+      if (since != null) {
+        query.gte('created_at', since.toIso8601String());
       }
 
-      final response = await query;
-      final data = (response as List<dynamic>)
-          .map((dynamic item) => BanTerm.fromJson(
-                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
-              ))
-          .toList();
-
-      return data;
+      final rows = await query;
+      return rows.map((r) => AbuseFlag.fromMap(r)).toList();
     });
   }
 
   @override
-  Future<Result<BanTerm>> upsertBanTerm(BanTerm term) {
-    return guard(() async {
-      final payload = Map<String, dynamic>.from(term.toJson())
-        ..remove('created_at');
+  Stream<List<AbuseFlag>> watchMyReports({int limit = 50}) {
+    final uid = _uid;
+    if (uid == null) {
+      return const Stream<List<AbuseFlag>>.empty();
+    }
 
-      final response = await svc
-          .from(_banTermsTable)
-          .upsert(payload, onConflict: 'id')
-          .select(_banTermColumns)
-          .single();
-
-      return BanTerm.fromJson(
-        Map<String, dynamic>.from(response as Map<dynamic, dynamic>),
-      );
-    });
-  }
-
-  @override
-  Future<Result<void>> deleteBanTerm(String id) {
-    return guard(() async {
-      await svc.from(_banTermsTable).delete().eq('id', id);
-    });
+    // Realtime subscription scoped to the reporter via filter.
+    return _db
+        .from('post_reports')
+        .stream(primaryKey: ['id'])
+        .eq('reporter_user_id', uid)
+        .order('created_at', ascending: false)
+        .limit(limit)
+        .map((rows) => rows
+            .map<AbuseFlag>((r) => AbuseFlag.fromMap(asMap(r)))
+            .toList());
   }
 }
+

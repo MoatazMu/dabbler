@@ -1,87 +1,48 @@
-class AbuseFlag {
-  const AbuseFlag({
-    required this.id,
-    required this.subjectType,
-    required this.subjectId,
-    this.reason,
-    required this.reporterUserId,
-    required this.status,
-    required this.createdAt,
-  });
+import '../../core/utils/json.dart';
 
+/// App-level model for a user-submitted abuse report against a post.
+/// This maps to the `public.post_reports` table (fields are tolerant).
+class AbuseFlag {
   final String id;
-  final String subjectType;
-  final String subjectId;
-  final String? reason;
   final String reporterUserId;
-  final String status;
+  final String postId;
+
+  /// Optional metadata if present in your schema.
+  final String? reason;      // e.g. 'spam', 'abuse', 'nsfw'
+  final String? details;     // freeform text
+  final String? status;      // if your schema tracks workflow status
   final DateTime createdAt;
 
-  factory AbuseFlag.fromJson(Map<String, dynamic> json) {
+  const AbuseFlag({
+    required this.id,
+    required this.reporterUserId,
+    required this.postId,
+    required this.createdAt,
+    this.reason,
+    this.details,
+    this.status,
+  });
+
+  factory AbuseFlag.fromMap(Map<String, dynamic> row) {
+    final m = asMap(row);
     return AbuseFlag(
-      id: json['id'] as String,
-      subjectType: json['subject_type'] as String,
-      subjectId: json['subject_id'] as String,
-      reason: json['reason'] as String?,
-      reporterUserId: json['reporter_user_id'] as String,
-      status: json['status'] as String,
-      createdAt: DateTime.parse(json['created_at'] as String),
+      id: (m['id'] ?? m['report_id'] ?? '').toString(),
+      reporterUserId: (m['reporter_user_id'] ?? m['user_id'] ?? '').toString(),
+      postId: (m['post_id'] ?? '').toString(),
+      reason: m['reason']?.toString(),
+      details: m['details']?.toString() ?? m['note']?.toString(),
+      status: m['status']?.toString(),
+      createdAt: asDateTime(m['created_at']) ?? DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 
-  Map<String, dynamic> toJson() {
+  Map<String, dynamic> toInsertMap() {
     return {
-      'id': id,
-      'subject_type': subjectType,
-      'subject_id': subjectId,
-      'reason': reason,
       'reporter_user_id': reporterUserId,
-      'status': status,
-      'created_at': createdAt.toIso8601String(),
+      'post_id': postId,
+      if (reason != null) 'reason': reason,
+      if (details != null) 'details': details,
     };
   }
-
-  AbuseFlag copyWith({
-    String? id,
-    String? subjectType,
-    String? subjectId,
-    String? reason,
-    String? reporterUserId,
-    String? status,
-    DateTime? createdAt,
-  }) {
-    return AbuseFlag(
-      id: id ?? this.id,
-      subjectType: subjectType ?? this.subjectType,
-      subjectId: subjectId ?? this.subjectId,
-      reason: reason ?? this.reason,
-      reporterUserId: reporterUserId ?? this.reporterUserId,
-      status: status ?? this.status,
-      createdAt: createdAt ?? this.createdAt,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is AbuseFlag &&
-        other.id == id &&
-        other.subjectType == subjectType &&
-        other.subjectId == subjectId &&
-        other.reason == reason &&
-        other.reporterUserId == reporterUserId &&
-        other.status == status &&
-        other.createdAt == createdAt;
-  }
-
-  @override
-  int get hashCode => Object.hash(
-        id,
-        subjectType,
-        subjectId,
-        reason,
-        reporterUserId,
-        status,
-        createdAt,
-      );
 }
+

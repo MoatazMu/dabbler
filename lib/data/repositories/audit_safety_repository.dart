@@ -1,57 +1,26 @@
-import '../models/abuse_flag.dart';
-import '../models/moderation_ticket.dart';
-import '../models/moderation_action.dart';
-import '../models/ban_term.dart';
+
 import '../../core/types/result.dart';
+import '../models/abuse_flag.dart';
 
 abstract class AuditSafetyRepository {
-  // Flags
-  Future<Result<List<AbuseFlag>>> listFlags({
-    String? status,
-    String? subjectType,
-    int limit = 50,
-    DateTime? before,
-  });
-
-  Future<Result<AbuseFlag>> getFlag(String id);
-
-  Future<Result<AbuseFlag>> setFlagStatus({
-    required String id,
-    required String status,
-  });
-
-  // Tickets
-  Future<Result<ModerationTicket>> createTicket({
-    required String flagId,
-    required String category,
-    String? notes,
-  });
-
-  Future<Result<List<ModerationTicket>>> listTickets({
-    String? status,
-    int limit = 50,
-    DateTime? before,
-  });
-
-  // Actions
-  Future<Result<ModerationAction>> createAction({
-    String? ticketId,
-    required String subjectType,
-    required String subjectId,
-    required String action,
+  /// Submit a new report for the currently authenticated user.
+  /// Returns the inserted AbuseFlag (if PostgREST returns it) or a minimal echo object.
+  Future<Result<AbuseFlag>> submitPostReport({
+    required String postId,
     String? reason,
-    Map<String, dynamic>? meta,
+    String? details,
   });
 
-  Future<Result<List<ModerationAction>>> listActions({
-    String? subjectType,
-    String? subjectId,
-    int limit = 50,
-    DateTime? before,
+  /// Current user's reports (RLS: reporter or admin).
+  Future<Result<List<AbuseFlag>>> getMyReports({int limit = 50});
+
+  /// (Admin) List all recent reports. RLS will restrict non-admins automatically.
+  Future<Result<List<AbuseFlag>>> getAllReports({
+    int limit = 100,
+    DateTime? since,
   });
 
-  // Ban terms
-  Future<Result<List<BanTerm>>> listBanTerms({bool? enabled});
-  Future<Result<BanTerm>> upsertBanTerm(BanTerm term);
-  Future<Result<void>> deleteBanTerm(String id);
+  /// Watch current user's reports in realtime (ordered DESC).
+  Stream<List<AbuseFlag>> watchMyReports({int limit = 50});
 }
+
