@@ -1,20 +1,13 @@
-import 'package:dabbler/core/types/result.dart';
-import 'package:dabbler/data/models/game.dart';
-import 'package:dabbler/data/models/venue.dart';
+import '../../core/types/result.dart';
+import '../models/venue.dart';
 
 abstract class GeoRepository {
+  /// Returns venues within ~radiusMeters, sorted by distance ASC.
+  /// Uses an RPC if available, otherwise falls back to bounding-box + client sort.
   Future<Result<List<Venue>>> nearbyVenues({
     required double lat,
     required double lng,
-    int radiusMeters = 5000,
-    int limit = 20,
-    int offset = 0,
-  });
-
-  Future<Result<List<Game>>> nearbyGames({
-    required double lat,
-    required double lng,
-    int radiusMeters = 5000,
+    double radiusMeters = 5000,
     int limit = 20,
     int offset = 0,
   });
