@@ -76,8 +76,25 @@ class DatabaseFailure extends Failure {
 }
 
 // Authentication failures
+class AuthFailure extends Failure {
+  const AuthFailure({
+    required super.message,
+    super.code,
+    super.details,
+  });
+}
+
 class AuthenticationFailure extends Failure {
   const AuthenticationFailure({
+    required super.message,
+    super.code,
+    super.details,
+  });
+}
+
+/// Simple auth failure used by repositories when a user is not authenticated.
+class AuthFailure extends Failure {
+  const AuthFailure({
     required super.message,
     super.code,
     super.details,

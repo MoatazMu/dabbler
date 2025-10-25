@@ -1,16 +1,13 @@
 import 'package:riverpod/riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failures.dart';
+import '../../core/error/failures.dart';
 import 'supabase_client.dart';
 import 'supabase_error_mapper.dart';
 
 /// Thin wrapper around [SupabaseClient] to centralize access helpers.
 class SupabaseService {
-  SupabaseService(
-    this._client, {
-    SupabaseErrorMapper? errorMapper,
-  }) : _errorMapper = errorMapper ?? const SupabaseErrorMapper();
+  SupabaseService(this._client, this._errorMapper);
 
   final SupabaseClient _client;
   final SupabaseErrorMapper _errorMapper;
@@ -71,14 +68,16 @@ class SupabaseService {
         )
         .toList();
   }
+
+  /// Maps PostgREST or network errors to a [Failure] using the shared mapper.
+  Failure mapPostgrestError(Object error) {
+    return _errorMapper.map(error);
+  }
 }
 
 /// Provides an instance of [SupabaseService] backed by the global client.
 final supabaseServiceProvider = Provider<SupabaseService>((ref) {
   final client = ref.watch(supabaseClientProvider);
-  final mapper = ref.watch(supabaseErrorMapperProvider);
-  return SupabaseService(
-    client,
-    errorMapper: mapper,
-  );
+  final errorMapper = ref.watch(supabaseErrorMapperProvider);
+  return SupabaseService(client, errorMapper);
 });

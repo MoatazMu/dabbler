@@ -6,6 +6,17 @@ part 'profile.g.dart';
 @freezed
 class Profile with _$Profile {
   const factory Profile({
+    required String id,
+    @JsonKey(name: 'user_id') required String userId,
+    @JsonKey(name: 'profile_type') required String profileType,
+    String? username,
+    @JsonKey(name: 'display_name') required String displayName,
+    String? bio,
+    @JsonKey(name: 'avatar_url') String? avatarUrl,
+    String? city,
+    String? country,
+    String? language,
+    bool? verified,
     @JsonKey(name: 'id') required String id,
     @JsonKey(name: 'user_id') required String userId,
     @JsonKey(name: 'profile_type') required String profileType,
