@@ -1,21 +1,24 @@
-import 'package:dabbler/core/result.dart';
-import 'package:dabbler/data/models/notification.dart';
 
-typedef AppNotificationResult<T> = Result<T>;
+import '../../core/types/result.dart';
+import '../../data/models/notification.dart';
 
 abstract class NotificationsRepository {
-  Future<AppNotificationResult<List<AppNotification>>> list({
+  /// Latest notifications for the current user (RLS will still protect).
+  Future<Result<List<AppNotification>>> getLatest({
     int limit = 50,
-    DateTime? before,
+    DateTime? since, // optional filter by created_at >= since
   });
 
-  Future<AppNotificationResult<void>> markRead({required String id});
+  /// Load a single notification by id (must belong to current user via RLS).
+  Future<Result<AppNotification?>> getById(String id);
 
-  /// Set read_at = now() for all unread notifications for current user.
-  Future<AppNotificationResult<int>> markAllRead();
+  /// Mark one notification read, returns number of rows updated (0/1).
+  Future<Result<int>> markAsRead(String id);
 
-  /// Stream live changes (insert/update) for current user.
-  Stream<List<AppNotification>> watch({
-    int limit = 50,
-  });
+  /// Mark all notifications read for the current user, optionally up to [before].
+  Future<Result<int>> markAllAsRead({DateTime? before});
+
+  /// Realtime stream for the current user's notifications (ordered desc).
+  Stream<List<AppNotification>> watchUserNotifications({int limit = 50});
 }
+

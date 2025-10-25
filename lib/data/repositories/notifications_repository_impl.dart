@@ -1,137 +1,133 @@
-import 'dart:async';
 
-import 'package:dabbler/core/result.dart';
-import 'package:dabbler/core/utils/either.dart';
-import 'package:dabbler/data/models/notification.dart';
-import 'package:dabbler/data/repositories/base_repository.dart';
-import 'package:dabbler/data/repositories/notifications_repository.dart';
+import 'package:dartz/dartz.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/error/failure.dart';
+import '../../core/types/result.dart';
+import '../../core/utils/json.dart';
+import '../../data/models/notification.dart';
+import '../../services/supabase_service.dart';
+import 'notifications_repository.dart';
+import 'package:meta/meta.dart';
+
+@immutable
 class NotificationsRepositoryImpl extends BaseRepository
     implements NotificationsRepository {
-  NotificationsRepositoryImpl(super.svc);
+  NotificationsRepositoryImpl(SupabaseService svc) : super(svc);
 
-  static const _table = 'notifications';
-  static const _selectColumns =
-      'id,user_id,type,payload,created_at,read_at';
+  SupabaseClient get _db => svc.client;
+
+  String? get _uid => _db.auth.currentUser?.id;
 
   @override
-  Future<Result<List<AppNotification>>> list({
+  Future<Result<List<AppNotification>>> getLatest({
     int limit = 50,
-    DateTime? before,
+    DateTime? since,
   }) async {
-    try {
-      var query = svc.client
-          .from(_table)
-          .select(_selectColumns)
+    return guard<List<AppNotification>>(() async {
+      final uid = _uid;
+      if (uid == null) {
+        throw AuthException('Not authenticated');
+      }
+
+      final query = _db
+          .from('notifications')
+          .select<List<Map<String, dynamic>>>()
+          .eq('user_id', uid)
           .order('created_at', ascending: false)
           .limit(limit);
 
+      if (since != null) {
+        query.gte('created_at', since.toIso8601String());
+      }
+
+      final rows = await query;
+      return rows.map((r) => AppNotification.fromMap(r)).toList();
+    });
+  }
+
+  @override
+  Future<Result<AppNotification?>> getById(String id) async {
+    return guard<AppNotification?>(() async {
+      final uid = _uid;
+      if (uid == null) throw AuthException('Not authenticated');
+
+      final rows = await _db
+          .from('notifications')
+          .select<Map<String, dynamic>>()
+          .eq('id', id)
+          .limit(1)
+          .maybeSingle();
+
+      if (rows == null) return null;
+      return AppNotification.fromMap(rows);
+    });
+  }
+
+  @override
+  Future<Result<int>> markAsRead(String id) async {
+    return guard<int>(() async {
+      final uid = _uid;
+      if (uid == null) throw AuthException('Not authenticated');
+
+      final now = DateTime.now().toUtc().toIso8601String();
+
+      final res = await _db
+          .from('notifications')
+          .update({'read_at': now})
+          .eq('id', id)
+          .eq('user_id', uid);
+
+      // PostgREST returns updated rows by default (unless prefer: return=minimal).
+      // Count might not be present in all versions; fall back to length.
+      if (res is List) return res.length;
+      if (res is Map && res['count'] is int) return res['count'] as int;
+      return 1; // optimistic default if update didn't throw and wasn't minimal
+    });
+  }
+
+  @override
+  Future<Result<int>> markAllAsRead({DateTime? before}) async {
+    return guard<int>(() async {
+      final uid = _uid;
+      if (uid == null) throw AuthException('Not authenticated');
+
+      final now = DateTime.now().toUtc().toIso8601String();
+
+      final query = _db
+          .from('notifications')
+          .update({'read_at': now})
+          .eq('user_id', uid)
+          .is_('read_at', null);
+
       if (before != null) {
-        query = query.lt('created_at', before.toUtc().toIso8601String());
+        query.lte('created_at', before.toIso8601String());
       }
 
-      final response = await query;
-
-      final rows = (response as List<dynamic>)
-          .map((dynamic row) => Map<String, dynamic>.from(row as Map))
-          .map(AppNotification.fromJson)
-          .toList(growable: false);
-
-      return Right(rows);
-    } catch (error) {
-      return Left(svc.mapPostgrestError(error));
-    }
+      final res = await query;
+      if (res is List) return res.length;
+      if (res is Map && res['count'] is int) return res['count'] as int;
+      // If "return=minimal" is set globally, you can do an extra count; keep simple:
+      return 0;
+    });
   }
 
   @override
-  Future<Result<void>> markRead({required String id}) async {
-    try {
-      await svc.client
-          .from(_table)
-          .update({
-            'read_at': DateTime.now().toUtc().toIso8601String(),
-          })
-          .eq('id', id);
-
-      return const Right(null);
-    } catch (error) {
-      return Left(svc.mapPostgrestError(error));
-    }
-  }
-
-  @override
-  Future<Result<int>> markAllRead() async {
-    try {
-      final response = await svc.client
-          .from(_table)
-          .update({
-            'read_at': DateTime.now().toUtc().toIso8601String(),
-          })
-          .is_('read_at', null)
-          .select('id');
-
-      if (response is List) {
-        return Right(response.length);
-      }
-
-      return const Right(0);
-    } catch (error) {
-      return Left(svc.mapPostgrestError(error));
-    }
-  }
-
-  @override
-  Stream<List<AppNotification>> watch({int limit = 50}) {
-    final controller = StreamController<List<AppNotification>>.broadcast();
-    final channel = svc.client.channel('realtime:$_table');
-
-    Future<void> emitLatest() async {
-      final result = await list(limit: limit);
-      result.fold(
-        (failure) {
-          if (!controller.isClosed) {
-            controller.addError(failure);
-          }
-        },
-        (notifications) {
-          if (!controller.isClosed) {
-            controller.add(notifications);
-          }
-        },
-      );
+  Stream<List<AppNotification>> watchUserNotifications({int limit = 50}) {
+    final uid = _uid;
+    if (uid == null) {
+      // Return an empty stream if unauthenticated.
+      return const Stream<List<AppNotification>>.empty();
     }
 
-    channel.on(
-      RealtimeListenTypes.postgresChanges,
-      const ChannelFilter(
-        event: '*',
-        schema: 'public',
-        table: _table,
-      ),
-      (payload, [ref]) {
-        unawaited(emitLatest());
-      },
-    );
-
-    controller.onListen = () async {
-      await emitLatest();
-      try {
-        await channel.subscribe();
-      } catch (error) {
-        final failure = svc.mapPostgrestError(error);
-        if (!controller.isClosed) {
-          controller.addError(failure);
-        }
-      }
-    };
-
-    controller.onCancel = () async {
-      await channel.unsubscribe();
-      await svc.client.removeChannel(channel);
-      await controller.close();
-    };
-
-    return controller.stream;
+    // Simple realtime stream using Supabase's .stream API.
+    return _db
+        .from('notifications')
+        .stream(primaryKey: ['id'])
+        .eq('user_id', uid)
+        .order('created_at', ascending: false)
+        .limit(limit)
+        .map((rows) => rows.map<AppNotification>((r) => AppNotification.fromMap(asMap(r))).toList());
   }
 }
+
