@@ -12,3 +12,4 @@ final supabaseServiceProvider = Provider<SupabaseService>(
 );
 
 // Feature specific repositories can expose additional providers here.
+export 'features/social/providers.dart';
