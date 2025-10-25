@@ -1,3 +1,5 @@
+import 'package:dabbler/core/error/failures.dart';
+import 'package:dabbler/services/supabase/supabase_service.dart';
 import 'package:dabbler/services/supabase_service.dart';
 
 /// Base class for repositories backed by Supabase.
@@ -17,6 +19,9 @@ abstract class BaseRepository {
 
   final SupabaseService svc;
 
+  Failure mapPostgrestError(Object error) {
+    return svc.mapPostgrestError(error);
+  }
   Result<T> success<T>(T value) => right(value);
 
   Result<T> failure<T>(Failure error) => left(error);
