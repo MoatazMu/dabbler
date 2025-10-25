@@ -1,48 +1,43 @@
+
 import '../../core/types/result.dart';
 import '../models/post.dart';
 
 abstract class PostsRepository {
-  /// Create a post as the current user (RLS requires auth.uid() to match author_user_id).
-  Future<Result<Post>> createPost({
-    required String visibility, // 'public' | 'circle' | 'hidden'
-    String? content,
+  /// The user's home feed (recent, RLS-visible to the viewer).
+  Future<Result<List<Post>>> listRecent({
+    int limit = 50,
+    DateTime? before,
+  });
+
+  /// All posts authored by a specific user (still RLS-checked for viewer).
+  Future<Result<List<Post>>> listByAuthor(
+    String authorUserId, {
+    int limit = 50,
+    DateTime? before,
+  });
+
+  /// Load a single post by id (RLS decides if the viewer can see it).
+  Future<Result<Post?>> getById(String id);
+
+  /// Create a post as the current user.
+  /// `visibility` must be one of 'public' | 'circle' | 'hidden'.
+  Future<Result<Post>> create({
+    required String visibility,
+    String? body,
     String? mediaUrl,
     String? squadId,
+    Map<String, dynamic>? meta,
   });
 
-  /// Fetch a single post by id (null if not visible to viewer).
-  Future<Result<Post?>> getPost(String id);
-
-  /// List posts authored by the current user (DESC created_at).
-  Future<Result<List<Post>>> listMyPosts({
-    DateTime? from, // inclusive
-    DateTime? to, // exclusive
-    int? limit,
-    int? offset,
-  });
-
-  /// List posts by a specific author (viewer must have visibility via RLS).
-  Future<Result<List<Post>>> listUserPosts(
-    String userId, {
-    DateTime? from,
-    DateTime? to,
-    int? limit,
-    int? offset,
-  });
-
-  /// List posts scoped to a squad (viewer must have visibility via RLS).
-  Future<Result<List<Post>>> listSquadPosts(
-    String squadId, {
-    int? limit,
-    int? offset,
-  });
-
-  /// Update allowed fields on a post you own (or admin).
-  Future<Result<Post>> updatePost(
-    String postId, {
-    String? content,
+  /// Update a post the current user owns (or admin). Returns updated row.
+  Future<Result<Post>> update(
+    String id, {
     String? visibility,
+    String? body,
     String? mediaUrl,
     String? squadId,
+    Map<String, dynamic>? meta,
   });
 }
+
+
