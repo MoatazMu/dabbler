@@ -3,6 +3,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'squad.freezed.dart';
 part 'squad.g.dart';
 
+Map<String, dynamic>? _metaFromJson(Map<String, dynamic>? json) => json;
+Map<String, dynamic>? _metaToJson(Map<String, dynamic>? meta) => meta;
+
 @freezed
 class Squad with _$Squad {
   const factory Squad({
@@ -23,7 +26,7 @@ class Squad with _$Squad {
     @JsonKey(name: 'join_policy') String? joinPolicy,
     @JsonKey(name: 'max_members') int? maxMembers,
     String? city,
-    Map<String, dynamic>? meta,
+    @JsonKey(fromJson: _metaFromJson, toJson: _metaToJson) Map<String, dynamic>? meta,
     @JsonKey(name: 'search_tsv') String? searchTsv,
   }) = _Squad;
 
