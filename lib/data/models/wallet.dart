@@ -19,38 +19,40 @@ class Wallet {
   });
 
   factory Wallet.fromMap(Map<String, dynamic> m) {
-    int _readInt(dynamic v) => (v is num) ? v.toInt() : 0;
-    DateTime? _dt(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
+    int readInt(dynamic v) => (v is num) ? v.toInt() : 0;
+    DateTime? dt(dynamic v) =>
+        v == null ? null : DateTime.tryParse(v.toString());
 
     return Wallet(
       id: m['id']?.toString(),
       userId: m['user_id']?.toString(),
-      availableCents: _readInt(m['available_cents'] ?? m['balance_cents']),
-      pendingCents: _readInt(m['pending_cents']),
+      availableCents: readInt(m['available_cents'] ?? m['balance_cents']),
+      pendingCents: readInt(m['pending_cents']),
       currency: m['currency']?.toString(),
-      updatedAt: _dt(m['updated_at']),
+      updatedAt: dt(m['updated_at']),
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'user_id': userId,
-        'available_cents': availableCents,
-        'pending_cents': pendingCents,
-        'currency': currency,
-        'updated_at': updatedAt?.toIso8601String(),
-      };
+    'id': id,
+    'user_id': userId,
+    'available_cents': availableCents,
+    'pending_cents': pendingCents,
+    'currency': currency,
+    'updated_at': updatedAt?.toIso8601String(),
+  };
 }
 
 @immutable
 class WalletLedgerEntry {
   final String? id;
   final String? userId;
+
   /// Positive = credit, negative = debit.
   final int deltaCents;
-  final String? kind;       // e.g., "game_fee", "refund", etc.
-  final String? reason;     // free-text/description
-  final String? contextId;  // nullable UUID as string
+  final String? kind; // e.g., "game_fee", "refund", etc.
+  final String? reason; // free-text/description
+  final String? contextId; // nullable UUID as string
   final DateTime? createdAt;
 
   const WalletLedgerEntry({
@@ -64,10 +66,11 @@ class WalletLedgerEntry {
   });
 
   factory WalletLedgerEntry.fromMap(Map<String, dynamic> m) {
-    int _readInt(dynamic v) => (v is num) ? v.toInt() : 0;
-    DateTime? _dt(dynamic v) => v == null ? null : DateTime.tryParse(v.toString());
+    int readInt(dynamic v) => (v is num) ? v.toInt() : 0;
+    DateTime? dt(dynamic v) =>
+        v == null ? null : DateTime.tryParse(v.toString());
 
-    final int delta = _readInt(
+    final int delta = readInt(
       m['delta_cents'] ?? m['amount_cents'] ?? m['value_cents'],
     );
 
@@ -78,17 +81,17 @@ class WalletLedgerEntry {
       kind: m['kind']?.toString() ?? m['type']?.toString(),
       reason: m['reason']?.toString() ?? m['description']?.toString(),
       contextId: m['context_id']?.toString(),
-      createdAt: _dt(m['created_at']),
+      createdAt: dt(m['created_at']),
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'user_id': userId,
-        'delta_cents': deltaCents,
-        'kind': kind,
-        'reason': reason,
-        'context_id': contextId,
-        'created_at': createdAt?.toIso8601String(),
-      };
+    'id': id,
+    'user_id': userId,
+    'delta_cents': deltaCents,
+    'kind': kind,
+    'reason': reason,
+    'context_id': contextId,
+    'created_at': createdAt?.toIso8601String(),
+  };
 }

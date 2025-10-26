@@ -15,7 +15,7 @@ class LocalizationRepositoryImpl extends BaseRepository
   /// Cache key is locale::code
   final Map<String, LocalizedError> _cache = {};
 
-  LocalizationRepositoryImpl(SupabaseService svc) : super(svc);
+  LocalizationRepositoryImpl(super.svc);
 
   String _k(String locale, String code) => '$locale::$code';
 

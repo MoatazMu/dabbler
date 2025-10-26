@@ -12,7 +12,7 @@ import 'feed_repository.dart';
 
 @immutable
 class FeedRepositoryImpl extends BaseRepository implements FeedRepository {
-  FeedRepositoryImpl(SupabaseService svc) : super(svc);
+  const FeedRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
 
@@ -31,7 +31,7 @@ class FeedRepositoryImpl extends BaseRepository implements FeedRepository {
           .from(_posts)
           .select<List<Map<String, dynamic>>>()
           .order('created_at', ascending: false) // DESC timeline
-          .order('id', ascending: false)         // tie-breaker for stable order
+          .order('id', ascending: false) // tie-breaker for stable order
           .limit(limit);
 
       final before = FeedItem.decodeCursor(beforeCursor);
@@ -62,4 +62,3 @@ class FeedRepositoryImpl extends BaseRepository implements FeedRepository {
     return page.last.toCursor();
   }
 }
-

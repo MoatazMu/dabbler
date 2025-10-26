@@ -9,7 +9,7 @@ abstract class Failure {
   String get displayMessage => message ?? 'Something went wrong';
 
   @override
-  String toString() => '$runtimeType(${displayMessage})';
+  String toString() => '$runtimeType($displayMessage)';
 }
 
 class UnauthenticatedFailure extends Failure {
@@ -38,5 +38,5 @@ class UnknownFailure extends Failure {
   final Object? error;
   final StackTrace? stackTrace;
   const UnknownFailure({String? message, this.error, this.stackTrace})
-      : super(message);
+    : super(message);
 }

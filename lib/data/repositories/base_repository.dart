@@ -1,8 +1,7 @@
-import 'package:dartz/dartz.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/types/result.dart';
-import '../../core/error/failure.dart';
 import '../../services/supabase_service.dart';
 
 abstract class BaseRepository {
@@ -21,5 +20,3 @@ abstract class BaseRepository {
     }
   }
 }
-
-

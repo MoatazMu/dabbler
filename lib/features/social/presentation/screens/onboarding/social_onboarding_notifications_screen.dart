@@ -22,7 +22,9 @@ class SocialOnboardingNotificationsScreen extends StatelessWidget {
           children: [
             LinearProgressIndicator(
               value: 1,
-              backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+              backgroundColor: Theme.of(
+                context,
+              ).colorScheme.surfaceContainerHighest,
             ),
             const SizedBox(height: 32),
             Icon(
@@ -34,9 +36,9 @@ class SocialOnboardingNotificationsScreen extends StatelessWidget {
             Text(
               'Notifications Paused',
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
             Text(

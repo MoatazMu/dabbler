@@ -17,7 +17,7 @@ class SchemaMetaRepositoryImpl extends BaseRepository
   static const _table = 'schema_meta';
   static const _assetPath = 'supabase/schema/schema.json';
 
-  SchemaMetaRepositoryImpl(SupabaseService svc) : super(svc);
+  const SchemaMetaRepositoryImpl(SupabaseService svc) : super(svc);
 
   @override
   Future<Result<SchemaMeta?>> getDbMeta() {

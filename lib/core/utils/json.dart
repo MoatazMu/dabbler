@@ -1,4 +1,5 @@
 /// Tiny casting helpers for JSON maps coming from Supabase/PostgREST.
+library;
 
 T? asT<T>(Object? v) => v is T ? v : null;
 
@@ -41,4 +42,3 @@ Map<String, dynamic> asMap(Object? v) {
   }
   return <String, dynamic>{};
 }
-

@@ -1,20 +1,25 @@
 // coverage:ignore-file
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// ignore_for_file: type=lint, invalid_annotation_target
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
 part of 'profile_model.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
 
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-  'It seems like you constructed your class using `ProfileModel._()`.
-This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.',
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
 ProfileModel _$ProfileModelFromJson(Map<String, dynamic> json) {
   return _ProfileModel.fromJson(json);
 }
 
+/// @nodoc
 mixin _$ProfileModel {
   @JsonKey(name: 'user_id')
   String get userId => throw _privateConstructorUsedError;
@@ -33,17 +38,23 @@ mixin _$ProfileModel {
   @JsonKey(name: 'deleted_at')
   DateTime? get deletedAt => throw _privateConstructorUsedError;
 
+  /// Serializes this ProfileModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-  @JsonKey(ignore: true)
+
+  /// Create a copy of ProfileModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   $ProfileModelCopyWith<ProfileModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
+/// @nodoc
 abstract class $ProfileModelCopyWith<$Res> {
   factory $ProfileModelCopyWith(
     ProfileModel value,
     $Res Function(ProfileModel) then,
   ) = _$ProfileModelCopyWithImpl<$Res, ProfileModel>;
+  @useResult
   $Res call({
     @JsonKey(name: 'user_id') String userId,
     @JsonKey(name: 'display_name') String displayName,
@@ -56,13 +67,19 @@ abstract class $ProfileModelCopyWith<$Res> {
   });
 }
 
+/// @nodoc
 class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
     implements $ProfileModelCopyWith<$Res> {
   _$ProfileModelCopyWithImpl(this._value, this._then);
 
+  // ignore: unused_field
   final $Val _value;
+  // ignore: unused_field
   final $Res Function($Val) _then;
 
+  /// Create a copy of ProfileModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? userId = null,
@@ -76,42 +93,53 @@ class _$ProfileModelCopyWithImpl<$Res, $Val extends ProfileModel>
   }) {
     return _then(
       _value.copyWith(
-        userId: userId == null
-            ? _value.userId
-            : userId as String,
-        displayName: displayName == null
-            ? _value.displayName
-            : displayName as String,
-        username: username == freezed
-            ? _value.username
-            : username as String?,
-        avatarUrl: avatarUrl == freezed
-            ? _value.avatarUrl
-            : avatarUrl as String?,
-        profileType: profileType == null
-            ? _value.profileType
-            : profileType as String,
-        createdAt: createdAt == freezed
-            ? _value.createdAt
-            : createdAt as DateTime?,
-        updatedAt: updatedAt == freezed
-            ? _value.updatedAt
-            : updatedAt as DateTime?,
-        deletedAt: deletedAt == freezed
-            ? _value.deletedAt
-            : deletedAt as DateTime?,
-      ) as $Val,
+            userId: null == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            displayName: null == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                      as String,
+            username: freezed == username
+                ? _value.username
+                : username // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            avatarUrl: freezed == avatarUrl
+                ? _value.avatarUrl
+                : avatarUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            profileType: null == profileType
+                ? _value.profileType
+                : profileType // ignore: cast_nullable_to_non_nullable
+                      as String,
+            createdAt: freezed == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            updatedAt: freezed == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            deletedAt: freezed == deletedAt
+                ? _value.deletedAt
+                : deletedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+          )
+          as $Val,
     );
   }
 }
 
-abstract class _$$_ProfileModelCopyWith<$Res>
+/// @nodoc
+abstract class _$$ProfileModelImplCopyWith<$Res>
     implements $ProfileModelCopyWith<$Res> {
-  factory _$$_ProfileModelCopyWith(
-    _$_ProfileModel value,
-    $Res Function(_$_ProfileModel) then,
-  ) = __$$_ProfileModelCopyWithImpl<$Res>;
+  factory _$$ProfileModelImplCopyWith(
+    _$ProfileModelImpl value,
+    $Res Function(_$ProfileModelImpl) then,
+  ) = __$$ProfileModelImplCopyWithImpl<$Res>;
   @override
+  @useResult
   $Res call({
     @JsonKey(name: 'user_id') String userId,
     @JsonKey(name: 'display_name') String displayName,
@@ -124,14 +152,18 @@ abstract class _$$_ProfileModelCopyWith<$Res>
   });
 }
 
-class __$$_ProfileModelCopyWithImpl<$Res>
-    extends _$ProfileModelCopyWithImpl<$Res, _$_ProfileModel>
-    implements _$$_ProfileModelCopyWith<$Res> {
-  __$$_ProfileModelCopyWithImpl(
-    _$_ProfileModel _value,
-    $Res Function(_$_ProfileModel) _then,
+/// @nodoc
+class __$$ProfileModelImplCopyWithImpl<$Res>
+    extends _$ProfileModelCopyWithImpl<$Res, _$ProfileModelImpl>
+    implements _$$ProfileModelImplCopyWith<$Res> {
+  __$$ProfileModelImplCopyWithImpl(
+    _$ProfileModelImpl _value,
+    $Res Function(_$ProfileModelImpl) _then,
   ) : super(_value, _then);
 
+  /// Create a copy of ProfileModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? userId = null,
@@ -144,29 +176,49 @@ class __$$_ProfileModelCopyWithImpl<$Res>
     Object? deletedAt = freezed,
   }) {
     return _then(
-      _$_ProfileModel(
-        userId: userId == null ? _value.userId : userId as String,
-        displayName:
-            displayName == null ? _value.displayName : displayName as String,
-        username: username == freezed ? _value.username : username as String?,
-        avatarUrl:
-            avatarUrl == freezed ? _value.avatarUrl : avatarUrl as String?,
-        profileType:
-            profileType == null ? _value.profileType : profileType as String,
-        createdAt:
-            createdAt == freezed ? _value.createdAt : createdAt as DateTime?,
-        updatedAt:
-            updatedAt == freezed ? _value.updatedAt : updatedAt as DateTime?,
-        deletedAt:
-            deletedAt == freezed ? _value.deletedAt : deletedAt as DateTime?,
+      _$ProfileModelImpl(
+        userId: null == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        displayName: null == displayName
+            ? _value.displayName
+            : displayName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        username: freezed == username
+            ? _value.username
+            : username // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        avatarUrl: freezed == avatarUrl
+            ? _value.avatarUrl
+            : avatarUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        profileType: null == profileType
+            ? _value.profileType
+            : profileType // ignore: cast_nullable_to_non_nullable
+                  as String,
+        createdAt: freezed == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        updatedAt: freezed == updatedAt
+            ? _value.updatedAt
+            : updatedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        deletedAt: freezed == deletedAt
+            ? _value.deletedAt
+            : deletedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
       ),
     );
   }
 }
 
+/// @nodoc
+
 @JsonSerializable(includeIfNull: false, explicitToJson: true)
-class _$_ProfileModel extends _ProfileModel {
-  const _$_ProfileModel({
+class _$ProfileModelImpl extends _ProfileModel {
+  const _$ProfileModelImpl({
     @JsonKey(name: 'user_id') required this.userId,
     @JsonKey(name: 'display_name') required this.displayName,
     @JsonKey(name: 'username') this.username,
@@ -177,8 +229,8 @@ class _$_ProfileModel extends _ProfileModel {
     @JsonKey(name: 'deleted_at') this.deletedAt,
   }) : super._();
 
-  factory _$_ProfileModel.fromJson(Map<String, dynamic> json) =>
-      _$$_ProfileModelFromJson(json);
+  factory _$ProfileModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ProfileModelImplFromJson(json);
 
   @override
   @JsonKey(name: 'user_id')
@@ -212,57 +264,69 @@ class _$_ProfileModel extends _ProfileModel {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is _$_ProfileModel &&
-        other.userId == userId &&
-        other.displayName == displayName &&
-        other.username == username &&
-        other.avatarUrl == avatarUrl &&
-        other.profileType == profileType &&
-        other.createdAt == createdAt &&
-        other.updatedAt == updatedAt &&
-        other.deletedAt == deletedAt;
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ProfileModelImpl &&
+            (identical(other.userId, userId) || other.userId == userId) &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
+            (identical(other.username, username) ||
+                other.username == username) &&
+            (identical(other.avatarUrl, avatarUrl) ||
+                other.avatarUrl == avatarUrl) &&
+            (identical(other.profileType, profileType) ||
+                other.profileType == profileType) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt) &&
+            (identical(other.deletedAt, deletedAt) ||
+                other.deletedAt == deletedAt));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-        runtimeType,
-        userId,
-        displayName,
-        username,
-        avatarUrl,
-        profileType,
-        createdAt,
-        updatedAt,
-        deletedAt,
-      );
+    runtimeType,
+    userId,
+    displayName,
+    username,
+    avatarUrl,
+    profileType,
+    createdAt,
+    updatedAt,
+    deletedAt,
+  );
 
-  @JsonKey(ignore: true)
+  /// Create a copy of ProfileModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  _$$_ProfileModelCopyWith<_$_ProfileModel> get copyWith =>
-      __$$_ProfileModelCopyWithImpl<_$_ProfileModel>(this, _$identity);
+  @pragma('vm:prefer-inline')
+  _$$ProfileModelImplCopyWith<_$ProfileModelImpl> get copyWith =>
+      __$$ProfileModelImplCopyWithImpl<_$ProfileModelImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$_ProfileModelToJson(this);
+    return _$$ProfileModelImplToJson(this);
   }
 }
 
 abstract class _ProfileModel extends ProfileModel {
   const factory _ProfileModel({
-    @JsonKey(name: 'user_id') required String userId,
-    @JsonKey(name: 'display_name') required String displayName,
-    @JsonKey(name: 'username') String? username,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
-    @JsonKey(name: 'profile_type') String profileType,
-    @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'updated_at') DateTime? updatedAt,
-    @JsonKey(name: 'deleted_at') DateTime? deletedAt,
-  }) = _$_ProfileModel;
+    @JsonKey(name: 'user_id') required final String userId,
+    @JsonKey(name: 'display_name') required final String displayName,
+    @JsonKey(name: 'username') final String? username,
+    @JsonKey(name: 'avatar_url') final String? avatarUrl,
+    @JsonKey(name: 'profile_type') final String profileType,
+    @JsonKey(name: 'created_at') final DateTime? createdAt,
+    @JsonKey(name: 'updated_at') final DateTime? updatedAt,
+    @JsonKey(name: 'deleted_at') final DateTime? deletedAt,
+  }) = _$ProfileModelImpl;
   const _ProfileModel._() : super._();
 
   factory _ProfileModel.fromJson(Map<String, dynamic> json) =
-      _$_ProfileModel.fromJson;
+      _$ProfileModelImpl.fromJson;
 
   @override
   @JsonKey(name: 'user_id')
@@ -288,7 +352,11 @@ abstract class _ProfileModel extends ProfileModel {
   @override
   @JsonKey(name: 'deleted_at')
   DateTime? get deletedAt;
+
+  /// Create a copy of ProfileModel
+  /// with the given fields replaced by the non-null parameter values.
   @override
-  @JsonKey(ignore: true)
-  _$$_ProfileModelCopyWith<_$_ProfileModel> get copyWith;
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ProfileModelImplCopyWith<_$ProfileModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }

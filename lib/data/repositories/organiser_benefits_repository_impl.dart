@@ -13,7 +13,7 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
     implements OrganiserBenefitsRepository {
   static const _table = 'organiser_benefits';
 
-  OrganiserBenefitsRepositoryImpl(SupabaseService svc) : super(svc);
+  const OrganiserBenefitsRepositoryImpl(super.svc);
 
   @override
   Future<Result<List<Benefit>>> listMine({
@@ -144,4 +144,3 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
     });
   }
 }
-

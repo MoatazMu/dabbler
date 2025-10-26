@@ -11,7 +11,7 @@ import 'venue_config_repository.dart';
 @immutable
 class VenueConfigRepositoryImpl extends BaseRepository
     implements VenueConfigRepository {
-  VenueConfigRepositoryImpl(SupabaseService svc) : super(svc);
+  const VenueConfigRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
 
@@ -127,4 +127,3 @@ class VenueConfigRepositoryImpl extends BaseRepository
     });
   }
 }
-

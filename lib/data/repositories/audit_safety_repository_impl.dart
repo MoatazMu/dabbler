@@ -1,4 +1,3 @@
-
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,7 +11,7 @@ import 'audit_safety_repository.dart';
 @immutable
 class AuditSafetyRepositoryImpl extends BaseRepository
     implements AuditSafetyRepository {
-  AuditSafetyRepositoryImpl(SupabaseService svc) : super(svc);
+  const AuditSafetyRepositoryImpl(SupabaseService svc) : super(svc);
 
   SupabaseClient get _db => svc.client;
 
@@ -100,9 +99,9 @@ class AuditSafetyRepositoryImpl extends BaseRepository
         .eq('reporter_user_id', uid)
         .order('created_at', ascending: false)
         .limit(limit)
-        .map((rows) => rows
-            .map<AbuseFlag>((r) => AbuseFlag.fromMap(asMap(r)))
-            .toList());
+        .map(
+          (rows) =>
+              rows.map<AbuseFlag>((r) => AbuseFlag.fromMap(asMap(r))).toList(),
+        );
   }
 }
-

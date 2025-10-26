@@ -62,13 +62,10 @@ dependencies:
   flutter_svg: ^2.0.9
 
   # Riverpod - Minimal, powerful state management
-  flutter_riverpod: ^2.4.0
-  freezed_annotation: ^2.4.1
-  json_annotation: ^4.9.0
-  fpdart: ^1.1.0
-  riverpod: ^2.4.0
   riverpod: ^2.5.0
   flutter_riverpod: ^2.5.0
+  
+  # Geolocator for location services
   geolocator: ^10.0.0
   geocoding: ^2.1.0
 
@@ -101,35 +98,40 @@ dependencies:
   # Internationalization
   intl: ^0.19.0
 
-  freezed_annotation: ^2.4.1
-  json_annotation: ^4.9.0
-  fpdart: ^1.1.0
-
   # Equatable for value comparison
   equatable: ^2.0.5
 
   # Shimmer effects for loading states
   shimmer: ^3.0.0
+  
   # Sharing
   share_plus: ^10.0.2
+  
   # URL launcher for opening external apps and links
   url_launcher: ^6.3.0
+  
   # Connectivity status
   connectivity_plus: ^6.0.5
+  
   # UUID generation
   uuid: ^4.3.3
+  
+  # Cryptographic functions
   crypto: ^3.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  mockito: ^5.4.4
-  build_runner: ^2.4.8
+  integration_test:
+    sdk: flutter
+    
+  # Code generation tools
   build_runner: ^2.4.9
   freezed: ^2.5.2
   json_serializable: ^6.8.0
-  integration_test:
-    sdk: flutter
+  
+  # Testing utilities
+  mockito: ^5.4.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

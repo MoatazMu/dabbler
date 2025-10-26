@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+import 'package:fpdart/fpdart.dart';
 import '../../../../core/errors/failures.dart';
 import '../entities/venue.dart';
 import '../entities/sport_config.dart';

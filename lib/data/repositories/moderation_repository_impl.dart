@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/error/failure.dart';
@@ -7,8 +7,9 @@ import '../repositories/base_repository.dart';
 import '../../services/supabase_service.dart';
 import 'moderation_repository.dart';
 
-class ModerationRepositoryImpl extends BaseRepository implements ModerationRepository {
-  ModerationRepositoryImpl(SupabaseService svc) : super(svc);
+class ModerationRepositoryImpl extends BaseRepository
+    implements ModerationRepository {
+  ModerationRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
 
@@ -41,10 +42,7 @@ class ModerationRepositoryImpl extends BaseRepository implements ModerationRepos
 
   Future<Result<T>> _guardAdmin<T>(Future<Result<T>> Function() action) async {
     final gate = await _requireAdmin();
-    return gate.fold(
-      (f) => Future.value(left<Failure, T>(f)),
-      (_) => action(),
-    );
+    return gate.fold((f) => Future.value(left<Failure, T>(f)), (_) => action());
   }
 
   PostgrestFilterBuilder _applyWhere(
@@ -103,7 +101,9 @@ class ModerationRepositoryImpl extends BaseRepository implements ModerationRepos
   }
 
   @override
-  Future<Result<Map<String, dynamic>>> createTicket(Map<String, dynamic> values) async {
+  Future<Result<Map<String, dynamic>>> createTicket(
+    Map<String, dynamic> values,
+  ) async {
     return _guardAdmin(() async {
       try {
         final rows = await _db
@@ -121,7 +121,10 @@ class ModerationRepositoryImpl extends BaseRepository implements ModerationRepos
   }
 
   @override
-  Future<Result<Map<String, dynamic>>> updateTicket(String id, Map<String, dynamic> patch) async {
+  Future<Result<Map<String, dynamic>>> updateTicket(
+    String id,
+    Map<String, dynamic> patch,
+  ) async {
     return _guardAdmin(() async {
       try {
         final rows = await _db
@@ -184,7 +187,9 @@ class ModerationRepositoryImpl extends BaseRepository implements ModerationRepos
   }
 
   @override
-  Future<Result<Map<String, dynamic>>> recordAction(Map<String, dynamic> values) async {
+  Future<Result<Map<String, dynamic>>> recordAction(
+    Map<String, dynamic> values,
+  ) async {
     return _guardAdmin(() async {
       try {
         final row = await _db
@@ -223,7 +228,9 @@ class ModerationRepositoryImpl extends BaseRepository implements ModerationRepos
   }
 
   @override
-  Future<Result<Map<String, dynamic>>> upsertBanTerm(Map<String, dynamic> values) async {
+  Future<Result<Map<String, dynamic>>> upsertBanTerm(
+    Map<String, dynamic> values,
+  ) async {
     return _guardAdmin(() async {
       try {
         final row = await _db
@@ -244,7 +251,10 @@ class ModerationRepositoryImpl extends BaseRepository implements ModerationRepos
   Future<Result<int>> deleteBanTerm(String id) async {
     return _guardAdmin(() async {
       try {
-        final res = await _db.from('moderation_ban_terms').delete().eq('id', id);
+        final res = await _db
+            .from('moderation_ban_terms')
+            .delete()
+            .eq('id', id);
         if (res is int) return right(res);
         return right(1);
       } on PostgrestException catch (e) {
