@@ -10,7 +10,7 @@ import 'wallet_repository.dart';
 
 @immutable
 class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
-  WalletRepositoryImpl(SupabaseService svc) : super(svc);
+  const WalletRepositoryImpl(super.svc);
 
   @override
   Future<Result<Wallet?>> getWallet() {
@@ -43,10 +43,7 @@ class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
   }
 
   @override
-  Future<Result<List<Payout>>> getPayouts({
-    int limit = 50,
-    int offset = 0,
-  }) {
+  Future<Result<List<Payout>>> getPayouts({int limit = 50, int offset = 0}) {
     return guard<List<Payout>>(() async {
       final rows = await svc.client
           .from('payouts')

@@ -1,4 +1,3 @@
-
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -11,8 +10,9 @@ import 'base_repository.dart';
 import 'ratings_repository.dart';
 
 @immutable
-class RatingsRepositoryImpl extends BaseRepository implements RatingsRepository {
-  RatingsRepositoryImpl(SupabaseService svc) : super(svc);
+class RatingsRepositoryImpl extends BaseRepository
+    implements RatingsRepository {
+  const RatingsRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
   String? get _uid => _db.auth.currentUser?.id;
@@ -160,5 +160,3 @@ class RatingsRepositoryImpl extends BaseRepository implements RatingsRepository 
     });
   }
 }
-
-

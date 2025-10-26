@@ -1,4 +1,3 @@
-
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,7 +11,7 @@ import 'vibes_repository.dart';
 
 @immutable
 class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
-  VibesRepositoryImpl(SupabaseService svc) : super(svc);
+  const VibesRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
 
@@ -81,4 +80,3 @@ class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
     });
   }
 }
-

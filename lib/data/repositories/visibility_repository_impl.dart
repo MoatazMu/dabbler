@@ -14,7 +14,7 @@ final visibilityRepositoryProvider = Provider<VisibilityRepository>((ref) {
 
 class VisibilityRepositoryImpl extends BaseRepository
     implements VisibilityRepository {
-  VisibilityRepositoryImpl(SupabaseService svc) : super(svc);
+  VisibilityRepositoryImpl(super.svc);
 
   @override
   Future<Result<bool>> canViewOwner({
@@ -72,7 +72,7 @@ class VisibilityRepositoryImpl extends BaseRepository
           .from('friendships')
           .select('status')
           .or(
-            'and(user_id.eq.$viewer,peer_user_id.eq.$otherUserId),' 
+            'and(user_id.eq.$viewer,peer_user_id.eq.$otherUserId),'
             'and(user_id.eq.$otherUserId,peer_user_id.eq.$viewer)',
           )
           .in_('status', ['accepted', 'pending'])

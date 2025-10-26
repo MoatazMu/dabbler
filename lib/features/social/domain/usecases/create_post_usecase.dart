@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:dartz/dartz.dart';
+import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/logger.dart';

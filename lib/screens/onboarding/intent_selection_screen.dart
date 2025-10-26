@@ -1,28 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../utils/constants/route_constants.dart';
 import '../../core/utils/constants.dart';
-import '../../core/utils/helpers.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/onboarding_progress.dart';
-import 'create_user_information.dart' show RegistrationData;
+import '../../features/authentication/presentation/providers/onboarding_data_provider.dart';
 
-class IntentSelectionScreen extends StatefulWidget {
-  final RegistrationData? registrationData;
-  
-  const IntentSelectionScreen({
-    super.key,
-    this.registrationData,
-  });
+class IntentSelectionScreen extends ConsumerStatefulWidget {
+  const IntentSelectionScreen({super.key});
 
   @override
-  State<IntentSelectionScreen> createState() => _IntentSelectionScreenState();
+  ConsumerState<IntentSelectionScreen> createState() =>
+      _IntentSelectionScreenState();
 }
 
-class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
+class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
   String? _selectedIntent;
   bool _isLoading = false;
   bool _isLoadingData = true;
+
+  // 3 intention options as requested
+  final List<Map<String, String>> _intentOptions = [
+    {
+      'value': 'organise',
+      'title': 'Organise',
+      'description': 'List games, manage slots, and host matches',
+      'icon': 'calendar',
+    },
+    {
+      'value': 'compete',
+      'title': 'Compete',
+      'description': 'Serious matches, rankings, and tournaments',
+      'icon': 'trophy',
+    },
+    {
+      'value': 'social',
+      'title': 'Social',
+      'description': 'Casual play, meet people, and have fun',
+      'icon': 'people',
+    },
+  ];
 
   @override
   void initState() {
@@ -32,19 +50,25 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
 
   Future<void> _loadExistingUserData() async {
     try {
-      print('🎯 [DEBUG] IntentSelectionScreen: Loading existing user data');
-      
-      // Check if we have registration data from previous step
-      if (widget.registrationData?.intent != null && widget.registrationData!.intent!.isNotEmpty) {
-        print('✅ [DEBUG] IntentSelectionScreen: Found intent in registration data: ${widget.registrationData!.intent}');
+      print('🎯 [DEBUG] IntentSelectionScreen: Loading onboarding data');
+
+      // Check if we have data in onboarding provider
+      final onboardingData = ref.read(onboardingDataProvider);
+      if (onboardingData?.intention != null &&
+          onboardingData!.intention!.isNotEmpty) {
+        print(
+          '✅ [DEBUG] IntentSelectionScreen: Found intention: ${onboardingData.intention}',
+        );
         setState(() {
-          _selectedIntent = widget.registrationData!.intent;
+          _selectedIntent = onboardingData.intention;
         });
       } else {
-        print('🆕 [DEBUG] IntentSelectionScreen: No existing intent data, starting fresh');
+        print(
+          '🆕 [DEBUG] IntentSelectionScreen: No existing intention, starting fresh',
+        );
       }
     } catch (e) {
-      print('❌ [DEBUG] IntentSelectionScreen: Error loading existing data: $e');
+      print('❌ [DEBUG] IntentSelectionScreen: Error loading data: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -64,7 +88,7 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
     if (_selectedIntent == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please select your intent'),
+          content: Text('Please select your main goal'),
           backgroundColor: Colors.orange,
         ),
       );
@@ -74,60 +98,26 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
     setState(() => _isLoading = true);
 
     try {
-      print('🎯 [DEBUG] IntentSelectionScreen: Collecting intent preferences');
-      print('📋 [DEBUG] IntentSelectionScreen: Selected intent: $_selectedIntent');
+      print(
+        '🎯 [DEBUG] IntentSelectionScreen: Storing intention: $_selectedIntent',
+      );
 
-      // Get registration data from previous step and add intent
-      final registrationData = widget.registrationData?.copyWith(intent: _selectedIntent);
-      
-      print('✅ [DEBUG] IntentSelectionScreen: Intent preferences collected successfully');
-      print('📧 [DEBUG] IntentSelectionScreen: Email for password creation: ${registrationData?.email}');
+      // Store intention in onboarding provider
+      ref.read(onboardingDataProvider.notifier).setIntention(_selectedIntent!);
+
+      print(
+        '✅ [DEBUG] IntentSelectionScreen: Intention stored, navigating to sports selection',
+      );
 
       if (mounted) {
-        // Navigate to password creation screen with complete registration data
-        context.go(RoutePaths.setPassword, extra: registrationData?.toMap());
+        // Navigate to sports selection screen
+        context.push(RoutePaths.sportsSelection);
       }
     } catch (e) {
-      print('❌ [DEBUG] IntentSelectionScreen: Error collecting intent preferences: $e');
+      print('❌ [DEBUG] IntentSelectionScreen: Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
-  Future<void> _handleSkip() async {
-    setState(() => _isLoading = true);
-
-    try {
-      print('🎯 [DEBUG] IntentSelectionScreen: Skipping intent selection, using default');
-      
-      // Use default intent (casual) and get registration data from previous step
-      final registrationData = widget.registrationData?.copyWith(intent: 'casual');
-      
-      print('✅ [DEBUG] IntentSelectionScreen: Using default intent: casual');
-      print('📧 [DEBUG] IntentSelectionScreen: Email for password creation: ${registrationData?.email}');
-      
-      if (mounted) {
-        // Navigate to password creation screen with complete registration data
-        context.go(RoutePaths.setPassword, extra: registrationData?.toMap());
-      }
-    } catch (e) {
-      print('❌ [DEBUG] IntentSelectionScreen: Error in skip: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -150,82 +140,116 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
           children: [
             // Onboarding Progress
             OnboardingProgress(),
-            
+
             // Main Content
             Expanded(
               child: _isLoadingData
                   ? const Center(child: CircularProgressIndicator())
                   : SingleChildScrollView(
-                      padding: const EdgeInsets.all(AppConstants.defaultPadding),
+                      padding: const EdgeInsets.all(
+                        AppConstants.defaultPadding,
+                      ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           const SizedBox(height: 32),
-                          
+
                           // Header
                           Text(
-                            'What\'s your main goal?',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                            'What is your main goal?',
+                            style: Theme.of(context).textTheme.headlineMedium
+                                ?.copyWith(fontWeight: FontWeight.bold),
                             textAlign: TextAlign.center,
                           ),
-                          
+
                           const SizedBox(height: 8),
-                          
+
                           Text(
-                            'Help us find the right matches for you',
-                            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            'Choose how you want to use Dabbler',
+                            style: Theme.of(context).textTheme.bodyLarge
+                                ?.copyWith(color: Colors.grey[600]),
                             textAlign: TextAlign.center,
                           ),
-                          
-                          const SizedBox(height: 32),
-                          
-                          // Intent Options
-                          ...AppConstants.availableIntents.map((intent) {
-                            final isSelected = _selectedIntent == intent;
-                            
+
+                          const SizedBox(height: 48),
+
+                          // Intent Options - Show only 3 options
+                          ..._intentOptions.map((option) {
+                            final isSelected =
+                                _selectedIntent == option['value'];
+
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
+                              margin: const EdgeInsets.only(bottom: 16),
                               child: GestureDetector(
-                                onTap: () => _selectIntent(intent),
+                                onTap: () => _selectIntent(option['value']!),
                                 child: Container(
-                                  padding: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
-                                    color: isSelected ? Colors.blue[50] : Colors.grey[50],
+                                    color: isSelected
+                                        ? Theme.of(
+                                            context,
+                                          ).primaryColor.withOpacity(0.1)
+                                        : Colors.grey[50],
                                     border: Border.all(
-                                      color: isSelected ? Colors.blue : Colors.grey[300]!,
+                                      color: isSelected
+                                          ? Theme.of(context).primaryColor
+                                          : Colors.grey[300]!,
                                       width: isSelected ? 2 : 1,
                                     ),
-                                    borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: Row(
                                     children: [
-                                      Icon(
-                                        _getIntentIcon(intent),
-                                        size: 24,
-                                        color: isSelected ? Colors.blue[700] : Colors.grey[600],
+                                      Container(
+                                        width: 56,
+                                        height: 56,
+                                        decoration: BoxDecoration(
+                                          color: isSelected
+                                              ? Theme.of(
+                                                  context,
+                                                ).primaryColor.withOpacity(0.2)
+                                              : Colors.grey[200],
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          _getIntentIcon(option['icon']!),
+                                          size: 28,
+                                          color: isSelected
+                                              ? Theme.of(context).primaryColor
+                                              : Colors.grey[600],
+                                        ),
                                       ),
                                       const SizedBox(width: 16),
                                       Expanded(
                                         child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
                                           children: [
                                             Text(
-                                              AppHelpers.getIntentDisplayName(intent),
-                                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                                color: isSelected ? Colors.blue[700] : Colors.grey[700],
-                                              ),
+                                              option['title']!,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .titleLarge
+                                                  ?.copyWith(
+                                                    fontWeight: FontWeight.w600,
+                                                    color: isSelected
+                                                        ? Theme.of(
+                                                            context,
+                                                          ).primaryColor
+                                                        : Colors.grey[800],
+                                                  ),
                                             ),
                                             const SizedBox(height: 4),
                                             Text(
-                                              _getIntentDescription(intent),
-                                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                                color: Colors.grey[600],
-                                              ),
+                                              option['description']!,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium
+                                                  ?.copyWith(
+                                                    color: Colors.grey[600],
+                                                  ),
                                             ),
                                           ],
                                         ),
@@ -233,8 +257,8 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                                       if (isSelected)
                                         Icon(
                                           Icons.check_circle,
-                                          size: 20,
-                                          color: Colors.blue[700],
+                                          size: 28,
+                                          color: Theme.of(context).primaryColor,
                                         ),
                                     ],
                                   ),
@@ -242,26 +266,17 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
                               ),
                             );
                           }),
-                          
+
                           const SizedBox(height: 32),
-                          
+
                           // Continue Button
                           CustomButton(
-                            onPressed: _isLoading ? null : _handleSubmit,
-                            text: _isLoading ? 'Continuing...' : 'Continue to Password',
+                            onPressed: (_isLoading || _selectedIntent == null)
+                                ? null
+                                : _handleSubmit,
+                            text: _isLoading ? 'Continuing...' : 'Continue',
                           ),
-                          
-                          const SizedBox(height: 16),
-                          
-                          // Skip Button
-                          TextButton(
-                            onPressed: _isLoading ? null : _handleSkip,
-                            child: Text(
-                              _isLoading ? 'Continuing...' : 'Skip for now',
-                              style: TextStyle(color: Colors.grey[600]),
-                            ),
-                          ),
-                          
+
                           const SizedBox(height: 32),
                         ],
                       ),
@@ -273,37 +288,16 @@ class _IntentSelectionScreenState extends State<IntentSelectionScreen> {
     );
   }
 
-  IconData _getIntentIcon(String intent) {
-    switch (intent.toLowerCase()) {
-      case 'competitive':
+  IconData _getIntentIcon(String icon) {
+    switch (icon) {
+      case 'calendar':
+        return Icons.event;
+      case 'trophy':
         return Icons.emoji_events;
-      case 'casual':
-        return Icons.sports_soccer;
-      case 'training':
-        return Icons.fitness_center;
-      case 'social':
+      case 'people':
         return Icons.people;
-      case 'fitness':
-        return Icons.directions_run;
       default:
-        return Icons.sports;
-    }
-  }
-
-  String _getIntentDescription(String intent) {
-    switch (intent.toLowerCase()) {
-      case 'competitive':
-        return 'Looking for serious matches and tournaments';
-      case 'casual':
-        return 'Just want to have fun and play for enjoyment';
-      case 'training':
-        return 'Focus on improving skills and technique';
-      case 'social':
-        return 'Meet new people and make friends';
-      case 'fitness':
-        return 'Stay active and get a good workout';
-      default:
-        return 'General sports participation';
+        return Icons.sports_soccer;
     }
   }
 }

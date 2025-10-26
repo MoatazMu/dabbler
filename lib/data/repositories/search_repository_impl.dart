@@ -1,4 +1,3 @@
-
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -14,7 +13,7 @@ import 'search_repository.dart';
 
 @immutable
 class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
-  SearchRepositoryImpl(SupabaseService svc) : super(svc);
+  const SearchRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
 
@@ -102,4 +101,3 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
     });
   }
 }
-

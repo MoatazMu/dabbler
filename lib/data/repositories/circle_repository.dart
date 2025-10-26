@@ -1,5 +1,3 @@
-import 'package:fpdart/fpdart.dart';
-import '../../core/error/failures.dart';
 import '../../core/result.dart';
 import '../models/circle_contact.dart';
 

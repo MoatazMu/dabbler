@@ -11,7 +11,7 @@ import 'profiles_repository.dart';
 
 class ProfilesRepositoryImpl extends BaseRepository
     implements ProfilesRepository {
-  ProfilesRepositoryImpl(SupabaseService svc) : super(svc);
+  ProfilesRepositoryImpl(super.svc);
 
   static const String _table = 'profiles';
 
@@ -67,16 +67,15 @@ class ProfilesRepositoryImpl extends BaseRepository
       return failure(const AuthFailure(message: 'Not signed in'));
     }
     if (profile.userId != uid) {
-      return failure(const PermissionFailure(
-        message: "Cannot upsert another user's profile",
-      ));
+      return failure(
+        const PermissionFailure(
+          message: "Cannot upsert another user's profile",
+        ),
+      );
     }
 
     return guard(() async {
-      await svc.client
-          .from(_table)
-          .upsert(profile.toJson())
-          .eq('user_id', uid);
+      await svc.client.from(_table).upsert(profile.toJson()).eq('user_id', uid);
     });
   }
 
@@ -88,10 +87,13 @@ class ProfilesRepositoryImpl extends BaseRepository
     }
 
     return guard(() async {
-      await svc.client.from(_table).update({
-        'is_active': false,
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('user_id', uid);
+      await svc.client
+          .from(_table)
+          .update({
+            'is_active': false,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('user_id', uid);
     });
   }
 
@@ -103,10 +105,13 @@ class ProfilesRepositoryImpl extends BaseRepository
     }
 
     return guard(() async {
-      await svc.client.from(_table).update({
-        'is_active': true,
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('user_id', uid);
+      await svc.client
+          .from(_table)
+          .update({
+            'is_active': true,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('user_id', uid);
     });
   }
 
@@ -149,7 +154,7 @@ class ProfilesRepositoryImpl extends BaseRepository
       );
 
       try {
-        await channel.subscribe();
+        channel.subscribe();
       } catch (error) {
         emit(failure(svc.mapPostgrestError(error)));
       }

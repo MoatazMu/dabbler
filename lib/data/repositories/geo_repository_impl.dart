@@ -11,7 +11,7 @@ import 'geo_repository.dart';
 
 @immutable
 class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
-  GeoRepositoryImpl(SupabaseService svc) : super(svc);
+  const GeoRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
 
@@ -28,16 +28,18 @@ class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
     return guard<List<Venue>>(() async {
       // Attempt RPC first if you've created `geo_nearby_venues(lat, lng, radius_m, lim, off)`
       try {
-        final rpcRows = await _db.rpc(
-          'geo_nearby_venues',
-          params: {
-            'in_lat': lat,
-            'in_lng': lng,
-            'in_radius_m': radiusMeters,
-            'in_limit': limit,
-            'in_offset': offset,
-          },
-        ) as List<dynamic>;
+        final rpcRows =
+            await _db.rpc(
+                  'geo_nearby_venues',
+                  params: {
+                    'in_lat': lat,
+                    'in_lng': lng,
+                    'in_radius_m': radiusMeters,
+                    'in_limit': limit,
+                    'in_offset': offset,
+                  },
+                )
+                as List<dynamic>;
 
         // If RPC returned something structured, map to Venue and return.
         if (rpcRows.isNotEmpty) {
@@ -69,11 +71,14 @@ class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
           .limit(limit * 5) // oversample a bit before client-side sort
           .range(offset, offset + (limit * 5) - 1);
 
-      final withDistance = rows.map((m) {
-        final v = Venue.fromMap(asMap(m));
-        final d = _haversineMeters(lat, lng, _readLat(v), _readLng(v));
-        return (venue: v, dist: d);
-      }).where((e) => e.dist <= radiusMeters).toList();
+      final withDistance = rows
+          .map((m) {
+            final v = Venue.fromMap(asMap(m));
+            final d = _haversineMeters(lat, lng, _readLat(v), _readLng(v));
+            return (venue: v, dist: d);
+          })
+          .where((e) => e.dist <= radiusMeters)
+          .toList();
 
       withDistance.sort((a, b) => a.dist.compareTo(b.dist));
 
@@ -104,7 +109,8 @@ class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
     const r = 6371000.0; // mean Earth radius (m)
     final dLat = _deg2rad(lat2 - lat1);
     final dLng = _deg2rad(lng2 - lng1);
-    final a = math.sin(dLat / 2) * math.sin(dLat / 2) +
+    final a =
+        math.sin(dLat / 2) * math.sin(dLat / 2) +
         math.cos(_deg2rad(lat1)) *
             math.cos(_deg2rad(lat2)) *
             math.sin(dLng / 2) *
@@ -120,7 +126,8 @@ class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
     // 1 deg lat ~ 111_320m; 1 deg lng ~ 111_320m * cos(lat)
     const mPerDeg = 111320.0;
     final dLat = radiusMeters / mPerDeg;
-    final dLng = radiusMeters / (mPerDeg * math.cos(_deg2rad(lat)).clamp(0.1, 1.0));
+    final dLng =
+        radiusMeters / (mPerDeg * math.cos(_deg2rad(lat)).clamp(0.1, 1.0));
     return _BBox(
       minLat: lat - dLat,
       maxLat: lat + dLat,

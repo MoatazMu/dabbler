@@ -1,5 +1,4 @@
-
-import 'package:dartz/dartz.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/error/failure.dart';
@@ -13,7 +12,7 @@ import 'package:meta/meta.dart';
 @immutable
 class NotificationsRepositoryImpl extends BaseRepository
     implements NotificationsRepository {
-  NotificationsRepositoryImpl(SupabaseService svc) : super(svc);
+  const NotificationsRepositoryImpl(SupabaseService svc) : super(svc);
 
   SupabaseClient get _db => svc.client;
 
@@ -127,7 +126,10 @@ class NotificationsRepositoryImpl extends BaseRepository
         .eq('user_id', uid)
         .order('created_at', ascending: false)
         .limit(limit)
-        .map((rows) => rows.map<AppNotification>((r) => AppNotification.fromMap(asMap(r))).toList());
+        .map(
+          (rows) => rows
+              .map<AppNotification>((r) => AppNotification.fromMap(asMap(r)))
+              .toList(),
+        );
   }
 }
-

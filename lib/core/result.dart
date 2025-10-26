@@ -1,9 +1,6 @@
-import 'package:dabbler/core/error/failures.dart';
-import 'package:dabbler/core/utils/either.dart';
+import 'package:fpdart/fpdart.dart';
+import 'errors/failures.dart';
 
 /// Alias for functions returning either a [Failure] or a successful [T] value.
-import 'package:fpdart/fpdart.dart';
-
-import 'error/failures.dart';
-
+/// Uses fpdart's Either type for functional error handling.
 typedef Result<T> = Either<Failure, T>;

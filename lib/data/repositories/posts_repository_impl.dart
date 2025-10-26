@@ -1,4 +1,3 @@
-
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -12,7 +11,7 @@ import 'posts_repository.dart';
 
 @immutable
 class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
-  PostsRepositoryImpl(SupabaseService svc) : super(svc);
+  const PostsRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
   String? get _uid => _db.auth.currentUser?.id;
@@ -170,5 +169,3 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
     });
   }
 }
-
-

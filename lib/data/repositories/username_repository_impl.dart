@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/error/failures.dart';
+import '../../core/errors/failures.dart';
 import '../../core/result.dart';
 import '../../services/supabase_service.dart';
 import '../models/profile.dart';
@@ -12,7 +12,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
 
   final SupabaseService svc;
 
-  PostgrestClient get _db => svc.client;
+  SupabaseClient get _client => svc.client;
 
   @override
   Future<Result<bool>> isAvailable(String username) async {
@@ -21,37 +21,35 @@ class UsernameRepositoryImpl implements UsernameRepository {
       return right(true);
     }
     try {
-      final row = await _db
+      final row = await _client
           .from('profiles')
           .select('id')
           .eq('username', trimmed)
           .maybeSingle();
       return right(row == null);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return left(
+        ServerFailure('Failed to check username availability', cause: error),
+      );
     }
   }
 
   @override
   Future<Result<Profile>> getByUsername(String username) async {
     try {
-      final row = await _db
+      final row = await _client
           .from('profiles')
           .select()
           .eq('username', username.trim())
           .maybeSingle();
       if (row == null) {
-        return left(
-          const NotFoundFailure(message: 'Username not found'),
-        );
+        return left(const NotFoundFailure('Username not found'));
       }
-      return right(
-        Profile.fromJson(
-          Map<String, dynamic>.from(row as Map<String, dynamic>),
-        ),
-      );
+      return right(Profile.fromJson(Map<String, dynamic>.from(row)));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return left(
+        ServerFailure('Failed to fetch profile by username', cause: error),
+      );
     }
   }
 
@@ -62,7 +60,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
     int offset = 0,
   }) async {
     try {
-      var builder = _db.from('profiles').select();
+      dynamic builder = _client.from('profiles').select();
       final trimmed = query.trim();
       if (trimmed.isNotEmpty) {
         builder = builder.ilike('username', '%$trimmed%');
@@ -70,6 +68,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
       builder = builder
           .eq('is_active', true)
           .order('created_at', ascending: false)
+          .limit(limit)
           .range(offset, offset + limit - 1);
       final data = await builder;
       final rows = (data as List<dynamic>)
@@ -81,7 +80,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .toList(growable: false);
       return right(rows);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return left(ServerFailure('Failed to search usernames', cause: error));
     }
   }
 
@@ -92,33 +91,23 @@ class UsernameRepositoryImpl implements UsernameRepository {
   }) async {
     final trimmed = username.trim();
     try {
-      final row = await _db
+      final row = await _client
           .from('profiles')
           .update({'username': trimmed})
           .eq('id', profileId)
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(
-          const NotFoundFailure(
-            message: 'Profile not found or not owned',
-          ),
-        );
+        return left(const NotFoundFailure('Profile not found or not owned'));
       }
-      return right(
-        Profile.fromJson(
-          Map<String, dynamic>.from(row as Map<String, dynamic>),
-        ),
-      );
+      return right(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
-        return left(
-          const ConflictFailure(message: 'Username already taken'),
-        );
+        return left(const ConflictFailure('Username already taken'));
       }
-      return left(svc.mapPostgrestError(error));
+      return left(ServerFailure('Failed to set username', cause: error));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return left(ServerFailure('Failed to set username', cause: error));
     }
   }
 
@@ -127,15 +116,13 @@ class UsernameRepositoryImpl implements UsernameRepository {
     required String profileType,
     required String username,
   }) async {
-    final uid = svc.authUserId();
+    final uid = _client.auth.currentUser?.id;
     if (uid == null) {
-      return left(
-        const AuthFailure(message: 'Not authenticated'),
-      );
+      return left(const AuthFailure('Not authenticated'));
     }
     final trimmed = username.trim();
     try {
-      final profileRow = await _db
+      final profileRow = await _client
           .from('profiles')
           .select('id')
           .eq('user_id', uid)
@@ -144,68 +131,57 @@ class UsernameRepositoryImpl implements UsernameRepository {
       if (profileRow == null) {
         return left(
           NotFoundFailure(
-            message: 'Profile of type $profileType not found for current user',
+            'Profile of type $profileType not found for current user',
           ),
         );
       }
-      final profileMap = Map<String, dynamic>.from(
-        profileRow as Map<String, dynamic>,
-      );
+      final profileMap = Map<String, dynamic>.from(profileRow);
       final profileId = profileMap['id'] as String;
-      final row = await _db
+      final row = await _client
           .from('profiles')
           .update({'username': trimmed})
           .eq('id', profileId)
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(
-          const NotFoundFailure(message: 'Profile not found after update'),
-        );
+        return left(const NotFoundFailure('Profile not found after update'));
       }
-      return right(
-        Profile.fromJson(
-          Map<String, dynamic>.from(row as Map<String, dynamic>),
-        ),
-      );
+      return right(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
-        return left(
-          const ConflictFailure(message: 'Username already taken'),
-        );
+        return left(const ConflictFailure('Username already taken'));
       }
-      return left(svc.mapPostgrestError(error));
+      return left(ServerFailure('Failed to update username', cause: error));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return left(ServerFailure('Failed to update username', cause: error));
     }
   }
 
   @override
   Stream<Result<Profile>> myProfileTypeStream(String profileType) async* {
-    final uid = svc.authUserId();
+    final uid = _client.auth.currentUser?.id;
     if (uid == null) {
-      yield left(const AuthFailure(message: 'Not authenticated'));
+      yield left(const AuthFailure('Not authenticated'));
       return;
     }
     try {
-      final stream = _db
+      // Query once instead of streaming for now
+      final data = await _client
           .from('profiles')
-          .stream(primaryKey: ['id'])
+          .select()
           .eq('user_id', uid)
-          .eq('profile_type', profileType);
+          .eq('profile_type', profileType)
+          .maybeSingle();
 
-      await for (final rows in stream) {
-        if (rows.isEmpty) {
-          yield left(const NotFoundFailure(message: 'Profile not found'));
-          continue;
-        }
-        final map = Map<String, dynamic>.from(
-          rows.first as Map<String, dynamic>,
-        );
-        yield right(Profile.fromJson(map));
+      if (data == null) {
+        yield left(const NotFoundFailure('Profile not found'));
+        return;
       }
+
+      final map = Map<String, dynamic>.from(data);
+      yield right(Profile.fromJson(map));
     } catch (error) {
-      yield left(svc.mapPostgrestError(error));
+      yield left(ServerFailure('Failed to get profile', cause: error));
     }
   }
 }

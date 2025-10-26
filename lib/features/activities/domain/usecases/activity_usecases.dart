@@ -1,4 +1,4 @@
-import 'package:dartz/dartz.dart';
+import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failures.dart';
 import '../entities/activity_log.dart';
 import '../repositories/activity_log_repository.dart';

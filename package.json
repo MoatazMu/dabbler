@@ -1,0 +1,30 @@
+{
+  "name": "dabbler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test_rpc.js",
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoatazMu/dabbler.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MoatazMu/dabbler/issues"
+  },
+  "homepage": "https://github.com/MoatazMu/dabbler#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.76.0",
+    "dotenv": "^17.2.3",
+    "tslib": "^2.8.1"
+  }
+}

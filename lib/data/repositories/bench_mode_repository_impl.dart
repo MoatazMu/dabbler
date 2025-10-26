@@ -44,7 +44,9 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
       final row = await _findMyProfileRow(uid, profileType);
       if (row == null) {
         return left(
-          NotFoundFailure(message: 'Profile ($profileType) not found for current user'),
+          NotFoundFailure(
+            message: 'Profile ($profileType) not found for current user',
+          ),
         );
       }
       return right(Profile.fromJson(row));
@@ -68,7 +70,9 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .maybeSingle();
       if (row == null) {
         return left(
-          NotFoundFailure(message: 'Profile ($profileType) not found for current user'),
+          NotFoundFailure(
+            message: 'Profile ($profileType) not found for current user',
+          ),
         );
       }
       return right((row['is_active'] as bool?) ?? false);
@@ -94,7 +98,9 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .maybeSingle();
       if (row == null) {
         return left(
-          NotFoundFailure(message: 'Profile ($profileType) not found or not owned'),
+          NotFoundFailure(
+            message: 'Profile ($profileType) not found or not owned',
+          ),
         );
       }
       return right(Profile.fromJson(Map<String, dynamic>.from(row)));
@@ -120,7 +126,9 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .maybeSingle();
       if (row == null) {
         return left(
-          NotFoundFailure(message: 'Profile ($profileType) not found or not owned'),
+          NotFoundFailure(
+            message: 'Profile ($profileType) not found or not owned',
+          ),
         );
       }
       return right(Profile.fromJson(Map<String, dynamic>.from(row)));
@@ -138,7 +146,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
         return;
       }
 
-      Future<Result<Profile>> _fetch() async {
+      Future<Result<Profile>> fetch() async {
         try {
           final row = await _findMyProfileRow(uid, profileType);
           if (row == null) {
@@ -153,7 +161,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
       }
 
       // Initial emit
-      yield await _fetch();
+      yield await fetch();
 
       // Realtime stream, scoped to my profile/type
       final stream = _db
@@ -163,7 +171,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .eq('profile_type', profileType);
 
       await for (final _ in stream) {
-        yield await _fetch();
+        yield await fetch();
       }
     } catch (e) {
       yield left(svc.mapPostgrestError(e));

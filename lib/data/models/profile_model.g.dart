@@ -1,11 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// coverage:ignore-file
-// ignore_for_file: type=lint
 
 part of 'profile_model.dart';
 
-_$_ProfileModel _$$_ProfileModelFromJson(Map<String, dynamic> json) =>
-    _$_ProfileModel(
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$ProfileModelImpl _$$ProfileModelImplFromJson(Map<String, dynamic> json) =>
+    _$ProfileModelImpl(
       userId: json['user_id'] as String,
       displayName: json['display_name'] as String,
       username: json['username'] as String?,
@@ -22,22 +24,17 @@ _$_ProfileModel _$$_ProfileModelFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['deleted_at'] as String),
     );
 
-Map<String, dynamic> _$$_ProfileModelToJson(_$_ProfileModel instance) {
-  final val = <String, dynamic>{};
-
-  void writeNotNull(String key, dynamic value) {
-    if (value != null) {
-      val[key] = value;
-    }
-  }
-
-  val['user_id'] = instance.userId;
-  val['display_name'] = instance.displayName;
-  writeNotNull('username', instance.username);
-  writeNotNull('avatar_url', instance.avatarUrl);
-  val['profile_type'] = instance.profileType;
-  writeNotNull('created_at', instance.createdAt?.toIso8601String());
-  writeNotNull('updated_at', instance.updatedAt?.toIso8601String());
-  writeNotNull('deleted_at', instance.deletedAt?.toIso8601String());
-  return val;
-}
+Map<String, dynamic> _$$ProfileModelImplToJson(_$ProfileModelImpl instance) =>
+    <String, dynamic>{
+      'user_id': instance.userId,
+      'display_name': instance.displayName,
+      if (instance.username case final value?) 'username': value,
+      if (instance.avatarUrl case final value?) 'avatar_url': value,
+      'profile_type': instance.profileType,
+      if (instance.createdAt?.toIso8601String() case final value?)
+        'created_at': value,
+      if (instance.updatedAt?.toIso8601String() case final value?)
+        'updated_at': value,
+      if (instance.deletedAt?.toIso8601String() case final value?)
+        'deleted_at': value,
+    };

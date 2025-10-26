@@ -9,17 +9,6 @@ class Profile with _$Profile {
     required String id,
     @JsonKey(name: 'user_id') required String userId,
     @JsonKey(name: 'profile_type') required String profileType,
-    String? username,
-    @JsonKey(name: 'display_name') required String displayName,
-    String? bio,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
-    String? city,
-    String? country,
-    String? language,
-    bool? verified,
-    @JsonKey(name: 'id') required String id,
-    @JsonKey(name: 'user_id') required String userId,
-    @JsonKey(name: 'profile_type') required String profileType,
     @JsonKey(name: 'username') String? username,
     @JsonKey(name: 'display_name') required String displayName,
     @JsonKey(name: 'bio') String? bio,
@@ -34,7 +23,14 @@ class Profile with _$Profile {
     @JsonKey(name: 'display_name_norm') String? displayNameNorm,
     @JsonKey(name: 'geo_lat') double? geoLat,
     @JsonKey(name: 'geo_lng') double? geoLng,
+    // New onboarding fields
+    @JsonKey(name: 'intention') String? intention,
+    @JsonKey(name: 'gender') String? gender,
+    @JsonKey(name: 'age') int? age,
+    @JsonKey(name: 'preferred_sport') String? preferredSport,
+    @JsonKey(name: 'interests') String? interests, // comma-separated
   }) = _Profile;
 
-  factory Profile.fromJson(Map<String, dynamic> json) => _$ProfileFromJson(json);
+  factory Profile.fromJson(Map<String, dynamic> json) =>
+      _$ProfileFromJson(json);
 }

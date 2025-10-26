@@ -1,4 +1,3 @@
-
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -13,7 +12,7 @@ import 'base_repository.dart';
 @immutable
 class AvailabilityRepositoryImpl extends BaseRepository
     implements AvailabilityRepository {
-  AvailabilityRepositoryImpl(SupabaseService svc) : super(svc);
+  const AvailabilityRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
   String? get _userId => _db.auth.currentUser?.id;
@@ -120,12 +119,7 @@ class AvailabilityRepositoryImpl extends BaseRepository
   Future<Result<void>> releaseHold(String holdId) async {
     return guard<void>(() async {
       // RLS: holds_write lets creator delete their own holds.
-      final _ = await _db
-          .from('space_slot_holds')
-          .delete()
-          .eq('id', holdId);
+      final _ = await _db.from('space_slot_holds').delete().eq('id', holdId);
     });
   }
 }
-
-

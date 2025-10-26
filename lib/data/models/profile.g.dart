@@ -1,9 +1,13 @@
-// coverage:ignore-file
-// GENERATED CODE - MANUALLY WRITTEN TO MIRROR JSON SERIALIZABLE OUTPUT
+// GENERATED CODE - DO NOT MODIFY BY HAND
 
 part of 'profile.dart';
 
-_$_Profile _$$_ProfileFromJson(Map<String, dynamic> json) => _$_Profile(
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+_$ProfileImpl _$$ProfileImplFromJson(Map<String, dynamic> json) =>
+    _$ProfileImpl(
       id: json['id'] as String,
       userId: json['user_id'] as String,
       profileType: json['profile_type'] as String,
@@ -25,9 +29,15 @@ _$_Profile _$$_ProfileFromJson(Map<String, dynamic> json) => _$_Profile(
       displayNameNorm: json['display_name_norm'] as String?,
       geoLat: (json['geo_lat'] as num?)?.toDouble(),
       geoLng: (json['geo_lng'] as num?)?.toDouble(),
+      intention: json['intention'] as String?,
+      gender: json['gender'] as String?,
+      age: (json['age'] as num?)?.toInt(),
+      preferredSport: json['preferred_sport'] as String?,
+      interests: json['interests'] as String?,
     );
 
-Map<String, dynamic> _$$_ProfileToJson(_$_Profile instance) => <String, dynamic>{
+Map<String, dynamic> _$$ProfileImplToJson(_$ProfileImpl instance) =>
+    <String, dynamic>{
       'id': instance.id,
       'user_id': instance.userId,
       'profile_type': instance.profileType,
@@ -45,4 +55,9 @@ Map<String, dynamic> _$$_ProfileToJson(_$_Profile instance) => <String, dynamic>
       'display_name_norm': instance.displayNameNorm,
       'geo_lat': instance.geoLat,
       'geo_lng': instance.geoLng,
+      'intention': instance.intention,
+      'gender': instance.gender,
+      'age': instance.age,
+      'preferred_sport': instance.preferredSport,
+      'interests': instance.interests,
     };

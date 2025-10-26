@@ -22,7 +22,9 @@ class SquadsRepositoryImpl implements SquadsRepository {
 
   bool _isRpcMissing(PostgrestException error, String rpcName) {
     final message = (error.message as String?)?.toLowerCase() ?? '';
-    return error.code == '42883' || message.contains('function $rpcName') || message.contains('rpc_$rpcName');
+    return error.code == '42883' ||
+        message.contains('function $rpcName') ||
+        message.contains('rpc_$rpcName');
   }
 
   String? _extractId(dynamic payload) {
@@ -30,13 +32,14 @@ class SquadsRepositoryImpl implements SquadsRepository {
       return payload;
     }
     if (payload is Map) {
-      final map = Map<String, dynamic>.from(payload as Map);
+      final map = Map<String, dynamic>.from(payload);
       return map['id'] as String? ?? map['data'] as String?;
     }
     return null;
   }
 
-  Result<T> _unexpected<T>(String message) => left(ServerFailure(message: message));
+  Result<T> _unexpected<T>(String message) =>
+      left(ServerFailure(message: message));
 
   /// Relies on RLS policy `squads_insert_self`.
   @override
@@ -57,16 +60,19 @@ class SquadsRepositoryImpl implements SquadsRepository {
 
     try {
       try {
-        final response = await _db.rpc('rpc_squad_create', params: {
-          'p_sport': sport,
-          'p_name': name,
-          'p_bio': bio,
-          'p_logo_url': logoUrl,
-          'p_listing_visibility': listingVisibility,
-          'p_join_policy': joinPolicy,
-          'p_max_members': maxMembers,
-          'p_city': city,
-        });
+        final response = await _db.rpc(
+          'rpc_squad_create',
+          params: {
+            'p_sport': sport,
+            'p_name': name,
+            'p_bio': bio,
+            'p_logo_url': logoUrl,
+            'p_listing_visibility': listingVisibility,
+            'p_join_policy': joinPolicy,
+            'p_max_members': maxMembers,
+            'p_city': city,
+          },
+        );
 
         final id = _extractId(response);
         if (id != null) {
@@ -96,7 +102,11 @@ class SquadsRepositoryImpl implements SquadsRepository {
           'created_by_user_id': uid,
           'owner_user_id': uid,
         }..removeWhere((_, value) => value == null);
-        final insert = await _db.from('squads').insert(payload).select('id').maybeSingle();
+        final insert = await _db
+            .from('squads')
+            .insert(payload)
+            .select('id')
+            .maybeSingle();
         if (insert == null) {
           return _unexpected('Failed to create squad via fallback insert');
         }
@@ -151,7 +161,10 @@ class SquadsRepositoryImpl implements SquadsRepository {
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
       final squads = rows
-          .map((dynamic row) => Squad.fromJson(Map<String, dynamic>.from(row as Map)))
+          .map(
+            (dynamic row) =>
+                Squad.fromJson(Map<String, dynamic>.from(row as Map)),
+          )
           .toList(growable: false);
       return right(squads);
     } catch (error) {
@@ -178,13 +191,17 @@ class SquadsRepositoryImpl implements SquadsRepository {
             .stream(primaryKey: ['squad_id', 'profile_id'])
             .eq('squad_id', squadId)
             .listen((event) {
-          final members = event
-              .map((dynamic row) => SquadMember.fromJson(Map<String, dynamic>.from(row as Map)))
-              .toList(growable: false);
-          if (!controller.isClosed) {
-            controller.add(right(members));
-          }
-        }, onError: emitError);
+              final members = event
+                  .map(
+                    (dynamic row) => SquadMember.fromJson(
+                      Map<String, dynamic>.from(row as Map),
+                    ),
+                  )
+                  .toList(growable: false);
+              if (!controller.isClosed) {
+                controller.add(right(members));
+              }
+            }, onError: emitError);
       } catch (error) {
         emitError(error);
       }
@@ -206,11 +223,14 @@ class SquadsRepositoryImpl implements SquadsRepository {
   }) async {
     try {
       try {
-        final response = await _db.rpc('rpc_squad_invite', params: {
-          'p_squad_id': squadId,
-          'p_to_profile_id': toProfileId,
-          'p_expires_at': expiresAt?.toIso8601String(),
-        });
+        final response = await _db.rpc(
+          'rpc_squad_invite',
+          params: {
+            'p_squad_id': squadId,
+            'p_to_profile_id': toProfileId,
+            'p_expires_at': expiresAt?.toIso8601String(),
+          },
+        );
         final id = _extractId(response);
         if (id != null) {
           return right(id);
@@ -268,7 +288,11 @@ class SquadsRepositoryImpl implements SquadsRepository {
           'created_by_profile_id': creatorProfileId,
           'expires_at': expiresAt?.toIso8601String(),
         };
-        final insert = await _db.from('squad_invites').insert(payload).select('id').maybeSingle();
+        final insert = await _db
+            .from('squad_invites')
+            .insert(payload)
+            .select('id')
+            .maybeSingle();
         if (insert == null) {
           return _unexpected('Failed to insert squad invite');
         }
@@ -291,11 +315,14 @@ class SquadsRepositoryImpl implements SquadsRepository {
     required String profileId,
   }) async {
     try {
-      final response = await _db.rpc('rpc_squad_respond_invite', params: {
-        'p_invite_id': inviteId,
-        'p_action': action,
-        'p_profile_id': profileId,
-      });
+      final response = await _db.rpc(
+        'rpc_squad_respond_invite',
+        params: {
+          'p_invite_id': inviteId,
+          'p_action': action,
+          'p_profile_id': profileId,
+        },
+      );
       final message = response is String ? response : 'ok';
       return right(message);
     } catch (error) {
@@ -312,12 +339,15 @@ class SquadsRepositoryImpl implements SquadsRepository {
     String? linkToken,
   }) async {
     try {
-      final response = await _db.rpc('rpc_squad_request_join', params: {
-        'p_squad_id': squadId,
-        'p_profile_id': profileId,
-        'p_message': message,
-        'p_link_token': linkToken,
-      });
+      final response = await _db.rpc(
+        'rpc_squad_request_join',
+        params: {
+          'p_squad_id': squadId,
+          'p_profile_id': profileId,
+          'p_message': message,
+          'p_link_token': linkToken,
+        },
+      );
       return right(response is String ? response : 'ok');
     } catch (error) {
       return left(svc.mapPostgrestError(error));
@@ -332,11 +362,14 @@ class SquadsRepositoryImpl implements SquadsRepository {
     bool asCaptain = false,
   }) async {
     try {
-      final response = await _db.rpc('rpc_squad_add_member', params: {
-        'p_squad_id': squadId,
-        'p_profile_id': profileId,
-        'p_as_captain': asCaptain,
-      });
+      final response = await _db.rpc(
+        'rpc_squad_add_member',
+        params: {
+          'p_squad_id': squadId,
+          'p_profile_id': profileId,
+          'p_as_captain': asCaptain,
+        },
+      );
       return right(response is String ? response : 'ok');
     } catch (error) {
       return left(svc.mapPostgrestError(error));
@@ -350,10 +383,10 @@ class SquadsRepositoryImpl implements SquadsRepository {
     required String profileId,
   }) async {
     try {
-      final response = await _db.rpc('rpc_squad_remove_member', params: {
-        'p_squad_id': squadId,
-        'p_profile_id': profileId,
-      });
+      final response = await _db.rpc(
+        'rpc_squad_remove_member',
+        params: {'p_squad_id': squadId, 'p_profile_id': profileId},
+      );
       return right(response is String ? response : 'ok');
     } catch (error) {
       return left(svc.mapPostgrestError(error));
@@ -368,11 +401,14 @@ class SquadsRepositoryImpl implements SquadsRepository {
     required bool isCaptain,
   }) async {
     try {
-      final response = await _db.rpc('rpc_squad_set_captain', params: {
-        'p_squad_id': squadId,
-        'p_profile_id': profileId,
-        'p_is_captain': isCaptain,
-      });
+      final response = await _db.rpc(
+        'rpc_squad_set_captain',
+        params: {
+          'p_squad_id': squadId,
+          'p_profile_id': profileId,
+          'p_is_captain': isCaptain,
+        },
+      );
       return right(response is String ? response : 'ok');
     } catch (error) {
       return left(svc.mapPostgrestError(error));
@@ -393,7 +429,10 @@ class SquadsRepositoryImpl implements SquadsRepository {
           .eq('to_user_id', uid)
           .order('created_at', ascending: false);
       final invites = rows
-          .map((dynamic row) => SquadInvite.fromJson(Map<String, dynamic>.from(row as Map)))
+          .map(
+            (dynamic row) =>
+                SquadInvite.fromJson(Map<String, dynamic>.from(row as Map)),
+          )
           .toList(growable: false);
       return right(invites);
     } catch (error) {
@@ -411,7 +450,10 @@ class SquadsRepositoryImpl implements SquadsRepository {
           .eq('squad_id', squadId)
           .order('created_at', ascending: false);
       final invites = rows
-          .map((dynamic row) => SquadInvite.fromJson(Map<String, dynamic>.from(row as Map)))
+          .map(
+            (dynamic row) =>
+                SquadInvite.fromJson(Map<String, dynamic>.from(row as Map)),
+          )
           .toList(growable: false);
       return right(invites);
     } catch (error) {
@@ -421,7 +463,9 @@ class SquadsRepositoryImpl implements SquadsRepository {
 
   /// Relies on RLS policy `squad_members_owner_captain_write` for visibility via join request RPC/queries.
   @override
-  Future<Result<List<SquadJoinRequest>>> squadJoinRequests(String squadId) async {
+  Future<Result<List<SquadJoinRequest>>> squadJoinRequests(
+    String squadId,
+  ) async {
     try {
       final rows = await _db
           .from('squad_join_requests')
@@ -429,7 +473,11 @@ class SquadsRepositoryImpl implements SquadsRepository {
           .eq('squad_id', squadId)
           .order('created_at', ascending: false);
       final requests = rows
-          .map((dynamic row) => SquadJoinRequest.fromJson(Map<String, dynamic>.from(row as Map)))
+          .map(
+            (dynamic row) => SquadJoinRequest.fromJson(
+              Map<String, dynamic>.from(row as Map),
+            ),
+          )
           .toList(growable: false);
       return right(requests);
     } catch (error) {
@@ -445,7 +493,10 @@ class SquadsRepositoryImpl implements SquadsRepository {
       return left(const AuthFailure(message: 'Not authenticated'));
     }
     try {
-      final ownedResponse = await _db.from('squads').select().eq('owner_user_id', uid);
+      final ownedResponse = await _db
+          .from('squads')
+          .select()
+          .eq('owner_user_id', uid);
       final ownedMaps = ownedResponse
           .map((dynamic row) => Map<String, dynamic>.from(row as Map))
           .toList(growable: false);
@@ -456,7 +507,10 @@ class SquadsRepositoryImpl implements SquadsRepository {
           .eq('user_id', uid)
           .eq('status', 'active');
       final memberIds = membershipRows
-          .map((dynamic row) => Map<String, dynamic>.from(row as Map)['squad_id'] as String)
+          .map(
+            (dynamic row) =>
+                Map<String, dynamic>.from(row as Map)['squad_id'] as String,
+          )
           .toSet();
       for (final owned in ownedMaps) {
         final ownedId = owned['id'] as String?;
@@ -467,7 +521,10 @@ class SquadsRepositoryImpl implements SquadsRepository {
 
       List<Map<String, dynamic>> memberSquads = [];
       if (memberIds.isNotEmpty) {
-        final rows = await _db.from('squads').select().in_('id', memberIds.toList());
+        final rows = await _db
+            .from('squads')
+            .select()
+            .in_('id', memberIds.toList());
         memberSquads = rows
             .map((dynamic row) => Map<String, dynamic>.from(row as Map))
             .toList(growable: false);
