@@ -6,6 +6,7 @@ import '../../core/services/auth_service.dart';
 import '../../core/utils/constants.dart';
 import '../../core/utils/validators.dart';
 import '../../features/authentication/presentation/providers/onboarding_data_provider.dart';
+import '../../features/authentication/presentation/providers/auth_providers.dart';
 import '../../utils/constants/route_constants.dart';
 import '../../widgets/custom_button.dart';
 
@@ -101,9 +102,26 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       );
 
       final authService = AuthService();
-      await authService.verifyOtp(phone: widget.phoneNumber!, token: otpCode);
+      final response = await authService.verifyOtp(
+        phone: widget.phoneNumber!,
+        token: otpCode,
+      );
 
       print('✅ [DEBUG] OtpVerificationScreen: OTP verification successful');
+
+      // Verify session was created
+      if (response.session != null) {
+        print('✅ [DEBUG] OtpVerificationScreen: Session created successfully');
+        print(
+          '👤 [DEBUG] OtpVerificationScreen: User ID: ${response.user?.id}',
+        );
+
+        // Refresh auth state to ensure the session is recognized app-wide
+        await ref.read(simpleAuthProvider.notifier).refreshAuthState();
+        print('✅ [DEBUG] OtpVerificationScreen: Auth state refreshed');
+      } else {
+        print('⚠️ [DEBUG] OtpVerificationScreen: No session in response');
+      }
 
       if (mounted) {
         // Check if user needs to complete profile

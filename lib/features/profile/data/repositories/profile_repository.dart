@@ -9,7 +9,9 @@ import '../../domain/entities/user_profile.dart';
 class ProfileRepository {
   /// Get user profile by ID
   Future<UserProfile?> getUserProfile(String userId) async {
-    throw UnimplementedError('ProfileRepository.getUserProfile not implemented');
+    throw UnimplementedError(
+      'ProfileRepository.getUserProfile not implemented',
+    );
   }
 
   /// Network-first, cache-fallback profile fetch
@@ -20,12 +22,12 @@ class ProfileRepository {
     final online = status != ConnectivityResult.none;
     if (online) {
       try {
-        // Replace with actual Supabase fetch logic
+        // Fetch from Supabase profiles table
         final supabase = Supabase.instance.client;
         final response = await supabase
-            .from('user_profile_public')
+            .from('profiles')
             .select()
-            .eq('id', userId)
+            .eq('user_id', userId)
             .maybeSingle();
         if (response != null) {
           await ProfileCacheService().updateProfilePartial(userId, response);
@@ -33,14 +35,22 @@ class ProfileRepository {
         }
       } catch (e) {
         // On error, fallback to cache
-        final cached = await ProfileCacheService().getProfileById(userId, preferCache: true, revalidate: false);
+        final cached = await ProfileCacheService().getProfileById(
+          userId,
+          preferCache: true,
+          revalidate: false,
+        );
         if (cached != null) {
           return UserProfile.fromJson(cached);
         }
       }
     } else {
       // Offline: use cache
-      final cached = await ProfileCacheService().getProfileById(userId, preferCache: true, revalidate: false);
+      final cached = await ProfileCacheService().getProfileById(
+        userId,
+        preferCache: true,
+        revalidate: false,
+      );
       if (cached != null) {
         return UserProfile.fromJson(cached);
       }
@@ -49,7 +59,10 @@ class ProfileRepository {
   }
 
   /// Update user profile
-  Future<UserProfile> updateProfile(String userId, Map<String, dynamic> updates) async {
+  Future<UserProfile> updateProfile(
+    String userId,
+    Map<String, dynamic> updates,
+  ) async {
     throw UnimplementedError('ProfileRepository.updateProfile not implemented');
   }
 
@@ -65,7 +78,9 @@ class ProfileRepository {
 
   /// Upload profile image
   Future<String> uploadProfileImage(String userId, File imageFile) async {
-    throw UnimplementedError('ProfileRepository.uploadProfileImage not implemented');
+    throw UnimplementedError(
+      'ProfileRepository.uploadProfileImage not implemented',
+    );
   }
 
   /// Search profiles
@@ -76,26 +91,39 @@ class ProfileRepository {
     int limit = 20,
     int offset = 0,
   }) async {
-    throw UnimplementedError('ProfileRepository.searchProfiles not implemented');
+    throw UnimplementedError(
+      'ProfileRepository.searchProfiles not implemented',
+    );
   }
 
   /// Get profiles by IDs
   Future<List<UserProfile>> getProfilesByIds(List<String> userIds) async {
-    throw UnimplementedError('ProfileRepository.getProfilesByIds not implemented');
+    throw UnimplementedError(
+      'ProfileRepository.getProfilesByIds not implemented',
+    );
   }
 
   /// Update profile completion percentage
-  Future<void> updateCompletionPercentage(String userId, double percentage) async {
-    throw UnimplementedError('ProfileRepository.updateCompletionPercentage not implemented');
+  Future<void> updateCompletionPercentage(
+    String userId,
+    double percentage,
+  ) async {
+    throw UnimplementedError(
+      'ProfileRepository.updateCompletionPercentage not implemented',
+    );
   }
 
   /// Get all user data for export
   Future<Map<String, dynamic>> getAllUserData(String userId) async {
-    throw UnimplementedError('ProfileRepository.getAllUserData not implemented');
+    throw UnimplementedError(
+      'ProfileRepository.getAllUserData not implemented',
+    );
   }
 
   /// Delete all user data
   Future<void> deleteAllUserData(String userId) async {
-    throw UnimplementedError('ProfileRepository.deleteAllUserData not implemented');
+    throw UnimplementedError(
+      'ProfileRepository.deleteAllUserData not implemented',
+    );
   }
 }

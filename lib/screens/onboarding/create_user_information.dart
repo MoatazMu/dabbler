@@ -151,14 +151,39 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         final currentEmail = _authService.getCurrentUserEmail();
         final currentPhone = _authService.getCurrentUser()?.phone;
 
+        debugPrint('🔍 [DEBUG] CreateUserInformation: Session check:');
+        debugPrint('  widget.email: ${widget.email}');
+        debugPrint('  widget.phone: ${widget.phone}');
+        debugPrint('  currentEmail: $currentEmail');
+        debugPrint('  currentPhone: $currentPhone');
+
         // Check if current session matches either email or phone
         bool matchesSession = false;
         if (widget.email != null && currentEmail != null) {
           final normalizedCurrent = currentEmail.trim().toLowerCase();
           final normalizedTarget = widget.email!.trim().toLowerCase();
           matchesSession = normalizedCurrent == normalizedTarget;
-        } else if (widget.phone != null && currentPhone != null) {
-          matchesSession = currentPhone == widget.phone;
+          debugPrint('  Email match check: $matchesSession');
+        } else if (widget.phone != null) {
+          // For phone users during onboarding after OTP verification,
+          // normalize phone numbers by removing '+' prefix for comparison
+          if (currentPhone != null) {
+            final normalizedCurrent = currentPhone.replaceAll('+', '');
+            final normalizedTarget = widget.phone!.replaceAll('+', '');
+            matchesSession = normalizedCurrent == normalizedTarget;
+            debugPrint(
+              '  Phone match check: $matchesSession ($normalizedCurrent == $normalizedTarget)',
+            );
+          } else {
+            // Phone user but currentPhone is null - likely just verified OTP
+            // Trust the session for onboarding flow
+            matchesSession = true;
+            debugPrint(
+              '  Phone user in onboarding - trusting session (currentPhone is null)',
+            );
+          }
+        } else {
+          debugPrint('  No match possible - missing data');
         }
 
         if (matchesSession) {

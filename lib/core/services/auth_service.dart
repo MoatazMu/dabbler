@@ -360,7 +360,7 @@ class AuthService {
       final response = await _supabase
           .from(SupabaseConfig.usersTable)
           .select(selectFields)
-          .eq('id', user.id)
+          .eq('user_id', user.id) // Query by user_id, not id
           .maybeSingle();
 
       if (response == null) {
@@ -421,9 +421,9 @@ class AuthService {
         : fields.join(',');
     try {
       final rows = await _supabase
-          .from('user_profile_public')
+          .from(SupabaseConfig.usersTable)
           .select(selectFields)
-          .inFilter('id', userIds);
+          .inFilter('user_id', userIds);
       return (rows as List).cast<Map<String, dynamic>>();
     } catch (e) {
       print('❌ [DEBUG] AuthService: Batch profile fetch failed: $e');
@@ -591,7 +591,7 @@ class AuthService {
           if (!isMissingColumn) rethrow;
 
           print(
-            '⚠️ [DEBUG] AuthService: Column mismatch on user_profile_public table. Retrying with alternate column names.',
+            '⚠️ [DEBUG] AuthService: Column mismatch on profiles table. Retrying with alternate column names.',
           );
 
           final Map<String, dynamic> altUpdates = {};
@@ -622,7 +622,7 @@ class AuthService {
               final missingCol = rawCol
                   .replaceAll('u.', '')
                   .replaceAll('public.', '')
-                  .replaceAll('user_profile_public.', '')
+                  .replaceAll('profiles.', '')
                   .trim();
               altUpdates.remove(missingCol);
               // Also remove counterparts if applicable
@@ -636,9 +636,9 @@ class AuthService {
           if (altUpdates.isEmpty) rethrow;
 
           final updatedAlt = await _supabase
-              .from('user_profile_public')
+              .from(SupabaseConfig.usersTable)
               .update(altUpdates)
-              .eq('id', user.id)
+              .eq('user_id', user.id)
               .select()
               .single();
 

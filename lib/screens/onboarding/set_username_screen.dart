@@ -27,6 +27,19 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
   Timer? _debounce;
 
   @override
+  void initState() {
+    super.initState();
+    // Verify authentication status on load for debugging
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authService = AuthService();
+      final currentUser = authService.getCurrentUser();
+      debugPrint(
+        '🔍 [DEBUG] SetUsernameScreen: Auth check - User: ${currentUser?.email ?? currentUser?.phone ?? "None"}',
+      );
+    });
+  }
+
+  @override
   void dispose() {
     _usernameController.dispose();
     _debounce?.cancel();
@@ -113,10 +126,14 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
     try {
       final username = _usernameController.text.trim();
       final authService = AuthService();
+
       final currentUser = authService.getCurrentUser();
 
       if (currentUser == null) {
-        throw Exception('User not authenticated');
+        // Session expired - this shouldn't happen but handle gracefully
+        throw Exception(
+          'Your session has expired. Please verify your phone number again.',
+        );
       }
 
       debugPrint(
@@ -146,7 +163,7 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
       // Clear onboarding data
       ref.read(onboardingDataProvider.notifier).clear();
 
-      // Refresh auth state
+      // Refresh auth state to load the new profile
       await ref.read(simpleAuthProvider.notifier).refreshAuthState();
 
       // Navigate to welcome screen
