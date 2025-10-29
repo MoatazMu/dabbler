@@ -1,4 +1,4 @@
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/either.dart';
 import '../entities/user_preferences.dart';
 import '../repositories/preferences_repository.dart';

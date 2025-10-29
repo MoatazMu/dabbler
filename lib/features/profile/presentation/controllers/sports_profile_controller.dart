@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/sports_profile.dart';
 import '../../domain/usecases/manage_sports_profile_usecase.dart';
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 
 /// State for sports profile management
 class SportsProfileState {

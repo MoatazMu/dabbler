@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/error/failures.dart';
+import '../../core/errors/failure.dart';
 import '../../core/result.dart';
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/profile.dart';
 import 'bench_mode_repository.dart';
 
@@ -44,7 +44,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
       final row = await _findMyProfileRow(uid, profileType);
       if (row == null) {
         return left(
-          NotFoundFailure(
+          NotFoundFailure(message: 
             message: 'Profile ($profileType) not found for current user',
           ),
         );
@@ -70,7 +70,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .maybeSingle();
       if (row == null) {
         return left(
-          NotFoundFailure(
+          NotFoundFailure(message: 
             message: 'Profile ($profileType) not found for current user',
           ),
         );
@@ -98,7 +98,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .maybeSingle();
       if (row == null) {
         return left(
-          NotFoundFailure(
+          NotFoundFailure(message: 
             message: 'Profile ($profileType) not found or not owned',
           ),
         );
@@ -126,7 +126,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .maybeSingle();
       if (row == null) {
         return left(
-          NotFoundFailure(
+          NotFoundFailure(message: 
             message: 'Profile ($profileType) not found or not owned',
           ),
         );

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/either.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/sports_profile.dart';
@@ -207,7 +207,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       // parameters or we need to restructure the data flow.
       
       // For now, return an error indicating the method needs to be updated
-      return Left(ValidationFailure(
+      return Left(ValidationFailure(message: 
         message: 'updateSportProfile method needs additional context (userId, sportProfileId). '
         'Please update the interface to include required parameters.'
       ));
@@ -222,7 +222,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   Future<Either<Failure, void>> deleteSportProfile(String sportProfileId) async {
     try {
       // Remote API requires both userId and sportId. This method lacks userId context.
-      return Left(ValidationFailure(
+      return Left(ValidationFailure(message: 
         message: 'deleteSportProfile requires userId and sportId; repository method needs updating.',
       ));
     } catch (e) {

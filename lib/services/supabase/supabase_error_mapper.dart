@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:riverpod/riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failures.dart';
+import '../../core/errors/failure.dart';
 
 final supabaseErrorMapperProvider = Provider<SupabaseErrorMapper>((ref) {
   return const SupabaseErrorMapper();
@@ -34,7 +34,7 @@ class SupabaseErrorMapper {
     }
     if (error is StorageException) {
       return SupabaseFailure(
-        overrideMessage ?? error.message,
+        message: overrideMessage ?? error.message,
         code: error.statusCode?.toString(),
         cause: error,
         stackTrace: stackTrace,
@@ -42,13 +42,13 @@ class SupabaseErrorMapper {
     }
     if (error is TimeoutException || error is SocketException) {
       return NetworkFailure(
-        overrideMessage ?? 'Network connection failed',
+        message: overrideMessage ?? 'Network connection failed',
         stackTrace: stackTrace,
       );
     }
 
     return UnexpectedFailure(
-      overrideMessage ?? error.toString(),
+      message: overrideMessage ?? error.toString(),
       cause: error,
       stackTrace: stackTrace,
     );
@@ -62,20 +62,20 @@ class SupabaseErrorMapper {
     final message = overrideMessage ?? exception.message;
     final lowerMessage = message.toLowerCase();
     if (lowerMessage.contains('invalid login credentials')) {
-      return InvalidCredentialsFailure(message);
+      return InvalidCredentialsFailure(message: message);
     }
     if (lowerMessage.contains('email') && lowerMessage.contains('exists')) {
-      return EmailAlreadyExistsFailure(message);
+      return EmailAlreadyExistsFailure(message: message);
     }
     if (lowerMessage.contains('password')) {
-      return WeakPasswordFailure(message);
+      return WeakPasswordFailure(message: message);
     }
     if (lowerMessage.contains('verify') || lowerMessage.contains('confirmation')) {
-      return UnverifiedEmailFailure(message);
+      return UnverifiedEmailFailure(message: message);
     }
 
     return SupabaseAuthFailure(
-      message,
+      message: message,
       code: exception.code,
       cause: exception,
       stackTrace: stackTrace,
@@ -134,14 +134,14 @@ class SupabaseErrorMapper {
 
     if (status != null && status >= 500) {
       return ServerFailure(
-        message,
+        message: message,
         cause: exception,
         stackTrace: stackTrace,
       );
     }
 
     return SupabaseFailure(
-      message,
+      message: message,
       code: code,
       details: details,
       cause: exception,

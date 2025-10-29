@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/error/failures.dart';
+import '../../core/errors/failure.dart';
 import '../../data/models/profile.dart';
 import 'providers.dart';
 

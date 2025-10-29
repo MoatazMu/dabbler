@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../domain/entities/game.dart';
 import '../../domain/entities/player.dart';
@@ -9,15 +9,15 @@ import '../models/game_model.dart';
 
 // Additional failures for games
 class ServerFailure extends Failure {
-  const ServerFailure(super.message);
+  const ServerFailure(String message) : super(message: message);
 }
 
 class CacheFailure extends Failure {
-  const CacheFailure(super.message);
+  const CacheFailure(String message) : super(message: message);
 }
 
 class UnknownFailure extends Failure {
-  const UnknownFailure(super.message);
+  const UnknownFailure(String message) : super(message: message);
 }
 
 // Additional exceptions for games  
@@ -55,9 +55,9 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(gameModel);
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to create game: ${e.toString()}'));
     }
@@ -76,9 +76,9 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(gameModel);
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to update game: ${e.toString()}'));
     }
@@ -99,9 +99,9 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(gameModel);
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to get game: ${e.toString()}'));
     }
@@ -139,9 +139,9 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to get games: ${e.toString()}'));
     }
@@ -167,9 +167,9 @@ class GamesRepositoryImpl implements GamesRepository {
     } on ServerException catch (e) {
       // Revert optimistic update if failed
       _gamesCache.remove(gameId);
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to join game: ${e.toString()}'));
     }
@@ -188,9 +188,9 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(result);
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to leave game: ${e.toString()}'));
     }
@@ -209,9 +209,9 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(result);
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to cancel game: ${e.toString()}'));
     }
@@ -247,9 +247,9 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to get user games: ${e.toString()}'));
     }
@@ -278,9 +278,9 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to search games: ${e.toString()}'));
     }
@@ -312,9 +312,9 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message));
+      return Left(ServerFailure(message: e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message));
+      return Left(NetworkFailure(message: e.message));
     } catch (e) {
       return Left(UnknownFailure('Failed to get nearby games: ${e.toString()}'));
     }

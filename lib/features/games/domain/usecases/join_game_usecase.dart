@@ -1,12 +1,12 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../features/authentication/domain/usecases/usecase.dart';
 import '../entities/game.dart';
 import '../repositories/games_repository.dart';
 
 // Game-specific failures
 class GameFailure extends Failure {
-  const GameFailure(super.message);
+  const GameFailure(String message) : super(message: message);
 }
 
 class JoinGameUseCase extends UseCase<Either<Failure, JoinGameResult>, JoinGameParams> {
@@ -18,11 +18,11 @@ class JoinGameUseCase extends UseCase<Either<Failure, JoinGameResult>, JoinGameP
   Future<Either<Failure, JoinGameResult>> call(JoinGameParams params) async {
     // Validate parameters
     if (params.gameId.trim().isEmpty) {
-      return Left(GameFailure('Game ID cannot be empty'));
+      return Left(GameFailure(message: 'Game ID cannot be empty'));
     }
 
     if (params.playerId.trim().isEmpty) {
-      return Left(GameFailure('Player ID cannot be empty'));
+      return Left(GameFailure(message: 'Player ID cannot be empty'));
     }
 
     // Get the game details first
@@ -45,7 +45,7 @@ class JoinGameUseCase extends UseCase<Either<Failure, JoinGameResult>, JoinGameP
 
         // Verify game is joinable
         if (!game.isJoinable()) {
-          return Left(_getJoinabilityFailure(game));
+          return Left(_getJoinabilityFailure(message: game));
         }
 
         // Attempt to join the game
@@ -76,7 +76,7 @@ class JoinGameUseCase extends UseCase<Either<Failure, JoinGameResult>, JoinGameP
   Future<Failure?> _validateJoinRequest(Game game, String playerId) async {
     // Check if player is trying to join their own game
     if (game.organizerId == playerId) {
-      return GameFailure('You cannot join your own game as a player');
+      return GameFailure(message: 'You cannot join your own game as a player');
     }
 
     // Check game timing
@@ -85,7 +85,7 @@ class JoinGameUseCase extends UseCase<Either<Failure, JoinGameResult>, JoinGameP
     
     // Don't allow joining if game starts within 15 minutes
     if (gameStartTime.difference(now).inMinutes <= 15) {
-      return GameFailure('Cannot join games that start within 15 minutes');
+      return GameFailure(message: 'Cannot join games that start within 15 minutes');
     }
 
     // Additional validations could include:
@@ -110,7 +110,7 @@ class JoinGameUseCase extends UseCase<Either<Failure, JoinGameResult>, JoinGameP
       (myGames) {
         final isAlreadyInGame = myGames.any((game) => game.id == gameId);
         if (isAlreadyInGame) {
-          return GameFailure('You are already part of this game');
+          return GameFailure(message: 'You are already part of this game');
         }
         return null;
       },
@@ -118,24 +118,24 @@ class JoinGameUseCase extends UseCase<Either<Failure, JoinGameResult>, JoinGameP
   }
 
   /// Gets the appropriate failure based on why the game isn't joinable
-  Failure _getJoinabilityFailure(Game game) {
+  Failure _getJoinabilityFailure(message: Game game) {
     switch (game.status) {
       case GameStatus.draft:
-        return GameFailure('This game is not yet published');
+        return GameFailure(message: 'This game is not yet published');
       case GameStatus.inProgress:
-        return GameFailure('This game is already in progress');
+        return GameFailure(message: 'This game is already in progress');
       case GameStatus.completed:
-        return GameFailure('This game has already been completed');
+        return GameFailure(message: 'This game has already been completed');
       case GameStatus.cancelled:
-        return GameFailure('This game has been cancelled');
+        return GameFailure(message: 'This game has been cancelled');
       case GameStatus.upcoming:
         if (!game.isPublic) {
-          return GameFailure('This is a private game');
+          return GameFailure(message: 'This is a private game');
         }
         if (game.isFull() && !game.allowsWaitlist) {
-          return GameFailure('This game is full and does not allow waitlist');
+          return GameFailure(message: 'This game is full and does not allow waitlist');
         }
-        return GameFailure('Unable to join this game at the moment');
+        return GameFailure(message: 'Unable to join this game at the moment');
     }
   }
 

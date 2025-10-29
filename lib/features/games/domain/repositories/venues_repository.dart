@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../entities/venue.dart';
 import '../entities/sport_config.dart';
 

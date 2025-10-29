@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../services/supabase_service.dart';
-import '../../core/error/failures.dart';
+import '../../services/supabase/supabase_service.dart';
+import '../../core/errors/failure.dart';
 import '../../core/result.dart';
 import '../models/circle_contact.dart';
 import 'circle_repository.dart';

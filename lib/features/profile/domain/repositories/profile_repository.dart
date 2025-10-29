@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/either.dart';
 import '../entities/user_profile.dart';
 import '../entities/sports_profile.dart';

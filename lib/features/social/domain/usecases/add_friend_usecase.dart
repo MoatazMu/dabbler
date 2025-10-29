@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../entities/friend.dart';
 import '../repositories/friends_repository.dart';
 import '../../data/models/friend_model.dart';
@@ -116,7 +116,7 @@ class AddFriendUseCase {
       ));
 
     } catch (e) {
-      return Left(ServerFailure(
+      return Left(ServerFailure(message: 
         message: 'Failed to send friend request: ${e.toString()}',
         code: 500,
       ));
@@ -127,7 +127,7 @@ class AddFriendUseCase {
   Future<Either<Failure, void>> _validateParams(AddFriendParams params) async {
     // Check if user is trying to add themselves
     if (params.userId == params.targetUserId) {
-      return Left(ValidationFailure(
+      return Left(ValidationFailure(message: 
         message: 'Cannot send friend request to yourself',
         code: 400,
       ));
@@ -135,14 +135,14 @@ class AddFriendUseCase {
 
     // Validate user IDs format (assuming UUID format)
     if (!_isValidUserId(params.userId)) {
-      return Left(ValidationFailure(
+      return Left(ValidationFailure(message: 
         message: 'Invalid user ID format',
         code: 400,
       ));
     }
 
     if (!_isValidUserId(params.targetUserId)) {
-      return Left(ValidationFailure(
+      return Left(ValidationFailure(message: 
         message: 'Invalid target user ID format',
         code: 400,
       ));
@@ -150,7 +150,7 @@ class AddFriendUseCase {
 
     // Validate message length if provided
     if (params.message != null && params.message!.length > 500) {
-      return Left(ValidationFailure(
+      return Left(ValidationFailure(message: 
         message: 'Friend request message cannot exceed 500 characters',
         code: 400,
       ));
@@ -169,7 +169,7 @@ class AddFriendUseCase {
       );
 
       if (recentRequests.isRight() && recentRequests.fold((l) => throw Exception('Unexpected failure'), (r) => r).length >= 10) {
-        return Left(BusinessLogicFailure(
+        return Left(BusinessLogicFailure(message: 
           message: 'Friend request rate limit exceeded. Please wait before sending more requests.',
           code: 429,
         ));
@@ -177,7 +177,7 @@ class AddFriendUseCase {
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(
+      return Left(ServerFailure(message: 
         message: 'Failed to check rate limit: ${e.toString()}',
         code: 500,
       ));
@@ -197,12 +197,12 @@ class AddFriendUseCase {
         if (status != null) {
           switch (status) {
             case FriendshipStatus.accepted:
-              return Left(ConflictFailure(
+              return Left(ConflictFailure(message: 
                 message: 'You are already friends with this user',
                 code: 409,
               ));
             case FriendshipStatus.pending:
-              return Left(ConflictFailure(
+              return Left(ConflictFailure(message: 
                 message: 'Friend request already sent to this user',
                 code: 409,
               ));
@@ -211,7 +211,7 @@ class AddFriendUseCase {
               // For now, we'll allow resending
               break;
             case FriendshipStatus.blocked:
-              return Left(AuthorizationFailure(
+              return Left(AuthorizationFailure(message: 
                 message: 'Cannot send friend request to this user',
                 code: 403,
               ));
@@ -221,7 +221,7 @@ class AddFriendUseCase {
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(
+      return Left(ServerFailure(message: 
         message: 'Failed to check existing relationship: ${e.toString()}',
         code: 500,
       ));
@@ -238,7 +238,7 @@ class AddFriendUseCase {
       );
 
       if (isBlockedByTarget.isRight() && isBlockedByTarget.fold((l) => throw Exception('Unexpected failure'), (r) => r) == true) {
-        return Left(AuthorizationFailure(
+        return Left(AuthorizationFailure(message: 
           message: 'Cannot send friend request to this user',
           code: 403,
         ));
@@ -251,7 +251,7 @@ class AddFriendUseCase {
       );
 
       if (hasBlockedTarget.isRight() && hasBlockedTarget.fold((l) => throw Exception('Unexpected failure'), (r) => r) == true) {
-        return Left(ConflictFailure(
+        return Left(ConflictFailure(message: 
           message: 'You have blocked this user. Unblock them first to send a friend request.',
           code: 409,
         ));
@@ -259,7 +259,7 @@ class AddFriendUseCase {
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(
+      return Left(ServerFailure(message: 
         message: 'Failed to check block status: ${e.toString()}',
         code: 500,
       ));
@@ -279,7 +279,7 @@ class AddFriendUseCase {
 
       // Check if user accepts friend requests from anyone
       if (!settings.allowFriendRequests) {
-        return Left(AuthorizationFailure(
+        return Left(AuthorizationFailure(message: 
           message: 'This user is not accepting friend requests',
           code: 403,
         ));
@@ -288,14 +288,14 @@ class AddFriendUseCase {
       // Check friend request restrictions
       switch (settings.friendRequestsFrom) {
         case FriendRequestPrivacy.nobody:
-          return Left(AuthorizationFailure(
+          return Left(AuthorizationFailure(message: 
             message: 'This user is not accepting friend requests',
             code: 403,
           ));
         case FriendRequestPrivacy.friendsOfFriends:
           final hasMutualFriends = await _checkMutualFriends(params);
           if (hasMutualFriends.isLeft() || hasMutualFriends.fold((l) => throw Exception('Unexpected failure'), (r) => r) == false) {
-            return Left(AuthorizationFailure(
+            return Left(AuthorizationFailure(message: 
               message: 'This user only accepts friend requests from friends of friends',
               code: 403,
             ));
@@ -308,7 +308,7 @@ class AddFriendUseCase {
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(
+      return Left(ServerFailure(message: 
         message: 'Failed to check privacy settings: ${e.toString()}',
         code: 500,
       ));
@@ -331,7 +331,7 @@ class AddFriendUseCase {
 
       return const Right(false);
     } catch (e) {
-      return Left(ServerFailure(
+      return Left(ServerFailure(message: 
         message: 'Failed to check mutual friends: ${e.toString()}',
         code: 500,
       ));

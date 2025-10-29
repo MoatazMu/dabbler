@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/result.dart';
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../../data/models/squad.dart';
 import '../../data/models/squad_invite.dart';
 import '../../data/models/squad_join_request.dart';

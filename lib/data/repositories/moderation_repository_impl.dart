@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/error/failure.dart';
+import '../../core/errors/failure.dart';
 import '../../core/types/result.dart' show Result;
 import '../repositories/base_repository.dart';
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 import 'moderation_repository.dart';
 
 class ModerationRepositoryImpl extends BaseRepository
@@ -18,7 +18,7 @@ class ModerationRepositoryImpl extends BaseRepository
     try {
       final uid = _db.auth.currentUser?.id;
       if (uid == null) {
-        return left(AuthFailure('No auth user'));
+        return left(AuthFailure(message: 'No auth user'));
       }
       final res = await _db.rpc('is_admin', params: {'u': uid}).select<bool>();
       // Some PostgREST versions need .single() to unwrap:
@@ -27,7 +27,7 @@ class ModerationRepositoryImpl extends BaseRepository
     } on PostgrestException catch (e) {
       return left(svc.mapPostgrestError(e));
     } catch (e) {
-      return left(UnknownFailure(e.toString()));
+      return left(UnknownFailure(message: e.toString()));
     }
   }
 
@@ -36,7 +36,7 @@ class ModerationRepositoryImpl extends BaseRepository
     final admin = await isAdmin();
     return admin.fold(
       (f) => left(f),
-      (ok) => ok ? right(null) : left(PermissionFailure('Admin only')),
+      (ok) => ok ? right(null) : left(PermissionFailure(message: 'Admin only')),
     );
   }
 
@@ -74,7 +74,7 @@ class ModerationRepositoryImpl extends BaseRepository
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }
@@ -95,7 +95,7 @@ class ModerationRepositoryImpl extends BaseRepository
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }
@@ -115,7 +115,7 @@ class ModerationRepositoryImpl extends BaseRepository
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }
@@ -135,13 +135,13 @@ class ModerationRepositoryImpl extends BaseRepository
             .maybeSingle();
 
         if (rows == null) {
-          return left(NotFoundFailure('Ticket not found'));
+          return left(NotFoundFailure(message: 'Ticket not found'));
         }
         return right(Map<String, dynamic>.from(rows));
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }
@@ -160,7 +160,7 @@ class ModerationRepositoryImpl extends BaseRepository
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }
@@ -181,7 +181,7 @@ class ModerationRepositoryImpl extends BaseRepository
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }
@@ -201,7 +201,7 @@ class ModerationRepositoryImpl extends BaseRepository
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }
@@ -222,7 +222,7 @@ class ModerationRepositoryImpl extends BaseRepository
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }
@@ -242,7 +242,7 @@ class ModerationRepositoryImpl extends BaseRepository
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }
@@ -260,7 +260,7 @@ class ModerationRepositoryImpl extends BaseRepository
       } on PostgrestException catch (e) {
         return left(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(e.toString()));
+        return left(UnknownFailure(message: e.toString()));
       }
     });
   }

@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod/riverpod.dart';
 
-import '../../core/errors/failures.dart';
+import '../../core/errors/failure.dart';
 import '../models/profile_model.dart';
 import 'profile_repository.dart';
 import '../../services/supabase/supabase_error_mapper.dart';
@@ -28,7 +28,7 @@ class SupabaseProfileRepository implements ProfileRepository {
 
       if (response == null) {
         return left(
-          SupabaseNotFoundFailure(
+          SupabaseNotFoundFailure(message: 
             message: 'Profile not found for user $userId',
           ),
         );
@@ -62,7 +62,7 @@ class SupabaseProfileRepository implements ProfileRepository {
 
       if (response == null) {
         return left(
-          UnexpectedFailure('Supabase did not return the updated profile'),
+          UnexpectedFailure(message: 'Supabase did not return the updated profile'),
         );
       }
 

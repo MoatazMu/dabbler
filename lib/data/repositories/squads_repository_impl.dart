@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:dabbler/core/error/failures.dart';
+import 'package:dabbler/core/errors/failure.dart';
 import 'package:dabbler/core/result.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:dabbler/services/supabase_service.dart';
+import 'package:dabbler/services/supabase/supabase_service.dart';
 
 import '../models/squad.dart';
 import '../models/squad_invite.dart';

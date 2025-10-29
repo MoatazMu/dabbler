@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../entities/notification.dart';
 
 /// Repository interface for notifications

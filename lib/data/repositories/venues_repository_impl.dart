@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:dabbler/core/error/failures.dart';
+import 'package:dabbler/core/errors/failure.dart';
 import 'package:dabbler/data/models/venue.dart';
 import 'package:dabbler/data/models/venue_space.dart';
 import 'package:dabbler/data/repositories/base_repository.dart';

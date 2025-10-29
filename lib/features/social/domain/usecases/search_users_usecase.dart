@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../profile/domain/entities/user_profile.dart';
 
 /// Parameters for searching users
@@ -74,7 +74,7 @@ class SearchUsersUseCase {
         hasMore: false,
       ));
     } catch (e) {
-      return Left(ServerFailure(
+      return Left(ServerFailure(message: 
         message: 'Failed to search users: ${e.toString()}',
       ));
     }

@@ -2,7 +2,7 @@
 import 'package:fpdart/fpdart.dart';
 import '../entities/user.dart';
 import '../entities/auth_session.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, AuthSession>> signInWithEmail({required String email, required String password});

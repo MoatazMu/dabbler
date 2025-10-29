@@ -4,9 +4,9 @@ import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/display_name_rules.dart';
-import '../../core/error/failures.dart';
+import '../../core/errors/failure.dart';
 import '../../core/result.dart';
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/profile.dart';
 import 'display_name_repository.dart';
 
@@ -89,7 +89,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
         return left(const ConflictFailure(message: 'Display name already in use'));
       }
       if (code == '23514') {
-        return left(const ValidationFailure(
+        return left(const ValidationFailure(message: 
             message: 'Display name violates server rules or conflicts with username'));
       }
       return left(svc.mapPostgrestError(error));
@@ -120,7 +120,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .eq('profile_type', profileType)
           .maybeSingle();
       if (existing == null) {
-        return left(NotFoundFailure(
+        return left(NotFoundFailure(message: 
             message: 'Profile of type $profileType not found for current user'));
       }
       final profileRow = Map<String, dynamic>.from(existing as Map);
@@ -145,7 +145,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
         return left(const ConflictFailure(message: 'Display name already in use'));
       }
       if (code == '23514') {
-        return left(const ValidationFailure(
+        return left(const ValidationFailure(message: 
             message: 'Display name violates server rules or conflicts with username'));
       }
       return left(svc.mapPostgrestError(error));

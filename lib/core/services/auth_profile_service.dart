@@ -45,7 +45,7 @@ class AuthProfileService {
   /// Returns Result<Profile> - use fold() to handle success/failure
   Future<Result<Profile>> getMyProfile() async {
     if (!isAuthenticated) {
-      return failure(const AuthFailure('User not authenticated'));
+      return failure(const AuthFailure(message: 'User not authenticated'));
     }
     
     return await _profilesRepository.getMyProfile();
@@ -68,7 +68,7 @@ class AuthProfileService {
   Stream<Result<Profile?>> watchMyProfile() {
     if (!isAuthenticated) {
       return Stream.value(
-        failure(const AuthFailure('User not authenticated')),
+        failure(const AuthFailure(message: 'User not authenticated')),
       );
     }
     
@@ -130,7 +130,7 @@ class AuthProfileService {
     String? language,
   }) async {
     if (!isAuthenticated) {
-      return failure(const AuthFailure('User not authenticated'));
+      return failure(const AuthFailure(message: 'User not authenticated'));
     }
 
     try {
@@ -154,7 +154,7 @@ class AuthProfileService {
       
       return success(result);
     } catch (e) {
-      return failure(ServerFailure(e.toString()));
+      return failure(ServerFailure(message: e.toString()));
     }
   }
 
@@ -168,7 +168,7 @@ class AuthProfileService {
       await _authService.signOut();
       return success(null);
     } catch (e) {
-      return failure(ServerFailure(e.toString()));
+      return failure(ServerFailure(message: e.toString()));
     }
   }
 
@@ -184,7 +184,7 @@ class AuthProfileService {
       );
       return success(response);
     } catch (e) {
-      return failure(AuthFailure(e.toString()));
+      return failure(AuthFailure(message: e.toString()));
     }
   }
 
@@ -202,7 +202,7 @@ class AuthProfileService {
       );
       return success(response);
     } catch (e) {
-      return failure(AuthFailure(e.toString()));
+      return failure(AuthFailure(message: e.toString()));
     }
   }
 
@@ -212,7 +212,7 @@ class AuthProfileService {
       final response = await _authService.refreshSession();
       return success(response);
     } catch (e) {
-      return failure(AuthFailure(e.toString()));
+      return failure(AuthFailure(message: e.toString()));
     }
   }
 

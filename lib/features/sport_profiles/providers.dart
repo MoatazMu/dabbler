@@ -4,7 +4,7 @@ import 'package:dabbler/core/result.dart';
 import 'package:dabbler/data/models/sport_profile.dart';
 import 'package:dabbler/data/repositories/sport_profiles_repository.dart';
 import 'package:dabbler/data/repositories/sport_profiles_repository_impl.dart';
-import 'package:dabbler/services/supabase_service.dart';
+import 'package:dabbler/services/supabase/supabase_service.dart';
 
 final sportProfilesRepositoryProvider = Provider<SportProfilesRepository>((ref) {
   final svc = ref.watch(supabaseServiceProvider);

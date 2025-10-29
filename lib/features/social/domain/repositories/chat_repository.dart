@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../entities/post.dart'; // For ConversationType
 import '../../../../utils/enums/social_enums.dart'; // For MessageType
 import '../../data/models/conversation_model.dart';
