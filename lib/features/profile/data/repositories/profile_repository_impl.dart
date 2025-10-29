@@ -36,10 +36,10 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
 
       // Fetch from remote if cache miss or expired
       final remoteProfile = await remoteDataSource.getProfile(userId);
-      
+
       // Cache the result
       await localDataSource.cacheProfile(remoteProfile);
-      
+
       return Right(remoteProfile.toEntity());
     } on ServerFailure catch (e) {
       // Try to return stale cache on server error
@@ -47,21 +47,27 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       if (cachedProfile != null) {
         return Right(cachedProfile.toEntity());
       }
-      return Left(ServerFailure(message: 'Failed to fetch profile: ${e.message}'));
+      return Left(
+        ServerFailure(message: 'Failed to fetch profile: ${e.message}'),
+      );
     } on NetworkFailure catch (e) {
       // Return cached data on network issues
       final cachedProfile = await localDataSource.getCachedProfile(userId);
       if (cachedProfile != null) {
         return Right(cachedProfile.toEntity());
       }
-      return Left(NetworkFailure(message: 'No network connection: ${e.message}'));
+      return Left(
+        NetworkFailure(message: 'No network connection: ${e.message}'),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to get profile: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, UserProfile>> updateProfile(UserProfile profile) async {
+  Future<Either<Failure, UserProfile>> updateProfile(
+    UserProfile profile,
+  ) async {
     try {
       // Optimistic update - update cache immediately
       final profileModel = ProfileModel.fromEntity(profile);
@@ -69,11 +75,14 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
 
       try {
         // Update remote
-        final updatedProfile = await remoteDataSource.updateProfile(profile.id, profileModel.toJson());
-        
+        final updatedProfile = await remoteDataSource.updateProfile(
+          profile.id,
+          profileModel.toJson(),
+        );
+
         // Update cache with server response
         await localDataSource.cacheProfile(updatedProfile);
-        
+
         return Right(updatedProfile.toEntity());
       } catch (e) {
         // Rollback cache on remote failure
@@ -81,30 +90,40 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
         rethrow;
       }
     } on ValidationFailure catch (e) {
-      return Left(ValidationFailure(message: 'Invalid profile data: ${e.message}'));
+      return Left(
+        ValidationFailure(message: 'Invalid profile data: ${e.message}'),
+      );
     } on ConflictFailure catch (e) {
       return Left(ConflictFailure(message: 'Profile conflict: ${e.message}'));
     } on NetworkFailure catch (e) {
-      return Left(NetworkFailure(message: 'Network error during update: ${e.message}'));
+      return Left(
+        NetworkFailure(message: 'Network error during update: ${e.message}'),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to update profile: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, UserProfile>> createProfile(UserProfile profile) async {
+  Future<Either<Failure, UserProfile>> createProfile(
+    UserProfile profile,
+  ) async {
     try {
       final profileModel = ProfileModel.fromEntity(profile);
       final createdProfile = await remoteDataSource.createProfile(profileModel);
-      
+
       // Cache the created profile
       await localDataSource.cacheProfile(createdProfile);
-      
+
       return Right(createdProfile.toEntity());
     } on ValidationFailure catch (e) {
-      return Left(ValidationFailure(message: 'Invalid profile data: ${e.message}'));
+      return Left(
+        ValidationFailure(message: 'Invalid profile data: ${e.message}'),
+      );
     } on ConflictFailure catch (e) {
-      return Left(ConflictFailure(message: 'Profile already exists: ${e.message}'));
+      return Left(
+        ConflictFailure(message: 'Profile already exists: ${e.message}'),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to create profile: $e'));
     }
@@ -117,7 +136,11 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       await localDataSource.removeCachedProfile(userId);
       return const Right(null);
     } on ForbiddenFailure catch (e) {
-      return Left(ForbiddenFailure(message: 'Not authorized to delete profile: ${e.message}'));
+      return Left(
+        ForbiddenFailure(
+          message: 'Not authorized to delete profile: ${e.message}',
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to delete profile: $e'));
     }
@@ -132,13 +155,20 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     try {
       // Validate file
       final fileSize = await file.length();
-      if (fileSize > 5 * 1024 * 1024) { // 5MB limit
-        return const Left(ValidationFailure(message: 'File too large (max 5MB)'));
+      if (fileSize > 5 * 1024 * 1024) {
+        // 5MB limit
+        return const Left(
+          ValidationFailure(message: 'File too large (max 5MB)'),
+        );
       }
 
       final fileName = file.path.split('/').last.toLowerCase();
-      if (!fileName.endsWith('.jpg') && !fileName.endsWith('.jpeg') && !fileName.endsWith('.png')) {
-        return const Left(ValidationFailure(message: 'Invalid file type. Use JPG or PNG.'));
+      if (!fileName.endsWith('.jpg') &&
+          !fileName.endsWith('.jpeg') &&
+          !fileName.endsWith('.png')) {
+        return const Left(
+          ValidationFailure(message: 'Invalid file type. Use JPG or PNG.'),
+        );
       }
 
       final avatarUrl = await remoteDataSource.uploadAvatar(
@@ -154,7 +184,9 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     } on FileUploadFailure catch (e) {
       return Left(FileUploadFailure(message: 'Upload failed: ${e.message}'));
     } on NetworkFailure catch (e) {
-      return Left(NetworkFailure(message: 'Network error during upload: ${e.message}'));
+      return Left(
+        NetworkFailure(message: 'Network error during upload: ${e.message}'),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to upload avatar: $e'));
     }
@@ -173,10 +205,14 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, List<SportProfile>>> getSportsForUser(String userId) async {
+  Future<Either<Failure, List<SportProfile>>> getSportsForUser(
+    String userId,
+  ) async {
     try {
       // Try cache first
-      final cachedSports = await localDataSource.getCachedSportsProfiles(userId);
+      final cachedSports = await localDataSource.getCachedSportsProfiles(
+        userId,
+      );
       final cacheValid = await localDataSource.isCacheValid(userId);
 
       if (cachedSports != null && cacheValid) {
@@ -185,10 +221,10 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
 
       // Fetch from remote
       final remoteSports = await remoteDataSource.getSportProfiles(userId);
-      
+
       // Cache the result
       await localDataSource.cacheSportsProfiles(userId, remoteSports);
-      
+
       return Right(remoteSports.map((e) => e.toEntity()).toList());
     } catch (e) {
       return Left(DataFailure(message: 'Failed to get sports profiles: $e'));
@@ -196,42 +232,56 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, SportProfile>> updateSportProfile(SportProfile sportProfile) async {
+  Future<Either<Failure, SportProfile>> updateSportProfile(
+    SportProfile sportProfile,
+  ) async {
     try {
       // Since SportProfile entity doesn't contain metadata like id, userId, etc.,
       // we need to get the existing sport profile from the database first
       // or create a new one if it doesn't exist
-      
+
       // For now, we'll need to modify the approach since the current interface
       // doesn't provide enough context. This method should probably take additional
       // parameters or we need to restructure the data flow.
-      
+
       // For now, return an error indicating the method needs to be updated
-      return Left(ValidationFailure(
-        message: 'updateSportProfile method needs additional context (userId, sportProfileId). '
-        'Please update the interface to include required parameters.'
-      ));
+      return Left(
+        ValidationFailure(
+          message:
+              'updateSportProfile method needs additional context (userId, sportProfileId). '
+              'Please update the interface to include required parameters.',
+        ),
+      );
     } on ValidationFailure catch (e) {
-      return Left(ValidationFailure(message: 'Invalid sport profile data: ${e.message}'));
+      return Left(
+        ValidationFailure(message: 'Invalid sport profile data: ${e.message}'),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to update sport profile: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> deleteSportProfile(String sportProfileId) async {
+  Future<Either<Failure, void>> deleteSportProfile(
+    String sportProfileId,
+  ) async {
     try {
       // Remote API requires both userId and sportId. This method lacks userId context.
-      return Left(ValidationFailure(
-        message: 'deleteSportProfile requires userId and sportId; repository method needs updating.',
-      ));
+      return Left(
+        ValidationFailure(
+          message:
+              'deleteSportProfile requires userId and sportId; repository method needs updating.',
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to delete sport profile: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, ProfileStatistics>> getProfileStatistics(String userId) async {
+  Future<Either<Failure, ProfileStatistics>> getProfileStatistics(
+    String userId,
+  ) async {
     try {
       // Try cache first for statistics
       final cachedStats = await localDataSource.getCachedStatistics(userId);
@@ -243,10 +293,10 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
 
       // Fetch from remote
       final remoteStats = await remoteDataSource.getProfileStatistics(userId);
-      
+
       // Cache the result
       await localDataSource.cacheStatistics(userId, remoteStats);
-      
+
       return Right(remoteStats.toEntity());
     } catch (e) {
       return Left(DataFailure(message: 'Failed to get profile statistics: $e'));
@@ -260,14 +310,19 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   ) async {
     try {
       final statsModel = ProfileStatisticsModel.fromEntity(statistics);
-      final updatedStats = await remoteDataSource.updateStatistics(userId, statsModel.toJson());
-      
+      final updatedStats = await remoteDataSource.updateStatistics(
+        userId,
+        statsModel.toJson(),
+      );
+
       // Update cache
       await localDataSource.cacheStatistics(userId, updatedStats);
-      
+
       return Right(updatedStats.toEntity());
     } catch (e) {
-      return Left(DataFailure(message: 'Failed to update profile statistics: $e'));
+      return Left(
+        DataFailure(message: 'Failed to update profile statistics: $e'),
+      );
     }
   }
 
@@ -282,7 +337,9 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     int offset = 0,
   }) async {
     try {
-      final skillLevelNum = skillLevel != null ? int.tryParse(skillLevel) : null;
+      final skillLevelNum = skillLevel != null
+          ? int.tryParse(skillLevel)
+          : null;
       final data = await remoteDataSource.searchProfiles(
         query: query,
         sportTypes: sportIds,
@@ -292,8 +349,11 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
         limit: limit,
         offset: offset,
       );
-      final profilesJson = (data['profiles'] as List).cast<Map<String, dynamic>>();
-      final profiles = profilesJson.map((j) => ProfileModel.fromJson(j).toEntity()).toList();
+      final profilesJson = (data['profiles'] as List)
+          .cast<Map<String, dynamic>>();
+      final profiles = profilesJson
+          .map((j) => ProfileModel.fromJson(j).toEntity())
+          .toList();
       return Right(profiles);
     } catch (e) {
       return Left(DataFailure(message: 'Failed to search profiles: $e'));
@@ -306,13 +366,22 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     int limit = 10,
   }) async {
     try {
-      final recs = await remoteDataSource.getRecommendations(userId, limit: limit);
+      final recs = await remoteDataSource.getRecommendations(
+        userId,
+        limit: limit,
+      );
       final profiles = recs
-          .map((m) => ProfileModel.fromJson((m['profile'] as Map<String, dynamic>)).toEntity())
+          .map(
+            (m) => ProfileModel.fromJson(
+              (m['profile'] as Map<String, dynamic>),
+            ).toEntity(),
+          )
           .toList();
       return Right(profiles);
     } catch (e) {
-      return Left(DataFailure(message: 'Failed to get recommended profiles: $e'));
+      return Left(
+        DataFailure(message: 'Failed to get recommended profiles: $e'),
+      );
     }
   }
 
@@ -322,7 +391,9 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       final exists = await remoteDataSource.profileExists(userId);
       return Right(exists);
     } catch (e) {
-      return Left(DataFailure(message: 'Failed to check profile existence: $e'));
+      return Left(
+        DataFailure(message: 'Failed to check profile existence: $e'),
+      );
     }
   }
 
@@ -335,21 +406,29 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
         (profile) => Right(profile.calculateProfileCompletion()),
       );
     } catch (e) {
-      return Left(DataFailure(message: 'Failed to calculate profile completion: $e'));
+      return Left(
+        DataFailure(message: 'Failed to calculate profile completion: $e'),
+      );
     }
   }
 
   @override
   Future<Either<Failure, UserProfile>> verifyProfile(String userId) async {
     try {
-      final verifiedProfile = await remoteDataSource.updateProfile(userId, {'verified': true});
-      
+      final verifiedProfile = await remoteDataSource.updateProfile(userId, {
+        'verified': true,
+      });
+
       // Update cache
       await localDataSource.cacheProfile(verifiedProfile);
-      
+
       return Right(verifiedProfile.toEntity());
     } on ForbiddenFailure catch (e) {
-      return Left(ForbiddenFailure(message: 'Not authorized to verify profile: ${e.message}'));
+      return Left(
+        ForbiddenFailure(
+          message: 'Not authorized to verify profile: ${e.message}',
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to verify profile: $e'));
     }
@@ -376,7 +455,10 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> blockUser(String blockerUserId, String blockedUserId) async {
+  Future<Either<Failure, void>> blockUser(
+    String blockerUserId,
+    String blockedUserId,
+  ) async {
     try {
       await remoteDataSource.blockProfile(blockerUserId, blockedUserId);
       return const Right(null);
@@ -386,7 +468,10 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> unblockUser(String blockerUserId, String blockedUserId) async {
+  Future<Either<Failure, void>> unblockUser(
+    String blockerUserId,
+    String blockedUserId,
+  ) async {
     try {
       await remoteDataSource.unblockProfile(blockerUserId, blockedUserId);
       return const Right(null);
@@ -425,7 +510,11 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     int limit = 50,
   }) async {
     try {
-      return Left(DataFailure(message: 'getProfileViewers not supported by remote data source'));
+      return Left(
+        DataFailure(
+          message: 'getProfileViewers not supported by remote data source',
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to get profile viewers: $e'));
     }
@@ -450,14 +539,19 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     Map<String, dynamic> updates,
   ) async {
     try {
-      final updatedProfile = await remoteDataSource.updateProfile(userId, updates);
-      
+      final updatedProfile = await remoteDataSource.updateProfile(
+        userId,
+        updates,
+      );
+
       // Update cache
       await localDataSource.cacheProfile(updatedProfile);
-      
+
       return Right(updatedProfile.toEntity());
     } on ValidationFailure catch (e) {
-      return Left(ValidationFailure(message: 'Invalid update data: ${e.message}'));
+      return Left(
+        ValidationFailure(message: 'Invalid update data: ${e.message}'),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to bulk update profile: $e'));
     }
@@ -470,18 +564,30 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     String source,
   ) async {
     try {
-      return Left(DataFailure(message: 'importProfileData not supported by remote data source'));
+      return Left(
+        DataFailure(
+          message: 'importProfileData not supported by remote data source',
+        ),
+      );
     } on ValidationFailure catch (e) {
-      return Left(ValidationFailure(message: 'Invalid import data: ${e.message}'));
+      return Left(
+        ValidationFailure(message: 'Invalid import data: ${e.message}'),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to import profile data: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> exportProfileData(String userId) async {
+  Future<Either<Failure, Map<String, dynamic>>> exportProfileData(
+    String userId,
+  ) async {
     try {
-      return Left(DataFailure(message: 'exportProfileData not supported by remote data source'));
+      return Left(
+        DataFailure(
+          message: 'exportProfileData not supported by remote data source',
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to export profile data: $e'));
     }

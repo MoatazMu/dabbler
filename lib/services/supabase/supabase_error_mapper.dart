@@ -13,11 +13,7 @@ final supabaseErrorMapperProvider = Provider<SupabaseErrorMapper>((ref) {
 class SupabaseErrorMapper {
   const SupabaseErrorMapper();
 
-  Failure map(
-    Object error, {
-    String? overrideMessage,
-    StackTrace? stackTrace,
-  }) {
+  Failure map(Object error, {String? overrideMessage, StackTrace? stackTrace}) {
     if (error is PostgrestException) {
       return _mapPostgrest(
         error,
@@ -70,7 +66,8 @@ class SupabaseErrorMapper {
     if (lowerMessage.contains('password')) {
       return ValidationFailure(message: message);
     }
-    if (lowerMessage.contains('verify') || lowerMessage.contains('confirmation')) {
+    if (lowerMessage.contains('verify') ||
+        lowerMessage.contains('confirmation')) {
       return AuthFailure(message: message);
     }
 
@@ -87,7 +84,8 @@ class SupabaseErrorMapper {
     String? overrideMessage,
     StackTrace? stackTrace,
   }) {
-    final message = overrideMessage ?? exception.message ?? 'Unexpected Supabase error';
+    final message =
+        overrideMessage ?? exception.message ?? 'Unexpected Supabase error';
     final code = exception.code;
     final details = _detailsToMap(exception.details);
 
@@ -125,7 +123,10 @@ class SupabaseErrorMapper {
     }
 
     // Check for validation/bad request errors
-    if (code == 'PGRST301' || code == 'PGRST303' || code == '23514' || code == '23502') {
+    if (code == 'PGRST301' ||
+        code == 'PGRST303' ||
+        code == '23514' ||
+        code == '23502') {
       return SupabaseValidationFailure(
         message: message,
         details: details,

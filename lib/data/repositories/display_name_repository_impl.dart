@@ -64,7 +64,9 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
     required String displayName,
   }) async {
     if (!DisplayNameRules.isLengthValid(displayName)) {
-      return left(const ValidationFailure(message: 'Display name must be 2–50 chars.'));
+      return left(
+        const ValidationFailure(message: 'Display name must be 2–50 chars.'),
+      );
     }
 
     try {
@@ -79,18 +81,26 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .select()
           .maybeSingle();
       if (response == null) {
-        return left(const NotFoundFailure(message: 'Profile not found or not owned'));
+        return left(
+          const NotFoundFailure(message: 'Profile not found or not owned'),
+        );
       }
       final row = Map<String, dynamic>.from(response as Map);
       return right(Profile.fromJson(row));
     } on PostgrestException catch (error) {
       final code = error.code;
       if (code == '23505') {
-        return left(const ConflictFailure(message: 'Display name already in use'));
+        return left(
+          const ConflictFailure(message: 'Display name already in use'),
+        );
       }
       if (code == '23514') {
-        return left(const ValidationFailure(
-            message: 'Display name violates server rules or conflicts with username'));
+        return left(
+          const ValidationFailure(
+            message:
+                'Display name violates server rules or conflicts with username',
+          ),
+        );
       }
       return left(svc.mapPostgrestError(error));
     } catch (error) {
@@ -104,7 +114,9 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
     required String displayName,
   }) async {
     if (!DisplayNameRules.isLengthValid(displayName)) {
-      return left(const ValidationFailure(message: 'Display name must be 2–50 chars.'));
+      return left(
+        const ValidationFailure(message: 'Display name must be 2–50 chars.'),
+      );
     }
 
     final uid = svc.authUserId();
@@ -120,8 +132,11 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .eq('profile_type', profileType)
           .maybeSingle();
       if (existing == null) {
-        return left(NotFoundFailure(
-            message: 'Profile of type $profileType not found for current user'));
+        return left(
+          NotFoundFailure(
+            message: 'Profile of type $profileType not found for current user',
+          ),
+        );
       }
       final profileRow = Map<String, dynamic>.from(existing as Map);
       final profileId = profileRow['id'] as String;
@@ -135,18 +150,26 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .select()
           .maybeSingle();
       if (response == null) {
-        return left(const NotFoundFailure(message: 'Profile not found after update'));
+        return left(
+          const NotFoundFailure(message: 'Profile not found after update'),
+        );
       }
       final row = Map<String, dynamic>.from(response as Map);
       return right(Profile.fromJson(row));
     } on PostgrestException catch (error) {
       final code = error.code;
       if (code == '23505') {
-        return left(const ConflictFailure(message: 'Display name already in use'));
+        return left(
+          const ConflictFailure(message: 'Display name already in use'),
+        );
       }
       if (code == '23514') {
-        return left(const ValidationFailure(
-            message: 'Display name violates server rules or conflicts with username'));
+        return left(
+          const ValidationFailure(
+            message:
+                'Display name violates server rules or conflicts with username',
+          ),
+        );
       }
       return left(svc.mapPostgrestError(error));
     } catch (error) {

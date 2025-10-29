@@ -11,8 +11,8 @@ class SupabaseProfileRepository implements ProfileRepository {
   SupabaseProfileRepository({
     required SupabaseService service,
     required SupabaseErrorMapper errorMapper,
-  })  : _service = service,
-        _errorMapper = errorMapper;
+  }) : _service = service,
+       _errorMapper = errorMapper;
 
   final SupabaseService _service;
   final SupabaseErrorMapper _errorMapper;
@@ -36,12 +36,7 @@ class SupabaseProfileRepository implements ProfileRepository {
 
       return right(ProfileModel.fromJson(response));
     } catch (error, stackTrace) {
-      return left(
-        _errorMapper.map(
-          error,
-          stackTrace: stackTrace,
-        ),
-      );
+      return left(_errorMapper.map(error, stackTrace: stackTrace));
     }
   }
 
@@ -53,27 +48,21 @@ class SupabaseProfileRepository implements ProfileRepository {
       final response = await _service.maybeSingle(
         _service
             .from(_table)
-            .upsert(
-              profile.toSupabaseJson(),
-              onConflict: 'user_id',
-            )
+            .upsert(profile.toSupabaseJson(), onConflict: 'user_id')
             .select(),
       );
 
       if (response == null) {
         return left(
-          UnexpectedFailure(message: 'Supabase did not return the updated profile'),
+          UnexpectedFailure(
+            message: 'Supabase did not return the updated profile',
+          ),
         );
       }
 
       return right(ProfileModel.fromJson(response));
     } catch (error, stackTrace) {
-      return left(
-        _errorMapper.map(
-          error,
-          stackTrace: stackTrace,
-        ),
-      );
+      return left(_errorMapper.map(error, stackTrace: stackTrace));
     }
   }
 }
@@ -81,8 +70,5 @@ class SupabaseProfileRepository implements ProfileRepository {
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final service = ref.watch(supabaseServiceProvider);
   final mapper = ref.watch(supabaseErrorMapperProvider);
-  return SupabaseProfileRepository(
-    service: service,
-    errorMapper: mapper,
-  );
+  return SupabaseProfileRepository(service: service, errorMapper: mapper);
 });

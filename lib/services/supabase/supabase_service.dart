@@ -52,7 +52,10 @@ class SupabaseService {
     }
 
     // Check for validation errors
-    if (code == '23505' || code == '23514' || code == '23502' || code == 'PGRST204') {
+    if (code == '23505' ||
+        code == '23514' ||
+        code == '23502' ||
+        code == 'PGRST204') {
       return ValidationFailure(
         message: message,
         fieldErrors: _extractFieldErrors(exception),
@@ -116,9 +119,8 @@ class SupabaseService {
     final data = List<dynamic>.from(response as List);
     return data
         .map(
-          (dynamic item) => Map<String, dynamic>.from(
-            item as Map<dynamic, dynamic>,
-          ),
+          (dynamic item) =>
+              Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
         )
         .toList();
   }

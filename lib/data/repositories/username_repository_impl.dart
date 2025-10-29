@@ -29,7 +29,10 @@ class UsernameRepositoryImpl implements UsernameRepository {
       return right(row == null);
     } catch (error) {
       return left(
-        ServerFailure(message: 'Failed to check username availability', cause: error),
+        ServerFailure(
+          message: 'Failed to check username availability',
+          cause: error,
+        ),
       );
     }
   }
@@ -48,7 +51,10 @@ class UsernameRepositoryImpl implements UsernameRepository {
       return right(Profile.fromJson(Map<String, dynamic>.from(row)));
     } catch (error) {
       return left(
-        ServerFailure(message: 'Failed to fetch profile by username', cause: error),
+        ServerFailure(
+          message: 'Failed to fetch profile by username',
+          cause: error,
+        ),
       );
     }
   }
@@ -80,7 +86,9 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .toList(growable: false);
       return right(rows);
     } catch (error) {
-      return left(ServerFailure(message: 'Failed to search usernames', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to search usernames', cause: error),
+      );
     }
   }
 
@@ -98,16 +106,22 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(const NotFoundFailure(message: 'Profile not found or not owned'));
+        return left(
+          const NotFoundFailure(message: 'Profile not found or not owned'),
+        );
       }
       return right(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
         return left(const ConflictFailure(message: 'Username already taken'));
       }
-      return left(ServerFailure(message: 'Failed to set username', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to set username', cause: error),
+      );
     } catch (error) {
-      return left(ServerFailure(message: 'Failed to set username', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to set username', cause: error),
+      );
     }
   }
 
@@ -144,16 +158,22 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(const NotFoundFailure(message: 'Profile not found after update'));
+        return left(
+          const NotFoundFailure(message: 'Profile not found after update'),
+        );
       }
       return right(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
         return left(const ConflictFailure(message: 'Username already taken'));
       }
-      return left(ServerFailure(message: 'Failed to update username', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to update username', cause: error),
+      );
     } catch (error) {
-      return left(ServerFailure(message: 'Failed to update username', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to update username', cause: error),
+      );
     }
   }
 

@@ -74,37 +74,71 @@ class CreatePostUseCase {
   static const int maxMediaFiles = 10;
   static const int maxFileSize = 100 * 1024 * 1024; // 100MB
   static const List<String> allowedVideoFormats = ['mp4', 'mov', 'avi', 'mkv'];
-  static const List<String> allowedImageFormats = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+  static const List<String> allowedImageFormats = [
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'webp',
+  ];
 
   CreatePostUseCase(this._postsRepository);
 
-  Future<Either<Failure, CreatePostResult>> call(CreatePostParams params) async {
+  Future<Either<Failure, CreatePostResult>> call(
+    CreatePostParams params,
+  ) async {
     try {
       // Validate input parameters
       final validationResult = await _validateParams(params);
       if (validationResult.isLeft()) {
-        return Left(validationResult.fold((l) => l, (_) => ServerFailure(message: 'Validation failed')));
+        return Left(
+          validationResult.fold(
+            (l) => l,
+            (_) => ServerFailure(message: 'Validation failed'),
+          ),
+        );
       }
 
       // Check if user is allowed to post
       final userCheckResult = await _checkUserPermissions(params.userId);
       if (userCheckResult.isLeft()) {
-        return Left(userCheckResult.fold((l) => l, (_) => ServerFailure(message: 'Permission check failed')));
+        return Left(
+          userCheckResult.fold(
+            (l) => l,
+            (_) => ServerFailure(message: 'Permission check failed'),
+          ),
+        );
       }
 
       // Validate and process content
       final contentResult = await _processContent(params);
       if (contentResult.isLeft()) {
-        return Left(contentResult.fold((l) => l, (_) => ServerFailure(message: 'Content processing failed')));
+        return Left(
+          contentResult.fold(
+            (l) => l,
+            (_) => ServerFailure(message: 'Content processing failed'),
+          ),
+        );
       }
-      final processedContent = contentResult.fold((_) => throw StateError('unreachable'), (r) => r);
+      final processedContent = contentResult.fold(
+        (_) => throw StateError('unreachable'),
+        (r) => r,
+      );
 
       // Validate and upload media files
       final mediaResult = await _processMediaFiles(params);
       if (mediaResult.isLeft()) {
-        return Left(mediaResult.fold((l) => l, (_) => ServerFailure(message: 'Media processing failed')));
+        return Left(
+          mediaResult.fold(
+            (l) => l,
+            (_) => ServerFailure(message: 'Media processing failed'),
+          ),
+        );
       }
-      final mediaUrls = mediaResult.fold((_) => throw StateError('unreachable'), (r) => r);
+      final mediaUrls = mediaResult.fold(
+        (_) => throw StateError('unreachable'),
+        (r) => r,
+      );
 
       // Process hashtags and extract mentions
       final tagsResult = _processTags(processedContent.content);
@@ -120,13 +154,23 @@ class CreatePostUseCase {
         params.userId,
       );
       if (moderationResult.isLeft()) {
-        return Left(moderationResult.fold((l) => l, (_) => ServerFailure(message: 'Moderation failed')));
+        return Left(
+          moderationResult.fold(
+            (l) => l,
+            (_) => ServerFailure(message: 'Moderation failed'),
+          ),
+        );
       }
 
       // Check for duplicate posts
       final duplicateResult = await _checkDuplicatePost(params);
       if (duplicateResult.isLeft()) {
-        return Left(duplicateResult.fold((l) => l, (_) => ServerFailure(message: 'Duplicate check failed')));
+        return Left(
+          duplicateResult.fold(
+            (l) => l,
+            (_) => ServerFailure(message: 'Duplicate check failed'),
+          ),
+        );
       }
 
       // Set appropriate visibility based on user settings and context
@@ -149,20 +193,28 @@ class CreatePostUseCase {
       if (!isOnline) {
         createResult = await _queuePostForLater(postData);
         if (createResult.isRight()) {
-          return Right(CreatePostResult(
-            post: createResult.fold((_) => throw StateError('unreachable'), (r) => r),
-            uploadedMediaUrls: mediaUrls,
-            processedTags: tagsResult,
-            notifiedUsers: [],
-            queuedForOffline: true,
-            warnings: ['Post queued for upload when online'],
-            processingMetadata: processedContent.metadata,
-          ));
+          return Right(
+            CreatePostResult(
+              post: createResult.fold(
+                (_) => throw StateError('unreachable'),
+                (r) => r,
+              ),
+              uploadedMediaUrls: mediaUrls,
+              processedTags: tagsResult,
+              notifiedUsers: [],
+              queuedForOffline: true,
+              warnings: ['Post queued for upload when online'],
+              processingMetadata: processedContent.metadata,
+            ),
+          );
         }
       } else {
         // Create post online
         if (params.schedulePost && params.scheduledAt != null) {
-          createResult = await _postsRepository.schedulePost(postData, params.scheduledAt!);
+          createResult = await _postsRepository.schedulePost(
+            postData,
+            params.scheduledAt!,
+          );
         } else {
           // Use repository API with named parameters
           createResult = await _postsRepository.createPost(
@@ -172,7 +224,9 @@ class CreatePostUseCase {
             gameId: params.gameId,
             locationName: params.locationName,
             tags: tagsResult.isEmpty ? null : tagsResult,
-            mentionedUsers: mentionsResult.mentions.isEmpty ? null : mentionsResult.mentions,
+            mentionedUsers: mentionsResult.mentions.isEmpty
+                ? null
+                : mentionsResult.mentions,
             replyToPostId: params.replyToPostId,
             shareOriginalId: params.shareOriginalId,
           );
@@ -180,10 +234,18 @@ class CreatePostUseCase {
       }
 
       if (createResult.isLeft()) {
-        return Left(createResult.fold((l) => l, (_) => ServerFailure(message: 'Create post failed')));
+        return Left(
+          createResult.fold(
+            (l) => l,
+            (_) => ServerFailure(message: 'Create post failed'),
+          ),
+        );
       }
 
-      final createdPost = createResult.fold((_) => throw StateError('unreachable'), (r) => r);
+      final createdPost = createResult.fold(
+        (_) => throw StateError('unreachable'),
+        (r) => r,
+      );
 
       // Send notifications for mentions
       final notifiedUsers = await _notifyMentionedUsers(
@@ -197,21 +259,24 @@ class CreatePostUseCase {
       // Log post creation for analytics
       await _logPostCreation(params, createdPost);
 
-      return Right(CreatePostResult(
-        post: createdPost,
-        uploadedMediaUrls: mediaUrls,
-        processedTags: tagsResult,
-        notifiedUsers: notifiedUsers,
-        queuedForOffline: false,
-        warnings: processedContent.warnings,
-        processingMetadata: processedContent.metadata,
-      ));
-
+      return Right(
+        CreatePostResult(
+          post: createdPost,
+          uploadedMediaUrls: mediaUrls,
+          processedTags: tagsResult,
+          notifiedUsers: notifiedUsers,
+          queuedForOffline: false,
+          warnings: processedContent.warnings,
+          processingMetadata: processedContent.metadata,
+        ),
+      );
     } catch (e) {
-      return Left(ServerFailure(
-        message: 'Failed to create post: ${e.toString()}',
-        code: '500',
-      ));
+      return Left(
+        ServerFailure(
+          message: 'Failed to create post: ${e.toString()}',
+          code: '500',
+        ),
+      );
     }
   }
 
@@ -219,101 +284,127 @@ class CreatePostUseCase {
   Future<Either<Failure, void>> _validateParams(CreatePostParams params) async {
     // Validate content length
     if (params.content.trim().isEmpty) {
-      return Left(ValidationFailure(
-        message: 'Post content cannot be empty',
-        details: {'field': 'content'},
-      ));
+      return Left(
+        ValidationFailure(
+          message: 'Post content cannot be empty',
+          details: {'field': 'content'},
+        ),
+      );
     }
 
     if (params.content.length > maxContentLength) {
-      return Left(ValidationFailure(
-        message: 'Post content cannot exceed $maxContentLength characters',
-        details: {'field': 'content', 'maxLength': maxContentLength},
-      ));
+      return Left(
+        ValidationFailure(
+          message: 'Post content cannot exceed $maxContentLength characters',
+          details: {'field': 'content', 'maxLength': maxContentLength},
+        ),
+      );
     }
 
     // Validate media files count
-    final totalMediaCount = (params.mediaFiles?.length ?? 0) + 
-                           (params.existingMediaUrls?.length ?? 0);
+    final totalMediaCount =
+        (params.mediaFiles?.length ?? 0) +
+        (params.existingMediaUrls?.length ?? 0);
     if (totalMediaCount > maxMediaFiles) {
-      return Left(ValidationFailure(
-        message: 'Cannot attach more than $maxMediaFiles media files',
-        details: {'field': 'mediaFiles'},
-      ));
+      return Left(
+        ValidationFailure(
+          message: 'Cannot attach more than $maxMediaFiles media files',
+          details: {'field': 'mediaFiles'},
+        ),
+      );
     }
 
     // Validate media files if provided
     if (params.mediaFiles != null) {
       for (int i = 0; i < params.mediaFiles!.length; i++) {
         final file = params.mediaFiles![i];
-        
+
         // Check file size
         final fileSize = await file.length();
         if (fileSize > maxFileSize) {
-          return Left(ValidationFailure(
-            message: 'File ${file.path.split('/').last} exceeds maximum size of ${maxFileSize ~/ (1024 * 1024)}MB',
-            details: {'field': 'mediaFiles'},
-          ));
+          return Left(
+            ValidationFailure(
+              message:
+                  'File ${file.path.split('/').last} exceeds maximum size of ${maxFileSize ~/ (1024 * 1024)}MB',
+              details: {'field': 'mediaFiles'},
+            ),
+          );
         }
 
         // Check file format
         final extension = file.path.split('.').last.toLowerCase();
-        if (!allowedImageFormats.contains(extension) && 
+        if (!allowedImageFormats.contains(extension) &&
             !allowedVideoFormats.contains(extension)) {
-          return Left(ValidationFailure(
-            message: 'File format .$extension is not supported',
-            details: {'field': 'mediaFiles'},
-          ));
+          return Left(
+            ValidationFailure(
+              message: 'File format .$extension is not supported',
+              details: {'field': 'mediaFiles'},
+            ),
+          );
         }
       }
     }
 
     // Validate scheduled post
-      if (params.schedulePost) {
+    if (params.schedulePost) {
       if (params.scheduledAt == null) {
-        return Left(ValidationFailure(
-          message: 'Scheduled time is required for scheduled posts',
+        return Left(
+          ValidationFailure(
+            message: 'Scheduled time is required for scheduled posts',
             details: {'field': 'scheduledAt'},
-        ));
+          ),
+        );
       }
 
-        if (params.scheduledAt!.isBefore(DateTime.now())) {
-          return Left(ValidationFailure(
+      if (params.scheduledAt!.isBefore(DateTime.now())) {
+        return Left(
+          ValidationFailure(
             message: 'Scheduled time must be in the future',
             details: {'field': 'scheduledAt'},
-          ));
-        }
+          ),
+        );
+      }
 
       // Don't allow scheduling more than 1 year in advance
-        if (params.scheduledAt!.isAfter(DateTime.now().add(const Duration(days: 365)))) {
-          return Left(ValidationFailure(
+      if (params.scheduledAt!.isAfter(
+        DateTime.now().add(const Duration(days: 365)),
+      )) {
+        return Left(
+          ValidationFailure(
             message: 'Cannot schedule posts more than 1 year in advance',
             details: {'field': 'scheduledAt'},
-          ));
-        }
+          ),
+        );
+      }
     }
 
     // Validate location coordinates
     if (params.latitude != null || params.longitude != null) {
       if (params.latitude == null || params.longitude == null) {
-        return Left(ValidationFailure(
-          message: 'Both latitude and longitude must be provided',
-          details: {'field': 'location'},
-        ));
+        return Left(
+          ValidationFailure(
+            message: 'Both latitude and longitude must be provided',
+            details: {'field': 'location'},
+          ),
+        );
       }
 
       if (params.latitude! < -90 || params.latitude! > 90) {
-        return Left(ValidationFailure(
-          message: 'Invalid latitude value',
-          details: {'field': 'latitude'},
-        ));
+        return Left(
+          ValidationFailure(
+            message: 'Invalid latitude value',
+            details: {'field': 'latitude'},
+          ),
+        );
       }
 
       if (params.longitude! < -180 || params.longitude! > 180) {
-        return Left(ValidationFailure(
-          message: 'Invalid longitude value',
-          details: {'field': 'longitude'},
-        ));
+        return Left(
+          ValidationFailure(
+            message: 'Invalid longitude value',
+            details: {'field': 'longitude'},
+          ),
+        );
       }
     }
 
@@ -323,48 +414,70 @@ class CreatePostUseCase {
   /// Checks user permissions to create posts
   Future<Either<Failure, void>> _checkUserPermissions(String userId) async {
     try {
-      final userStatus = await _postsRepository.getUserPostingPermissions(userId);
-      
+      final userStatus = await _postsRepository.getUserPostingPermissions(
+        userId,
+      );
+
       if (userStatus.isLeft()) {
-        return Left(userStatus.fold((l) => l, (_) => ServerFailure(message: 'User status failed')));
+        return Left(
+          userStatus.fold(
+            (l) => l,
+            (_) => ServerFailure(message: 'User status failed'),
+          ),
+        );
       }
 
-      final permissions = userStatus.fold((_) => throw StateError('unreachable'), (r) => r);
+      final permissions = userStatus.fold(
+        (_) => throw StateError('unreachable'),
+        (r) => r,
+      );
 
       if (!permissions.canCreatePosts) {
-        return Left(ForbiddenFailure(
-          message: 'User does not have permission to create posts',
-        ));
+        return Left(
+          ForbiddenFailure(
+            message: 'User does not have permission to create posts',
+          ),
+        );
       }
 
       if (permissions.isTemporarilyRestricted) {
-        return Left(ForbiddenFailure(
-          message: 'Account is temporarily restricted from posting',
-        ));
+        return Left(
+          ForbiddenFailure(
+            message: 'Account is temporarily restricted from posting',
+          ),
+        );
       }
 
       // Check rate limiting
       if (permissions.rateLimitExceeded) {
-        return Left(BusinessLogicFailure(
-          message: 'Post creation rate limit exceeded',
-          details: {
-            'retry_after_seconds': permissions.rateLimitResetAt != null
-                ? permissions.rateLimitResetAt!.difference(DateTime.now()).inSeconds
-                : const Duration(hours: 1).inSeconds,
-          },
-        ));
+        return Left(
+          BusinessLogicFailure(
+            message: 'Post creation rate limit exceeded',
+            details: {
+              'retry_after_seconds': permissions.rateLimitResetAt != null
+                  ? permissions.rateLimitResetAt!
+                        .difference(DateTime.now())
+                        .inSeconds
+                  : const Duration(hours: 1).inSeconds,
+            },
+          ),
+        );
       }
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(
-        message: 'Failed to check user permissions: ${e.toString()}',
-      ));
+      return Left(
+        ServerFailure(
+          message: 'Failed to check user permissions: ${e.toString()}',
+        ),
+      );
     }
   }
 
   /// Processes and validates content
-  Future<Either<Failure, ProcessedContent>> _processContent(CreatePostParams params) async {
+  Future<Either<Failure, ProcessedContent>> _processContent(
+    CreatePostParams params,
+  ) async {
     try {
       String processedContent = params.content.trim();
       final warnings = <String>[];
@@ -376,7 +489,10 @@ class CreatePostUseCase {
       // Check for potentially inappropriate content patterns
       final inappropriatePatterns = [
         RegExp(r'(https?://[^\s]+)', caseSensitive: false), // URLs
-        RegExp(r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})', caseSensitive: false), // Emails
+        RegExp(
+          r'([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})',
+          caseSensitive: false,
+        ), // Emails
       ];
 
       // Extract and validate URLs
@@ -386,34 +502,48 @@ class CreatePostUseCase {
       }
 
       // Extract and validate emails
-      final emailMatches = inappropriatePatterns[1].allMatches(processedContent);
+      final emailMatches = inappropriatePatterns[1].allMatches(
+        processedContent,
+      );
       if (emailMatches.isNotEmpty) {
-        metadata['emails'] = emailMatches.map((match) => match.group(0)).toList();
+        metadata['emails'] = emailMatches
+            .map((match) => match.group(0))
+            .toList();
       }
 
       // Check for excessive caps (more than 70% caps)
-      final capsCount = processedContent.split('').where((char) => 
-        char == char.toUpperCase() && char.toLowerCase() != char.toUpperCase()).length;
+      final capsCount = processedContent
+          .split('')
+          .where(
+            (char) =>
+                char == char.toUpperCase() &&
+                char.toLowerCase() != char.toUpperCase(),
+          )
+          .length;
       final capsPercentage = capsCount / processedContent.length;
-      
+
       if (capsPercentage > 0.7) {
         warnings.add('Post contains excessive capital letters');
       }
 
-      return Right(ProcessedContent(
-        content: processedContent,
-        warnings: warnings,
-        metadata: metadata,
-      ));
+      return Right(
+        ProcessedContent(
+          content: processedContent,
+          warnings: warnings,
+          metadata: metadata,
+        ),
+      );
     } catch (e) {
-      return Left(ServerFailure(
-        message: 'Failed to process content: ${e.toString()}',
-      ));
+      return Left(
+        ServerFailure(message: 'Failed to process content: ${e.toString()}'),
+      );
     }
   }
 
   /// Processes and uploads media files
-  Future<Either<Failure, List<String>>> _processMediaFiles(CreatePostParams params) async {
+  Future<Either<Failure, List<String>>> _processMediaFiles(
+    CreatePostParams params,
+  ) async {
     try {
       final allMediaUrls = <String>[];
 
@@ -430,18 +560,28 @@ class CreatePostUseCase {
         );
 
         if (uploadResult.isLeft()) {
-          return Left(uploadResult.fold((l) => l, (_) => ServerFailure(message: 'Upload failed')));
+          return Left(
+            uploadResult.fold(
+              (l) => l,
+              (_) => ServerFailure(message: 'Upload failed'),
+            ),
+          );
         }
 
-        final uploadedUrls = uploadResult.fold((_) => throw StateError('unreachable'), (r) => r);
+        final uploadedUrls = uploadResult.fold(
+          (_) => throw StateError('unreachable'),
+          (r) => r,
+        );
         allMediaUrls.addAll(uploadedUrls);
       }
 
       return Right(allMediaUrls);
     } catch (e) {
-      return Left(ServerFailure(
-        message: 'Failed to process media files: ${e.toString()}',
-      ));
+      return Left(
+        ServerFailure(
+          message: 'Failed to process media files: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -449,7 +589,7 @@ class CreatePostUseCase {
   List<String> _processTags(String content) {
     final hashtagRegex = RegExp(r'#([a-zA-Z0-9_]+)');
     final matches = hashtagRegex.allMatches(content);
-    
+
     return matches
         .map((match) => match.group(1)?.toLowerCase())
         .where((tag) => tag != null && tag.length >= 2)
@@ -460,10 +600,13 @@ class CreatePostUseCase {
   }
 
   /// Processes mentions from content
-  ProcessedMentions _processMentions(String content, List<String>? explicitMentions) {
+  ProcessedMentions _processMentions(
+    String content,
+    List<String>? explicitMentions,
+  ) {
     final mentionRegex = RegExp(r'@([a-zA-Z0-9_]+)');
     final matches = mentionRegex.allMatches(content);
-    
+
     final contentMentions = matches
         .map((match) => match.group(1)?.toLowerCase())
         .where((mention) => mention != null)
@@ -473,7 +616,7 @@ class CreatePostUseCase {
 
     final allMentions = <String>{};
     allMentions.addAll(contentMentions);
-    
+
     if (explicitMentions != null) {
       allMentions.addAll(explicitMentions);
     }
@@ -500,35 +643,50 @@ class CreatePostUseCase {
       );
 
       if (moderationResult.isLeft()) {
-        return Left(moderationResult.fold((l) => l, (_) => ServerFailure(message: 'Moderation call failed')));
+        return Left(
+          moderationResult.fold(
+            (l) => l,
+            (_) => ServerFailure(message: 'Moderation call failed'),
+          ),
+        );
       }
 
-      final moderation = moderationResult.fold((_) => throw StateError('unreachable'), (r) => r);
+      final moderation = moderationResult.fold(
+        (_) => throw StateError('unreachable'),
+        (r) => r,
+      );
 
       if (moderation.isBlocked) {
-        return Left(ValidationFailure(
-          message: moderation.reason ?? 'Content violates community guidelines',
-          details: {'field': 'content'},
-        ));
+        return Left(
+          ValidationFailure(
+            message:
+                moderation.reason ?? 'Content violates community guidelines',
+            details: {'field': 'content'},
+          ),
+        );
       }
 
       if (moderation.requiresReview) {
-        return Left(ValidationFailure(
-          message: 'Content requires manual review before posting',
-          details: {'field': 'content'},
-        ));
+        return Left(
+          ValidationFailure(
+            message: 'Content requires manual review before posting',
+            details: {'field': 'content'},
+          ),
+        );
       }
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(
-        message: 'Content moderation failed: ${e.toString()}',
-      ));
+      return Left(
+        ServerFailure(message: 'Content moderation failed: ${e.toString()}'),
+      );
     }
   }
 
   /// Checks for duplicate posts
-  Future<Either<Failure, void>> _checkDuplicatePost(CreatePostParams params) async {
+  Future<Either<Failure, void>> _checkDuplicatePost(
+    CreatePostParams params,
+  ) async {
     try {
       final duplicateCheck = await _postsRepository.checkDuplicatePost(
         userId: params.userId,
@@ -536,17 +694,23 @@ class CreatePostUseCase {
         timeWindow: const Duration(minutes: 5),
       );
 
-      if (duplicateCheck.isRight() && duplicateCheck.fold((_) => false, (r) => r == true)) {
-        return Left(ConflictFailure(
-          message: 'Duplicate post detected. Please wait before posting similar content.',
-        ));
+      if (duplicateCheck.isRight() &&
+          duplicateCheck.fold((_) => false, (r) => r == true)) {
+        return Left(
+          ConflictFailure(
+            message:
+                'Duplicate post detected. Please wait before posting similar content.',
+          ),
+        );
       }
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(
-        message: 'Failed to check for duplicate post: ${e.toString()}',
-      ));
+      return Left(
+        ServerFailure(
+          message: 'Failed to check for duplicate post: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -554,14 +718,16 @@ class CreatePostUseCase {
   Future<PostVisibility> _determineVisibility(CreatePostParams params) async {
     try {
       // Get user's default visibility settings
-      final userSettings = await _postsRepository.getUserDefaultVisibility(params.userId);
-      
+      final userSettings = await _postsRepository.getUserDefaultVisibility(
+        params.userId,
+      );
+
       if (userSettings.isRight()) {
         // final defaultVisibility = userSettings.fold((_) => null, (r) => r);
         // Use provided visibility or fall back to user default
         return params.visibility;
       }
-      
+
       return params.visibility;
     } catch (e) {
       return params.visibility;
@@ -607,13 +773,17 @@ class CreatePostUseCase {
   }
 
   /// Queues post for later upload when offline
-  Future<Either<Failure, PostModel>> _queuePostForLater(Map<String, dynamic> postData) async {
+  Future<Either<Failure, PostModel>> _queuePostForLater(
+    Map<String, dynamic> postData,
+  ) async {
     try {
       return await _postsRepository.queuePostForOffline(postData);
     } catch (e) {
-      return Left(ServerFailure(
-        message: 'Failed to queue post for offline: ${e.toString()}',
-      ));
+      return Left(
+        ServerFailure(
+          message: 'Failed to queue post for offline: ${e.toString()}',
+        ),
+      );
     }
   }
 
@@ -623,7 +793,7 @@ class CreatePostUseCase {
     PostModel post,
   ) async {
     final notifiedUsers = <String>[];
-    
+
     try {
       for (final mention in mentions) {
         final notificationSent = await _sendMentionNotification(mention, post);
@@ -639,7 +809,10 @@ class CreatePostUseCase {
   }
 
   /// Sends notification for a mention
-  Future<bool> _sendMentionNotification(String mentionedUser, PostModel post) async {
+  Future<bool> _sendMentionNotification(
+    String mentionedUser,
+    PostModel post,
+  ) async {
     try {
       // This would typically call a notification service
       return true;
@@ -649,7 +822,11 @@ class CreatePostUseCase {
   }
 
   /// Updates user activity metrics
-  Future<void> _updateUserMetrics(String userId, String actionType, PostModel post) async {
+  Future<void> _updateUserMetrics(
+    String userId,
+    String actionType,
+    PostModel post,
+  ) async {
     try {
       // This would typically update user activity metrics
     } catch (e) {
@@ -745,11 +922,16 @@ class ContentModerationResult {
 
 /// Extended methods for PostsRepository
 extension CreatePostRepositoryMethods on PostsRepository {
-  Future<Either<Failure, UserPostingPermissions>> getUserPostingPermissions(String userId) {
+  Future<Either<Failure, UserPostingPermissions>> getUserPostingPermissions(
+    String userId,
+  ) {
     throw UnimplementedError('getUserPostingPermissions not implemented');
   }
 
-  Future<Either<Failure, List<String>>> uploadMediaFiles(List<File> files, String userId) {
+  Future<Either<Failure, List<String>>> uploadMediaFiles(
+    List<File> files,
+    String userId,
+  ) {
     throw UnimplementedError('uploadMediaFiles not implemented');
   }
 
@@ -769,15 +951,22 @@ extension CreatePostRepositoryMethods on PostsRepository {
     throw UnimplementedError('checkDuplicatePost not implemented');
   }
 
-  Future<Either<Failure, PostVisibility>> getUserDefaultVisibility(String userId) {
+  Future<Either<Failure, PostVisibility>> getUserDefaultVisibility(
+    String userId,
+  ) {
     throw UnimplementedError('getUserDefaultVisibility not implemented');
   }
 
-  Future<Either<Failure, PostModel>> schedulePost(Map<String, dynamic> postData, DateTime scheduledAt) {
+  Future<Either<Failure, PostModel>> schedulePost(
+    Map<String, dynamic> postData,
+    DateTime scheduledAt,
+  ) {
     throw UnimplementedError('schedulePost not implemented');
   }
 
-  Future<Either<Failure, PostModel>> queuePostForOffline(Map<String, dynamic> postData) {
+  Future<Either<Failure, PostModel>> queuePostForOffline(
+    Map<String, dynamic> postData,
+  ) {
     throw UnimplementedError('queuePostForOffline not implemented');
   }
 
