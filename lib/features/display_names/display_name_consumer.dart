@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'providers.dart';
 
-class DemoDisplayNameConsumer extends ConsumerWidget {
+class DisplayNameConsumer extends ConsumerWidget {
   final String profileType; // 'player' | 'organiser'
-  const DemoDisplayNameConsumer({super.key, required this.profileType});
+  const DisplayNameConsumer({super.key, required this.profileType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

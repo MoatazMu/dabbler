@@ -5,8 +5,8 @@ import '../../core/errors/failure.dart';
 import '../../data/models/profile.dart';
 import 'providers.dart';
 
-class DemoProfileConsumer extends ConsumerWidget {
-  const DemoProfileConsumer({super.key});
+class ProfileConsumer extends ConsumerWidget {
+  const ProfileConsumer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -14,9 +14,8 @@ class DemoProfileConsumer extends ConsumerWidget {
 
     return myProfile.when(
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (error, stackTrace) => Center(
-        child: Text('Error: ${error.toString()}'),
-      ),
+      error: (error, stackTrace) =>
+          Center(child: Text('Error: ${error.toString()}')),
       data: (result) => result.fold(
         (failure) => _FailureView(failure: failure),
         (profile) => _ProfileView(profile: profile),
@@ -71,10 +70,7 @@ class _ProfileView extends StatelessWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: 4),
-        Text(
-          username,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(username, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

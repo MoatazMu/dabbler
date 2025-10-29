@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'circles_providers.dart';
 
-class DemoCircleFeedConsumer extends ConsumerWidget {
-  const DemoCircleFeedConsumer({super.key});
+class CircleFeedConsumer extends ConsumerWidget {
+  const CircleFeedConsumer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -13,10 +13,8 @@ class DemoCircleFeedConsumer extends ConsumerWidget {
         (l) => Center(child: Text('Feed error: ${l.message}')),
         (rows) => ListView.builder(
           itemCount: rows.length,
-          itemBuilder: (_, i) => ListTile(
-            dense: true,
-            title: Text(rows[i].toString()),
-          ),
+          itemBuilder: (_, i) =>
+              ListTile(dense: true, title: Text(rows[i].toString())),
         ),
       ),
       loading: () => const Center(child: CircularProgressIndicator()),

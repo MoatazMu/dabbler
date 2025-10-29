@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'providers.dart';
 
-class DemoSquadMembersConsumer extends ConsumerWidget {
-  const DemoSquadMembersConsumer({super.key, required this.squadId});
+class SquadMembersConsumer extends ConsumerWidget {
+  const SquadMembersConsumer({super.key, required this.squadId});
 
   final String squadId;
 
