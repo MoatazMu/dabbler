@@ -102,6 +102,12 @@ class AuthService {
         return;
       }
 
+      // Update display_name in auth.users metadata
+      await _supabase.auth.updateUser(
+        UserAttributes(data: {'display_name': displayName}),
+      );
+      print('✅ [DEBUG] AuthService: Updated display_name in auth.users');
+
       // Create profile with onboarding data
       final profileData = {
         'user_id': userId,
@@ -116,6 +122,19 @@ class AuthService {
       };
 
       print('📤 [DEBUG] AuthService: Inserting profile into public.profiles');
+      print('📋 [DEBUG] AuthService: Profile data:');
+      print('   user_id: $userId');
+      print('   display_name: "$displayName"');
+      print(
+        '   username: "$username" (isEmpty: ${username.isEmpty}, length: ${username.length})',
+      );
+      print('   age: $age');
+      print('   gender: ${gender.toLowerCase()}');
+      print('   intention: ${intention.toLowerCase()}');
+      print('   profile_type: $profileType');
+      print('   preferred_sport: ${preferredSport.toLowerCase()}');
+      print('   interests: $interests');
+
       await _supabase.from(SupabaseConfig.usersTable).insert(profileData);
 
       print('✅ [DEBUG] AuthService: Profile created successfully');

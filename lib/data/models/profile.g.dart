@@ -11,7 +11,7 @@ _$ProfileImpl _$$ProfileImplFromJson(Map<String, dynamic> json) =>
       id: json['id'] as String,
       userId: json['user_id'] as String,
       profileType: json['profile_type'] as String,
-      username: json['username'] as String?,
+      username: json['username'] as String,
       displayName: json['display_name'] as String,
       bio: json['bio'] as String?,
       avatarUrl: json['avatar_url'] as String?,

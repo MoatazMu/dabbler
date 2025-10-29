@@ -15,26 +15,37 @@ class AuthRepositoryImpl implements AuthRepository {
   final NetworkInfo networkInfo;
   User? _cachedUser;
 
-  AuthRepositoryImpl({required this.remoteDataSource, required this.networkInfo});
+  AuthRepositoryImpl({
+    required this.remoteDataSource,
+    required this.networkInfo,
+  });
 
   @override
-  Future<Either<Failure, AuthSession>> signInWithEmail({required String email, required String password}) async {
+  Future<Either<Failure, AuthSession>> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
     if (!await networkInfo.isConnected) {
       return left(NetworkFailure(message: 'No internet connection'));
     }
     try {
-      final response = await remoteDataSource.signInWithEmail(email: email, password: password);
+      final response = await remoteDataSource.signInWithEmail(
+        email: email,
+        password: password,
+      );
       _cacheUser(response.user as User?);
       if (response.session == null) {
-        return left(AuthFailure(message: 'No session returned from authentication'));
+        return left(
+          AuthFailure(message: 'No session returned from authentication'),
+        );
       }
       return right(response.session!);
     } on InvalidCredentialsException {
-      return left(InvalidCredentialsFailure(message: ));
+      return left(const AuthFailure(message: 'Invalid credentials'));
     } on UnverifiedEmailException {
-      return left(UnverifiedEmailFailure(message: ));
+      return left(const AuthFailure(message: 'Email not verified'));
     } on NetworkException {
-      return left(NetworkFailure(message: 'Network error'));
+      return left(const NetworkFailure(message: 'Network error'));
     } on AuthException catch (e) {
       return left(AuthFailure(message: e.message));
     } catch (e) {
@@ -43,7 +54,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthSession>> signInWithPhone({required String phone}) async {
+  Future<Either<Failure, AuthSession>> signInWithPhone({
+    required String phone,
+  }) async {
     if (!await networkInfo.isConnected) {
       return left(NetworkFailure(message: 'No internet connection'));
     }
@@ -59,18 +72,24 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthSession>> signUp({required String email, required String password}) async {
+  Future<Either<Failure, AuthSession>> signUp({
+    required String email,
+    required String password,
+  }) async {
     if (!await networkInfo.isConnected) {
       return left(NetworkFailure(message: 'No internet connection'));
     }
     try {
-      final response = await remoteDataSource.signUp(email: email, password: password);
+      final response = await remoteDataSource.signUp(
+        email: email,
+        password: password,
+      );
       _cacheUser(response.user as User?);
       return right(response.session!);
     } on EmailAlreadyExistsException {
-      return left(EmailAlreadyExistsFailure(message: ));
+      return left(const ConflictFailure(message: 'Email already exists'));
     } on WeakPasswordException {
-      return left(WeakPasswordFailure(message: ));
+      return left(const ValidationFailure(message: 'Password is too weak'));
     } on AuthException catch (e) {
       return left(AuthFailure(message: e.message));
     } catch (e) {
@@ -130,12 +149,14 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> updatePassword({required String newPassword}) async {
+  Future<Either<Failure, void>> updatePassword({
+    required String newPassword,
+  }) async {
     try {
       await remoteDataSource.updatePassword(newPassword: newPassword);
       return right(null);
     } on WeakPasswordException {
-      return left(WeakPasswordFailure(message: ));
+      return left(const ValidationFailure(message: 'Password is too weak'));
     } on AuthException catch (e) {
       return left(AuthFailure(message: e.message));
     } catch (e) {
@@ -144,9 +165,15 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthSession>> verifyOTP({required String phone, required String token}) async {
+  Future<Either<Failure, AuthSession>> verifyOTP({
+    required String phone,
+    required String token,
+  }) async {
     try {
-      final response = await remoteDataSource.verifyOTP(phone: phone, token: token);
+      final response = await remoteDataSource.verifyOTP(
+        phone: phone,
+        token: token,
+      );
       _cacheUser(response.user as User?);
       return right(response.session!);
     } on AuthException catch (e) {
