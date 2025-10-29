@@ -74,7 +74,7 @@ class SearchUsersUseCase {
         hasMore: false,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 
+      return Left(ServerFailure(
         message: 'Failed to search users: ${e.toString()}',
       ));
     }

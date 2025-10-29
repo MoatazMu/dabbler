@@ -89,7 +89,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
         return left(const ConflictFailure(message: 'Display name already in use'));
       }
       if (code == '23514') {
-        return left(const ValidationFailure(message: 
+        return left(const ValidationFailure(
             message: 'Display name violates server rules or conflicts with username'));
       }
       return left(svc.mapPostgrestError(error));
@@ -120,7 +120,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .eq('profile_type', profileType)
           .maybeSingle();
       if (existing == null) {
-        return left(NotFoundFailure(message: 
+        return left(NotFoundFailure(
             message: 'Profile of type $profileType not found for current user'));
       }
       final profileRow = Map<String, dynamic>.from(existing as Map);
@@ -145,7 +145,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
         return left(const ConflictFailure(message: 'Display name already in use'));
       }
       if (code == '23514') {
-        return left(const ValidationFailure(message: 
+        return left(const ValidationFailure(
             message: 'Display name violates server rules or conflicts with username'));
       }
       return left(svc.mapPostgrestError(error));

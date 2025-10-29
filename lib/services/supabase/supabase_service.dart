@@ -32,47 +32,32 @@ class SupabaseService {
     );
 
     final message = mapped.message;
-    final status = exception.statusCode;
     final code = exception.code;
 
-    if (status == 401) {
+    // Check for specific error codes
+    if (code == 'PGRST301' || code == '42501') {
       return UnauthenticatedFailure(
         message: message,
         cause: mapped.cause,
         stackTrace: mapped.stackTrace,
-        code: mapped.code ?? code,
-        details: mapped.details,
       );
     }
 
-    if (status == 403) {
-      return ForbiddenFailure(
-        message: message,
-        cause: mapped.cause,
-        stackTrace: mapped.stackTrace,
-        code: mapped.code ?? code,
-        details: mapped.details,
-      );
-    }
-
-    if (status == 404) {
+    if (code == 'PGRST116') {
       return NotFoundFailure(
         message: message,
         cause: mapped.cause,
         stackTrace: mapped.stackTrace,
-        code: mapped.code ?? code,
-        details: mapped.details,
       );
     }
 
-    if (status == 409 || status == 422 || code == 'PGRST116' || code == 'PGRST204') {
+    // Check for validation errors
+    if (code == '23505' || code == '23514' || code == '23502' || code == 'PGRST204') {
       return ValidationFailure(
         message: message,
         fieldErrors: _extractFieldErrors(exception),
         cause: mapped.cause,
         stackTrace: mapped.stackTrace,
-        code: mapped.code ?? code,
-        details: mapped.details,
       );
     }
 
@@ -100,12 +85,12 @@ class SupabaseService {
   }
 
   /// Returns a query builder for the provided [table].
-  PostgrestFilterBuilder<Map<String, dynamic>> from(String table) {
+  SupabaseQueryBuilder from(String table) {
     return _client.from(table);
   }
 
   /// Calls a Postgres function and returns the query builder for further chaining.
-  PostgrestFunctionBuilder<Map<String, dynamic>> rpc(
+  PostgrestFilterBuilder<dynamic> rpc(
     String fn, {
     Map<String, dynamic>? params,
   }) {

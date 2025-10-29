@@ -44,7 +44,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
       final row = await _findMyProfileRow(uid, profileType);
       if (row == null) {
         return left(
-          NotFoundFailure(message: 
+          NotFoundFailure(
             message: 'Profile ($profileType) not found for current user',
           ),
         );
@@ -70,7 +70,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .maybeSingle();
       if (row == null) {
         return left(
-          NotFoundFailure(message: 
+          NotFoundFailure(
             message: 'Profile ($profileType) not found for current user',
           ),
         );
@@ -98,7 +98,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .maybeSingle();
       if (row == null) {
         return left(
-          NotFoundFailure(message: 
+          NotFoundFailure(
             message: 'Profile ($profileType) not found or not owned',
           ),
         );
@@ -126,7 +126,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .maybeSingle();
       if (row == null) {
         return left(
-          NotFoundFailure(message: 
+          NotFoundFailure(
             message: 'Profile ($profileType) not found or not owned',
           ),
         );

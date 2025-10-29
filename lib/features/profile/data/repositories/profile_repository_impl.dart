@@ -116,8 +116,8 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       await remoteDataSource.deleteProfile(userId);
       await localDataSource.removeCachedProfile(userId);
       return const Right(null);
-    } on AuthorizationFailure catch (e) {
-      return Left(AuthorizationFailure(message: 'Not authorized to delete profile: ${e.message}'));
+    } on ForbiddenFailure catch (e) {
+      return Left(ForbiddenFailure(message: 'Not authorized to delete profile: ${e.message}'));
     } catch (e) {
       return Left(DataFailure(message: 'Failed to delete profile: $e'));
     }
@@ -207,7 +207,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       // parameters or we need to restructure the data flow.
       
       // For now, return an error indicating the method needs to be updated
-      return Left(ValidationFailure(message: 
+      return Left(ValidationFailure(
         message: 'updateSportProfile method needs additional context (userId, sportProfileId). '
         'Please update the interface to include required parameters.'
       ));
@@ -222,7 +222,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   Future<Either<Failure, void>> deleteSportProfile(String sportProfileId) async {
     try {
       // Remote API requires both userId and sportId. This method lacks userId context.
-      return Left(ValidationFailure(message: 
+      return Left(ValidationFailure(
         message: 'deleteSportProfile requires userId and sportId; repository method needs updating.',
       ));
     } catch (e) {
@@ -348,8 +348,8 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       await localDataSource.cacheProfile(verifiedProfile);
       
       return Right(verifiedProfile.toEntity());
-    } on AuthorizationFailure catch (e) {
-      return Left(AuthorizationFailure(message: 'Not authorized to verify profile: ${e.message}'));
+    } on ForbiddenFailure catch (e) {
+      return Left(ForbiddenFailure(message: 'Not authorized to verify profile: ${e.message}'));
     } catch (e) {
       return Left(DataFailure(message: 'Failed to verify profile: $e'));
     }

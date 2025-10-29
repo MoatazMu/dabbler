@@ -130,7 +130,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .maybeSingle();
       if (profileRow == null) {
         return left(
-          NotFoundFailure(message: 
+          NotFoundFailure(
             message: 'Profile of type $profileType not found for current user',
           ),
         );

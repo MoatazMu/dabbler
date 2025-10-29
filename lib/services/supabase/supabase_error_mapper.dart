@@ -62,16 +62,16 @@ class SupabaseErrorMapper {
     final message = overrideMessage ?? exception.message;
     final lowerMessage = message.toLowerCase();
     if (lowerMessage.contains('invalid login credentials')) {
-      return InvalidCredentialsFailure(message: message);
+      return AuthFailure(message: message);
     }
     if (lowerMessage.contains('email') && lowerMessage.contains('exists')) {
-      return EmailAlreadyExistsFailure(message: message);
+      return ConflictFailure(message: message);
     }
     if (lowerMessage.contains('password')) {
-      return WeakPasswordFailure(message: message);
+      return ValidationFailure(message: message);
     }
     if (lowerMessage.contains('verify') || lowerMessage.contains('confirmation')) {
-      return UnverifiedEmailFailure(message: message);
+      return AuthFailure(message: message);
     }
 
     return SupabaseAuthFailure(
@@ -90,9 +90,9 @@ class SupabaseErrorMapper {
     final message = overrideMessage ?? exception.message ?? 'Unexpected Supabase error';
     final code = exception.code;
     final details = _detailsToMap(exception.details);
-    final status = exception.statusCode;
 
-    if (status == 401 || status == 403) {
+    // Check code for authorization errors
+    if (code == 'PGRST301' || code == '42501') {
       return SupabaseAuthorizationFailure(
         message: message,
         code: code,
@@ -102,7 +102,8 @@ class SupabaseErrorMapper {
       );
     }
 
-    if (status == 404) {
+    // Check for not found errors
+    if (code == 'PGRST116') {
       return SupabaseNotFoundFailure(
         message: message,
         code: code,
@@ -112,7 +113,8 @@ class SupabaseErrorMapper {
       );
     }
 
-    if (status == 409 || code == '23505') {
+    // Check for conflict errors (duplicate keys, etc.)
+    if (code == '23505') {
       return SupabaseConflictFailure(
         message: message,
         code: code,
@@ -122,7 +124,8 @@ class SupabaseErrorMapper {
       );
     }
 
-    if (status == 400 || status == 422 || code == 'PGRST301' || code == 'PGRST303') {
+    // Check for validation/bad request errors
+    if (code == 'PGRST301' || code == 'PGRST303' || code == '23514' || code == '23502') {
       return SupabaseValidationFailure(
         message: message,
         details: details,
@@ -132,14 +135,7 @@ class SupabaseErrorMapper {
       );
     }
 
-    if (status != null && status >= 500) {
-      return ServerFailure(
-        message: message,
-        cause: exception,
-        stackTrace: stackTrace,
-      );
-    }
-
+    // Default to generic server failure for unknown errors
     return SupabaseFailure(
       message: message,
       code: code,

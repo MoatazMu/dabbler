@@ -68,7 +68,7 @@ class ProfilesRepositoryImpl extends BaseRepository
     }
     if (profile.userId != uid) {
       return failure(
-        const PermissionFailure(message: 
+        const PermissionFailure(
           message: "Cannot upsert another user's profile",
         ),
       );

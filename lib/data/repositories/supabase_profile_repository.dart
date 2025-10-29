@@ -28,7 +28,7 @@ class SupabaseProfileRepository implements ProfileRepository {
 
       if (response == null) {
         return left(
-          SupabaseNotFoundFailure(message: 
+          SupabaseNotFoundFailure(
             message: 'Profile not found for user $userId',
           ),
         );

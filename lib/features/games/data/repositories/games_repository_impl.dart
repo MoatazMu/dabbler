@@ -55,7 +55,7 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(gameModel);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -76,7 +76,7 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(gameModel);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -99,7 +99,7 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(gameModel);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -139,7 +139,7 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -167,7 +167,7 @@ class GamesRepositoryImpl implements GamesRepository {
     } on ServerException catch (e) {
       // Revert optimistic update if failed
       _gamesCache.remove(gameId);
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -188,7 +188,7 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(result);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -209,7 +209,7 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(result);
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -247,7 +247,7 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -278,7 +278,7 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -312,7 +312,7 @@ class GamesRepositoryImpl implements GamesRepository {
       
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure(message: e.message));
+      return Left(ServerFailure( e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {

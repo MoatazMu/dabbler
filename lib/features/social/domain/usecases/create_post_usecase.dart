@@ -208,9 +208,9 @@ class CreatePostUseCase {
       ));
 
     } catch (e) {
-      return Left(ServerFailure(message: 
+      return Left(ServerFailure(
         message: 'Failed to create post: ${e.toString()}',
-        code: 500,
+        code: '500',
       ));
     }
   }
@@ -219,16 +219,16 @@ class CreatePostUseCase {
   Future<Either<Failure, void>> _validateParams(CreatePostParams params) async {
     // Validate content length
     if (params.content.trim().isEmpty) {
-      return Left(ValidationFailure(message: 
+      return Left(ValidationFailure(
         message: 'Post content cannot be empty',
         details: {'field': 'content'},
       ));
     }
 
     if (params.content.length > maxContentLength) {
-      return Left(ValidationFailure(message: 
+      return Left(ValidationFailure(
         message: 'Post content cannot exceed $maxContentLength characters',
-        details: {'field': 'content'},
+        details: {'field': 'content', 'maxLength': maxContentLength},
       ));
     }
 
@@ -236,7 +236,7 @@ class CreatePostUseCase {
     final totalMediaCount = (params.mediaFiles?.length ?? 0) + 
                            (params.existingMediaUrls?.length ?? 0);
     if (totalMediaCount > maxMediaFiles) {
-      return Left(ValidationFailure(message: 
+      return Left(ValidationFailure(
         message: 'Cannot attach more than $maxMediaFiles media files',
         details: {'field': 'mediaFiles'},
       ));
@@ -250,7 +250,7 @@ class CreatePostUseCase {
         // Check file size
         final fileSize = await file.length();
         if (fileSize > maxFileSize) {
-          return Left(ValidationFailure(message: 
+          return Left(ValidationFailure(
             message: 'File ${file.path.split('/').last} exceeds maximum size of ${maxFileSize ~/ (1024 * 1024)}MB',
             details: {'field': 'mediaFiles'},
           ));
@@ -260,7 +260,7 @@ class CreatePostUseCase {
         final extension = file.path.split('.').last.toLowerCase();
         if (!allowedImageFormats.contains(extension) && 
             !allowedVideoFormats.contains(extension)) {
-          return Left(ValidationFailure(message: 
+          return Left(ValidationFailure(
             message: 'File format .$extension is not supported',
             details: {'field': 'mediaFiles'},
           ));
@@ -271,14 +271,14 @@ class CreatePostUseCase {
     // Validate scheduled post
       if (params.schedulePost) {
       if (params.scheduledAt == null) {
-        return Left(ValidationFailure(message: 
+        return Left(ValidationFailure(
           message: 'Scheduled time is required for scheduled posts',
             details: {'field': 'scheduledAt'},
         ));
       }
 
         if (params.scheduledAt!.isBefore(DateTime.now())) {
-          return Left(ValidationFailure(message: 
+          return Left(ValidationFailure(
             message: 'Scheduled time must be in the future',
             details: {'field': 'scheduledAt'},
           ));
@@ -286,7 +286,7 @@ class CreatePostUseCase {
 
       // Don't allow scheduling more than 1 year in advance
         if (params.scheduledAt!.isAfter(DateTime.now().add(const Duration(days: 365)))) {
-          return Left(ValidationFailure(message: 
+          return Left(ValidationFailure(
             message: 'Cannot schedule posts more than 1 year in advance',
             details: {'field': 'scheduledAt'},
           ));
@@ -296,21 +296,21 @@ class CreatePostUseCase {
     // Validate location coordinates
     if (params.latitude != null || params.longitude != null) {
       if (params.latitude == null || params.longitude == null) {
-        return Left(ValidationFailure(message: 
+        return Left(ValidationFailure(
           message: 'Both latitude and longitude must be provided',
           details: {'field': 'location'},
         ));
       }
 
       if (params.latitude! < -90 || params.latitude! > 90) {
-        return Left(ValidationFailure(message: 
+        return Left(ValidationFailure(
           message: 'Invalid latitude value',
           details: {'field': 'latitude'},
         ));
       }
 
       if (params.longitude! < -180 || params.longitude! > 180) {
-        return Left(ValidationFailure(message: 
+        return Left(ValidationFailure(
           message: 'Invalid longitude value',
           details: {'field': 'longitude'},
         ));
@@ -332,20 +332,20 @@ class CreatePostUseCase {
       final permissions = userStatus.fold((_) => throw StateError('unreachable'), (r) => r);
 
       if (!permissions.canCreatePosts) {
-        return Left(AuthorizationFailure(message: 
+        return Left(ForbiddenFailure(
           message: 'User does not have permission to create posts',
         ));
       }
 
       if (permissions.isTemporarilyRestricted) {
-        return Left(AuthorizationFailure(message: 
+        return Left(ForbiddenFailure(
           message: 'Account is temporarily restricted from posting',
         ));
       }
 
       // Check rate limiting
       if (permissions.rateLimitExceeded) {
-        return Left(BusinessLogicFailure(message: 
+        return Left(BusinessLogicFailure(
           message: 'Post creation rate limit exceeded',
           details: {
             'retry_after_seconds': permissions.rateLimitResetAt != null
@@ -357,7 +357,7 @@ class CreatePostUseCase {
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: 
+      return Left(ServerFailure(
         message: 'Failed to check user permissions: ${e.toString()}',
       ));
     }
@@ -406,7 +406,7 @@ class CreatePostUseCase {
         metadata: metadata,
       ));
     } catch (e) {
-      return Left(ServerFailure(message: 
+      return Left(ServerFailure(
         message: 'Failed to process content: ${e.toString()}',
       ));
     }
@@ -439,7 +439,7 @@ class CreatePostUseCase {
 
       return Right(allMediaUrls);
     } catch (e) {
-      return Left(ServerFailure(message: 
+      return Left(ServerFailure(
         message: 'Failed to process media files: ${e.toString()}',
       ));
     }
@@ -506,14 +506,14 @@ class CreatePostUseCase {
       final moderation = moderationResult.fold((_) => throw StateError('unreachable'), (r) => r);
 
       if (moderation.isBlocked) {
-        return Left(ValidationFailure(message: 
+        return Left(ValidationFailure(
           message: moderation.reason ?? 'Content violates community guidelines',
           details: {'field': 'content'},
         ));
       }
 
       if (moderation.requiresReview) {
-        return Left(ValidationFailure(message: 
+        return Left(ValidationFailure(
           message: 'Content requires manual review before posting',
           details: {'field': 'content'},
         ));
@@ -521,7 +521,7 @@ class CreatePostUseCase {
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: 
+      return Left(ServerFailure(
         message: 'Content moderation failed: ${e.toString()}',
       ));
     }
@@ -537,14 +537,14 @@ class CreatePostUseCase {
       );
 
       if (duplicateCheck.isRight() && duplicateCheck.fold((_) => false, (r) => r == true)) {
-        return Left(ConflictFailure(message: 
+        return Left(ConflictFailure(
           message: 'Duplicate post detected. Please wait before posting similar content.',
         ));
       }
 
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: 
+      return Left(ServerFailure(
         message: 'Failed to check for duplicate post: ${e.toString()}',
       ));
     }
@@ -611,7 +611,7 @@ class CreatePostUseCase {
     try {
       return await _postsRepository.queuePostForOffline(postData);
     } catch (e) {
-      return Left(ServerFailure(message: 
+      return Left(ServerFailure(
         message: 'Failed to queue post for offline: ${e.toString()}',
       ));
     }
