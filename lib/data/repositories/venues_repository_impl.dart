@@ -45,8 +45,8 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final data = await svc.getList(query);
       final venues = data.map(Venue.fromJson).toList(growable: false);
       return right(venues);
-    } catch (error) {
-      return left(mapPostgrestError(error));
+    } catch (error, stackTrace) {
+      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
@@ -61,8 +61,8 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
         );
       }
       return right(Venue.fromJson(data));
-    } catch (error) {
-      return left(mapPostgrestError(error));
+    } catch (error, stackTrace) {
+      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
@@ -84,8 +84,8 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final data = await svc.getList(query);
       final spaces = data.map(VenueSpace.fromJson).toList(growable: false);
       return right(spaces);
-    } catch (error) {
-      return left(mapPostgrestError(error));
+    } catch (error, stackTrace) {
+      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
@@ -100,8 +100,8 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
         );
       }
       return right(VenueSpace.fromJson(data));
-    } catch (error) {
-      return left(mapPostgrestError(error));
+    } catch (error, stackTrace) {
+      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
@@ -137,8 +137,8 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final data = await svc.getList(query);
       final venues = data.map(Venue.fromJson).toList(growable: false);
       return right(venues);
-    } catch (error) {
-      return left(mapPostgrestError(error));
+    } catch (error, stackTrace) {
+      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
@@ -156,7 +156,7 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
 
     void emitError(Object error, [StackTrace? stackTrace]) {
       if (!controller.isClosed) {
-        controller.add(left(mapPostgrestError(error)));
+        controller.add(left(svc.mapPostgrestError(error, stackTrace: stackTrace)));
       }
     }
 
