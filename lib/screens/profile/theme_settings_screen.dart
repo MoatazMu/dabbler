@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../core/services/theme_service.dart';
-import '../../routes/app_routes.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class ThemeSettingsScreen extends StatefulWidget {
@@ -20,7 +19,7 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
         title: const Text('Theme & Appearance'),
         leading: IconButton(
           icon: const Icon(LucideIcons.arrowLeft),
-          onPressed: () => AppRoutes.goBack(context),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: AnimatedBuilder(
