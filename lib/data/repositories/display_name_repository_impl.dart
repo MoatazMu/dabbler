@@ -15,7 +15,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
 
   final SupabaseService svc;
 
-  PostgrestClient get _db => svc.client;
+  SupabaseClient get _db => svc.client;
 
   @override
   Future<Result<bool>> isAvailable(String displayName) async {
@@ -206,17 +206,13 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
     try {
       yield await fetch();
 
-      final stream = _db
-          .from('profiles')
-          .stream(primaryKey: ['id'])
-          .eq('user_id', uid)
-          .eq('profile_type', profileType);
+      final stream = _db.from('profiles').stream(primaryKey: ['id']);
 
       await for (final _ in stream) {
         yield await fetch();
       }
     } catch (error) {
-      yield left(svc.mapPostgrestError(error));
+      yield left(svc.mapPostgrest(error as PostgrestException));
     }
   }
 }

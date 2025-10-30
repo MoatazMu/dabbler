@@ -18,7 +18,7 @@ class SquadsRepositoryImpl implements SquadsRepository {
 
   final SupabaseService svc;
 
-  PostgrestClient get _db => svc.client;
+  SupabaseClient get _db => svc.client;
 
   bool _isRpcMissing(PostgrestException error, String rpcName) {
     final message = (error.message as String?)?.toLowerCase() ?? '';

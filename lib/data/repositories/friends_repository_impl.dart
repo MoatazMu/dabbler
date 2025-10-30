@@ -14,7 +14,7 @@ class FriendsRepositoryImpl implements FriendsRepository {
 
   final SupabaseService svc;
 
-  PostgrestClient get _db => svc.client;
+  SupabaseClient get _db => svc.client;
 
   /// Relies on RLS policy `friendships_insert_requester`.
   @override

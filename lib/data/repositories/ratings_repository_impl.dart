@@ -31,7 +31,7 @@ class RatingsRepositoryImpl extends BaseRepository
 
       final q = _db
           .from('ratings')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('rater_user_id', uid)
           .order('created_at', ascending: false)
           .limit(limit);
@@ -57,7 +57,7 @@ class RatingsRepositoryImpl extends BaseRepository
 
       final q = _db
           .from('ratings')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('target_user_id', uid)
           .order('created_at', ascending: false)
           .limit(limit);
@@ -81,7 +81,7 @@ class RatingsRepositoryImpl extends BaseRepository
     return guard<List<Rating>>(() async {
       final q = _db
           .from('ratings')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('target_game_id', gameId)
           .order('created_at', ascending: false)
           .limit(limit);
@@ -105,7 +105,7 @@ class RatingsRepositoryImpl extends BaseRepository
     return guard<List<Rating>>(() async {
       final q = _db
           .from('ratings')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('target_venue_id', venueId)
           .order('created_at', ascending: false)
           .limit(limit);

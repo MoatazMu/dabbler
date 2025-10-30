@@ -7,6 +7,7 @@ import '../../core/utils/json.dart';
 import '../../data/models/notification.dart';
 import '../../services/supabase/supabase_service.dart';
 import 'notifications_repository.dart';
+import 'base_repository.dart';
 import 'package:meta/meta.dart';
 
 @immutable
@@ -31,7 +32,7 @@ class NotificationsRepositoryImpl extends BaseRepository
 
       final query = _db
           .from('notifications')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('user_id', uid)
           .order('created_at', ascending: false)
           .limit(limit);

@@ -10,7 +10,7 @@ import 'circle_repository.dart';
 class CircleRepositoryImpl implements CircleRepository {
   final SupabaseService svc;
   CircleRepositoryImpl(this.svc);
-  PostgrestClient get _db => svc.client;
+  SupabaseClient get _db => svc.client;
 
   @override
   Future<Result<List<CircleContact>>> circleList() async {

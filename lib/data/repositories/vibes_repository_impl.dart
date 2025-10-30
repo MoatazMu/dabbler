@@ -22,7 +22,7 @@ class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
     return guard<Vibe?>(() async {
       final rows = await _db
           .from(_table)
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('post_id', postId)
           .order('created_at', ascending: false)
           .limit(1);

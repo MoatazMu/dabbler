@@ -30,7 +30,7 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
     return guard<List<Post>>(() async {
       final q = _db
           .from(_table)
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .order('created_at', ascending: false)
           .limit(limit);
 
@@ -53,7 +53,7 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
     return guard<List<Post>>(() async {
       final q = _db
           .from(_table)
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('author_user_id', authorUserId)
           .order('created_at', ascending: false)
           .limit(limit);

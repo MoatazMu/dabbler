@@ -23,7 +23,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
     return guard<List<VenueSpace>>(() async {
       final query = _db
           .from('venue_spaces')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('is_active', true)
           .order('name', ascending: true)
           .limit(limit);
@@ -44,7 +44,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
       // RLS: public read (hours_public_read).
       final rows = await _db
           .from('venue_opening_hours')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('venue_space_id', venueSpaceId)
           .order('day_of_week', ascending: true);
 
@@ -58,7 +58,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
       // RLS: public read but only is_active=true (prices_public_read).
       final rows = await _db
           .from('venue_price_rules')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('venue_space_id', venueSpaceId)
           .eq('is_active', true)
           .order('amount', ascending: true);

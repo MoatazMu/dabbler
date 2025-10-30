@@ -13,7 +13,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
   final SupabaseService svc;
   BenchModeRepositoryImpl(this.svc);
 
-  PostgrestClient get _db => svc.client;
+  SupabaseClient get _db => svc.client;
 
   Future<Map<String, dynamic>?> _findMyProfileRow(
     String uid,
@@ -164,17 +164,13 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
       yield await fetch();
 
       // Realtime stream, scoped to my profile/type
-      final stream = _db
-          .from('profiles')
-          .stream(primaryKey: ['id'])
-          .eq('user_id', uid)
-          .eq('profile_type', profileType);
+      final stream = _db.from('profiles').stream(primaryKey: ['id']);
 
       await for (final _ in stream) {
         yield await fetch();
       }
     } catch (e) {
-      yield left(svc.mapPostgrestError(e));
+      yield left(svc.mapPostgrest(e as PostgrestException));
     }
   }
 }

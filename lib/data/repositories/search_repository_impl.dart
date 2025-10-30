@@ -42,7 +42,7 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
       final rows = await _db
           .from('profiles')
           // choose the columns your Profile.fromMap expects
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .or(_orIlike(const ['username', 'display_name'], query))
           .order('display_name', ascending: true, nullsLast: true)
           .limit(limit)
@@ -65,7 +65,7 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
 
       final rows = await _db
           .from('venues')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .or(_orIlike(const ['name'], query))
           .order('name', ascending: true, nullsLast: true)
           .limit(limit)
@@ -89,7 +89,7 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
       // If your schema uses 'text' instead of 'caption', swap the field name.
       final rows = await _db
           .from('posts')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .or(_orIlike(const ['caption'], query))
           // RLS should ensure can_view_post; if you have a dedicated view for
           // visible posts, point to it instead for safety/perf.

@@ -79,27 +79,39 @@ class GameDetailState {
   bool get hasGame => game != null;
   bool get hasVenue => venue != null;
   bool get hasWeather => weather != null;
-  bool get isAnyLoading => isLoading || isLoadingVenue || isLoadingPlayers || isLoadingWeather;
-  
+  bool get isAnyLoading =>
+      isLoading || isLoadingVenue || isLoadingPlayers || isLoadingWeather;
+
   int get totalPlayers => players.length;
-  int get spotsRemaining => game != null ? (game!.maxPlayers - totalPlayers) : 0;
+  int get spotsRemaining =>
+      game != null ? (game!.maxPlayers - totalPlayers) : 0;
   bool get isGameFull => spotsRemaining <= 0;
-  
-  double get fillPercentage => game != null ? (totalPlayers / game!.maxPlayers) : 0.0;
-  bool get hasMinimumPlayers => game != null ? (totalPlayers >= game!.minPlayers) : false;
-  
+
+  double get fillPercentage =>
+      game != null ? (totalPlayers / game!.maxPlayers) : 0.0;
+  bool get hasMinimumPlayers =>
+      game != null ? (totalPlayers >= game!.minPlayers) : false;
+
   Duration? get timeUntilStart {
     if (game == null) return null;
-    final startDateTime = _combineDateTime(game!.scheduledDate, game!.startTime);
+    final startDateTime = _combineDateTime(
+      game!.scheduledDate,
+      game!.startTime,
+    );
     final now = DateTime.now();
     if (startDateTime.isBefore(now)) return null;
     return startDateTime.difference(now);
   }
-  
+
   bool get canStillJoin {
     if (game == null) return false;
-    final startDateTime = _combineDateTime(game!.scheduledDate, game!.startTime);
-    return DateTime.now().isBefore(startDateTime.subtract(const Duration(minutes: 15)));
+    final startDateTime = _combineDateTime(
+      game!.scheduledDate,
+      game!.startTime,
+    );
+    return DateTime.now().isBefore(
+      startDateTime.subtract(const Duration(minutes: 15)),
+    );
   }
 
   DateTime _combineDateTime(DateTime date, String time) {
@@ -167,41 +179,37 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     required JoinabilityRepository joinabilityRepository,
     required this.gameId,
     this.currentUserId,
-  })  : _joinGameUseCase = joinGameUseCase,
-        _gamesRepository = gamesRepository,
-        _venuesRepository = venuesRepository,
-        _joinabilityRepository = joinabilityRepository,
-        super(const GameDetailState()) {
+  }) : _joinGameUseCase = joinGameUseCase,
+       _gamesRepository = gamesRepository,
+       _venuesRepository = venuesRepository,
+       _joinabilityRepository = joinabilityRepository,
+       super(const GameDetailState()) {
     _initializeGameDetail();
   }
 
   /// Initialize and load all game details
   Future<void> _initializeGameDetail() async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       // Load game details concurrently
-      await Future.wait([
-        _loadGameDetails(),
-        _loadGamePlayers(),
-      ]);
-      
+      await Future.wait([_loadGameDetails(), _loadGamePlayers()]);
+
       // Load venue details if game has a venue
       if (state.game?.venueId != null) {
         await _loadVenueDetails();
-        
+
         // Load weather if venue has location
         if (state.venue != null) {
           await _loadWeatherInfo();
         }
       }
-      
+
       // Determine join status
       _updateJoinStatus();
-      
+
       // Start real-time updates
       _startRealtimeUpdates();
-      
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
@@ -219,7 +227,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   Future<void> _loadGameDetails() async {
     try {
       final result = await _gamesRepository.getGame(gameId);
-      
+
       result.fold(
         (failure) {
           state = state.copyWith(
@@ -247,12 +255,12 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   /// Load venue details
   Future<void> _loadVenueDetails() async {
     if (state.game?.venueId == null) return;
-    
+
     state = state.copyWith(isLoadingVenue: true);
-    
+
     try {
       final result = await _venuesRepository.getVenue(state.game!.venueId!);
-      
+
       result.fold(
         (failure) {
           state = state.copyWith(
@@ -261,10 +269,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
           );
         },
         (venue) {
-          state = state.copyWith(
-            venue: venue,
-            isLoadingVenue: false,
-          );
+          state = state.copyWith(venue: venue, isLoadingVenue: false);
         },
       );
     } catch (e) {
@@ -278,10 +283,10 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   /// Load current players and waitlisted players
   Future<void> _loadGamePlayers() async {
     state = state.copyWith(isLoadingPlayers: true);
-    
+
     try {
       final result = await _gamesRepository.getGamePlayers(gameId);
-      
+
       result.fold(
         (failure) {
           state = state.copyWith(
@@ -297,7 +302,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
           final waitlistedPlayers = allPlayers
               .where((p) => p.status == PlayerStatus.waitlisted)
               .toList();
-          
+
           state = state.copyWith(
             players: confirmedPlayers,
             waitlistedPlayers: waitlistedPlayers,
@@ -316,9 +321,9 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   /// Load weather information for the game
   Future<void> _loadWeatherInfo() async {
     if (state.venue == null || state.game == null) return;
-    
+
     state = state.copyWith(isLoadingWeather: true);
-    
+
     try {
       // For now, weather feature is disabled
       // final result = await _weatherService.getWeather(
@@ -326,12 +331,11 @@ class GameDetailController extends StateNotifier<GameDetailState> {
       //   longitude: state.venue!.longitude,
       //   date: state.game!.scheduledDate,
       // );
-      
+
       state = state.copyWith(
         weather: null, // Weather feature disabled
         isLoadingWeather: false,
       );
-      
     } catch (e) {
       state = state.copyWith(
         isLoadingWeather: false,
@@ -342,32 +346,29 @@ class GameDetailController extends StateNotifier<GameDetailState> {
 
   /// Join the game
   Future<void> joinGame() async {
-    if (currentUserId == null || state.joinStatus == JoinGameStatus.alreadyJoined) return;
-    
+    if (currentUserId == null ||
+        state.joinStatus == JoinGameStatus.alreadyJoined)
+      return;
+
     state = state.copyWith(isJoining: true, error: null);
-    
+
     try {
-      final result = await _joinGameUseCase(JoinGameParams(
-        gameId: gameId,
-        playerId: currentUserId!,
-      ));
-      
+      final result = await _joinGameUseCase(
+        JoinGameParams(gameId: gameId, playerId: currentUserId!),
+      );
+
       result.fold(
         (failure) {
-          state = state.copyWith(
-            isJoining: false,
-            error: failure.message,
-          );
+          state = state.copyWith(isJoining: false, error: failure.message);
         },
         (success) {
           // Refresh game data to get updated player list
           _loadGamePlayers();
           _updateJoinStatus();
-          
+
           state = state.copyWith(isJoining: false);
         },
       );
-      
     } catch (e) {
       state = state.copyWith(
         isJoining: false,
@@ -379,23 +380,22 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   /// Leave the game
   Future<void> leaveGame() async {
     if (currentUserId == null) return;
-    
+
     state = state.copyWith(isJoining: true, error: null);
-    
+
     try {
       // final result = await _leaveGameUseCase(LeaveGameParams(
       //   gameId: gameId,
       //   playerId: currentUserId!,
       // ));
-      
+
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Mock success - refresh data
       await _loadGamePlayers();
       _updateJoinStatus();
-      
+
       state = state.copyWith(isJoining: false);
-      
     } catch (e) {
       state = state.copyWith(
         isJoining: false,
@@ -415,10 +415,10 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     }
 
     final game = state.game!;
-    final alreadyJoined =
-        state.players.any((p) => p.playerId == currentUserId);
-    final alreadyRequested =
-        state.waitlistedPlayers.any((p) => p.playerId == currentUserId);
+    final alreadyJoined = state.players.any((p) => p.playerId == currentUserId);
+    final alreadyRequested = state.waitlistedPlayers.any(
+      (p) => p.playerId == currentUserId,
+    );
 
     final inputs = JoinabilityInputs(
       ownerId: game.organizerId,
@@ -480,6 +480,8 @@ class GameDetailController extends StateNotifier<GameDetailState> {
         return JoinGameStatus.gameFull;
       case JoinabilityReason.windowClosed:
         return JoinGameStatus.gameStarted;
+      case JoinabilityReason.approvalRequired:
+      case JoinabilityReason.alreadyJoined:
       case JoinabilityReason.viewerIsOwner:
       case JoinabilityReason.notLoggedIn:
       case JoinabilityReason.hiddenToViewer:
@@ -502,7 +504,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   void _startRealtimeUpdates() {
     // Cancel existing timer
     state.realtimeTimer?.cancel();
-    
+
     // Start new timer for periodic updates
     final timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
@@ -512,7 +514,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
         timer.cancel();
       }
     });
-    
+
     state = state.copyWith(realtimeTimer: timer);
   }
 
@@ -525,35 +527,49 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   /// Share game details
   Future<String> getShareableGameInfo() async {
     if (state.game == null) return '';
-    
+
     final game = state.game!;
     final venue = state.venue;
-    
+
     final buffer = StringBuffer();
     buffer.writeln('🏀 ${game.title}');
     buffer.writeln('🗓️ ${_formatDate(game.scheduledDate)}');
     buffer.writeln('🕐 ${game.startTime} - ${game.endTime}');
     buffer.writeln('👥 ${state.totalPlayers}/${game.maxPlayers} players');
-    
+
     if (venue != null) {
       buffer.writeln('📍 ${venue.name}');
       buffer.writeln('   ${venue.shortAddress}');
     }
-    
+
     if (game.pricePerPlayer > 0) {
-      buffer.writeln('💰 \$${game.pricePerPlayer.toStringAsFixed(2)} per player');
+      buffer.writeln(
+        '💰 \$${game.pricePerPlayer.toStringAsFixed(2)} per player',
+      );
     }
-    
+
     buffer.writeln('\nJoin us on Dabbler! 🎯');
-    
+
     return buffer.toString();
   }
 
   String _formatDate(DateTime date) {
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
   }
 
