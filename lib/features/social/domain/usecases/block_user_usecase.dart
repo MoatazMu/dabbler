@@ -1,4 +1,4 @@
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../core/utils/either.dart';
 import '../repositories/friends_repository.dart';
 import '../../data/models/block_record_model.dart';

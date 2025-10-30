@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../domain/entities/payment_method.dart';
 import '../../domain/repositories/payment_methods_repository.dart';
 import '../datasources/payment_methods_datasource.dart';

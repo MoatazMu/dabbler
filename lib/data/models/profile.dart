@@ -9,7 +9,7 @@ class Profile with _$Profile {
     required String id,
     @JsonKey(name: 'user_id') required String userId,
     @JsonKey(name: 'profile_type') required String profileType,
-    @JsonKey(name: 'username') String? username,
+    @JsonKey(name: 'username') required String username,
     @JsonKey(name: 'display_name') required String displayName,
     @JsonKey(name: 'bio') String? bio,
     @JsonKey(name: 'avatar_url') String? avatarUrl,

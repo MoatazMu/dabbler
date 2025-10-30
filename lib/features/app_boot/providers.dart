@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../../data/models/schema_meta.dart';
 import '../../data/repositories/schema_meta_repository.dart';
 import '../../data/repositories/schema_meta_repository_impl.dart';

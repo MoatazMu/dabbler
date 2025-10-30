@@ -7,8 +7,8 @@ import 'package:dabbler/data/models/sport_profile.dart';
 import 'providers.dart';
 
 /// Minimal showcase widget for sport profile providers.
-class DemoSportProfilesConsumer extends StatelessWidget {
-  const DemoSportProfilesConsumer({super.key});
+class SportProfilesConsumer extends StatelessWidget {
+  const SportProfilesConsumer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,11 +21,17 @@ class DemoSportProfilesConsumer extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('Initial load', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Initial load',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             _ResultView(value: initialLoad),
             const SizedBox(height: 16),
-            Text('Realtime updates', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Realtime updates',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 8),
             _ResultView(value: realtime),
           ],
@@ -36,9 +42,7 @@ class DemoSportProfilesConsumer extends StatelessWidget {
 }
 
 class _ResultView extends StatelessWidget {
-  const _ResultView({
-    required this.value,
-  });
+  const _ResultView({required this.value});
 
   final AsyncValue<Result<List<SportProfile>>> value;
 

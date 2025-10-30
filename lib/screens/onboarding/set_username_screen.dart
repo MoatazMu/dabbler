@@ -125,6 +125,12 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
 
     try {
       final username = _usernameController.text.trim();
+
+      // Validate username is not empty
+      if (username.isEmpty) {
+        throw Exception('Username cannot be empty. Please enter a username.');
+      }
+
       final authService = AuthService();
 
       final currentUser = authService.getCurrentUser();
@@ -143,7 +149,10 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
         '📊 [DEBUG] phone=${onboardingData.phone}, name=${onboardingData.displayName}',
       );
       debugPrint(
-        '📊 [DEBUG] username=$username, age=${onboardingData.age}, gender=${onboardingData.gender}',
+        '📊 [DEBUG] username="$username" (length: ${username.length}), age=${onboardingData.age}, gender=${onboardingData.gender}',
+      );
+      debugPrint(
+        '📊 [DEBUG] username isEmpty: ${username.isEmpty}, isNotEmpty: ${username.isNotEmpty}',
       );
 
       // Create profile in public.profiles

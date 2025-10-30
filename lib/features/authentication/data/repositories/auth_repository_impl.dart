@@ -4,7 +4,7 @@ import '../../domain/entities/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../../../../core/errors/exceptions.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 
 abstract class NetworkInfo {
   Future<bool> get isConnected;
@@ -15,66 +15,85 @@ class AuthRepositoryImpl implements AuthRepository {
   final NetworkInfo networkInfo;
   User? _cachedUser;
 
-  AuthRepositoryImpl({required this.remoteDataSource, required this.networkInfo});
+  AuthRepositoryImpl({
+    required this.remoteDataSource,
+    required this.networkInfo,
+  });
 
   @override
-  Future<Either<Failure, AuthSession>> signInWithEmail({required String email, required String password}) async {
+  Future<Either<Failure, AuthSession>> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
     if (!await networkInfo.isConnected) {
-      return left(NetworkFailure('No internet connection'));
+      return left(NetworkFailure(message: 'No internet connection'));
     }
     try {
-      final response = await remoteDataSource.signInWithEmail(email: email, password: password);
+      final response = await remoteDataSource.signInWithEmail(
+        email: email,
+        password: password,
+      );
       _cacheUser(response.user as User?);
       if (response.session == null) {
-        return left(AuthFailure('No session returned from authentication'));
+        return left(
+          AuthFailure(message: 'No session returned from authentication'),
+        );
       }
       return right(response.session!);
     } on InvalidCredentialsException {
-      return left(InvalidCredentialsFailure());
+      return left(const AuthFailure(message: 'Invalid credentials'));
     } on UnverifiedEmailException {
-      return left(UnverifiedEmailFailure());
+      return left(const AuthFailure(message: 'Email not verified'));
     } on NetworkException {
-      return left(NetworkFailure('Network error'));
+      return left(const NetworkFailure(message: 'Network error'));
     } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left(AuthFailure('Unknown error: $e'));
+      return left(AuthFailure(message: 'Unknown error: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, AuthSession>> signInWithPhone({required String phone}) async {
+  Future<Either<Failure, AuthSession>> signInWithPhone({
+    required String phone,
+  }) async {
     if (!await networkInfo.isConnected) {
-      return left(NetworkFailure('No internet connection'));
+      return left(NetworkFailure(message: 'No internet connection'));
     }
     try {
       final response = await remoteDataSource.signInWithPhone(phone: phone);
       _cacheUser(response.user as User?);
       return right(response.session!);
     } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left(AuthFailure('Unknown error: $e'));
+      return left(AuthFailure(message: 'Unknown error: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, AuthSession>> signUp({required String email, required String password}) async {
+  Future<Either<Failure, AuthSession>> signUp({
+    required String email,
+    required String password,
+  }) async {
     if (!await networkInfo.isConnected) {
-      return left(NetworkFailure('No internet connection'));
+      return left(NetworkFailure(message: 'No internet connection'));
     }
     try {
-      final response = await remoteDataSource.signUp(email: email, password: password);
+      final response = await remoteDataSource.signUp(
+        email: email,
+        password: password,
+      );
       _cacheUser(response.user as User?);
       return right(response.session!);
     } on EmailAlreadyExistsException {
-      return left(EmailAlreadyExistsFailure());
+      return left(const ConflictFailure(message: 'Email already exists'));
     } on WeakPasswordException {
-      return left(WeakPasswordFailure());
+      return left(const ValidationFailure(message: 'Password is too weak'));
     } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left(AuthFailure('Unknown error: $e'));
+      return left(AuthFailure(message: 'Unknown error: $e'));
     }
   }
 
@@ -85,9 +104,9 @@ class AuthRepositoryImpl implements AuthRepository {
       _cachedUser = null;
       return right(null);
     } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left(AuthFailure('Unknown error: $e'));
+      return left(AuthFailure(message: 'Unknown error: $e'));
     }
   }
 
@@ -99,9 +118,9 @@ class AuthRepositoryImpl implements AuthRepository {
       _cacheUser(user as User);
       return right(user as User);
     } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left(AuthFailure('Unknown error: $e'));
+      return left(AuthFailure(message: 'Unknown error: $e'));
     }
   }
 
@@ -111,9 +130,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final response = await remoteDataSource.getCurrentSession();
       return right(response.session!);
     } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left(AuthFailure('Unknown error: $e'));
+      return left(AuthFailure(message: 'Unknown error: $e'));
     }
   }
 
@@ -123,36 +142,44 @@ class AuthRepositoryImpl implements AuthRepository {
       await remoteDataSource.resetPassword(email: email);
       return right(null);
     } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left(AuthFailure('Unknown error: $e'));
+      return left(AuthFailure(message: 'Unknown error: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, void>> updatePassword({required String newPassword}) async {
+  Future<Either<Failure, void>> updatePassword({
+    required String newPassword,
+  }) async {
     try {
       await remoteDataSource.updatePassword(newPassword: newPassword);
       return right(null);
     } on WeakPasswordException {
-      return left(WeakPasswordFailure());
+      return left(const ValidationFailure(message: 'Password is too weak'));
     } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left(AuthFailure('Unknown error: $e'));
+      return left(AuthFailure(message: 'Unknown error: $e'));
     }
   }
 
   @override
-  Future<Either<Failure, AuthSession>> verifyOTP({required String phone, required String token}) async {
+  Future<Either<Failure, AuthSession>> verifyOTP({
+    required String phone,
+    required String token,
+  }) async {
     try {
-      final response = await remoteDataSource.verifyOTP(phone: phone, token: token);
+      final response = await remoteDataSource.verifyOTP(
+        phone: phone,
+        token: token,
+      );
       _cacheUser(response.user as User?);
       return right(response.session!);
     } on AuthException catch (e) {
-      return left(AuthFailure(e.message));
+      return left(AuthFailure(message: e.message));
     } catch (e) {
-      return left(AuthFailure('Unknown error: $e'));
+      return left(AuthFailure(message: 'Unknown error: $e'));
     }
   }
 

@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'providers.dart';
 
-class DemoUsernameConsumer extends ConsumerWidget {
-  const DemoUsernameConsumer({super.key, required this.profileType});
+class UsernameConsumer extends ConsumerWidget {
+  const UsernameConsumer({super.key, required this.profileType});
 
   final String profileType; // 'player' | 'organiser'
 

@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../domain/entities/activity_log.dart';
 import '../../domain/repositories/activity_log_repository.dart';
 import '../datasources/activity_log_remote_data_source.dart';

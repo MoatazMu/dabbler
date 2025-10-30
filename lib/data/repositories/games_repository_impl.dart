@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failures.dart';
+import '../../core/errors/failure.dart';
 import '../../services/supabase/supabase_service.dart';
 import '../models/game.dart';
 import 'base_repository.dart';
@@ -34,20 +34,20 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   }) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure('Not signed in'));
+      return left(const AuthFailure(message: 'Not signed in'));
     }
 
     if (capacity < 2 || capacity > 64) {
-      return left(const ValidationFailure('Capacity must be between 2 and 64'));
+      return left(const ValidationFailure(message: 'Capacity must be between 2 and 64'));
     }
     if (minSkill != null && (minSkill < 1 || minSkill > 10)) {
-      return left(const ValidationFailure('Minimum skill must be between 1 and 10'));
+      return left(const ValidationFailure(message: 'Minimum skill must be between 1 and 10'));
     }
     if (maxSkill != null && (maxSkill < 1 || maxSkill > 10)) {
-      return left(const ValidationFailure('Maximum skill must be between 1 and 10'));
+      return left(const ValidationFailure(message: 'Maximum skill must be between 1 and 10'));
     }
     if (minSkill != null && maxSkill != null && minSkill > maxSkill) {
-      return left(const ValidationFailure('Minimum skill cannot exceed maximum skill'));
+      return left(const ValidationFailure(message: 'Minimum skill cannot exceed maximum skill'));
     }
 
     final payload = <String, dynamic>{
@@ -76,7 +76,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
       );
 
       if (response == null) {
-        return left(const UnexpectedFailure('Failed to create game'));
+        return left(const UnexpectedFailure(message: 'Failed to create game'));
       }
 
       return right(Game.fromJson(response));
@@ -102,20 +102,20 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   }) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure('Not signed in'));
+      return left(const AuthFailure(message: 'Not signed in'));
     }
 
     if (capacity != null && (capacity < 2 || capacity > 64)) {
-      return left(const ValidationFailure('Capacity must be between 2 and 64'));
+      return left(const ValidationFailure(message: 'Capacity must be between 2 and 64'));
     }
     if (minSkill != null && (minSkill < 1 || minSkill > 10)) {
-      return left(const ValidationFailure('Minimum skill must be between 1 and 10'));
+      return left(const ValidationFailure(message: 'Minimum skill must be between 1 and 10'));
     }
     if (maxSkill != null && (maxSkill < 1 || maxSkill > 10)) {
-      return left(const ValidationFailure('Maximum skill must be between 1 and 10'));
+      return left(const ValidationFailure(message: 'Maximum skill must be between 1 and 10'));
     }
     if (minSkill != null && maxSkill != null && minSkill > maxSkill) {
-      return left(const ValidationFailure('Minimum skill cannot exceed maximum skill'));
+      return left(const ValidationFailure(message: 'Minimum skill cannot exceed maximum skill'));
     }
 
     final patch = <String, dynamic>{};
@@ -174,7 +174,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   Future<Result<void>> cancelGame(String gameId, {String? reason}) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure('Not signed in'));
+      return left(const AuthFailure(message: 'Not signed in'));
     }
 
     final payload = <String, dynamic>{
@@ -204,7 +204,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
       );
 
       if (response == null) {
-        return left(const NotFoundFailure('Game not found'));
+        return left(const NotFoundFailure(message: 'Game not found'));
       }
 
       return right(Game.fromJson(response));
@@ -270,7 +270,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   }) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure('Not signed in'));
+      return left(const AuthFailure(message: 'Not signed in'));
     }
 
     try {

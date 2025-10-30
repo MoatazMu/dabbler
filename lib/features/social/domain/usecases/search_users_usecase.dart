@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../profile/domain/entities/user_profile.dart';
 
 /// Parameters for searching users
@@ -40,11 +40,13 @@ class SearchUsersResult {
 class SearchUsersUseCase {
   const SearchUsersUseCase();
 
-  Future<Either<Failure, SearchUsersResult>> call(SearchUsersParams params) async {
+  Future<Either<Failure, SearchUsersResult>> call(
+    SearchUsersParams params,
+  ) async {
     try {
       // Mock implementation - in real app, this would call repository
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
       final mockUsers = [
         UserProfile(
           id: 'user1',
@@ -66,17 +68,19 @@ class SearchUsersUseCase {
         ),
       ];
 
-      return Right(SearchUsersResult(
-        users: mockUsers,
-        totalCount: mockUsers.length,
-        page: params.page,
-        totalPages: 1,
-        hasMore: false,
-      ));
+      return Right(
+        SearchUsersResult(
+          users: mockUsers,
+          totalCount: mockUsers.length,
+          page: params.page,
+          totalPages: 1,
+          hasMore: false,
+        ),
+      );
     } catch (e) {
-      return Left(ServerFailure(
-        message: 'Failed to search users: ${e.toString()}',
-      ));
+      return Left(
+        ServerFailure(message: 'Failed to search users: ${e.toString()}'),
+      );
     }
   }
 }

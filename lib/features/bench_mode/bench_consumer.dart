@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'providers.dart';
 
-class DemoBenchConsumer extends ConsumerWidget {
+class BenchConsumer extends ConsumerWidget {
   final String profileType; // 'player' | 'organiser'
-  const DemoBenchConsumer({super.key, required this.profileType});
+  const BenchConsumer({super.key, required this.profileType});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

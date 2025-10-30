@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../features/authentication/domain/usecases/usecase.dart';
 import '../entities/game.dart';
 import '../repositories/games_repository.dart';
@@ -7,7 +7,7 @@ import '../repositories/bookings_repository.dart';
 
 // Game-specific failures
 class GameFailure extends Failure {
-  const GameFailure(super.message);
+  const GameFailure(String message) : super(message: message);
 }
 
 class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, CancelGameParams> {
@@ -90,19 +90,19 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
   /// Validates cancellation parameters
   Failure? _validateCancellationParameters(CancelGameParams params) {
     if (params.gameId.trim().isEmpty) {
-      return const GameFailure('Game ID cannot be empty');
+      return const GameFailure( 'Game ID cannot be empty');
     }
 
     if (params.userId.trim().isEmpty) {
-      return const GameFailure('User ID cannot be empty');
+      return const GameFailure( 'User ID cannot be empty');
     }
 
     if (params.reason.trim().isEmpty) {
-      return const GameFailure('Cancellation reason is required');
+      return const GameFailure( 'Cancellation reason is required');
     }
 
     if (params.reason.length < 10) {
-      return const GameFailure('Cancellation reason must be at least 10 characters long');
+      return const GameFailure( 'Cancellation reason must be at least 10 characters long');
     }
 
     return null;
@@ -112,7 +112,7 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
   Failure? _verifyUserAuthorization(Game game, String userId) {
     // Only game organizer can cancel the game
     if (game.organizerId != userId) {
-      return const GameFailure('Only the game organizer can cancel this game');
+      return const GameFailure( 'Only the game organizer can cancel this game');
     }
 
     return null;
@@ -122,15 +122,15 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
   Failure? _checkCancellationDeadline(Game game) {
     // Check game status first
     if (game.status == GameStatus.cancelled) {
-      return const GameFailure('Game is already cancelled');
+      return const GameFailure( 'Game is already cancelled');
     }
 
     if (game.status == GameStatus.completed) {
-      return const GameFailure('Cannot cancel a completed game');
+      return const GameFailure( 'Cannot cancel a completed game');
     }
 
     if (game.status == GameStatus.inProgress) {
-      return const GameFailure('Cannot cancel a game that is already in progress');
+      return const GameFailure( 'Cannot cancel a game that is already in progress');
     }
 
     // Check if game can be cancelled based on timing rules
@@ -141,12 +141,12 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
       if (game.cancellationDeadline != null) {
         final hoursUntilDeadline = game.cancellationDeadline!.difference(now).inHours;
         if (hoursUntilDeadline < 0) {
-          return const GameFailure('Cancellation deadline has passed');
+          return const GameFailure( 'Cancellation deadline has passed');
         }
       } else {
         final hoursUntilGame = gameStartTime.difference(now).inHours;
         if (hoursUntilGame < 2) {
-          return const GameFailure('Games cannot be cancelled less than 2 hours before start time');
+          return const GameFailure( 'Games cannot be cancelled less than 2 hours before start time');
         }
       }
     }
@@ -166,7 +166,7 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
       // For now, we'll return empty list and note this limitation
       return const Right(<String>[]);
     } catch (e) {
-      return Left(GameFailure('Failed to get affected players: ${e.toString()}'));
+      return Left(GameFailure( 'Failed to get affected players: ${e.toString()}'));
     }
   }
 
@@ -226,7 +226,7 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
 
       return Right(refunds);
     } catch (e) {
-      return Left(GameFailure('Failed to cancel bookings: ${e.toString()}'));
+      return Left(GameFailure( 'Failed to cancel bookings: ${e.toString()}'));
     }
   }
 

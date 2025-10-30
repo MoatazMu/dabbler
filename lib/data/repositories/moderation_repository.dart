@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../core/error/failure.dart';
+import '../../core/errors/failure.dart';
 
 typedef Result<T> = Either<Failure, T>;
 

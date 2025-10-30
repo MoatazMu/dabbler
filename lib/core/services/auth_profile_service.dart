@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fpdart/fpdart.dart';
 import '../result.dart';
-import '../errors/failures.dart';
+import '../errors/failure.dart';
 import '../../data/models/profile.dart';
 import '../../data/repositories/profiles_repository.dart';
 import 'auth_service.dart';
@@ -15,8 +15,8 @@ class AuthProfileService {
   AuthProfileService({
     required AuthService authService,
     required ProfilesRepository profilesRepository,
-  })  : _authService = authService,
-        _profilesRepository = profilesRepository;
+  }) : _authService = authService,
+       _profilesRepository = profilesRepository;
 
   // =====================================================
   // AUTH STATE QUERIES
@@ -45,9 +45,9 @@ class AuthProfileService {
   /// Returns Result<Profile> - use fold() to handle success/failure
   Future<Result<Profile>> getMyProfile() async {
     if (!isAuthenticated) {
-      return failure(const AuthFailure('User not authenticated'));
+      return failure(const AuthFailure(message: 'User not authenticated'));
     }
-    
+
     return await _profilesRepository.getMyProfile();
   }
 
@@ -68,10 +68,10 @@ class AuthProfileService {
   Stream<Result<Profile?>> watchMyProfile() {
     if (!isAuthenticated) {
       return Stream.value(
-        failure(const AuthFailure('User not authenticated')),
+        failure(const AuthFailure(message: 'User not authenticated')),
       );
     }
-    
+
     return _profilesRepository.watchMyProfile();
   }
 
@@ -81,7 +81,8 @@ class AuthProfileService {
 
   /// Get authenticated user with their profile
   /// Returns null if not authenticated or profile not found
-  Future<AuthenticatedUserWithProfile?> getAuthenticatedUserWithProfile() async {
+  Future<AuthenticatedUserWithProfile?>
+  getAuthenticatedUserWithProfile() async {
     if (!isAuthenticated) {
       return null;
     }
@@ -92,17 +93,11 @@ class AuthProfileService {
     }
 
     final profileResult = await getMyProfile();
-    
-    return profileResult.fold(
-      (failure) {
-        print('⚠️ [DEBUG] AuthProfileService: Failed to load profile: $failure');
-        return null;
-      },
-      (profile) => AuthenticatedUserWithProfile(
-        user: user,
-        profile: profile,
-      ),
-    );
+
+    return profileResult.fold((failure) {
+      print('⚠️ [DEBUG] AuthProfileService: Failed to load profile: $failure');
+      return null;
+    }, (profile) => AuthenticatedUserWithProfile(user: user, profile: profile));
   }
 
   // =====================================================
@@ -130,7 +125,7 @@ class AuthProfileService {
     String? language,
   }) async {
     if (!isAuthenticated) {
-      return failure(const AuthFailure('User not authenticated'));
+      return failure(const AuthFailure(message: 'User not authenticated'));
     }
 
     try {
@@ -151,10 +146,10 @@ class AuthProfileService {
         timezone: timezone,
         language: language,
       );
-      
+
       return success(result);
     } catch (e) {
-      return failure(ServerFailure(e.toString()));
+      return failure(ServerFailure(message: e.toString()));
     }
   }
 
@@ -168,7 +163,7 @@ class AuthProfileService {
       await _authService.signOut();
       return success(null);
     } catch (e) {
-      return failure(ServerFailure(e.toString()));
+      return failure(ServerFailure(message: e.toString()));
     }
   }
 
@@ -184,7 +179,7 @@ class AuthProfileService {
       );
       return success(response);
     } catch (e) {
-      return failure(AuthFailure(e.toString()));
+      return failure(AuthFailure(message: e.toString()));
     }
   }
 
@@ -202,7 +197,7 @@ class AuthProfileService {
       );
       return success(response);
     } catch (e) {
-      return failure(AuthFailure(e.toString()));
+      return failure(AuthFailure(message: e.toString()));
     }
   }
 
@@ -212,7 +207,7 @@ class AuthProfileService {
       final response = await _authService.refreshSession();
       return success(response);
     } catch (e) {
-      return failure(AuthFailure(e.toString()));
+      return failure(AuthFailure(message: e.toString()));
     }
   }
 
@@ -227,17 +222,14 @@ class AuthProfileService {
     }
 
     final result = await getMyProfile();
-    return result.fold(
-      (failure) => false,
-      (profile) => true,
-    );
+    return result.fold((failure) => false, (profile) => true);
   }
 
   /// Check if profile is complete
   /// (has all required fields filled)
   Future<bool> isProfileComplete() async {
     final userWithProfile = await getAuthenticatedUserWithProfile();
-    
+
     if (userWithProfile == null) {
       return false;
     }
@@ -269,7 +261,8 @@ class AuthenticatedUserWithProfile {
   bool? get isActive => profile.isActive;
 
   @override
-  String toString() => 'AuthenticatedUserWithProfile(email: $email, displayName: $displayName)';
+  String toString() =>
+      'AuthenticatedUserWithProfile(email: $email, displayName: $displayName)';
 }
 
 // Helper functions to create Result values

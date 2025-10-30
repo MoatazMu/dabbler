@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../features/authentication/domain/usecases/usecase.dart';
 import '../entities/game.dart';
 import '../repositories/games_repository.dart';
@@ -7,7 +7,7 @@ import 'dart:math' as math;
 
 // Game-specific failures
 class GameFailure extends Failure {
-  const GameFailure(super.message);
+  const GameFailure(String message) : super(message: message);
 }
 
 class FindGamesUseCase extends UseCase<Either<Failure, List<GameWithDistance>>, FindGamesParams> {
@@ -56,47 +56,47 @@ class FindGamesUseCase extends UseCase<Either<Failure, List<GameWithDistance>>, 
     // Validate date range
     if (params.startDate != null && params.endDate != null) {
       if (params.startDate!.isAfter(params.endDate!)) {
-        return const GameFailure('Start date cannot be after end date');
+        return const GameFailure( 'Start date cannot be after end date');
       }
     }
 
     // Validate location coordinates
     if ((params.userLatitude != null) != (params.userLongitude != null)) {
-      return const GameFailure('Both latitude and longitude must be provided for location-based search');
+      return const GameFailure( 'Both latitude and longitude must be provided for location-based search');
     }
 
     if (params.userLatitude != null) {
       if (params.userLatitude! < -90 || params.userLatitude! > 90) {
-        return const GameFailure('Invalid latitude. Must be between -90 and 90');
+        return const GameFailure( 'Invalid latitude. Must be between -90 and 90');
       }
     }
 
     if (params.userLongitude != null) {
       if (params.userLongitude! < -180 || params.userLongitude! > 180) {
-        return const GameFailure('Invalid longitude. Must be between -180 and 180');
+        return const GameFailure( 'Invalid longitude. Must be between -180 and 180');
       }
     }
 
     // Validate radius
     if (params.radiusKm != null && params.radiusKm! <= 0) {
-      return const GameFailure('Radius must be greater than 0');
+      return const GameFailure( 'Radius must be greater than 0');
     }
 
     // Validate skill level
     if (params.skillLevel != null) {
       const validSkillLevels = ['beginner', 'intermediate', 'advanced', 'mixed'];
       if (!validSkillLevels.contains(params.skillLevel!.toLowerCase())) {
-        return const GameFailure('Invalid skill level. Must be: beginner, intermediate, advanced, or mixed');
+        return const GameFailure( 'Invalid skill level. Must be: beginner, intermediate, advanced, or mixed');
       }
     }
 
     // Validate pagination
     if (params.page < 1) {
-      return const GameFailure('Page must be greater than 0');
+      return const GameFailure( 'Page must be greater than 0');
     }
 
     if (params.limit < 1 || params.limit > 100) {
-      return const GameFailure('Limit must be between 1 and 100');
+      return const GameFailure( 'Limit must be between 1 and 100');
     }
 
     return null;

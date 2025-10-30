@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../domain/entities/venue.dart';
 import '../../domain/entities/sport_config.dart';
 import '../../domain/repositories/venues_repository.dart';
@@ -26,23 +26,27 @@ class VenueNotFoundException implements Exception {
 
 // Failure types for venues
 abstract class VenueFailure extends Failure {
-  const VenueFailure(super.message);
+  const VenueFailure(String message) : super(message: message);
 }
 
 class VenueServerFailure extends VenueFailure {
-  const VenueServerFailure([String? message]) : super(message ?? 'Venue server error');
+  const VenueServerFailure([String? message])
+      : super(message ?? 'Venue server error');
 }
 
 class VenueCacheFailure extends VenueFailure {
-  const VenueCacheFailure([String? message]) : super(message ?? 'Venue cache error');
+  const VenueCacheFailure([String? message])
+      : super(message ?? 'Venue cache error');
 }
 
 class VenueNotFoundFailure extends VenueFailure {
-  const VenueNotFoundFailure([String? message]) : super(message ?? 'Venue not found');
+  const VenueNotFoundFailure([String? message])
+      : super(message ?? 'Venue not found');
 }
 
 class UnknownFailure extends VenueFailure {
-  const UnknownFailure([String? message]) : super(message ?? 'Unknown venue error');
+  const UnknownFailure([String? message])
+      : super(message ?? 'Unknown venue error');
 }
 
 class VenuesRepositoryImpl implements VenuesRepository {

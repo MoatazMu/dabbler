@@ -1,9 +1,9 @@
-import 'package:dabbler/core/error/failures.dart';
+import 'package:dabbler/core/errors/failure.dart';
 import 'package:dabbler/core/result.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:dabbler/services/supabase_service.dart';
+import 'package:dabbler/services/supabase/supabase_service.dart';
 
 import '../models/friend_edge.dart';
 import '../models/friendship.dart';

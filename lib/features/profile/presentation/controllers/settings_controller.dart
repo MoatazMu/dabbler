@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/user_settings.dart';
 import '../../domain/usecases/change_settings_usecase.dart';
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 
 /// State for settings management
 class SettingsState {

@@ -2,7 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/types/result.dart';
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 
 abstract class BaseRepository {
   final SupabaseService svc;

@@ -3,8 +3,8 @@ import 'package:dabbler/features/social/providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DemoSocialConsumer extends ConsumerWidget {
-  const DemoSocialConsumer({super.key});
+class SocialConsumer extends ConsumerWidget {
+  const SocialConsumer({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -44,10 +44,7 @@ class _SquadList extends StatelessWidget {
       itemCount: squads.length,
       itemBuilder: (context, index) {
         final squad = squads[index];
-        return ListTile(
-          title: Text(squad.name),
-          subtitle: Text(squad.sport),
-        );
+        return ListTile(title: Text(squad.name), subtitle: Text(squad.sport));
       },
     );
   }

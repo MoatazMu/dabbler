@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dabbler/core/error/failures.dart';
+import 'package:dabbler/core/errors/failure.dart';
 import 'package:dabbler/core/result.dart';
 import 'package:dabbler/core/utils/either.dart';
 import 'package:dabbler/data/models/sport_profile.dart';

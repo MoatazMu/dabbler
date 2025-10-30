@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../domain/entities/booking.dart';
 import '../../domain/repositories/bookings_repository.dart';
 import '../datasources/bookings_remote_data_source.dart';
@@ -34,27 +34,33 @@ class PaymentException implements Exception {
 
 // Custom failure types for bookings
 class BookingServerFailure extends Failure {
-  const BookingServerFailure([String? message]) : super(message ?? 'Booking server error');
+  const BookingServerFailure([String? message])
+      : super(message: message ?? 'Booking server error');
 }
 
 class BookingCacheFailure extends Failure {
-  const BookingCacheFailure([String? message]) : super(message ?? 'Booking cache error');
+  const BookingCacheFailure([String? message])
+      : super(message: message ?? 'Booking cache error');
 }
 
 class BookingNotFoundFailure extends Failure {
-  const BookingNotFoundFailure([String? message]) : super(message ?? 'Booking not found');
+  const BookingNotFoundFailure([String? message])
+      : super(message: message ?? 'Booking not found');
 }
 
 class BookingConflictFailure extends Failure {
-  const BookingConflictFailure([String? message]) : super(message ?? 'Booking conflict');
+  const BookingConflictFailure([String? message])
+      : super(message: message ?? 'Booking conflict');
 }
 
 class PaymentFailure extends Failure {
-  const PaymentFailure([String? message]) : super(message ?? 'Payment error');
+  const PaymentFailure([String? message])
+      : super(message: message ?? 'Payment error');
 }
 
 class UnknownFailure extends Failure {
-  const UnknownFailure([String? message]) : super(message ?? 'Unknown error');
+  const UnknownFailure([String? message])
+      : super(message: message ?? 'Unknown error');
 }
 
 class BookingsRepositoryImpl implements BookingsRepository {

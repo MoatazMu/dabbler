@@ -4,7 +4,7 @@ import '../../core/result.dart';
 import '../../data/models/profile.dart';
 import '../../data/repositories/profiles_repository.dart';
 import '../../data/repositories/profiles_repository_impl.dart';
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 
 final profilesRepositoryProvider = Provider<ProfilesRepository>((ref) {
   final svc = ref.watch(supabaseServiceProvider);

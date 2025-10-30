@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/error/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../utils/enums/social_enums.dart';
 import '../../data/models/post_model.dart';
 import '../../data/models/social_feed_model.dart';

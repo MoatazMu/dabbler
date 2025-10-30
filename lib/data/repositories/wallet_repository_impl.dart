@@ -2,7 +2,7 @@ import 'package:meta/meta.dart';
 
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/payout.dart';
 import '../models/wallet.dart';
 import 'base_repository.dart';

@@ -1,12 +1,13 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failures.dart';
+import '../../../../core/errors/failure.dart';
 import '../../../../features/authentication/domain/usecases/usecase.dart';
 import '../entities/game.dart';
 import '../repositories/games_repository.dart';
 import '../repositories/venues_repository.dart';
 import '../repositories/bookings_repository.dart';
 
-class CreateGameUseCase extends UseCase<Either<Failure, Game>, CreateGameParams> {
+class CreateGameUseCase
+    extends UseCase<Either<Failure, Game>, CreateGameParams> {
   final GamesRepository gamesRepository;
   final VenuesRepository venuesRepository;
   final BookingsRepository bookingsRepository;
@@ -36,21 +37,18 @@ class CreateGameUseCase extends UseCase<Either<Failure, Game>, CreateGameParams>
     // Create the game
     final gameData = _buildGameData(params);
     final gameResult = await gamesRepository.createGame(gameData);
-    
-    return gameResult.fold(
-      (failure) => Left(failure),
-      (game) async {
-        // Create initial booking if venue is specified
-        if (params.venueId != null) {
-          await _createInitialBooking(game, params);
-        }
-        
-        // Auto-join the organizer to the game
-        await gamesRepository.joinGame(game.id, params.organizerId);
-        
-        return Right(game);
-      },
-    );
+
+    return gameResult.fold((failure) => Left(failure), (game) async {
+      // Create initial booking if venue is specified
+      if (params.venueId != null) {
+        await _createInitialBooking(game, params);
+      }
+
+      // Auto-join the organizer to the game
+      await gamesRepository.joinGame(game.id, params.organizerId);
+
+      return Right(game);
+    });
   }
 
   /// Validates all game creation parameters
@@ -118,7 +116,9 @@ class CreateGameUseCase extends UseCase<Either<Failure, Game>, CreateGameParams>
     // Validate skill level
     const validSkillLevels = ['beginner', 'intermediate', 'advanced', 'mixed'];
     if (!validSkillLevels.contains(params.skillLevel.toLowerCase())) {
-      return const GameFailure('Invalid skill level. Must be: beginner, intermediate, advanced, or mixed');
+      return const GameFailure(
+        'Invalid skill level. Must be: beginner, intermediate, advanced, or mixed',
+      );
     }
 
     return null;
@@ -133,15 +133,14 @@ class CreateGameUseCase extends UseCase<Either<Failure, Game>, CreateGameParams>
       params.endTime,
     );
 
-    return availability.fold(
-      (failure) => failure,
-      (isAvailable) {
-        if (!isAvailable) {
-          return const GameFailure('Selected venue is not available for the chosen time slot');
-        }
-        return null;
-      },
-    );
+    return availability.fold((failure) => failure, (isAvailable) {
+      if (!isAvailable) {
+        return const GameFailure(
+          'Selected venue is not available for the chosen time slot',
+        );
+      }
+      return null;
+    });
   }
 
   /// Creates initial booking for the game if venue is specified
@@ -161,7 +160,7 @@ class CreateGameUseCase extends UseCase<Either<Failure, Game>, CreateGameParams>
       'bookingType': 'game_session',
     };
 
-    // Note: We don't handle the result here as booking failure 
+    // Note: We don't handle the result here as booking failure
     // shouldn't prevent game creation, but this could be improved
     await bookingsRepository.createBooking(bookingData);
   }
@@ -198,14 +197,21 @@ class CreateGameUseCase extends UseCase<Either<Failure, Game>, CreateGameParams>
     if (parts.length != 2) {
       throw const GameFailure('Invalid time format. Use HH:mm');
     }
-    
+
     final hours = int.tryParse(parts[0]);
     final minutes = int.tryParse(parts[1]);
-    
-    if (hours == null || minutes == null || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-      throw const GameFailure('Invalid time format. Use HH:mm (24-hour format)');
+
+    if (hours == null ||
+        minutes == null ||
+        hours < 0 ||
+        hours > 23 ||
+        minutes < 0 ||
+        minutes > 59) {
+      throw const GameFailure(
+        'Invalid time format. Use HH:mm (24-hour format)',
+      );
     }
-    
+
     return Duration(hours: hours, minutes: minutes);
   }
 }
@@ -217,7 +223,7 @@ class CreateGameParams {
   final String? venueId;
   final DateTime scheduledDate;
   final String startTime; // Format: "HH:mm"
-  final String endTime;   // Format: "HH:mm"
+  final String endTime; // Format: "HH:mm"
   final int minPlayers;
   final int maxPlayers;
   final String organizerId;
@@ -250,13 +256,17 @@ class CreateGameParams {
 
 // Game-specific failures
 class GameFailure extends Failure {
-  const GameFailure(super.message);
+  const GameFailure(String message) : super(message: message);
 }
 
 class VenueUnavailableFailure extends GameFailure {
-  const VenueUnavailableFailure([super.message = 'Venue is not available for the selected time']);
+  const VenueUnavailableFailure([
+    String message = 'Venue is not available for the selected time',
+  ]) : super(message);
 }
 
 class InvalidGameParametersFailure extends GameFailure {
-  const InvalidGameParametersFailure([super.message = 'Invalid game parameters provided']);
+  const InvalidGameParametersFailure([
+    String message = 'Invalid game parameters provided',
+  ]) : super(message);
 }

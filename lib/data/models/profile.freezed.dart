@@ -27,7 +27,7 @@ mixin _$Profile {
   @JsonKey(name: 'profile_type')
   String get profileType => throw _privateConstructorUsedError;
   @JsonKey(name: 'username')
-  String? get username => throw _privateConstructorUsedError;
+  String get username => throw _privateConstructorUsedError;
   @JsonKey(name: 'display_name')
   String get displayName => throw _privateConstructorUsedError;
   @JsonKey(name: 'bio')
@@ -83,7 +83,7 @@ abstract class $ProfileCopyWith<$Res> {
     String id,
     @JsonKey(name: 'user_id') String userId,
     @JsonKey(name: 'profile_type') String profileType,
-    @JsonKey(name: 'username') String? username,
+    @JsonKey(name: 'username') String username,
     @JsonKey(name: 'display_name') String displayName,
     @JsonKey(name: 'bio') String? bio,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
@@ -123,7 +123,7 @@ class _$ProfileCopyWithImpl<$Res, $Val extends Profile>
     Object? id = null,
     Object? userId = null,
     Object? profileType = null,
-    Object? username = freezed,
+    Object? username = null,
     Object? displayName = null,
     Object? bio = freezed,
     Object? avatarUrl = freezed,
@@ -157,10 +157,10 @@ class _$ProfileCopyWithImpl<$Res, $Val extends Profile>
                 ? _value.profileType
                 : profileType // ignore: cast_nullable_to_non_nullable
                       as String,
-            username: freezed == username
+            username: null == username
                 ? _value.username
                 : username // ignore: cast_nullable_to_non_nullable
-                      as String?,
+                      as String,
             displayName: null == displayName
                 ? _value.displayName
                 : displayName // ignore: cast_nullable_to_non_nullable
@@ -251,7 +251,7 @@ abstract class _$$ProfileImplCopyWith<$Res> implements $ProfileCopyWith<$Res> {
     String id,
     @JsonKey(name: 'user_id') String userId,
     @JsonKey(name: 'profile_type') String profileType,
-    @JsonKey(name: 'username') String? username,
+    @JsonKey(name: 'username') String username,
     @JsonKey(name: 'display_name') String displayName,
     @JsonKey(name: 'bio') String? bio,
     @JsonKey(name: 'avatar_url') String? avatarUrl,
@@ -290,7 +290,7 @@ class __$$ProfileImplCopyWithImpl<$Res>
     Object? id = null,
     Object? userId = null,
     Object? profileType = null,
-    Object? username = freezed,
+    Object? username = null,
     Object? displayName = null,
     Object? bio = freezed,
     Object? avatarUrl = freezed,
@@ -324,10 +324,10 @@ class __$$ProfileImplCopyWithImpl<$Res>
             ? _value.profileType
             : profileType // ignore: cast_nullable_to_non_nullable
                   as String,
-        username: freezed == username
+        username: null == username
             ? _value.username
             : username // ignore: cast_nullable_to_non_nullable
-                  as String?,
+                  as String,
         displayName: null == displayName
             ? _value.displayName
             : displayName // ignore: cast_nullable_to_non_nullable
@@ -412,7 +412,7 @@ class _$ProfileImpl implements _Profile {
     required this.id,
     @JsonKey(name: 'user_id') required this.userId,
     @JsonKey(name: 'profile_type') required this.profileType,
-    @JsonKey(name: 'username') this.username,
+    @JsonKey(name: 'username') required this.username,
     @JsonKey(name: 'display_name') required this.displayName,
     @JsonKey(name: 'bio') this.bio,
     @JsonKey(name: 'avatar_url') this.avatarUrl,
@@ -446,7 +446,7 @@ class _$ProfileImpl implements _Profile {
   final String profileType;
   @override
   @JsonKey(name: 'username')
-  final String? username;
+  final String username;
   @override
   @JsonKey(name: 'display_name')
   final String displayName;
@@ -597,7 +597,7 @@ abstract class _Profile implements Profile {
     required final String id,
     @JsonKey(name: 'user_id') required final String userId,
     @JsonKey(name: 'profile_type') required final String profileType,
-    @JsonKey(name: 'username') final String? username,
+    @JsonKey(name: 'username') required final String username,
     @JsonKey(name: 'display_name') required final String displayName,
     @JsonKey(name: 'bio') final String? bio,
     @JsonKey(name: 'avatar_url') final String? avatarUrl,
@@ -630,7 +630,7 @@ abstract class _Profile implements Profile {
   String get profileType;
   @override
   @JsonKey(name: 'username')
-  String? get username;
+  String get username;
   @override
   @JsonKey(name: 'display_name')
   String get displayName;

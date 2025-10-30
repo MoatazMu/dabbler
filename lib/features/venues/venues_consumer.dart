@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'providers.dart';
 
-class DemoVenuesConsumer extends StatelessWidget {
-  const DemoVenuesConsumer({super.key});
+class VenuesConsumer extends StatelessWidget {
+  const VenuesConsumer({super.key});
 
   static const _demoVenueId = '00000000-0000-0000-0000-000000000000';
   static const _noFilters = (city: null, district: null, q: null);
@@ -14,13 +14,13 @@ class DemoVenuesConsumer extends StatelessWidget {
     return Consumer(
       builder: (context, ref, _) {
         final venuesAsync = ref.watch(activeVenuesProvider(_noFilters));
-        final spacesAsync = ref.watch(spacesByVenueStreamProvider(_demoVenueId));
+        final spacesAsync = ref.watch(
+          spacesByVenueStreamProvider(_demoVenueId),
+        );
 
         return venuesAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(
-            child: Text(error.toString()),
-          ),
+          error: (error, _) => Center(child: Text(error.toString())),
           data: (venuesResult) => venuesResult.match(
             (failure) => Center(child: Text(failure.message)),
             (venues) {
@@ -49,12 +49,10 @@ class DemoVenuesConsumer extends StatelessWidget {
                   const Divider(height: 1),
                   Expanded(
                     child: spacesAsync.when(
-                      loading: () => const Center(
-                        child: CircularProgressIndicator(),
-                      ),
-                      error: (error, _) => Center(
-                        child: Text(error.toString()),
-                      ),
+                      loading: () =>
+                          const Center(child: CircularProgressIndicator()),
+                      error: (error, _) =>
+                          Center(child: Text(error.toString())),
                       data: (spacesResult) => spacesResult.match(
                         (failure) => Center(
                           child: Text('Spaces error: ${failure.message}'),

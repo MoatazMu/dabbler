@@ -1,9 +1,9 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failures.dart';
+import '../../core/errors/failure.dart';
 import '../../core/result.dart';
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/profile.dart';
 import 'username_repository.dart';
 
@@ -29,7 +29,10 @@ class UsernameRepositoryImpl implements UsernameRepository {
       return right(row == null);
     } catch (error) {
       return left(
-        ServerFailure('Failed to check username availability', cause: error),
+        ServerFailure(
+          message: 'Failed to check username availability',
+          cause: error,
+        ),
       );
     }
   }
@@ -43,12 +46,15 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .eq('username', username.trim())
           .maybeSingle();
       if (row == null) {
-        return left(const NotFoundFailure('Username not found'));
+        return left(const NotFoundFailure(message: 'Username not found'));
       }
       return right(Profile.fromJson(Map<String, dynamic>.from(row)));
     } catch (error) {
       return left(
-        ServerFailure('Failed to fetch profile by username', cause: error),
+        ServerFailure(
+          message: 'Failed to fetch profile by username',
+          cause: error,
+        ),
       );
     }
   }
@@ -80,7 +86,9 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .toList(growable: false);
       return right(rows);
     } catch (error) {
-      return left(ServerFailure('Failed to search usernames', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to search usernames', cause: error),
+      );
     }
   }
 
@@ -98,16 +106,22 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(const NotFoundFailure('Profile not found or not owned'));
+        return left(
+          const NotFoundFailure(message: 'Profile not found or not owned'),
+        );
       }
       return right(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
-        return left(const ConflictFailure('Username already taken'));
+        return left(const ConflictFailure(message: 'Username already taken'));
       }
-      return left(ServerFailure('Failed to set username', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to set username', cause: error),
+      );
     } catch (error) {
-      return left(ServerFailure('Failed to set username', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to set username', cause: error),
+      );
     }
   }
 
@@ -118,7 +132,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
   }) async {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) {
-      return left(const AuthFailure('Not authenticated'));
+      return left(const AuthFailure(message: 'Not authenticated'));
     }
     final trimmed = username.trim();
     try {
@@ -131,7 +145,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
       if (profileRow == null) {
         return left(
           NotFoundFailure(
-            'Profile of type $profileType not found for current user',
+            message: 'Profile of type $profileType not found for current user',
           ),
         );
       }
@@ -144,16 +158,22 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(const NotFoundFailure('Profile not found after update'));
+        return left(
+          const NotFoundFailure(message: 'Profile not found after update'),
+        );
       }
       return right(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
-        return left(const ConflictFailure('Username already taken'));
+        return left(const ConflictFailure(message: 'Username already taken'));
       }
-      return left(ServerFailure('Failed to update username', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to update username', cause: error),
+      );
     } catch (error) {
-      return left(ServerFailure('Failed to update username', cause: error));
+      return left(
+        ServerFailure(message: 'Failed to update username', cause: error),
+      );
     }
   }
 
@@ -161,7 +181,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
   Stream<Result<Profile>> myProfileTypeStream(String profileType) async* {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) {
-      yield left(const AuthFailure('Not authenticated'));
+      yield left(const AuthFailure(message: 'Not authenticated'));
       return;
     }
     try {
@@ -174,14 +194,14 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .maybeSingle();
 
       if (data == null) {
-        yield left(const NotFoundFailure('Profile not found'));
+        yield left(const NotFoundFailure(message: 'Profile not found'));
         return;
       }
 
       final map = Map<String, dynamic>.from(data);
       yield right(Profile.fromJson(map));
     } catch (error) {
-      yield left(ServerFailure('Failed to get profile', cause: error));
+      yield left(ServerFailure(message: 'Failed to get profile', cause: error));
     }
   }
 }

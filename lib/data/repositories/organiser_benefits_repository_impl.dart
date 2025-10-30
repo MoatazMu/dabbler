@@ -1,9 +1,9 @@
 import 'package:meta/meta.dart';
 
-import '../../core/error/failure.dart';
+import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
-import '../../services/supabase_service.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/benefit.dart';
 import 'base_repository.dart';
 import 'organiser_benefits_repository.dart';
