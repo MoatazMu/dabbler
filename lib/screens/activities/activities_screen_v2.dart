@@ -29,15 +29,24 @@ class ActivitiesScreenV2 extends ConsumerStatefulWidget {
   ConsumerState<ActivitiesScreenV2> createState() => _ActivitiesScreenV2State();
 }
 
-class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2> 
+class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final AuthService _authService = AuthService();
+  List<ActivityLog> _recentActivities = const [];
+  bool _isLoadingRecentActivities = false;
+  String? _recentActivitiesError;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = _authService.getCurrentUser();
+      if (user != null) {
+        _loadRecentActivities(user.id);
+      }
+    });
   }
 
   @override
@@ -59,8 +68,37 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
   Future<void> _refreshStats() async {
     final user = _authService.getCurrentUser();
     if (user == null) return;
-    
-    await ref.read(activityLogControllerProvider(user.id).notifier).loadActivities(user.id);
+
+    final controller = ref.read(activityLogControllerProvider(user.id).notifier);
+    await controller.loadActivities(user.id);
+    await controller.loadCategoryStats(user.id);
+    await _loadRecentActivities(user.id);
+  }
+
+  Future<void> _loadRecentActivities(String userId) async {
+    setState(() {
+      _isLoadingRecentActivities = true;
+      _recentActivitiesError = null;
+    });
+
+    final repository = ref.read(activityLogRepositoryProvider);
+    final result = await repository.getRecentActivities(userId: userId);
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _recentActivitiesError = failure.message;
+          _recentActivities = const [];
+          _isLoadingRecentActivities = false;
+        });
+      },
+      (activities) {
+        setState(() {
+          _recentActivities = activities;
+          _isLoadingRecentActivities = false;
+        });
+      },
+    );
   }
 
   @override
@@ -400,6 +438,15 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
             ),
             const SizedBox(height: 12),
             _buildCategoryStatsGrid(context, categoryStats),
+            const SizedBox(height: 24),
+            Text(
+              'Recent Activity',
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildRecentActivitiesSection(context),
           ],
         ),
       ),
@@ -524,6 +571,169 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
         );
       },
     );
+  }
+
+  Widget _buildRecentActivitiesSection(BuildContext context) {
+    if (_isLoadingRecentActivities) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_recentActivitiesError != null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.colors.error.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(LucideIcons.alertCircle, color: context.colors.error),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _recentActivitiesError!,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colors.error,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_recentActivities.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.colors.surfaceVariant,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(LucideIcons.hourglass, color: context.colors.onSurfaceVariant),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'No recent activity in the last few days.',
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: _recentActivities
+          .map((activity) => _buildRecentActivityTile(context, activity))
+          .toList(),
+    );
+  }
+
+  Widget _buildRecentActivityTile(BuildContext context, ActivityLog activity) {
+    final timestamp = DateFormat('MMM d • h:mm a').format(activity.createdAt);
+    final subtitle = '${_formatActivityType(activity.type)} • $timestamp';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: context.colors.outline.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: context.colors.primary.withValues(alpha: 0.1),
+            child: Icon(
+              _iconForActivity(activity.type),
+              color: context.colors.primary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  activity.title,
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (activity.description != null &&
+                    activity.description!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    activity.description!,
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: context.colors.onSurfaceVariant,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: context.colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _iconForActivity(ActivityType type) {
+    switch (type) {
+      case ActivityType.game:
+        return LucideIcons.gamepad2;
+      case ActivityType.booking:
+        return LucideIcons.mapPin;
+      case ActivityType.payment:
+      case ActivityType.refund:
+        return LucideIcons.creditCard;
+      case ActivityType.reward:
+      case ActivityType.badge:
+      case ActivityType.achievement:
+        return LucideIcons.award;
+      case ActivityType.post:
+      case ActivityType.comment:
+      case ActivityType.like:
+      case ActivityType.share:
+      case ActivityType.follow:
+        return LucideIcons.users;
+      default:
+        return LucideIcons.activity;
+    }
+  }
+
+  String _formatActivityType(ActivityType type) {
+    final raw = type.name;
+    final withSpaces = raw
+        .replaceAll('_', ' ')
+        .replaceAllMapped(RegExp(r'([A-Z])'), (match) => ' ${match.group(0)}');
+    final trimmed = withSpaces.trim();
+    if (trimmed.isEmpty) {
+      return raw;
+    }
+    return trimmed[0].toUpperCase() + trimmed.substring(1);
   }
 
   // ============================================================================

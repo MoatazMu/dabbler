@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import 'package:riverpod/riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/types/result.dart';
 import '../models/joinability_rule.dart';

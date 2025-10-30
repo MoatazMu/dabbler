@@ -6,6 +6,8 @@ import '../../domain/entities/player.dart';
 import '../../domain/usecases/join_game_usecase.dart';
 import '../../domain/repositories/games_repository.dart';
 import '../../domain/repositories/venues_repository.dart';
+import '../../../../data/models/joinability_rule.dart';
+import '../../../../data/repositories/joinability_repository.dart';
 
 enum JoinGameStatus {
   canJoin,
@@ -48,6 +50,7 @@ class GameDetailState {
   final bool isJoining;
   final String? error;
   final JoinGameStatus joinStatus;
+  final JoinabilityDecision? joinabilityDecision;
   final bool isOrganizer;
   final WeatherInfo? weather;
   final bool isLoadingWeather;
@@ -65,6 +68,7 @@ class GameDetailState {
     this.isJoining = false,
     this.error,
     this.joinStatus = JoinGameStatus.canJoin,
+    this.joinabilityDecision,
     this.isOrganizer = false,
     this.weather,
     this.isLoadingWeather = false,
@@ -120,6 +124,7 @@ class GameDetailState {
     bool? isJoining,
     String? error,
     JoinGameStatus? joinStatus,
+    JoinabilityDecision? joinabilityDecision,
     bool? isOrganizer,
     WeatherInfo? weather,
     bool? isLoadingWeather,
@@ -137,6 +142,7 @@ class GameDetailState {
       isJoining: isJoining ?? this.isJoining,
       error: error,
       joinStatus: joinStatus ?? this.joinStatus,
+      joinabilityDecision: joinabilityDecision ?? this.joinabilityDecision,
       isOrganizer: isOrganizer ?? this.isOrganizer,
       weather: weather ?? this.weather,
       isLoadingWeather: isLoadingWeather ?? this.isLoadingWeather,
@@ -150,6 +156,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   final JoinGameUseCase _joinGameUseCase;
   final GamesRepository _gamesRepository;
   final VenuesRepository _venuesRepository;
+  final JoinabilityRepository _joinabilityRepository;
   final String gameId;
   final String? currentUserId;
 
@@ -157,11 +164,13 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     required JoinGameUseCase joinGameUseCase,
     required GamesRepository gamesRepository,
     required VenuesRepository venuesRepository,
+    required JoinabilityRepository joinabilityRepository,
     required this.gameId,
     this.currentUserId,
   })  : _joinGameUseCase = joinGameUseCase,
         _gamesRepository = gamesRepository,
         _venuesRepository = venuesRepository,
+        _joinabilityRepository = joinabilityRepository,
         super(const GameDetailState()) {
     _initializeGameDetail();
   }
@@ -398,53 +407,95 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   /// Update join status based on current state
   void _updateJoinStatus() {
     if (currentUserId == null || state.game == null) {
-      state = state.copyWith(joinStatus: JoinGameStatus.notEligible);
+      state = state.copyWith(
+        joinStatus: JoinGameStatus.notEligible,
+        joinabilityDecision: null,
+      );
       return;
     }
-    
+
     final game = state.game!;
-    
-    // Check if already joined
-    if (state.players.any((p) => p.id == currentUserId)) {
-      state = state.copyWith(joinStatus: JoinGameStatus.alreadyJoined);
-      return;
+    final alreadyJoined =
+        state.players.any((p) => p.playerId == currentUserId);
+    final alreadyRequested =
+        state.waitlistedPlayers.any((p) => p.playerId == currentUserId);
+
+    final inputs = JoinabilityInputs(
+      ownerId: game.organizerId,
+      visibility: game.isPublic ? 'public' : 'hidden',
+      viewerId: currentUserId,
+      viewerIsAdmin: false,
+      areSyncedWithOwner: true,
+      joinWindowOpen: game.status == GameStatus.upcoming && state.canStillJoin,
+      requiresInvite: false,
+      viewerInvited: true,
+      requiresApproval: false,
+      alreadyJoined: alreadyJoined,
+      alreadyRequested: alreadyRequested,
+      rosterCount: state.players.length,
+      rosterCap: game.maxPlayers,
+      waitlistEnabled: game.allowsWaitlist,
+      waitlistCount: state.waitlistedPlayers.length,
+      waitlistCap: 0,
+    );
+
+    final decisionResult = _joinabilityRepository.evaluate(inputs);
+
+    decisionResult.fold(
+      (failure) {
+        state = state.copyWith(
+          joinStatus: JoinGameStatus.notEligible,
+          joinabilityDecision: null,
+          error: failure.message,
+        );
+      },
+      (decision) {
+        state = state.copyWith(
+          joinStatus: _mapJoinabilityToStatus(decision),
+          joinabilityDecision: decision,
+          error: null,
+        );
+      },
+    );
+  }
+
+  JoinGameStatus _mapJoinabilityToStatus(JoinabilityDecision decision) {
+    if (decision.canLeave) {
+      return JoinGameStatus.alreadyJoined;
     }
-    
-    // Check if on waitlist
-    if (state.waitlistedPlayers.any((p) => p.id == currentUserId)) {
-      state = state.copyWith(joinStatus: JoinGameStatus.waitlisted);
-      return;
+    if (decision.canJoin) {
+      return JoinGameStatus.canJoin;
     }
-    
-    // Check game status and timing
-    if (game.status == GameStatus.completed || game.status == GameStatus.cancelled) {
-      state = state.copyWith(joinStatus: JoinGameStatus.gameEnded);
-      return;
+    if (decision.canRequest ||
+        decision.reason == JoinabilityReason.approvalRequired) {
+      return JoinGameStatus.waitlisted;
     }
-    
-    if (game.status == GameStatus.inProgress) {
-      state = state.copyWith(joinStatus: JoinGameStatus.gameStarted);
-      return;
+    if (decision.canWaitlist ||
+        decision.reason == JoinabilityReason.rosterFullWaitlistAvailable) {
+      return JoinGameStatus.waitlisted;
     }
-    
-    // Check if game is full
-    if (state.totalPlayers >= game.maxPlayers) {
-      if (game.allowsWaitlist) {
-        state = state.copyWith(joinStatus: JoinGameStatus.waitlisted);
-      } else {
-        state = state.copyWith(joinStatus: JoinGameStatus.gameFull);
-      }
-      return;
+
+    switch (decision.reason) {
+      case JoinabilityReason.rosterFull:
+        return JoinGameStatus.gameFull;
+      case JoinabilityReason.windowClosed:
+        return JoinGameStatus.gameStarted;
+      case JoinabilityReason.viewerIsOwner:
+      case JoinabilityReason.notLoggedIn:
+      case JoinabilityReason.hiddenToViewer:
+      case JoinabilityReason.circleNotSynced:
+      case JoinabilityReason.inviteRequired:
+      case JoinabilityReason.alreadyRequested:
+      case JoinabilityReason.unknownVisibility:
+        return JoinGameStatus.notEligible;
+      case JoinabilityReason.adminOverride:
+      case JoinabilityReason.ok:
+        return decision.canJoin
+            ? JoinGameStatus.canJoin
+            : JoinGameStatus.notEligible;
+      case JoinabilityReason.rosterFullWaitlistAvailable:
+        return JoinGameStatus.waitlisted;
     }
-    
-    // Check if still accepting players (not too close to start time)
-    if (!state.canStillJoin) {
-      state = state.copyWith(joinStatus: JoinGameStatus.gameStarted);
-      return;
-    }
-    
-    // Can join
-    state = state.copyWith(joinStatus: JoinGameStatus.canJoin);
   }
 
   /// Start real-time updates

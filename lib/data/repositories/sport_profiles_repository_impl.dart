@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:dabbler/core/errors/failure.dart';
-import 'package:dabbler/core/result.dart';
+import 'package:dabbler/core/types/result.dart';
 import 'package:dabbler/core/utils/either.dart';
 import 'package:dabbler/data/models/sport_profile.dart';
 import 'package:dabbler/data/repositories/base_repository.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dabbler/core/result.dart';
+import 'package:dabbler/core/types/result.dart';
 import 'package:dabbler/data/models/sport_profile.dart';
 import 'package:dabbler/data/repositories/sport_profiles_repository.dart';
 import 'package:dabbler/data/repositories/sport_profiles_repository_impl.dart';

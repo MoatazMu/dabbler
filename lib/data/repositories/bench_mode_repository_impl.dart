@@ -4,7 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/errors/failure.dart';
-import '../../core/result.dart';
+import '../../core/types/result.dart';
 import '../../services/supabase/supabase_service.dart';
 import '../models/profile.dart';
 import 'bench_mode_repository.dart';

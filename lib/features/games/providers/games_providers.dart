@@ -5,6 +5,7 @@ import '../presentation/controllers/game_detail_controller.dart';
 import '../presentation/controllers/venues_controller.dart';
 import '../presentation/controllers/my_games_controller.dart';
 import '../presentation/controllers/bookings_controller.dart';
+import 'package:dabbler/core/providers/geo_providers.dart';
 import '../domain/usecases/find_games_usecase.dart';
 import '../domain/usecases/join_game_usecase.dart';
 import '../domain/entities/game.dart';
@@ -17,6 +18,7 @@ import '../data/datasources/supabase_games_datasource.dart';
 import '../data/datasources/venues_datasource.dart';
 import '../data/datasources/bookings_datasource.dart';
 import '../data/datasources/bookings_remote_data_source.dart';
+import 'package:dabbler/data/repositories/joinability_repository_impl.dart';
 
 // =============================================================================
 // DATA SOURCE PROVIDERS
@@ -129,7 +131,11 @@ final gamesControllerProvider = StateNotifierProvider<GamesController, GamesStat
 /// Venues controller for venue discovery and management
 final venuesControllerProvider = StateNotifierProvider<VenuesController, VenuesState>((ref) {
   final venuesRepository = ref.watch(venuesRepositoryProvider);
-  return VenuesController(venuesRepository);
+  final geoRepository = ref.watch(geoRepositoryProvider);
+  return VenuesController(
+    venuesRepository,
+    geoRepository: geoRepository,
+  );
 });
 
 /// My games controller for user's personal game management
@@ -154,6 +160,7 @@ final gameDetailControllerProvider = StateNotifierProvider.family<GameDetailCont
     joinGameUseCase: ref.watch(joinGameUseCaseProvider),
     gamesRepository: ref.watch(gamesRepositoryProvider),
     venuesRepository: ref.watch(venuesRepositoryProvider),
+    joinabilityRepository: ref.watch(joinabilityRepositoryProvider),
     gameId: params.gameId,
     currentUserId: params.currentUserId,
   );
