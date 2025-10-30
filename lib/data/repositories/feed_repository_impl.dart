@@ -29,7 +29,7 @@ class FeedRepositoryImpl extends BaseRepository implements FeedRepository {
 
       final q = _db
           .from(_posts)
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .order('created_at', ascending: false) // DESC timeline
           .order('id', ascending: false) // tie-breaker for stable order
           .limit(limit);

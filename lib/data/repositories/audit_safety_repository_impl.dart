@@ -7,6 +7,7 @@ import '../../core/utils/json.dart';
 import '../models/abuse_flag.dart';
 import '../../services/supabase/supabase_service.dart';
 import 'audit_safety_repository.dart';
+import 'base_repository.dart';
 
 @immutable
 class AuditSafetyRepositoryImpl extends BaseRepository
@@ -38,7 +39,7 @@ class AuditSafetyRepositoryImpl extends BaseRepository
       final inserted = await _db
           .from('post_reports')
           .insert(payload)
-          .select<Map<String, dynamic>>()
+          .select()
           .single();
 
       return AbuseFlag.fromMap(inserted);
@@ -52,12 +53,14 @@ class AuditSafetyRepositoryImpl extends BaseRepository
       if (uid == null) throw AuthException('Not authenticated');
 
       // RLS: reporter_user_id = auth.uid() OR admin
-      final rows = await _db
-          .from('post_reports')
-          .select<List<Map<String, dynamic>>>()
-          .eq('reporter_user_id', uid)
-          .order('created_at', ascending: false)
-          .limit(limit);
+      final rows =
+          await _db
+                  .from('post_reports')
+                  .select()
+                  .eq('reporter_user_id', uid)
+                  .order('created_at', ascending: false)
+                  .limit(limit)
+              as List;
 
       return rows.map((r) => AbuseFlag.fromMap(r)).toList();
     });
@@ -70,17 +73,15 @@ class AuditSafetyRepositoryImpl extends BaseRepository
   }) async {
     return guard<List<AbuseFlag>>(() async {
       // If the caller isn't admin, RLS will naturally reduce the set to their own reports.
-      final query = _db
-          .from('post_reports')
-          .select<List<Map<String, dynamic>>>()
-          .order('created_at', ascending: false)
-          .limit(limit);
+      var query = _db.from('post_reports').select();
 
       if (since != null) {
-        query.gte('created_at', since.toIso8601String());
+        query = query.gte('created_at', since.toIso8601String());
       }
 
-      final rows = await query;
+      final rows =
+          await query.order('created_at', ascending: false).limit(limit)
+              as List;
       return rows.map((r) => AbuseFlag.fromMap(r)).toList();
     });
   }

@@ -5,7 +5,7 @@ import '../../core/errors/failure.dart';
 import '../../core/types/result.dart' show Result;
 import '../repositories/base_repository.dart';
 import '../../services/supabase/supabase_service.dart';
-import 'moderation_repository.dart';
+import 'moderation_repository.dart' hide Result;
 
 class ModerationRepositoryImpl extends BaseRepository
     implements ModerationRepository {
@@ -20,9 +20,9 @@ class ModerationRepositoryImpl extends BaseRepository
       if (uid == null) {
         return left(AuthFailure(message: 'No auth user'));
       }
-      final res = await _db.rpc('is_admin', params: {'u': uid}).select<bool>();
-      // Some PostgREST versions need .single() to unwrap:
-      final data = res is PostgrestResponse ? (res.data as bool?) : res;
+      final res = await _db.rpc('is_admin', params: {'u': uid});
+      // unwrap the response
+      final data = res as bool?;
       return right(data == true);
     } on PostgrestException catch (e) {
       return left(svc.mapPostgrestError(e));
@@ -67,7 +67,7 @@ class ModerationRepositoryImpl extends BaseRepository
   }) async {
     return _guardAdmin(() async {
       try {
-        var q = _db.from('moderation_flags').select<Map<String, dynamic>>();
+        var q = _db.from('moderation_flags').select();
         q = _applyWhere(q, where).range(offset, offset + limit - 1);
         final rows = await q;
         return right(List<Map<String, dynamic>>.from(rows));
@@ -88,7 +88,7 @@ class ModerationRepositoryImpl extends BaseRepository
   }) async {
     return _guardAdmin(() async {
       try {
-        var q = _db.from('moderation_tickets').select<Map<String, dynamic>>();
+        var q = _db.from('moderation_tickets').select();
         q = _applyWhere(q, where).range(offset, offset + limit - 1);
         final rows = await q;
         return right(List<Map<String, dynamic>>.from(rows));
@@ -109,7 +109,7 @@ class ModerationRepositoryImpl extends BaseRepository
         final rows = await _db
             .from('moderation_tickets')
             .insert(values)
-            .select<Map<String, dynamic>>()
+            .select()
             .single();
         return right(Map<String, dynamic>.from(rows));
       } on PostgrestException catch (e) {
@@ -131,7 +131,7 @@ class ModerationRepositoryImpl extends BaseRepository
             .from('moderation_tickets')
             .update(patch)
             .eq('id', id)
-            .select<Map<String, dynamic>>()
+            .select()
             .maybeSingle();
 
         if (rows == null) {
@@ -174,7 +174,7 @@ class ModerationRepositoryImpl extends BaseRepository
   }) async {
     return _guardAdmin(() async {
       try {
-        var q = _db.from('moderation_actions').select<Map<String, dynamic>>();
+        var q = _db.from('moderation_actions').select();
         q = _applyWhere(q, where).range(offset, offset + limit - 1);
         final rows = await q;
         return right(List<Map<String, dynamic>>.from(rows));
@@ -195,7 +195,7 @@ class ModerationRepositoryImpl extends BaseRepository
         final row = await _db
             .from('moderation_actions')
             .insert(values)
-            .select<Map<String, dynamic>>()
+            .select()
             .single();
         return right(Map<String, dynamic>.from(row));
       } on PostgrestException catch (e) {
@@ -215,7 +215,7 @@ class ModerationRepositoryImpl extends BaseRepository
   }) async {
     return _guardAdmin(() async {
       try {
-        var q = _db.from('moderation_ban_terms').select<Map<String, dynamic>>();
+        var q = _db.from('moderation_ban_terms').select();
         q = _applyWhere(q, where).range(offset, offset + limit - 1);
         final rows = await q;
         return right(List<Map<String, dynamic>>.from(rows));
@@ -236,7 +236,7 @@ class ModerationRepositoryImpl extends BaseRepository
         final row = await _db
             .from('moderation_ban_terms')
             .upsert(values)
-            .select<Map<String, dynamic>>()
+            .select()
             .single();
         return right(Map<String, dynamic>.from(row));
       } on PostgrestException catch (e) {

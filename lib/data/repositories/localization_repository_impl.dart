@@ -141,7 +141,7 @@ class LocalizationRepositoryImpl extends BaseRepository
     if (codes.isEmpty) return {};
     final rows = await svc.client
         .from(_table)
-        .select<List<Map<String, dynamic>>>()
+        .select()
         .eq('locale', locale)
         .in_('code', codes);
 
