@@ -30,31 +30,28 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   final TextEditingController _messageController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
+
     _fadeAnimation = CurvedAnimation(
       parent: _animationController,
       curve: Curves.easeOut,
     );
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
+
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
+
     _messageController.text = widget.customMessage ?? _getDefaultMessage();
     _animationController.forward();
   }
@@ -69,7 +66,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
@@ -107,7 +104,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
             borderRadius: BorderRadius.circular(2),
           ),
         ),
-        
+
         // Header
         Padding(
           padding: const EdgeInsets.all(16),
@@ -129,22 +126,22 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
             ],
           ),
         ),
-        
+
         // Post preview
         _buildPostPreview(theme),
-        
+
         // Custom message input
         _buildMessageInput(theme),
-        
+
         // Quick share options
         _buildQuickShareOptions(theme),
-        
+
         // Social platforms
         _buildSocialPlatforms(theme),
-        
+
         // Additional options
         _buildAdditionalOptions(theme),
-        
+
         // Bottom padding
         SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
       ],
@@ -158,9 +155,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.3),
-        ),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.3)),
       ),
       child: Row(
         children: [
@@ -169,7 +164,8 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                widget.post.media.first.thumbnailUrl ?? widget.post.media.first.url,
+                widget.post.media.first.thumbnailUrl ??
+                    widget.post.media.first.url,
                 width: 48,
                 height: 48,
                 fit: BoxFit.cover,
@@ -186,16 +182,16 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
           else
             CircleAvatar(
               radius: 24,
-              backgroundImage: widget.post.author?.avatar != null 
-                ? NetworkImage(widget.post.author.avatar!)
-                : null,
-              child: widget.post.author?.avatar == null 
-                ? Text(widget.post.author?.name?[0]?.toUpperCase() ?? '?')
-                : null,
+              backgroundImage: widget.post.author?.avatar != null
+                  ? NetworkImage(widget.post.author.avatar!)
+                  : null,
+              child: widget.post.author?.avatar == null
+                  ? Text(widget.post.author?.name?[0]?.toUpperCase() ?? '?')
+                  : null,
             ),
-          
+
           const SizedBox(width: 12),
-          
+
           // Post info
           Expanded(
             child: Column(
@@ -433,23 +429,13 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
           Container(
             width: 50,
             height: 50,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              icon,
-              color: Colors.white,
-              size: 24,
-            ),
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+            child: Icon(icon, color: Colors.white, size: 24),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500),
             textAlign: TextAlign.center,
             overflow: TextOverflow.ellipsis,
           ),
@@ -497,7 +483,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
   String _getDefaultMessage() {
     final authorName = widget.post.author?.name ?? 'Someone';
     final postType = widget.post.type ?? 'post';
-    
+
     switch (postType) {
       case 'game_result':
         return 'Check out $authorName\'s game result!';
@@ -515,7 +501,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
   void _copyPostLink() {
     final postUrl = 'https://dabbler.app/post/${widget.post.id}';
     Clipboard.setData(ClipboardData(text: postUrl));
-    
+
     HapticFeedback.lightImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -523,7 +509,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
         duration: Duration(seconds: 2),
       ),
     );
-    
+
     widget.onCopyLink?.call();
   }
 
@@ -537,7 +523,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
         'message': _messageController.text.trim(),
       },
     );
-    
+
     widget.onShareViaChat?.call();
   }
 
@@ -551,16 +537,14 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
         'message': _messageController.text.trim(),
       },
     );
-    
+
     widget.onCreateStory?.call();
   }
 
   void _shareToSocialPlatform(String platform) async {
     final postUrl = 'https://dabbler.app/post/${widget.post.id}';
     final message = _messageController.text.trim();
-    final fullMessage = message.isNotEmpty 
-      ? '$message\n\n$postUrl'
-      : postUrl;
+    final fullMessage = message.isNotEmpty ? '$message\n\n$postUrl' : postUrl;
 
     HapticFeedback.lightImpact();
 
@@ -571,20 +555,24 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
           break;
         case 'twitter':
           final twitterText = Uri.encodeComponent(fullMessage);
-          final twitterUrl = 'https://twitter.com/intent/tweet?text=$twitterText';
+          final twitterUrl =
+              'https://twitter.com/intent/tweet?text=$twitterText';
           await _launchExternalUrl(twitterUrl);
           break;
         case 'facebook':
-          final facebookUrl = 'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(postUrl)}';
+          final facebookUrl =
+              'https://www.facebook.com/sharer/sharer.php?u=${Uri.encodeComponent(postUrl)}';
           await _launchExternalUrl(facebookUrl);
           break;
         case 'telegram':
           final telegramText = Uri.encodeComponent(fullMessage);
-          final telegramUrl = 'https://t.me/share/url?url=${Uri.encodeComponent(postUrl)}&text=$telegramText';
+          final telegramUrl =
+              'https://t.me/share/url?url=${Uri.encodeComponent(postUrl)}&text=$telegramText';
           await _launchExternalUrl(telegramUrl);
           break;
         case 'linkedin':
-          final linkedinUrl = 'https://www.linkedin.com/sharing/share-offsite/?url=${Uri.encodeComponent(postUrl)}';
+          final linkedinUrl =
+              'https://www.linkedin.com/sharing/share-offsite/?url=${Uri.encodeComponent(postUrl)}';
           await _launchExternalUrl(linkedinUrl);
           break;
         default:
@@ -592,7 +580,8 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
       }
 
       widget.onShare?.call(platform);
-      
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Shared to ${platform.toUpperCase()}'),
@@ -600,6 +589,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
         ),
       );
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to share to ${platform.toUpperCase()}'),
@@ -612,14 +602,13 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
   void _shareToMore() async {
     final postUrl = 'https://dabbler.app/post/${widget.post.id}';
     final message = _messageController.text.trim();
-    final fullMessage = message.isNotEmpty 
-      ? '$message\n\n$postUrl'
-      : postUrl;
+    final fullMessage = message.isNotEmpty ? '$message\n\n$postUrl' : postUrl;
 
     try {
       await Share.share(fullMessage);
       widget.onShare?.call('system');
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Failed to share'),
@@ -632,35 +621,37 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
   void _shareViaEmail() {
     final postUrl = 'https://dabbler.app/post/${widget.post.id}';
     final message = _messageController.text.trim();
-    final subject = 'Check out this post from ${widget.post.author?.name ?? 'Dabbler'}';
-    final body = message.isNotEmpty 
-      ? '$message\n\n$postUrl'
-      : 'I thought you might find this interesting:\n\n$postUrl';
+    final subject =
+        'Check out this post from ${widget.post.author?.name ?? 'Dabbler'}';
+    final body = message.isNotEmpty
+        ? '$message\n\n$postUrl'
+        : 'I thought you might find this interesting:\n\n$postUrl';
 
-    final emailUrl = 'mailto:?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
-    
+    final emailUrl =
+        'mailto:?subject=${Uri.encodeComponent(subject)}&body=${Uri.encodeComponent(body)}';
+
     _launchExternalUrl(emailUrl);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening email app...')),
-    );
-    
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Opening email app...')));
+
     widget.onShare?.call('email');
   }
 
   void _shareViaSMS() {
     final postUrl = 'https://dabbler.app/post/${widget.post.id}';
     final message = _messageController.text.trim();
-    final fullMessage = message.isNotEmpty 
-      ? '$message $postUrl'
-      : 'Check this out: $postUrl';
+    final fullMessage = message.isNotEmpty
+        ? '$message $postUrl'
+        : 'Check this out: $postUrl';
 
     final smsUrl = 'sms:?body=${Uri.encodeComponent(fullMessage)}';
-    
+
     _launchExternalUrl(smsUrl);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening messages app...')),
-    );
-    
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Opening messages app...')));
+
     widget.onShare?.call('sms');
   }
 
@@ -701,7 +692,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
         'description': widget.post.content ?? 'Check out this post',
       },
     );
-    
+
     widget.onShare?.call('qr');
   }
 }
@@ -711,11 +702,7 @@ class CompactShareButton extends StatelessWidget {
   final dynamic post;
   final Function(String)? onShare;
 
-  const CompactShareButton({
-    super.key,
-    required this.post,
-    this.onShare,
-  });
+  const CompactShareButton({super.key, required this.post, this.onShare});
 
   @override
   Widget build(BuildContext context) {
@@ -737,10 +724,7 @@ class CompactShareButton extends StatelessWidget {
         maxChildSize: 0.9,
         builder: (context, scrollController) => SingleChildScrollView(
           controller: scrollController,
-          child: SocialSharingWidget(
-            post: post,
-            onShare: onShare,
-          ),
+          child: SocialSharingWidget(post: post, onShare: onShare),
         ),
       ),
     );
