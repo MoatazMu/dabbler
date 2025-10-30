@@ -39,18 +39,27 @@ class BookingModel extends Booking {
   });
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
+    final venueMap = _extractNestedMap(json, 'venue') ?? _extractNestedMap(json, 'venues');
+    final gameMap = _extractNestedMap(json, 'game');
+
+    final venueId = json['venue_id'] as String? ?? venueMap?['id'] as String? ?? 'unknown-venue';
+    final venueName = json['venue_name'] as String? ?? venueMap?['name'] as String? ?? 'Unknown Venue';
+    final venueAddress = json['venue_address'] as String? ?? venueMap?['address'] as String? ?? 'Unknown Location';
+    final gameId = json['game_id'] as String? ?? gameMap?['id'] as String? ?? 'unknown-game';
+    final bookedBy = json['booked_by'] as String? ?? json['user_id'] as String? ?? 'unknown-user';
+
     return BookingModel(
       id: json['id'] as String,
-      venueId: json['venue_id'] as String,
-      gameId: json['game_id'] as String,
-      bookedBy: json['booked_by'] as String,
+      venueId: venueId,
+      gameId: gameId,
+      bookedBy: bookedBy,
       bookingDate: DateTime.parse(json['booking_date'] as String),
-      startTime: json['start_time'] as String,
-      endTime: json['end_time'] as String,
+      startTime: (json['start_time'] ?? gameMap?['start_time'] ?? '00:00') as String,
+      endTime: (json['end_time'] ?? gameMap?['end_time'] ?? '00:00') as String,
       courtNumber: json['court_number'] as String?,
-      venueName: json['venue_name'] as String,
-      venueAddress: json['venue_address'] as String,
-      totalAmount: (json['total_amount'] as num).toDouble(),
+      venueName: venueName,
+      venueAddress: venueAddress,
+      totalAmount: (json['total_amount'] as num? ?? 0).toDouble(),
       currency: json['currency'] as String? ?? 'USD',
       deposit: (json['deposit'] as num?)?.toDouble(),
       tax: (json['tax'] as num?)?.toDouble(),
@@ -85,6 +94,17 @@ class BookingModel extends Booking {
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
     );
+  }
+
+  static Map<String, dynamic>? _extractNestedMap(Map<String, dynamic> json, String key) {
+    final value = json[key];
+    if (value is Map) {
+      return value.cast<String, dynamic>();
+    }
+    if (value is List && value.isNotEmpty && value.first is Map) {
+      return (value.first as Map).cast<String, dynamic>();
+    }
+    return null;
   }
 
   static BookingStatus _parseBookingStatus(dynamic statusData) {

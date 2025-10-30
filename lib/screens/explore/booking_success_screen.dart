@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../themes/design_system.dart';
 import '../../routes/app_routes.dart';
+import '../../routes/route_arguments.dart';
 
 class BookingSuccessScreen extends StatelessWidget {
   final Map<String, dynamic> venue;
@@ -259,32 +260,32 @@ class BookingSuccessScreen extends StatelessWidget {
   }
 
   void _createGameFromBooking(BuildContext context) {
-    // Navigate to create game screen with pre-filled venue and slot data
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.gameCreate,
-      (route) => false,
-      arguments: CreateGameArguments(
-        venue: venue,
-        selectedDate: selectedDate,
-        selectedTime: selectedTime,
-        selectedSport: selectedSport,
-        isFromBooking: true,
-        bookingId: bookingId,
-      ),
+    final venueId = venue['id'] as String?;
+    final venueName = (venue['name'] as String?) ?? 'Venue';
+    final venueLocation = venue['location']?.toString();
+
+    final seed = BookingSeedData(
+      bookingId: bookingId,
+      venueId: venueId,
+      venueName: venueName,
+      venueLocation: venueLocation,
+      date: selectedDate,
+      timeLabel: selectedTime,
+      sport: selectedSport,
+    );
+
+    AppRoutes.openCreateGame(
+      context,
+      args: CreateGameRouteArgs(fromBooking: seed),
+      clearStack: true,
     );
   }
 
   void _viewBookings(BuildContext context) {
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.bookings,
-      (route) => false,
-    );
+    AppRoutes.goToBookings(context);
   }
 
   void _goHome(BuildContext context) {
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.home,
-      (route) => false,
-    );
+    AppRoutes.goHome(context);
   }
-} 
+}

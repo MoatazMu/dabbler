@@ -5,6 +5,7 @@ import '../services/storage_service.dart';
 import '../../features/games/domain/repositories/games_repository.dart';
 import '../../features/games/data/repositories/games_repository_impl.dart';
 import '../../features/games/data/datasources/supabase_games_datasource.dart';
+import '../../routes/route_arguments.dart';
 
 class GameCreationViewModel extends ChangeNotifier {
   GameCreationModel _state = GameCreationModel.initial();
@@ -194,6 +195,104 @@ class GameCreationViewModel extends ChangeNotifier {
       );
     }
     notifyListeners();
+  }
+
+  /// Apply initial values based on an existing booking seed.
+  void applyBookingSeed(BookingSeedData seed) {
+    final slot = _buildSeedVenueSlot(seed);
+    final inferredTitle = _state.gameTitle ?? '${seed.sport} at ${seed.venueName}';
+
+    _state = _state.copyWith(
+      selectedSport: seed.sport,
+      selectedDate: seed.date,
+      selectedTimeSlot: seed.timeLabel,
+      selectedVenueSlot: slot ?? _state.selectedVenueSlot,
+      gameTitle: inferredTitle,
+    );
+    notifyListeners();
+  }
+
+  VenueSlot? _buildSeedVenueSlot(BookingSeedData seed) {
+    final venueId = seed.venueId;
+    if (venueId == null || venueId.isEmpty) {
+      return null;
+    }
+
+    final timeSlot = _buildSeedTimeSlot(seed.date, seed.timeLabel);
+    return VenueSlot(
+      venueId: venueId,
+      venueName: seed.venueName,
+      location: seed.venueLocation ?? '',
+      timeSlot: timeSlot,
+      amenities: null,
+      rating: 0,
+      imageUrl: null,
+    );
+  }
+
+  TimeSlot _buildSeedTimeSlot(DateTime date, String label) {
+    final parts = label.split('-').map((value) => value.trim()).toList();
+    final startTime = _parseSeedTime(parts.isNotEmpty ? parts.first : label);
+    final endTime = parts.length > 1 ? _parseSeedTime(parts[1]) : null;
+
+    final startDateTime = startTime != null
+        ? DateTime(date.year, date.month, date.day, startTime.hour, startTime.minute)
+        : DateTime(date.year, date.month, date.day, 9);
+
+    final calculatedEnd = endTime != null
+        ? DateTime(date.year, date.month, date.day, endTime.hour, endTime.minute)
+        : startDateTime.add(const Duration(hours: 1));
+
+    final duration = calculatedEnd.isAfter(startDateTime)
+        ? calculatedEnd.difference(startDateTime)
+        : const Duration(hours: 1);
+
+    return TimeSlot(
+      startTime: startDateTime,
+      duration: duration,
+      price: 0,
+      isAvailable: true,
+    );
+  }
+
+  TimeOfDay? _parseSeedTime(String value) {
+    var trimmed = value.trim();
+    if (trimmed.isEmpty) return null;
+
+    String? period;
+    final lower = trimmed.toLowerCase();
+    if (lower.endsWith('am')) {
+      period = 'am';
+      trimmed = trimmed.substring(0, trimmed.length - 2).trim();
+    } else if (lower.endsWith('pm')) {
+      period = 'pm';
+      trimmed = trimmed.substring(0, trimmed.length - 2).trim();
+    }
+
+    final parts = trimmed.split(':');
+    final hourPart = parts.isNotEmpty ? parts[0] : trimmed;
+    final minutePart = parts.length > 1 ? parts[1] : '0';
+
+    final parsedHour = int.tryParse(hourPart);
+    final parsedMinute = int.tryParse(minutePart);
+    if (parsedHour == null || parsedMinute == null) {
+      return null;
+    }
+
+    var hour = parsedHour.clamp(0, 24);
+    final minute = parsedMinute.clamp(0, 59);
+
+    if (period == 'pm' && hour < 12) {
+      hour += 12;
+    } else if (period == 'am' && hour == 12) {
+      hour = 0;
+    }
+
+    if (hour >= 24) {
+      hour = hour % 24;
+    }
+
+    return TimeOfDay(hour: hour, minute: minute);
   }
 
   Future<void> deleteDraft(String draftId) async {
