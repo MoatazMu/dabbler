@@ -5,7 +5,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
-import '../../services/supabase/supabase_service.dart';
 import '../models/profile.dart';
 import 'base_repository.dart';
 import 'profiles_repository.dart';

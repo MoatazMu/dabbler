@@ -1,11 +1,8 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
 import '../../data/models/notification.dart';
-import '../../services/supabase/supabase_service.dart';
 import 'notifications_repository.dart';
 import 'base_repository.dart';
 import 'package:meta/meta.dart';
@@ -13,7 +10,7 @@ import 'package:meta/meta.dart';
 @immutable
 class NotificationsRepositoryImpl extends BaseRepository
     implements NotificationsRepository {
-  const NotificationsRepositoryImpl(SupabaseService svc) : super(svc);
+  const NotificationsRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
 

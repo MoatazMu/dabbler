@@ -4,13 +4,12 @@ import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/errors/failure.dart';
-import '../../services/supabase/supabase_service.dart';
 import '../models/game.dart';
 import 'base_repository.dart';
 import 'games_repository.dart';
 
 class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
-  GamesRepositoryImpl(SupabaseService service) : super(service);
+  GamesRepositoryImpl(super.service);
 
   static const String table = 'games';
 

@@ -6,7 +6,6 @@ import 'package:meta/meta.dart';
 
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
-import '../../services/supabase/supabase_service.dart';
 import '../models/schema_meta.dart';
 import 'base_repository.dart';
 import 'schema_meta_repository.dart';
@@ -17,7 +16,7 @@ class SchemaMetaRepositoryImpl extends BaseRepository
   static const _table = 'schema_meta';
   static const _assetPath = 'supabase/schema/schema.json';
 
-  const SchemaMetaRepositoryImpl(SupabaseService svc) : super(svc);
+  const SchemaMetaRepositoryImpl(super.svc);
 
   @override
   Future<Result<SchemaMeta?>> getDbMeta() {

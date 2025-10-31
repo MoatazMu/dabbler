@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
-import '../../services/supabase/supabase_service.dart';
 import '../models/slot.dart';
 import 'availability_repository.dart';
 import 'base_repository.dart';

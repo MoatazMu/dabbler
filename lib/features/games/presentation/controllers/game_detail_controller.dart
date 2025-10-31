@@ -347,8 +347,9 @@ class GameDetailController extends StateNotifier<GameDetailState> {
   /// Join the game
   Future<void> joinGame() async {
     if (currentUserId == null ||
-        state.joinStatus == JoinGameStatus.alreadyJoined)
+        state.joinStatus == JoinGameStatus.alreadyJoined) {
       return;
+    }
 
     state = state.copyWith(isJoining: true, error: null);
 

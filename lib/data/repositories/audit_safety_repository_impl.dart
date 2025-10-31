@@ -1,18 +1,16 @@
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
 import '../models/abuse_flag.dart';
-import '../../services/supabase/supabase_service.dart';
 import 'audit_safety_repository.dart';
 import 'base_repository.dart';
 
 @immutable
 class AuditSafetyRepositoryImpl extends BaseRepository
     implements AuditSafetyRepository {
-  const AuditSafetyRepositoryImpl(SupabaseService svc) : super(svc);
+  const AuditSafetyRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;
 
