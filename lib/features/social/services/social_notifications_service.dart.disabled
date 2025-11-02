@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../../../core/utils/either.dart';
-import '../../../core/analytics/analytics_service.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../data/models/post_model.dart';

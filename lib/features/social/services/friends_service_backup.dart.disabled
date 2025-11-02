@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dartz/dartz.dart';
-import '../../../core/analytics/analytics_service.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../../../core/errors/failure.dart';
 import '../domain/repositories/social_repository.dart';
