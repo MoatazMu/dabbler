@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/models/match_model.dart';
 import '../../themes/app_theme.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/avatar_widget.dart';
 
 class MatchDetailScreen extends StatefulWidget {
@@ -707,31 +707,31 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
         children: [
           if (!isFull && !isPastDeadline) ...[
             Expanded(
-              child: CustomButton(
-                text: _isJoined ? 'Leave Game' : 'Join Game',
+              child: AppButton(
+                label: _isJoined ? 'Leave Game' : 'Join Game',
                 onPressed: _isJoining ? null : _handleJoinLeave,
                 variant: _isJoined ? ButtonVariant.secondary : ButtonVariant.primary,
-                icon: _isJoined ? LucideIcons.userMinus : LucideIcons.userPlus,
-                loading: _isJoining,
+                leadingIcon: _isJoined ? LucideIcons.userMinus : LucideIcons.userPlus,
+                isLoading: _isJoining,
               ),
             ),
           ] else ...[
             Expanded(
-              child: CustomButton(
-                text: isFull ? 'Game Full' : 'Game Ended',
+              child: AppButton(
+                label: isFull ? 'Game Full' : 'Game Ended',
                 onPressed: null,
                 variant: ButtonVariant.secondary,
-                icon: isFull ? LucideIcons.users : LucideIcons.clock,
+                leadingIcon: isFull ? LucideIcons.users : LucideIcons.clock,
               ),
             ),
           ],
           const SizedBox(width: 12),
-          CustomButton(
-            text: 'Share',
+          AppButton(
+            label: 'Share',
             onPressed: () {
             },
             variant: ButtonVariant.secondary,
-            icon: LucideIcons.share2,
+            leadingIcon: LucideIcons.share2,
           ),
         ],
       ),

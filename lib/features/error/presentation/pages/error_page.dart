@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/components/dabbler_button.dart';
+import '../../../../widgets/app_button.dart';
 import '../../../../core/config/design_system/design_tokens/spacing.dart';
 import '../../../../core/config/design_system/design_tokens/typography.dart';
 
@@ -45,8 +45,8 @@ class ErrorPage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: DabblerSpacing.spacing32),
-              DabblerButton(
-                text: 'Retry',
+              AppButton(
+                label: 'Retry',
                 onPressed: () => context.pop(),
               ),
             ],
