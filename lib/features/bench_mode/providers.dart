@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/result.dart';
+import '../../core/types/result.dart';
 import '../../services/supabase/supabase_service.dart';
 import '../../data/models/profile.dart';
 import '../../data/repositories/bench_mode_repository.dart';

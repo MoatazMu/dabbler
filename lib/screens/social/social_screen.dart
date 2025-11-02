@@ -24,7 +24,7 @@ class _SocialScreenState extends State<SocialScreen> {
   bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
   // Removed search functionality – simplified feed
-  
+
   late SocialRewardsHandler _rewardsHandler;
   final AuthService _authService = AuthService();
 
@@ -49,7 +49,7 @@ class _SocialScreenState extends State<SocialScreen> {
     try {
       final socialService = SocialService();
       final posts = await socialService.getFeedPosts();
-      
+
       setState(() {
         _posts.clear();
         _posts.addAll(posts);
@@ -61,14 +61,15 @@ class _SocialScreenState extends State<SocialScreen> {
         _posts.clear();
         _isLoading = false;
       });
-      
+
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
               Icon(LucideIcons.alertCircle, color: Colors.white, size: 16),
               const SizedBox(width: 8),
-              Text('Failed to load posts: $e'),
+              Expanded(child: Text('Failed to load posts: $e')),
             ],
           ),
           backgroundColor: Colors.red,
@@ -92,7 +93,7 @@ class _SocialScreenState extends State<SocialScreen> {
     try {
       final socialService = SocialService();
       await socialService.toggleLike(postId);
-      
+
       // Track social interaction for rewards
       final post = _posts.firstWhere((p) => p.id == postId);
       await _rewardsHandler.trackSocialInteraction(
@@ -101,7 +102,7 @@ class _SocialScreenState extends State<SocialScreen> {
         targetUserId: post.authorId,
         metadata: {'postId': postId},
       );
-      
+
       // Update UI optimistically
       setState(() {
         final postIndex = _posts.indexWhere((post) => post.id == postId);
@@ -109,11 +110,14 @@ class _SocialScreenState extends State<SocialScreen> {
           final post = _posts[postIndex];
           _posts[postIndex] = post.copyWith(
             isLiked: !post.isLiked,
-            likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount + 1,
+            likesCount: post.isLiked
+                ? post.likesCount - 1
+                : post.likesCount + 1,
           );
         }
       });
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
@@ -144,7 +148,7 @@ class _SocialScreenState extends State<SocialScreen> {
         metadata: {'postId': postId},
       );
     }
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Opening comments for post $postId'),
@@ -164,7 +168,7 @@ class _SocialScreenState extends State<SocialScreen> {
         metadata: {'postId': postId},
       );
     }
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Share functionality coming soon!'),
@@ -189,14 +193,12 @@ class _SocialScreenState extends State<SocialScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: const CustomAppBar(
-        actionIcon: Iconsax.people_copy,
-      ),
+      appBar: const CustomAppBar(actionIcon: Iconsax.people_copy),
       body: SafeArea(
         bottom: false,
         top: false,
         child: Padding(
-          padding: const EdgeInsets.only(top: 100),
+          padding: const EdgeInsets.only(top: 0),
           child: _buildFeed(),
         ),
       ),
@@ -220,33 +222,26 @@ class _SocialScreenState extends State<SocialScreen> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ThoughtsInput(
-                onTap: _navigateToCreatePost,
-              ),
+              child: ThoughtsInput(onTap: _navigateToCreatePost),
             ),
           ),
-          
+
           // Posts feed
           SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final post = _posts[index];
-                return PostCard(
-                  post: post,
-                  onLike: () => _likePost(post.id),
-                  onComment: () => _openComments(post.id),
-                  onShare: () => _sharePost(post.id),
-                  onProfileTap: () => _openProfile(post.authorId),
-                );
-              },
-              childCount: _posts.length,
-            ),
+            delegate: SliverChildBuilderDelegate((context, index) {
+              final post = _posts[index];
+              return PostCard(
+                post: post,
+                onLike: () => _likePost(post.id),
+                onComment: () => _openComments(post.id),
+                onShare: () => _sharePost(post.id),
+                onProfileTap: () => _openProfile(post.authorId),
+              );
+            }, childCount: _posts.length),
           ),
-          
+
           // Bottom padding for navigation
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 100),
-          ),
+          //const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );

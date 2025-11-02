@@ -35,21 +35,28 @@ class GameModel extends Game {
       sport: json['sport'] as String? ?? 'football',
       venueId: json['venue_id'] as String?,
       venueName: _parseVenueName(json), // Parse from JOIN or direct field
-      scheduledDate: _parseDate(json['scheduled_date']),
+      scheduledDate: _parseDate(
+        json['start_at'],
+      ), // Changed from scheduled_date to start_at
       startTime: json['start_time'] as String? ?? '09:00',
       endTime: json['end_time'] as String? ?? '10:00',
       minPlayers: json['min_players'] as int? ?? 2,
-      maxPlayers: json['max_players'] as int,
+      maxPlayers:
+          json['max_players'] as int? ?? 10, // Added default for null safety
       currentPlayers: json['current_players'] as int? ?? 0,
-      organizerId: json['organizer_id'] as String,
+      organizerId:
+          json['host_user_id']
+              as String, // Changed from organizer_id to host_user_id
       skillLevel: json['skill_level'] as String? ?? 'beginner',
       pricePerPlayer: (json['price_per_player'] as num?)?.toDouble() ?? 0.0,
       currency: json['currency'] as String? ?? 'USD',
-      status: _parseGameStatus(json['status']),
+      status: _parseGameStatusFromIsCancelled(
+        json,
+      ), // Changed to parse from is_cancelled
       isPublic: json['is_public'] as bool? ?? true,
       allowsWaitlist: json['allows_waitlist'] as bool? ?? false,
       checkInEnabled: json['check_in_enabled'] as bool? ?? false,
-      cancellationDeadline: json['cancellation_deadline'] != null 
+      cancellationDeadline: json['cancellation_deadline'] != null
           ? DateTime.parse(json['cancellation_deadline'] as String)
           : null,
       createdAt: DateTime.parse(json['created_at'] as String),
@@ -59,7 +66,7 @@ class GameModel extends Game {
 
   static DateTime _parseDate(dynamic dateData) {
     if (dateData == null) return DateTime.now();
-    
+
     if (dateData is String) {
       try {
         // Handle different date formats
@@ -82,17 +89,26 @@ class GameModel extends Game {
     return DateTime.now();
   }
 
-  static GameStatus _parseGameStatus(dynamic statusData) {
-    if (statusData == null) return GameStatus.upcoming;
-    
-    if (statusData is String) {
+  static GameStatus _parseGameStatusFromIsCancelled(Map<String, dynamic> json) {
+    // Database uses is_cancelled boolean instead of status enum
+    final isCancelled = json['is_cancelled'] as bool?;
+
+    if (isCancelled == true) {
+      return GameStatus.cancelled;
+    }
+
+    // If not cancelled, determine status from start_at datetime
+    final startAt = json['start_at'];
+    if (startAt != null) {
       try {
-        return GameStatus.values.firstWhere(
-          (e) => e.toString().split('.').last.toLowerCase() == statusData.toLowerCase(),
-          orElse: () => GameStatus.upcoming,
-        );
+        final startDate = DateTime.parse(startAt as String);
+        final now = DateTime.now();
+
+        if (startDate.isBefore(now)) {
+          return GameStatus.completed;
+        }
       } catch (e) {
-        return GameStatus.upcoming;
+        // If parsing fails, default to upcoming
       }
     }
 
@@ -104,13 +120,13 @@ class GameModel extends Game {
     if (json['venue_name'] != null) {
       return json['venue_name'] as String;
     }
-    
+
     // Handle JOIN result: venues: {name: "Venue Name"}
     if (json['venues'] != null && json['venues'] is Map) {
       final venueData = json['venues'] as Map<String, dynamic>;
       return venueData['name'] as String?;
     }
-    
+
     return null;
   }
 
@@ -121,17 +137,21 @@ class GameModel extends Game {
       'description': description,
       'sport': sport,
       'venue_id': venueId,
-      'scheduled_date': scheduledDate.toIso8601String().split('T')[0], // Date only
+      'start_at': scheduledDate
+          .toIso8601String(), // Changed from scheduled_date to start_at, full datetime
       'start_time': startTime,
       'end_time': endTime,
       'min_players': minPlayers,
       'max_players': maxPlayers,
       'current_players': currentPlayers,
-      'organizer_id': organizerId,
+      'host_user_id': organizerId, // Changed from organizer_id to host_user_id
       'skill_level': skillLevel,
       'price_per_player': pricePerPlayer,
       'currency': currency,
-      'status': status.toString().split('.').last,
+      'is_cancelled':
+          status ==
+          GameStatus
+              .cancelled, // Changed from status enum to is_cancelled boolean
       'is_public': isPublic,
       'allows_waitlist': allowsWaitlist,
       'check_in_enabled': checkInEnabled,
@@ -148,31 +168,35 @@ class GameModel extends Game {
       'description': description,
       'sport': sport,
       if (venueId != null) 'venue_id': venueId,
-      'scheduled_date': scheduledDate.toIso8601String().split('T')[0],
+      'start_at': scheduledDate
+          .toIso8601String(), // Changed from scheduled_date to start_at
       'start_time': startTime,
       'end_time': endTime,
       'min_players': minPlayers,
       'max_players': maxPlayers,
-      'organizer_id': organizerId,
+      'host_user_id': organizerId, // Changed from organizer_id to host_user_id
       'skill_level': skillLevel,
       'price_per_player': pricePerPlayer,
       'currency': currency,
-      'status': status.toString().split('.').last,
+      'is_cancelled':
+          status == GameStatus.cancelled, // Changed from status to is_cancelled
       'is_public': isPublic,
       'allows_waitlist': allowsWaitlist,
       'check_in_enabled': checkInEnabled,
-      if (cancellationDeadline != null) 'cancellation_deadline': cancellationDeadline!.toIso8601String(),
+      if (cancellationDeadline != null)
+        'cancellation_deadline': cancellationDeadline!.toIso8601String(),
     };
   }
 
   Map<String, dynamic> toUpdateJson() {
-    // JSON for updates (excludes immutable fields like id, organizer_id, created_at)
+    // JSON for updates (excludes immutable fields like id, host_user_id, created_at)
     return {
       'title': title,
       'description': description,
       'sport': sport,
       if (venueId != null) 'venue_id': venueId,
-      'scheduled_date': scheduledDate.toIso8601String().split('T')[0],
+      'start_at': scheduledDate
+          .toIso8601String(), // Changed from scheduled_date to start_at
       'start_time': startTime,
       'end_time': endTime,
       'min_players': minPlayers,
@@ -180,11 +204,13 @@ class GameModel extends Game {
       'skill_level': skillLevel,
       'price_per_player': pricePerPlayer,
       'currency': currency,
-      'status': status.toString().split('.').last,
+      'is_cancelled':
+          status == GameStatus.cancelled, // Changed from status to is_cancelled
       'is_public': isPublic,
       'allows_waitlist': allowsWaitlist,
       'check_in_enabled': checkInEnabled,
-      if (cancellationDeadline != null) 'cancellation_deadline': cancellationDeadline!.toIso8601String(),
+      if (cancellationDeadline != null)
+        'cancellation_deadline': cancellationDeadline!.toIso8601String(),
       'updated_at': DateTime.now().toIso8601String(),
     };
   }

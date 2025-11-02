@@ -2,7 +2,6 @@ import 'package:meta/meta.dart';
 
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
-import '../../services/supabase/supabase_service.dart';
 import '../models/payout.dart';
 import '../models/wallet.dart';
 import 'base_repository.dart';
@@ -34,7 +33,7 @@ class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
     return guard<List<WalletLedgerEntry>>(() async {
       final rows = await svc.client
           .from('wallet_ledger')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 
@@ -47,7 +46,7 @@ class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
     return guard<List<Payout>>(() async {
       final rows = await svc.client
           .from('payouts')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 

@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
-import '../../services/supabase/supabase_service.dart';
 import '../models/venue.dart';
 import 'base_repository.dart';
 import 'geo_repository.dart';
@@ -45,7 +44,7 @@ class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
         if (rpcRows.isNotEmpty) {
           final venues = rpcRows
               .cast<Map<String, dynamic>>()
-              .map((m) => Venue.fromMap(asMap(m)))
+              .map((m) => Venue.fromJson(asMap(m)))
               .toList();
           return venues;
         }
@@ -63,7 +62,7 @@ class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
       // Adjust column names if your schema differs (e.g., 'latitude'/'longitude').
       final rows = await _db
           .from('venues')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .gte('lat', bbox.minLat)
           .lte('lat', bbox.maxLat)
           .gte('lng', bbox.minLng)
@@ -73,7 +72,7 @@ class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
 
       final withDistance = rows
           .map((m) {
-            final v = Venue.fromMap(asMap(m));
+            final v = Venue.fromJson(asMap(m));
             final d = _haversineMeters(lat, lng, _readLat(v), _readLng(v));
             return (venue: v, dist: d);
           })

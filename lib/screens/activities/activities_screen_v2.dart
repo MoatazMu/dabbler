@@ -13,7 +13,7 @@ import '../../features/activities/domain/entities/activity_log.dart';
 import '../../features/activities/presentation/providers/activity_log_providers.dart';
 
 /// **Activities Screen V2** - Polished & Restructured
-/// 
+///
 /// **Features:**
 /// - 2 Tabs: Upcoming, Stats
 /// - History accessible via app bar icon (opens full-screen view)
@@ -29,15 +29,24 @@ class ActivitiesScreenV2 extends ConsumerStatefulWidget {
   ConsumerState<ActivitiesScreenV2> createState() => _ActivitiesScreenV2State();
 }
 
-class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2> 
+class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final AuthService _authService = AuthService();
+  List<ActivityLog> _recentActivities = const [];
+  bool _isLoadingRecentActivities = false;
+  String? _recentActivitiesError;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = _authService.getCurrentUser();
+      if (user != null) {
+        _loadRecentActivities(user.id);
+      }
+    });
   }
 
   @override
@@ -49,18 +58,51 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
   Future<void> _refreshUpcoming() async {
     final user = _authService.getCurrentUser();
     if (user == null) return;
-    
+
     await Future.wait([
       ref.read(myGamesControllerProvider(user.id).notifier).refresh(),
-      ref.read(bookingsControllerProvider(user.id).notifier).loadUpcomingBookings(user.id),
+      ref
+          .read(bookingsControllerProvider(user.id).notifier)
+          .loadUpcomingBookings(user.id),
     ]);
   }
 
   Future<void> _refreshStats() async {
     final user = _authService.getCurrentUser();
     if (user == null) return;
-    
-    await ref.read(activityLogControllerProvider(user.id).notifier).loadActivities(user.id);
+
+    final controller = ref.read(
+      activityLogControllerProvider(user.id).notifier,
+    );
+    await controller.loadActivities(user.id);
+    await controller.loadCategoryStats(user.id);
+    await _loadRecentActivities(user.id);
+  }
+
+  Future<void> _loadRecentActivities(String userId) async {
+    setState(() {
+      _isLoadingRecentActivities = true;
+      _recentActivitiesError = null;
+    });
+
+    final repository = ref.read(activityLogRepositoryProvider);
+    final result = await repository.getRecentActivities(userId: userId);
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _recentActivitiesError = failure.message;
+          _recentActivities = const [];
+          _isLoadingRecentActivities = false;
+        });
+      },
+      (activities) {
+        setState(() {
+          _recentActivities = activities;
+          _isLoadingRecentActivities = false;
+        });
+      },
+    );
   }
 
   @override
@@ -84,7 +126,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
       ),
       body: Column(
         children: [
-          const SizedBox(height: 100),
+          //const SizedBox(height: 100),
           _buildHeader(context),
           Expanded(
             child: user == null
@@ -146,7 +188,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
               ],
             ),
           ),
-          
+
           // Tab Bar
           Container(
             margin: const EdgeInsets.only(top: 20),
@@ -204,11 +246,11 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
   Widget _buildUpcomingTab(BuildContext context, String userId) {
     final gamesState = ref.watch(myGamesControllerProvider(userId));
     final bookingsState = ref.watch(bookingsControllerProvider(userId));
-    
+
     final upcomingGames = gamesState.upcomingGames;
     final upcomingBookings = bookingsState.upcomingBookings;
     final isLoading = gamesState.isLoadingUpcoming || bookingsState.isLoading;
-    
+
     final totalUpcoming = upcomingGames.length + upcomingBookings.length;
 
     return RefreshIndicator(
@@ -216,38 +258,60 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
       child: isLoading
           ? const Center(child: CircularProgressIndicator())
           : totalUpcoming == 0
-              ? _buildEmptyUpcoming(context)
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(20),
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Summary Card
-                      _buildUpcomingSummary(context, upcomingGames.length, upcomingBookings.length),
-                      const SizedBox(height: 24),
-                      
-                      // Upcoming Games
-                      if (upcomingGames.isNotEmpty) ...[
-                        _buildSectionTitle(context, 'Games', upcomingGames.length, LucideIcons.gamepad2),
-                        const SizedBox(height: 12),
-                        ...upcomingGames.map((game) => _buildGameCard(context, game)),
-                        const SizedBox(height: 24),
-                      ],
-                      
-                      // Upcoming Bookings
-                      if (upcomingBookings.isNotEmpty) ...[
-                        _buildSectionTitle(context, 'Venue Bookings', upcomingBookings.length, LucideIcons.mapPin),
-                        const SizedBox(height: 12),
-                        ...upcomingBookings.map((booking) => _buildBookingCard(context, booking, userId)),
-                      ],
-                    ],
+          ? _buildEmptyUpcoming(context)
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Summary Card
+                  _buildUpcomingSummary(
+                    context,
+                    upcomingGames.length,
+                    upcomingBookings.length,
                   ),
-                ),
+                  const SizedBox(height: 24),
+
+                  // Upcoming Games
+                  if (upcomingGames.isNotEmpty) ...[
+                    _buildSectionTitle(
+                      context,
+                      'Games',
+                      upcomingGames.length,
+                      LucideIcons.gamepad2,
+                    ),
+                    const SizedBox(height: 12),
+                    ...upcomingGames.map(
+                      (game) => _buildGameCard(context, game),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Upcoming Bookings
+                  if (upcomingBookings.isNotEmpty) ...[
+                    _buildSectionTitle(
+                      context,
+                      'Venue Bookings',
+                      upcomingBookings.length,
+                      LucideIcons.mapPin,
+                    ),
+                    const SizedBox(height: 12),
+                    ...upcomingBookings.map(
+                      (booking) => _buildBookingCard(context, booking, userId),
+                    ),
+                  ],
+                ],
+              ),
+            ),
     );
   }
 
-  Widget _buildUpcomingSummary(BuildContext context, int gamesCount, int bookingsCount) {
+  Widget _buildUpcomingSummary(
+    BuildContext context,
+    int gamesCount,
+    int bookingsCount,
+  ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -293,7 +357,12 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     );
   }
 
-  Widget _buildSummaryItem(BuildContext context, String count, String label, IconData icon) {
+  Widget _buildSummaryItem(
+    BuildContext context,
+    String count,
+    String label,
+    IconData icon,
+  ) {
     return Column(
       children: [
         Icon(icon, size: 24, color: context.colors.primary),
@@ -358,7 +427,10 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.colors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
@@ -400,6 +472,15 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
             ),
             const SizedBox(height: 12),
             _buildCategoryStatsGrid(context, categoryStats),
+            const SizedBox(height: 24),
+            Text(
+              'Recent Activity',
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildRecentActivitiesSection(context),
           ],
         ),
       ),
@@ -465,12 +546,24 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
 
   Widget _buildCategoryStatsGrid(BuildContext context, Map<String, int> stats) {
     final categories = [
-      {'name': 'Games', 'icon': LucideIcons.gamepad2, 'color': context.colors.primary},
+      {
+        'name': 'Games',
+        'icon': LucideIcons.gamepad2,
+        'color': context.colors.primary,
+      },
       {'name': 'Bookings', 'icon': LucideIcons.mapPin, 'color': Colors.green},
-      {'name': 'Payments', 'icon': LucideIcons.creditCard, 'color': Colors.orange},
+      {
+        'name': 'Payments',
+        'icon': LucideIcons.creditCard,
+        'color': Colors.orange,
+      },
       {'name': 'Social', 'icon': LucideIcons.users, 'color': Colors.blue},
       {'name': 'Rewards', 'icon': LucideIcons.award, 'color': Colors.amber},
-      {'name': 'Community', 'icon': LucideIcons.messageSquare, 'color': Colors.purple},
+      {
+        'name': 'Community',
+        'icon': LucideIcons.messageSquare,
+        'color': Colors.purple,
+      },
     ];
 
     return GridView.builder(
@@ -526,11 +619,179 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     );
   }
 
+  Widget _buildRecentActivitiesSection(BuildContext context) {
+    if (_isLoadingRecentActivities) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_recentActivitiesError != null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.colors.error.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Icon(LucideIcons.alertCircle, color: context.colors.error),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                _recentActivitiesError!,
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colors.error,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_recentActivities.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: context.colors.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Icon(LucideIcons.hourglass, color: context.colors.onSurfaceVariant),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'No recent activity in the last few days.',
+                style: context.textTheme.bodyMedium?.copyWith(
+                  color: context.colors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      children: _recentActivities
+          .map((activity) => _buildRecentActivityTile(context, activity))
+          .toList(),
+    );
+  }
+
+  Widget _buildRecentActivityTile(BuildContext context, ActivityLog activity) {
+    final timestamp = DateFormat('MMM d • h:mm a').format(activity.createdAt);
+    final subtitle = '${_formatActivityType(activity.type)} • $timestamp';
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.colors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: context.colors.outline.withValues(alpha: 0.1),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: context.colors.primary.withValues(alpha: 0.1),
+            child: Icon(
+              _iconForActivity(activity.type),
+              color: context.colors.primary,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  activity.title,
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (activity.description != null &&
+                    activity.description!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    activity.description!,
+                    style: context.textTheme.bodySmall?.copyWith(
+                      color: context.colors.onSurfaceVariant,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+                const SizedBox(height: 6),
+                Text(
+                  subtitle,
+                  style: context.textTheme.bodySmall?.copyWith(
+                    color: context.colors.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _iconForActivity(ActivityType type) {
+    switch (type) {
+      case ActivityType.game:
+        return LucideIcons.gamepad2;
+      case ActivityType.booking:
+        return LucideIcons.mapPin;
+      case ActivityType.payment:
+      case ActivityType.refund:
+        return LucideIcons.creditCard;
+      case ActivityType.reward:
+      case ActivityType.badge:
+      case ActivityType.achievement:
+        return LucideIcons.award;
+      case ActivityType.post:
+      case ActivityType.comment:
+      case ActivityType.like:
+      case ActivityType.share:
+      case ActivityType.follow:
+        return LucideIcons.users;
+      default:
+        return LucideIcons.activity;
+    }
+  }
+
+  String _formatActivityType(ActivityType type) {
+    final raw = type.name;
+    final withSpaces = raw
+        .replaceAll('_', ' ')
+        .replaceAllMapped(RegExp(r'([A-Z])'), (match) => ' ${match.group(0)}');
+    final trimmed = withSpaces.trim();
+    if (trimmed.isEmpty) {
+      return raw;
+    }
+    return trimmed[0].toUpperCase() + trimmed.substring(1);
+  }
+
   // ============================================================================
   // SHARED COMPONENTS
   // ============================================================================
 
-  Widget _buildSectionTitle(BuildContext context, String title, int count, IconData icon) {
+  Widget _buildSectionTitle(
+    BuildContext context,
+    String title,
+    int count,
+    IconData icon,
+  ) {
     return Row(
       children: [
         Icon(icon, size: 20, color: context.colors.primary),
@@ -566,20 +827,20 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     final timeFormat = DateFormat('h:mm a');
     final now = DateTime.now();
     final gameDateTime = game.scheduledDate;
-    
+
     String dateDisplay;
-    if (gameDateTime.year == now.year && 
-        gameDateTime.month == now.month && 
+    if (gameDateTime.year == now.year &&
+        gameDateTime.month == now.month &&
         gameDateTime.day == now.day) {
       dateDisplay = 'Today';
-    } else if (gameDateTime.year == now.year && 
-               gameDateTime.month == now.month && 
-               gameDateTime.day == now.day + 1) {
+    } else if (gameDateTime.year == now.year &&
+        gameDateTime.month == now.month &&
+        gameDateTime.day == now.day + 1) {
       dateDisplay = 'Tomorrow';
     } else {
       dateDisplay = dateFormat.format(gameDateTime);
     }
-    
+
     final timeDisplay = timeFormat.format(gameDateTime);
 
     return Container(
@@ -649,11 +910,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
           const SizedBox(height: 6),
           Row(
             children: [
-              Icon(
-                LucideIcons.clock,
-                size: 14,
-                color: context.colors.primary,
-              ),
+              Icon(LucideIcons.clock, size: 14, color: context.colors.primary),
               const SizedBox(width: 6),
               Text(
                 '$dateDisplay, $timeDisplay',
@@ -669,18 +926,25 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     );
   }
 
-  Widget _buildBookingCard(BuildContext context, Booking booking, String userId) {
+  Widget _buildBookingCard(
+    BuildContext context,
+    Booking booking,
+    String userId,
+  ) {
     final dateFormat = DateFormat('MMM d');
     final now = DateTime.now();
-    
-    final isToday = booking.bookingDate.year == now.year &&
-                    booking.bookingDate.month == now.month &&
-                    booking.bookingDate.day == now.day;
+
+    final isToday =
+        booking.bookingDate.year == now.year &&
+        booking.bookingDate.month == now.month &&
+        booking.bookingDate.day == now.day;
     final isTomorrow = booking.bookingDate.difference(now).inDays == 1;
-    
-    final dateStr = isToday ? 'Today' : 
-                    isTomorrow ? 'Tomorrow' : 
-                    dateFormat.format(booking.bookingDate);
+
+    final dateStr = isToday
+        ? 'Today'
+        : isTomorrow
+        ? 'Tomorrow'
+        : dateFormat.format(booking.bookingDate);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -733,11 +997,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
                 ),
               ),
               const SizedBox(width: 12),
-              Icon(
-                LucideIcons.clock,
-                size: 14,
-                color: Colors.green,
-              ),
+              Icon(LucideIcons.clock, size: 14, color: Colors.green),
               const SizedBox(width: 6),
               Text(
                 '${booking.startTime} - ${booking.endTime}',
@@ -785,7 +1045,10 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.colors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Sign In'),
             ),
@@ -802,7 +1065,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
 
 class _HistoryScreen extends ConsumerStatefulWidget {
   final String userId;
-  
+
   const _HistoryScreen({required this.userId});
 
   @override
@@ -813,12 +1076,16 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
   String _selectedHistoryFilter = 'All';
 
   Future<void> _refreshHistory() async {
-    await ref.read(activityLogControllerProvider(widget.userId).notifier).loadActivities(widget.userId);
+    await ref
+        .read(activityLogControllerProvider(widget.userId).notifier)
+        .loadActivities(widget.userId);
   }
 
   @override
   Widget build(BuildContext context) {
-    final activityState = ref.watch(activityLogControllerProvider(widget.userId));
+    final activityState = ref.watch(
+      activityLogControllerProvider(widget.userId),
+    );
     final categoryStats = ref.watch(categoryStatsProvider(widget.userId));
 
     return Scaffold(
@@ -838,10 +1105,10 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
               child: activityState.isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : activityState.error != null
-                      ? _buildErrorState(context, activityState.error!)
-                      : activityState.activities.isEmpty
-                          ? _buildEmptyHistory(context)
-                          : _buildHistoryList(context, activityState.activities),
+                  ? _buildErrorState(context, activityState.error!)
+                  : activityState.activities.isEmpty
+                  ? _buildEmptyHistory(context)
+                  : _buildHistoryList(context, activityState.activities),
             ),
           ],
         ),
@@ -850,7 +1117,14 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
   }
 
   Widget _buildHistoryFilters(BuildContext context, Map<String, int> stats) {
-    final filters = ['All', 'Games', 'Bookings', 'Payments', 'Social', 'Rewards'];
+    final filters = [
+      'All',
+      'Games',
+      'Bookings',
+      'Payments',
+      'Social',
+      'Rewards',
+    ];
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -873,7 +1147,10 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
               onTap: () => setState(() => _selectedHistoryFilter = filter),
               child: Container(
                 margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? context.colors.primary
@@ -900,7 +1177,10 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
                     if (count > 0) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Colors.white.withValues(alpha: 0.3)
@@ -936,13 +1216,24 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
         : activities.where((activity) {
             final type = activity.type.toString().split('.').last.toLowerCase();
             final filter = _selectedHistoryFilter.toLowerCase();
-            
+
             if (filter == 'games') return type.contains('game');
             if (filter == 'bookings') return type.contains('booking');
-            if (filter == 'payments') return type.contains('payment') || type.contains('transaction');
-            if (filter == 'social') return type.contains('post') || type.contains('friend') || type.contains('like') || type.contains('comment');
-            if (filter == 'rewards') return type.contains('achievement') || type.contains('badge') || type.contains('reward');
-            
+            if (filter == 'payments') {
+              return type.contains('payment') || type.contains('transaction');
+            }
+            if (filter == 'social') {
+              return type.contains('post') ||
+                  type.contains('friend') ||
+                  type.contains('like') ||
+                  type.contains('comment');
+            }
+            if (filter == 'rewards') {
+              return type.contains('achievement') ||
+                  type.contains('badge') ||
+                  type.contains('reward');
+            }
+
             return false;
           }).toList();
 
@@ -1003,7 +1294,10 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
 
   Widget _buildActivityCard(BuildContext context, ActivityLog activity) {
     final icon = _getActivityIcon(activity.type.toString().split('.').last);
-    final color = _getActivityColor(context, activity.type.toString().split('.').last);
+    final color = _getActivityColor(
+      context,
+      activity.type.toString().split('.').last,
+    );
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -1011,10 +1305,7 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
       decoration: BoxDecoration(
         color: context.violetCardBg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: color.withValues(alpha: 0.2),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
       ),
       child: Row(
         children: [

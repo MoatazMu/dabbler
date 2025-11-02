@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
-import '../../services/supabase/supabase_service.dart';
 import '../models/slot.dart';
 import 'availability_repository.dart';
 import 'base_repository.dart';
@@ -28,7 +27,7 @@ class AvailabilityRepositoryImpl extends BaseRepository
     return guard<List<Slot>>(() async {
       final query = _db
           .from('space_slot_grid')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('venue_space_id', venueSpaceId)
           .gte('start_ts', from.toUtc().toIso8601String())
           .lt('end_ts', to.toUtc().toIso8601String())
@@ -65,7 +64,7 @@ class AvailabilityRepositoryImpl extends BaseRepository
 
       final q = _db
           .from('space_slot_holds')
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .eq('created_by', uid)
           .order('start_ts', ascending: true)
           .limit(limit);

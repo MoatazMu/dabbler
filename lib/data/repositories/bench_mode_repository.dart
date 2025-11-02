@@ -1,4 +1,4 @@
-import '../../core/result.dart';
+import '../../core/types/result.dart';
 import '../models/profile.dart';
 
 /// Bench-mode operations on `profiles`.

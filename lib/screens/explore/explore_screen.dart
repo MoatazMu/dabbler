@@ -10,16 +10,17 @@ import '../../themes/design_system.dart';
 import 'match_list_screen.dart';
 import '../../features/venues/presentation/screens/venue_detail_screen.dart';
 import '../../features/games/providers/games_providers.dart';
-import '../../features/games/presentation/controllers/venues_controller.dart' as vc;
+import '../../features/games/presentation/controllers/venues_controller.dart'
+    as vc;
 
 class VenueCard extends StatelessWidget {
   final Map<String, dynamic> venue;
   final VoidCallback? onTap;
   final bool isLoading;
-  
+
   const VenueCard({
-    super.key, 
-    required this.venue, 
+    super.key,
+    required this.venue,
     this.onTap,
     this.isLoading = false,
   });
@@ -36,14 +37,21 @@ class VenueCard extends StatelessWidget {
     final sports = (venue['sports'] as List<dynamic>?)?.cast<String>() ?? [];
     final rating = (venue['rating'] as num?)?.toDouble() ?? 0.0;
     final isClosed = venue['isOpen'] == false;
-    final slots = (venue['slots'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
-    final reviews = (venue['reviews'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+    final slots =
+        (venue['slots'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
+    final reviews =
+        (venue['reviews'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
+        [];
     final distance = venue['distance'] as String? ?? '';
-    final hasQuickSlot = slots.any((slot) => slot['available'] == true && slot['isSoon'] == true);
+    final hasQuickSlot = slots.any(
+      (slot) => slot['available'] == true && slot['isSoon'] == true,
+    );
     final ctaEnabled = !isClosed && (hasQuickSlot || slots.isNotEmpty);
     final showRating = reviews.length >= 3 && rating >= 3.0;
     final maxNameLength = 26;
-    final displayName = name.length > maxNameLength ? '${name.substring(0, maxNameLength)}…' : name;
+    final displayName = name.length > maxNameLength
+        ? '${name.substring(0, maxNameLength)}…'
+        : name;
     final maxSports = 3;
     final visibleSports = sports.take(maxSports).toList();
     final overflowCount = sports.length - maxSports;
@@ -75,14 +83,18 @@ class VenueCard extends StatelessWidget {
             Container(
               height: 160,
               decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 color: context.colors.primary.withValues(alpha: 0.08),
               ),
               child: Stack(
                 children: [
                   if (thumbnail != null)
                     ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(16),
+                      ),
                       child: Image.network(
                         thumbnail,
                         width: double.infinity,
@@ -103,7 +115,10 @@ class VenueCard extends StatelessWidget {
                       top: 12,
                       right: 12,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.red.withValues(alpha: 0.9),
                           borderRadius: BorderRadius.circular(12),
@@ -123,7 +138,10 @@ class VenueCard extends StatelessWidget {
                       top: 12,
                       left: 12,
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.amber[600],
                           borderRadius: BorderRadius.circular(12),
@@ -131,7 +149,11 @@ class VenueCard extends StatelessWidget {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.star, size: 12, color: Colors.white),
+                            const Icon(
+                              Icons.star,
+                              size: 12,
+                              color: Colors.white,
+                            ),
                             const SizedBox(width: 2),
                             Text(
                               rating.toStringAsFixed(1),
@@ -166,7 +188,11 @@ class VenueCard extends StatelessWidget {
                   // Location
                   Row(
                     children: [
-                      Icon(LucideIcons.mapPin, size: 16, color: context.colors.onSurfaceVariant),
+                      Icon(
+                        LucideIcons.mapPin,
+                        size: 16,
+                        color: context.colors.onSurfaceVariant,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -187,23 +213,35 @@ class VenueCard extends StatelessWidget {
                           spacing: 4,
                           runSpacing: 2,
                           children: [
-                            ...visibleSports.map((sport) => _buildSportChip(sport)),
-                            if (overflowCount > 0) _buildOverflowChip(overflowCount),
+                            ...visibleSports.map(
+                              (sport) => _buildSportChip(sport),
+                            ),
+                            if (overflowCount > 0)
+                              _buildOverflowChip(overflowCount),
                           ],
                         ),
                       ),
                       if (distance.isNotEmpty)
                         Container(
                           margin: const EdgeInsets.only(left: 8),
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
-                            color: context.colors.primary.withValues(alpha: 0.08),
+                            color: context.colors.primary.withValues(
+                              alpha: 0.08,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(LucideIcons.navigation, size: 12, color: context.colors.primary),
+                              Icon(
+                                LucideIcons.navigation,
+                                size: 12,
+                                color: context.colors.primary,
+                              ),
                               const SizedBox(width: 2),
                               Text(
                                 distance,
@@ -218,7 +256,6 @@ class VenueCard extends StatelessWidget {
                         ),
                     ],
                   ),
-                  // const SizedBox(height: 12),
                   // CTA Button
                   // SizedBox(
                   //   width: double.infinity,
@@ -256,7 +293,10 @@ class VenueCard extends StatelessWidget {
 
   Widget _buildSportChip(String sport) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: DS.gap6, vertical: DS.gap2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: DS.gap6,
+        vertical: DS.gap2,
+      ),
       decoration: BoxDecoration(
         color: DS.primary.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
@@ -264,11 +304,7 @@ class VenueCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            _getSportIcon(sport),
-            size: 12,
-            color: DS.primary,
-          ),
+          Icon(_getSportIcon(sport), size: 12, color: DS.primary),
           const SizedBox(width: 4),
           Text(
             sport,
@@ -285,7 +321,10 @@ class VenueCard extends StatelessWidget {
 
   Widget _buildOverflowChip(int count) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: DS.gap6, vertical: DS.gap2),
+      padding: const EdgeInsets.symmetric(
+        horizontal: DS.gap6,
+        vertical: DS.gap2,
+      ),
       decoration: BoxDecoration(
         color: DS.primary.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
@@ -335,18 +374,11 @@ class VenueCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              LucideIcons.image, 
-              size: 24, 
-              color: Colors.grey[400]
-            ),
+            Icon(LucideIcons.image, size: 24, color: Colors.grey[400]),
             const SizedBox(height: 4),
             Text(
               'No Image',
-              style: DS.caption.copyWith(
-                color: Colors.grey[500],
-                fontSize: 10,
-              ),
+              style: DS.caption.copyWith(color: Colors.grey[500], fontSize: 10),
             ),
           ],
         ),
@@ -365,9 +397,7 @@ class VenueCard extends StatelessWidget {
           bottomLeft: Radius.circular(16),
         ),
       ),
-      child: const Center(
-        child: CircularProgressIndicator(strokeWidth: 2),
-      ),
+      child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
     );
   }
 
@@ -390,7 +420,7 @@ class VenueCard extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Skeleton content
           Expanded(
             child: Padding(
@@ -402,11 +432,11 @@ class VenueCard extends StatelessWidget {
                   // Skeleton title
                   DS.skeleton(height: 18, width: 150),
                   const SizedBox(height: DS.gap4),
-                  
+
                   // Skeleton location
                   DS.skeleton(height: 14, width: 100),
                   const SizedBox(height: DS.gap8),
-                  
+
                   // Skeleton chips
                   Row(
                     children: [
@@ -415,9 +445,9 @@ class VenueCard extends StatelessWidget {
                       DS.skeleton(height: 20, width: 50),
                     ],
                   ),
-                  
+
                   const SizedBox(height: DS.gap8),
-                  
+
                   // Skeleton button
                   DS.skeleton(height: 32, width: double.infinity),
                 ],
@@ -433,18 +463,15 @@ class VenueCard extends StatelessWidget {
 class ExploreScreen extends StatefulWidget {
   final String? initialTab;
   final Map<String, dynamic>? initialFilters;
-  
-  const ExploreScreen({
-    super.key,
-    this.initialTab,
-    this.initialFilters,
-  });
+
+  const ExploreScreen({super.key, this.initialTab, this.initialFilters});
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
 }
 
-class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateMixin {
+class _ExploreScreenState extends State<ExploreScreen>
+    with TickerProviderStateMixin {
   late TabController _mainTabController; // Games/Venues
   int _selectedSportIndex = 0;
   bool _isSearching = false;
@@ -515,12 +542,9 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: const CustomAppBar(
-        actionIcon: Iconsax.search_normal_copy,
-      ),
+      appBar: const CustomAppBar(actionIcon: Iconsax.search_normal_copy),
       body: Column(
         children: [
-          const SizedBox(height: 100),
           // Enhanced Header
           _buildEnhancedHeader(),
 
@@ -539,7 +563,10 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
                   searchQuery: _searchQuery,
                 ),
                 // Venues Tab: Filtered by selected sport
-                _buildVenuesTab(_sports[_selectedSportIndex]['name'], _searchQuery),
+                _buildVenuesTab(
+                  _sports[_selectedSportIndex]['name'],
+                  _searchQuery,
+                ),
               ],
             ),
           ),
@@ -568,10 +595,14 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
                             maxLines: 1,
                             controller: _searchController,
                             autofocus: true,
-                            style: context.textTheme.titleLarge?.copyWith(color: Colors.white),
+                            style: context.textTheme.titleLarge?.copyWith(
+                              color: Colors.white,
+                            ),
                             decoration: InputDecoration(
                               hintText: 'Search games or venues',
-                              hintStyle: context.textTheme.bodyMedium?.copyWith(color: Colors.white.withValues(alpha: 0.7)),
+                              hintStyle: context.textTheme.bodyMedium?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.7),
+                              ),
                               border: InputBorder.none,
                               filled: true,
                               fillColor: Colors.white.withValues(alpha: 0.1),
@@ -606,13 +637,17 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
                             ),
                             const SizedBox(height: 12),
                             FilledButton.icon(
-                              onPressed: () => context.push(RoutePaths.createGame),
+                              onPressed: () =>
+                                  context.push(RoutePaths.createGame),
                               icon: const Icon(Icons.add_circle_outline),
                               label: const Text('Create game'),
                               style: FilledButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor: const Color(0xFF813FD6),
-                                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 18,
+                                  vertical: 12,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
@@ -622,18 +657,16 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
                         ),
                 ),
                 if (!_isSearching) ...[
-                  
-                    // IconButton(
-                    //   icon: Icon(
-                    //     LucideIcons.filter,
-                    //     size: 14,
-                    //     color: context.colors.primary,
-                    //   ),
-                    //   onPressed: _showFilterModal,
-                    //   tooltip: 'Open Filters',
-                    //   splashRadius: 20,
-                    // ),
-
+                  // IconButton(
+                  //   icon: Icon(
+                  //     LucideIcons.filter,
+                  //     size: 14,
+                  //     color: context.colors.primary,
+                  //   ),
+                  //   onPressed: _showFilterModal,
+                  //   tooltip: 'Open Filters',
+                  //   splashRadius: 20,
+                  // ),
                   IconButton(
                     icon: Icon(
                       LucideIcons.filter,
@@ -661,35 +694,37 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
             child: Material(
               color: Colors.transparent,
               child: TabBar(
-              controller: _mainTabController,
-              tabs: const [
-                Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(LucideIcons.gamepad2, size: 20),
-                      SizedBox(width: 8),
-                      Text('Games'),
-                    ],
+                controller: _mainTabController,
+                tabs: const [
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.gamepad2, size: 20),
+                        SizedBox(width: 8),
+                        Text('Games'),
+                      ],
+                    ),
                   ),
-                ),
-                Tab(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(LucideIcons.mapPin, size: 20),
-                      SizedBox(width: 8),
-                      Text('Venues'),
-                    ],
+                  Tab(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.mapPin, size: 20),
+                        SizedBox(width: 8),
+                        Text('Venues'),
+                      ],
+                    ),
                   ),
+                ],
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
+                indicatorColor: Colors.white,
+                indicatorWeight: 3,
+                indicatorSize: TabBarIndicatorSize.tab,
+                labelStyle: context.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
                 ),
-              ],
-              labelColor: Colors.white,
-              unselectedLabelColor: Colors.white.withValues(alpha: 0.7),
-              indicatorColor: Colors.white,
-              indicatorWeight: 3,
-              indicatorSize: TabBarIndicatorSize.tab,
-              labelStyle: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -717,7 +752,13 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
                   label: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(sport['icon'], color: isSelected ? sport['color'] : context.colors.onSurfaceVariant, size: 18),
+                      Icon(
+                        sport['icon'],
+                        color: isSelected
+                            ? sport['color']
+                            : context.colors.onSurfaceVariant,
+                        size: 18,
+                      ),
                       const SizedBox(width: 6),
                       Text(sport['name']),
                     ],
@@ -726,7 +767,9 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
                   selectedColor: sport['color'].withOpacity(0.15),
                   backgroundColor: context.colors.surface,
                   labelStyle: context.textTheme.bodyMedium?.copyWith(
-                    color: isSelected ? sport['color'] : context.colors.onSurfaceVariant,
+                    color: isSelected
+                        ? sport['color']
+                        : context.colors.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
                   onSelected: (_) {
@@ -737,11 +780,16 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
                     side: BorderSide(
-                      color: isSelected ? sport['color'] : context.colors.outline.withOpacity(0.15),
+                      color: isSelected
+                          ? sport['color']
+                          : context.colors.outline.withOpacity(0.15),
                       width: 1.5,
                     ),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                 ),
               );
             }),
@@ -752,14 +800,20 @@ class _ExploreScreenState extends State<ExploreScreen> with TickerProviderStateM
   }
 
   Widget _buildVenuesTab(String selectedSport, String searchQuery) {
-    return _VenuesTabContent(selectedSport: selectedSport, searchQuery: searchQuery);
+    return _VenuesTabContent(
+      selectedSport: selectedSport,
+      searchQuery: searchQuery,
+    );
   }
 }
 
 class _VenuesTabContent extends ConsumerStatefulWidget {
   final String selectedSport;
   final String searchQuery;
-  const _VenuesTabContent({required this.selectedSport, required this.searchQuery});
+  const _VenuesTabContent({
+    required this.selectedSport,
+    required this.searchQuery,
+  });
 
   @override
   ConsumerState<_VenuesTabContent> createState() => _VenuesTabContentState();
@@ -807,21 +861,39 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                         ),
                       ),
                     ),
-                    Text('Filter Venues', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    Text(
+                      'Filter Venues',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 24),
                     // Sport Type
-                    Text('Sport Type', style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      'Sport Type',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     Wrap(
                       spacing: 8,
-                      children: ['Football', 'Tennis', 'Padel', 'Basketball', 'Other'].map((sport) {
-                        return ChoiceChip(
-                          label: Text(sport),
-                          selected: _selectedSport == sport,
-                          onSelected: (selected) {
-                            setModalState(() => _selectedSport = selected ? sport : null);
-                          },
-                        );
-                      }).toList(),
+                      children:
+                          [
+                            'Football',
+                            'Tennis',
+                            'Padel',
+                            'Basketball',
+                            'Other',
+                          ].map((sport) {
+                            return ChoiceChip(
+                              label: Text(sport),
+                              selected: _selectedSport == sport,
+                              onSelected: (selected) {
+                                setModalState(
+                                  () =>
+                                      _selectedSport = selected ? sport : null,
+                                );
+                              },
+                            );
+                          }).toList(),
                     ),
                     const SizedBox(height: 20),
                     // Area
@@ -830,17 +902,28 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                       value: _selectedArea,
                       hint: const Text('Select Area'),
                       isExpanded: true,
-                      items: ['Downtown', 'Jumeirah', 'Marina', 'Business Bay', 'Other'].map((area) {
-                        return DropdownMenuItem(
-                          value: area,
-                          child: Text(area),
-                        );
-                      }).toList(),
-                      onChanged: (value) => setModalState(() => _selectedArea = value),
+                      items:
+                          [
+                            'Downtown',
+                            'Jumeirah',
+                            'Marina',
+                            'Business Bay',
+                            'Other',
+                          ].map((area) {
+                            return DropdownMenuItem(
+                              value: area,
+                              child: Text(area),
+                            );
+                          }).toList(),
+                      onChanged: (value) =>
+                          setModalState(() => _selectedArea = value),
                     ),
                     const SizedBox(height: 20),
                     // Price Range
-                    Text('Price Range (AED)', style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      'Price Range (AED)',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     RangeSlider(
                       values: _selectedPriceRange,
                       min: 0,
@@ -850,39 +933,56 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                         _selectedPriceRange.start.round().toString(),
                         _selectedPriceRange.end.round().toString(),
                       ),
-                      onChanged: (values) => setModalState(() => _selectedPriceRange = values),
+                      onChanged: (values) =>
+                          setModalState(() => _selectedPriceRange = values),
                     ),
                     const SizedBox(height: 20),
                     // Rating
-                    Text('Minimum Rating', style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      'Minimum Rating',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     Slider(
                       value: _selectedRating,
                       min: 0,
                       max: 5,
                       divisions: 5,
-                      label: _selectedRating == 0 ? 'Any' : _selectedRating.toStringAsFixed(1),
-                      onChanged: (value) => setModalState(() => _selectedRating = value),
+                      label: _selectedRating == 0
+                          ? 'Any'
+                          : _selectedRating.toStringAsFixed(1),
+                      onChanged: (value) =>
+                          setModalState(() => _selectedRating = value),
                     ),
                     const SizedBox(height: 20),
                     // Amenities
-                    Text('Amenities', style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      'Amenities',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     Wrap(
                       spacing: 8,
-                      children: ['Parking', 'Showers', 'Indoor', 'Outdoor', 'Cafeteria'].map((amenity) {
-                        return FilterChip(
-                          label: Text(amenity),
-                          selected: _selectedAmenities.contains(amenity),
-                          onSelected: (selected) {
-                            setModalState(() {
-                              if (selected) {
-                                _selectedAmenities.add(amenity);
-                              } else {
-                                _selectedAmenities.remove(amenity);
-                              }
-                            });
-                          },
-                        );
-                      }).toList(),
+                      children:
+                          [
+                            'Parking',
+                            'Showers',
+                            'Indoor',
+                            'Outdoor',
+                            'Cafeteria',
+                          ].map((amenity) {
+                            return FilterChip(
+                              label: Text(amenity),
+                              selected: _selectedAmenities.contains(amenity),
+                              onSelected: (selected) {
+                                setModalState(() {
+                                  if (selected) {
+                                    _selectedAmenities.add(amenity);
+                                  } else {
+                                    _selectedAmenities.remove(amenity);
+                                  }
+                                });
+                              },
+                            );
+                          }).toList(),
                     ),
                     const SizedBox(height: 32),
                     Row(
@@ -971,10 +1071,14 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
     final filters = vc.VenueFilters(
       sports: [widget.selectedSport],
       minRating: _selectedRating > 0 ? _selectedRating : null,
-      minPricePerHour: _selectedPriceRange.start > 0 ? _selectedPriceRange.start : null,
-      maxPricePerHour: _selectedPriceRange.end < 500 ? _selectedPriceRange.end : null,
+      minPricePerHour: _selectedPriceRange.start > 0
+          ? _selectedPriceRange.start
+          : null,
+      maxPricePerHour: _selectedPriceRange.end < 500
+          ? _selectedPriceRange.end
+          : null,
     );
-    
+
     ref.read(venuesControllerProvider.notifier).updateFilters(filters);
   }
 
@@ -994,7 +1098,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
   Widget build(BuildContext context) {
     final venuesState = ref.watch(venuesControllerProvider);
     final venues = venuesState.venues;
-    
+
     // Apply search query filter
     final query = widget.searchQuery.toLowerCase();
     final filteredVenues = query.isEmpty
@@ -1004,17 +1108,19 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
             final city = venueWithDistance.venue.city.toLowerCase();
             return name.contains(query) || city.contains(query);
           }).toList();
-    
+
     // Show error state
-    if (venuesState.error != null && filteredVenues.isEmpty && !venuesState.isLoading) {
+    if (venuesState.error != null &&
+        filteredVenues.isEmpty &&
+        !venuesState.isLoading) {
       return _buildErrorState();
     }
-    
+
     // Show empty state
     if (filteredVenues.isEmpty && !venuesState.isLoading) {
       return _buildEmptyState();
     }
-    
+
     // Show venues list
     return Column(
       children: [
@@ -1046,7 +1152,10 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: context.colors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
@@ -1085,13 +1194,17 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 ? _buildLoadingState()
                 : ListView.separated(
                     controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                     itemCount: filteredVenues.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
                     itemBuilder: (context, index) {
                       final venueWithDistance = filteredVenues[index];
                       final venue = venueWithDistance.venue;
-                      
+
                       // Convert Venue entity to Map for VenueCard
                       final venueMap = {
                         'id': venue.id,
@@ -1107,7 +1220,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                         'price': venue.pricePerHour.toString(),
                         'amenities': venue.amenities,
                       };
-                      
+
                       return VenueCard(
                         venue: venueMap,
                         onTap: () => _onVenueTap(venue.id),
@@ -1120,16 +1233,14 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
       ],
     );
   }
-  
+
   Widget _buildLoadingState() {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       itemCount: 5,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) => VenueCard(
-        venue: const {},
-        isLoading: true,
-      ),
+      itemBuilder: (context, index) =>
+          VenueCard(venue: const {}, isLoading: true),
     );
   }
 
@@ -1146,27 +1257,21 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 color: DS.error.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(
-                LucideIcons.wifiOff, 
-                size: 48, 
-                color: DS.error
-              ),
+              child: Icon(LucideIcons.wifiOff, size: 48, color: DS.error),
             ),
             const SizedBox(height: 24),
             Text(
               'Couldn\'t load venues',
               style: DS.headline.copyWith(
-                fontWeight: FontWeight.w700, 
-                color: DS.onSurface
+                fontWeight: FontWeight.w700,
+                color: DS.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Check your connection and try again',
-              style: DS.body.copyWith(
-                color: DS.onSurfaceVariant
-              ),
+              style: DS.body.copyWith(color: DS.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -1195,27 +1300,21 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 color: DS.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(
-                LucideIcons.mapPin, 
-                size: 48, 
-                color: DS.primary
-              ),
+              child: Icon(LucideIcons.mapPin, size: 48, color: DS.primary),
             ),
             const SizedBox(height: 24),
             Text(
               'No ${widget.selectedSport} venues found',
               style: DS.headline.copyWith(
-                fontWeight: FontWeight.w700, 
-                color: DS.onSurface
+                fontWeight: FontWeight.w700,
+                color: DS.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Try broadening your filters or check back later',
-              style: DS.body.copyWith(
-                color: DS.onSurfaceVariant
-              ),
+              style: DS.body.copyWith(color: DS.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -1230,5 +1329,4 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
       ),
     );
   }
-
 }

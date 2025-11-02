@@ -4,18 +4,18 @@ import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/errors/failure.dart';
-import '../../services/supabase/supabase_service.dart';
-import '../models/game.dart';
+import '../../features/games/data/models/game_model.dart';
+import '../../features/games/domain/entities/game.dart' as domain;
 import 'base_repository.dart';
 import 'games_repository.dart';
 
 class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
-  GamesRepositoryImpl(SupabaseService service) : super(service);
+  GamesRepositoryImpl(super.service);
 
   static const String table = 'games';
 
   @override
-  Future<Result<Game>> createGame({
+  Future<Result<domain.Game>> createGame({
     required String gameType,
     required String sport,
     String? title,
@@ -38,16 +38,30 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
     }
 
     if (capacity < 2 || capacity > 64) {
-      return left(const ValidationFailure(message: 'Capacity must be between 2 and 64'));
+      return left(
+        const ValidationFailure(message: 'Capacity must be between 2 and 64'),
+      );
     }
     if (minSkill != null && (minSkill < 1 || minSkill > 10)) {
-      return left(const ValidationFailure(message: 'Minimum skill must be between 1 and 10'));
+      return left(
+        const ValidationFailure(
+          message: 'Minimum skill must be between 1 and 10',
+        ),
+      );
     }
     if (maxSkill != null && (maxSkill < 1 || maxSkill > 10)) {
-      return left(const ValidationFailure(message: 'Maximum skill must be between 1 and 10'));
+      return left(
+        const ValidationFailure(
+          message: 'Maximum skill must be between 1 and 10',
+        ),
+      );
     }
     if (minSkill != null && maxSkill != null && minSkill > maxSkill) {
-      return left(const ValidationFailure(message: 'Minimum skill cannot exceed maximum skill'));
+      return left(
+        const ValidationFailure(
+          message: 'Minimum skill cannot exceed maximum skill',
+        ),
+      );
     }
 
     final payload = <String, dynamic>{
@@ -79,9 +93,9 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
         return left(const UnexpectedFailure(message: 'Failed to create game'));
       }
 
-      return right(Game.fromJson(response));
+      return right(GameModel.fromJson(response));
     } catch (error, stackTrace) {
-      return left(mapError(error, stackTrace: stackTrace));
+      return left(svc.mapGeneric(error, stackTrace));
     }
   }
 
@@ -106,16 +120,30 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
     }
 
     if (capacity != null && (capacity < 2 || capacity > 64)) {
-      return left(const ValidationFailure(message: 'Capacity must be between 2 and 64'));
+      return left(
+        const ValidationFailure(message: 'Capacity must be between 2 and 64'),
+      );
     }
     if (minSkill != null && (minSkill < 1 || minSkill > 10)) {
-      return left(const ValidationFailure(message: 'Minimum skill must be between 1 and 10'));
+      return left(
+        const ValidationFailure(
+          message: 'Minimum skill must be between 1 and 10',
+        ),
+      );
     }
     if (maxSkill != null && (maxSkill < 1 || maxSkill > 10)) {
-      return left(const ValidationFailure(message: 'Maximum skill must be between 1 and 10'));
+      return left(
+        const ValidationFailure(
+          message: 'Maximum skill must be between 1 and 10',
+        ),
+      );
     }
     if (minSkill != null && maxSkill != null && minSkill > maxSkill) {
-      return left(const ValidationFailure(message: 'Minimum skill cannot exceed maximum skill'));
+      return left(
+        const ValidationFailure(
+          message: 'Minimum skill cannot exceed maximum skill',
+        ),
+      );
     }
 
     final patch = <String, dynamic>{};
@@ -166,7 +194,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
 
       return right(null);
     } catch (error, stackTrace) {
-      return left(mapError(error, stackTrace: stackTrace));
+      return left(svc.mapGeneric(error, stackTrace));
     }
   }
 
@@ -192,12 +220,12 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
 
       return right(null);
     } catch (error, stackTrace) {
-      return left(mapError(error, stackTrace: stackTrace));
+      return left(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Future<Result<Game>> getGameById(String gameId) async {
+  Future<Result<domain.Game>> getGameById(String gameId) async {
     try {
       final response = await svc.maybeSingle(
         svc.from(table).select().eq('id', gameId),
@@ -207,14 +235,14 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
         return left(const NotFoundFailure(message: 'Game not found'));
       }
 
-      return right(Game.fromJson(response));
+      return right(GameModel.fromJson(response));
     } catch (error, stackTrace) {
-      return left(mapError(error, stackTrace: stackTrace));
+      return left(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Future<Result<List<Game>>> listDiscoverableGames({
+  Future<Result<List<domain.Game>>> listDiscoverableGames({
     String? sport,
     DateTime? from,
     DateTime? to,
@@ -247,21 +275,22 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
       }
 
       final rows = await svc.getList(
-        query.order('start_at', ascending: true).range(
-              offset,
-              offset + limit - 1,
-            ),
+        query
+            .order('start_at', ascending: true)
+            .range(offset, offset + limit - 1),
       );
 
-      final games = rows.map(Game.fromJson).toList();
+      final games = rows
+          .map((row) => GameModel.fromJson(row) as domain.Game)
+          .toList();
       return right(games);
     } catch (error, stackTrace) {
-      return left(mapError(error, stackTrace: stackTrace));
+      return left(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Future<Result<List<Game>>> listMyHostedGames({
+  Future<Result<List<domain.Game>>> listMyHostedGames({
     DateTime? from,
     DateTime? to,
     bool includeCancelled = false,
@@ -287,22 +316,23 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
       }
 
       final rows = await svc.getList(
-        query.order('start_at', ascending: false).range(
-              offset,
-              offset + limit - 1,
-            ),
+        query
+            .order('start_at', ascending: false)
+            .range(offset, offset + limit - 1),
       );
 
-      final games = rows.map(Game.fromJson).toList();
+      final games = rows
+          .map((row) => GameModel.fromJson(row) as domain.Game)
+          .toList();
       return right(games);
     } catch (error, stackTrace) {
-      return left(mapError(error, stackTrace: stackTrace));
+      return left(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Stream<Result<Game>> watchGame(String gameId) {
-    final controller = StreamController<Result<Game>>.broadcast();
+  Stream<Result<domain.Game>> watchGame(String gameId) {
+    final controller = StreamController<Result<domain.Game>>.broadcast();
     RealtimeChannel? channel;
 
     Future<void> emitCurrent() async {
@@ -311,22 +341,23 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
     }
 
     void emitError(Object error, [StackTrace? stackTrace]) {
-      controller.add(left(mapError(error, stackTrace: stackTrace)));
+      controller.add(left(svc.mapGeneric(error, stackTrace)));
     }
 
     controller.onListen = () {
       try {
         channel = svc.client
             .channel('public:games')
-            .on(
-              RealtimeListenTypes.postgresChanges,
-              ChannelFilter(
-                event: '*',
-                schema: 'public',
-                table: table,
-                filter: 'id=eq.$gameId',
+            .onPostgresChanges(
+              event: PostgresChangeEvent.all,
+              schema: 'public',
+              table: table,
+              filter: PostgresChangeFilter(
+                type: PostgresChangeFilterType.eq,
+                column: 'id',
+                value: gameId,
               ),
-              (payload, [ref]) async {
+              callback: (payload) async {
                 try {
                   await emitCurrent();
                 } catch (error, stackTrace) {

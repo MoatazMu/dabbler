@@ -74,6 +74,7 @@ import '../features/social/presentation/screens/onboarding/social_onboarding_com
 import '../utils/constants/route_constants.dart';
 import '../features/authentication/presentation/providers/auth_providers.dart';
 import '../utils/transitions/page_transitions.dart';
+import '../routes/route_arguments.dart';
 
 // Import RegistrationData from the correct location
 
@@ -519,7 +520,11 @@ class AppRouter {
       name: RouteNames.createGame,
       pageBuilder: (context, state) => BottomSheetTransitionPage(
         key: state.pageKey,
-        child: const CreateGameScreen(),
+        child: CreateGameScreen(
+          initialData: state.extra is CreateGameRouteArgs
+              ? state.extra as CreateGameRouteArgs
+              : null,
+        ),
       ),
     ),
 
@@ -528,7 +533,11 @@ class AppRouter {
       name: RouteNames.createGameBasicInfo,
       pageBuilder: (context, state) => BottomSheetTransitionPage(
         key: state.pageKey,
-        child: const CreateGameScreen(),
+        child: CreateGameScreen(
+          initialData: state.extra is CreateGameRouteArgs
+              ? state.extra as CreateGameRouteArgs
+              : null,
+        ),
       ),
     ),
 

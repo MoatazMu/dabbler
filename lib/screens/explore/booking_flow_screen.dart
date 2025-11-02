@@ -10,11 +10,8 @@ import 'booking_success_screen.dart';
 
 class BookingFlowScreen extends ConsumerStatefulWidget {
   final Map<String, dynamic> venue;
-  
-  const BookingFlowScreen({
-    super.key, 
-    required this.venue,
-  });
+
+  const BookingFlowScreen({super.key, required this.venue});
 
   @override
   ConsumerState<BookingFlowScreen> createState() => _BookingFlowScreenState();
@@ -28,7 +25,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
   bool isLoading = false;
   bool isSlotLocked = false;
   String? lockError;
-  
+
   List<TimeSlot> _availableSlots = [];
   bool _isLoadingSlots = false;
   String? _slotsError;
@@ -37,7 +34,8 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
   void initState() {
     super.initState();
     // Set default sport from venue
-    final sports = (widget.venue['sports'] as List<dynamic>?)?.cast<String>() ?? [];
+    final sports =
+        (widget.venue['sports'] as List<dynamic>?)?.cast<String>() ?? [];
     if (sports.isNotEmpty) {
       selectedSport = sports.first;
     }
@@ -102,27 +100,26 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                     // Venue Info Header
                     _buildVenueHeader(),
                     const SizedBox(height: 24),
-                    
+
                     // Sport & Format Selection
                     _buildSportFormatSelection(),
                     const SizedBox(height: 24),
-                    
+
                     // Date Picker
                     _buildDatePicker(),
                     const SizedBox(height: 24),
-                    
+
                     // Time Slot Grid
                     if (selectedDate != null) _buildTimeSlotGrid(),
-                    
+
                     const SizedBox(height: 100), // Space for sticky CTA
                   ],
                 ),
               ),
             ),
-            
+
             // Sticky Confirm & Pay Button
-            if (selectedDate != null && selectedTime != null)
-              _buildStickyCTA(),
+            if (selectedDate != null && selectedTime != null) _buildStickyCTA(),
           ],
         ),
       ),
@@ -133,13 +130,15 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
     final venue = widget.venue;
     final name = venue['name'] as String;
     final location = venue['location'] as String;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: DS.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+        ),
       ),
       child: Row(
         children: [
@@ -150,11 +149,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               color: DS.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              LucideIcons.mapPin,
-              color: DS.primary,
-              size: 24,
-            ),
+            child: Icon(LucideIcons.mapPin, color: DS.primary, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -163,18 +158,14 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               children: [
                 Text(
                   name,
-                  style: DS.subtitle.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   location,
-                  style: DS.caption.copyWith(
-                    color: DS.onSurfaceVariant,
-                  ),
+                  style: DS.caption.copyWith(color: DS.onSurfaceVariant),
                 ),
               ],
             ),
@@ -185,20 +176,20 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
   }
 
   Widget _buildSportFormatSelection() {
-    final sports = (widget.venue['sports'] as List<dynamic>?)?.cast<String>() ?? [];
-    final formats = (widget.venue['formats'] as List<dynamic>?)?.cast<String>() ?? [];
-    
+    final sports =
+        (widget.venue['sports'] as List<dynamic>?)?.cast<String>() ?? [];
+    final formats =
+        (widget.venue['formats'] as List<dynamic>?)?.cast<String>() ?? [];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Sport & Format',
-          style: DS.subtitle.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        
+
         // Sport Selection
         if (sports.length > 1) ...[
           Text(
@@ -231,7 +222,11 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                     color: isSelected ? DS.primary : DS.surface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isSelected ? DS.primary : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      color: isSelected
+                          ? DS.primary
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.2),
                     ),
                   ),
                   child: Text(
@@ -247,7 +242,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
           ),
           const SizedBox(height: 16),
         ],
-        
+
         // Format Selection
         if (formats.isNotEmpty) ...[
           Text(
@@ -277,7 +272,11 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                     color: isSelected ? DS.primary : DS.surface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isSelected ? DS.primary : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      color: isSelected
+                          ? DS.primary
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.2),
                     ),
                   ),
                   child: Text(
@@ -298,16 +297,17 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
 
   Widget _buildDatePicker() {
     final today = DateTime.now();
-    final dates = List.generate(14, (index) => today.add(Duration(days: index)));
-    
+    final dates = List.generate(
+      14,
+      (index) => today.add(Duration(days: index)),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Select Date',
-          style: DS.subtitle.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -319,7 +319,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               final date = dates[index];
               final isSelected = selectedDate?.day == date.day;
               final isToday = date.day == today.day;
-              
+
               return GestureDetector(
                 onTap: () {
                   setState(() {
@@ -337,7 +337,11 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                     color: isSelected ? DS.primary : DS.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? DS.primary : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      color: isSelected
+                          ? DS.primary
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.2),
                     ),
                   ),
                   child: Column(
@@ -346,7 +350,9 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                       Text(
                         _getDayName(date.weekday),
                         style: DS.caption.copyWith(
-                          color: isSelected ? Colors.white : DS.onSurfaceVariant,
+                          color: isSelected
+                              ? Colors.white
+                              : DS.onSurfaceVariant,
                           fontSize: 10,
                         ),
                       ),
@@ -385,12 +391,10 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
       children: [
         Text(
           'Select Time',
-          style: DS.subtitle.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        
+
         // Loading state
         if (_isLoadingSlots)
           const Center(
@@ -399,7 +403,6 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               child: CircularProgressIndicator(),
             ),
           )
-        
         // Error state
         else if (_slotsError != null)
           Center(
@@ -407,11 +410,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               padding: const EdgeInsets.all(32.0),
               child: Column(
                 children: [
-                  Icon(
-                    LucideIcons.alertCircle,
-                    color: DS.error,
-                    size: 32,
-                  ),
+                  Icon(LucideIcons.alertCircle, color: DS.error, size: 32),
                   const SizedBox(height: 8),
                   Text(
                     _slotsError!,
@@ -427,7 +426,6 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               ),
             ),
           )
-        
         // Empty state
         else if (_availableSlots.isEmpty && selectedDate != null)
           Center(
@@ -440,7 +438,6 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               ),
             ),
           )
-        
         // Slots grid
         else if (_availableSlots.isNotEmpty)
           GridView.builder(
@@ -459,25 +456,29 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               final price = slot.price ?? 150;
               final available = slot.isAvailable;
               final isSelected = selectedTime == time;
-              
+
               return GestureDetector(
-                onTap: available ? () {
-                  setState(() {
-                    selectedTime = time;
-                  });
-                } : null,
+                onTap: available
+                    ? () {
+                        setState(() {
+                          selectedTime = time;
+                        });
+                      }
+                    : null,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isSelected 
-                        ? DS.primary 
-                        : available 
-                            ? DS.surface 
-                            : Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: isSelected
+                        ? DS.primary
+                        : available
+                        ? DS.surface
+                        : Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: isSelected 
-                          ? DS.primary 
-                          : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      color: isSelected
+                          ? DS.primary
+                          : Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.2),
                     ),
                   ),
                   child: Column(
@@ -486,11 +487,11 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                       Text(
                         time,
                         style: DS.caption.copyWith(
-                          color: isSelected 
-                              ? Colors.white 
-                              : available 
-                                  ? DS.onSurface 
-                                  : DS.onSurfaceVariant,
+                          color: isSelected
+                              ? Colors.white
+                              : available
+                              ? DS.onSurface
+                              : DS.onSurfaceVariant,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -498,11 +499,11 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                       Text(
                         'AED ${price.toStringAsFixed(0)}',
                         style: DS.caption.copyWith(
-                          color: isSelected 
+                          color: isSelected
                               ? Colors.white.withOpacity(0.8)
-                              : available 
-                                  ? DS.onSurfaceVariant 
-                                  : DS.onSurfaceVariant.withOpacity(0.5),
+                              : available
+                              ? DS.onSurfaceVariant
+                              : DS.onSurfaceVariant.withOpacity(0.5),
                           fontSize: 10,
                         ),
                       ),
@@ -512,7 +513,6 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               );
             },
           )
-        
         // Initial state - no date selected
         else
           Center(
@@ -554,18 +554,12 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      LucideIcons.alertCircle,
-                      color: DS.error,
-                      size: 16,
-                    ),
+                    Icon(LucideIcons.alertCircle, color: DS.error, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         lockError!,
-                        style: DS.caption.copyWith(
-                          color: DS.error,
-                        ),
+                        style: DS.caption.copyWith(color: DS.error),
                       ),
                     ),
                   ],
@@ -586,7 +580,9 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                         width: 20,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
                         ),
                       )
                     : Text(
@@ -603,14 +599,22 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
 
   String _getDayName(int weekday) {
     switch (weekday) {
-      case 1: return 'Mon';
-      case 2: return 'Tue';
-      case 3: return 'Wed';
-      case 4: return 'Thu';
-      case 5: return 'Fri';
-      case 6: return 'Sat';
-      case 7: return 'Sun';
-      default: return '';
+      case 1:
+        return 'Mon';
+      case 2:
+        return 'Tue';
+      case 3:
+        return 'Wed';
+      case 4:
+        return 'Thu';
+      case 5:
+        return 'Fri';
+      case 6:
+        return 'Sat';
+      case 7:
+        return 'Sun';
+      default:
+        return '';
     }
   }
 
@@ -627,7 +631,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
     try {
       // Step 1: Lock the slot
       final lockResult = await _lockSlot();
-      
+
       if (!lockResult) {
         setState(() {
           lockError = 'Slot just taken. Please select another time.';
@@ -642,6 +646,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
       });
 
       // Step 2: Show booking summary
+      if (!mounted) return;
       final confirmed = await showModalBottomSheet<bool>(
         context: context,
         isScrollControlled: true,
@@ -662,6 +667,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
       }
 
       // Step 3: Show payment sheet
+      if (!mounted) return;
       final paymentResult = await showModalBottomSheet<Map<String, dynamic>>(
         context: context,
         isScrollControlled: true,
@@ -679,7 +685,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
 
       // Step 4: Confirm booking
       final bookingResult = await _confirmBooking(paymentResult);
-      
+
       if (bookingResult) {
         // Navigate to success screen
         if (mounted) {
@@ -702,7 +708,6 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
           isLoading = false;
         });
       }
-
     } catch (e) {
       await _releaseSlot();
       setState(() {
@@ -757,4 +762,4 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
     }
     super.dispose();
   }
-} 
+}

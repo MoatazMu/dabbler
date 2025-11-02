@@ -4,9 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
-import '../../services/supabase/supabase_service.dart';
 import '../models/feed_item.dart';
-import '../models/post.dart';
 import 'base_repository.dart';
 import 'feed_repository.dart';
 
@@ -29,7 +27,7 @@ class FeedRepositoryImpl extends BaseRepository implements FeedRepository {
 
       final q = _db
           .from(_posts)
-          .select<List<Map<String, dynamic>>>()
+          .select()
           .order('created_at', ascending: false) // DESC timeline
           .order('id', ascending: false) // tie-breaker for stable order
           .limit(limit);
