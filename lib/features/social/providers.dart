@@ -9,7 +9,7 @@ import 'package:dabbler/data/repositories/friends_repository.dart';
 import 'package:dabbler/data/repositories/friends_repository_impl.dart';
 import 'package:dabbler/data/repositories/squads_repository.dart';
 import 'package:dabbler/data/repositories/squads_repository_impl.dart';
-import 'package:dabbler/services/supabase/supabase_service.dart';
+import 'package:dabbler/features/misc/data/datasources/supabase_remote_data_source.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final squadsRepositoryProvider = Provider<SquadsRepository>((ref) {

@@ -6,7 +6,7 @@ import '../../data/models/moderation_action.dart';
 import '../../data/models/moderation_ticket.dart';
 import '../../data/repositories/audit_safety_repository.dart';
 import '../../data/repositories/audit_safety_repository_impl.dart';
-import '../../services/supabase/supabase_service.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 
 final auditSafetyRepositoryProvider = Provider<AuditSafetyRepository>((ref) {
   final service = ref.watch(supabaseServiceProvider);

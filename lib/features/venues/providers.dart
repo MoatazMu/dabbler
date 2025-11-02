@@ -4,7 +4,7 @@ import 'package:dabbler/data/models/venue.dart';
 import 'package:dabbler/data/models/venue_space.dart';
 import 'package:dabbler/data/repositories/venues_repository.dart';
 import 'package:dabbler/data/repositories/venues_repository_impl.dart';
-import 'package:dabbler/services/supabase/supabase_service.dart';
+import 'package:dabbler/features/misc/data/datasources/supabase_remote_data_source.dart';
 
 final venuesRepositoryProvider = Provider<VenuesRepository>((ref) {
   final svc = ref.watch(supabaseServiceProvider);

@@ -3,7 +3,7 @@ import 'package:riverpod/riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/result.dart';
-import '../../services/supabase/supabase_service.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import 'base_repository.dart';
 import 'visibility_repository.dart';
 
