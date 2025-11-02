@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'analytics_service.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 
 /// Widget that tracks user interactions and scrolling behavior
 class AnalyticsTrackingWidget extends StatefulWidget {

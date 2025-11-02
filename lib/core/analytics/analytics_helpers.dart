@@ -1,4 +1,4 @@
-import '../analytics/analytics_service.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import 'package:flutter/material.dart';
 
 /// Mixin to provide easy access to analytics tracking

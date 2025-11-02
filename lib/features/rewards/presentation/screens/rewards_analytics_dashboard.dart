@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:dabbler/features/rewards/domain/entities/badge_tier.dart';
-import 'package:dabbler/core/services/analytics_service.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 
 class RewardsAnalyticsDashboard extends ConsumerStatefulWidget {
   const RewardsAnalyticsDashboard({super.key});
@@ -801,11 +801,6 @@ class PointsDistributionDashboard extends ConsumerWidget {
 
 // Additional dashboard widgets would continue here...
 // TierProgressionDashboard, PopularAchievementsDashboard, AbandonmentAnalysisDashboard
-
-// Provider definitions
-final analyticsServiceProvider = Provider<AnalyticsService>((ref) {
-  return AnalyticsService();
-});
 
 final achievementAnalyticsProvider = FutureProvider<AchievementAnalyticsData>((ref) async {
   // Mock data that matches the dashboard's AchievementAnalyticsData structure

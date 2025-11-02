@@ -12,7 +12,7 @@ import '../../../core/services/media_upload_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/models/notification_model.dart';
 import '../data/models/message_model.dart';
-import '../../../core/analytics/analytics_service.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import '../domain/repositories/chat_repository.dart';
 import '../data/models/chat_message_model.dart';
 // ...existing code...
