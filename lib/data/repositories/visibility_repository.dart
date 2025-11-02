@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 
 /// Client-side mirror of server visibility logic.
 /// Safe heuristic only—server RLS remains the source of truth.

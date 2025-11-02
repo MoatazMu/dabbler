@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:fpdart/fpdart.dart';
-import '../result.dart';
-import '../errors/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../data/models/profile.dart';
 import '../../data/repositories/profiles_repository.dart';
 import 'auth_service.dart';

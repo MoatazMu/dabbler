@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../core/types/result.dart' show Result;
 import '../repositories/base_repository.dart';
 import 'moderation_repository.dart' hide Result;

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:dabbler/core/errors/failure.dart';
-import 'package:dabbler/core/types/result.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 

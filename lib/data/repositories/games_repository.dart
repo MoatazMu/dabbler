@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../features/games/domain/entities/game.dart';
 
 typedef Result<T> = Either<Failure, T>;
