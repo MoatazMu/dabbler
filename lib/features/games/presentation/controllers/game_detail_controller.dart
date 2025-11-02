@@ -6,7 +6,7 @@ import 'package:dabbler/data/models/games/player.dart';
 import '../../domain/usecases/join_game_usecase.dart';
 import '../../domain/repositories/games_repository.dart';
 import '../../domain/repositories/venues_repository.dart';
-import '../../../../data/models/joinability_rule.dart';
+import 'package:dabbler/data/models/joinability_rule.dart';
 import '../../../../data/repositories/joinability_repository.dart';
 
 enum JoinGameStatus {

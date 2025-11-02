@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/core/fp/result.dart' as core;
 import 'package:dabbler/core/fp/failure.dart';
 import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
-import '../../data/models/profile.dart';
+import 'package:dabbler/data/models/profile.dart';
 import '../../data/repositories/username_repository.dart';
 import '../../data/repositories/username_repository_impl.dart';
 

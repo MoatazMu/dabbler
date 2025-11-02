@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../core/services/mock_localization_service.dart';
-import '../../core/utils/constants.dart';
+import 'package:dabbler/core/services/mock_localization_service.dart';
+import 'package:dabbler/core/utils/constants.dart';
 import '../../widgets/app_button.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {

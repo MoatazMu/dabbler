@@ -1,5 +1,5 @@
 import 'package:dabbler/core/fp/result.dart';
-import '../../data/models/notification.dart';
+import 'package:dabbler/data/models/notification.dart';
 
 abstract class NotificationsRepository {
   /// Latest notifications for the current user (RLS will still protect).

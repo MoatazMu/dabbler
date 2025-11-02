@@ -485,8 +485,9 @@ class PreferencesController extends StateNotifier<PreferencesState> {
 
     // Social preferences (20%)
     if (preferences.ageRangePreference != AgeRangePreference.any) score += 10.0;
-    if (preferences.genderMixPreference != GenderMixPreference.any)
+    if (preferences.genderMixPreference != GenderMixPreference.any) {
       score += 10.0;
+    }
 
     return score.clamp(0.0, 100.0);
   }

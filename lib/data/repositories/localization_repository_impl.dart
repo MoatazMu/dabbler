@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 
 import 'package:dabbler/core/fp/result.dart';
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 import 'base_repository.dart';
 import '../models/localized_error.dart';
 import 'localization_repository.dart';

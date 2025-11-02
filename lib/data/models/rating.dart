@@ -1,4 +1,4 @@
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 
 /// Canonical client model for rows in `public.ratings`.
 /// The shape is tolerant to schema variations.

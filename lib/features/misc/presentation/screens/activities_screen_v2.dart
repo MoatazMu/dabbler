@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import '../../themes/app_theme.dart';
 import '../../widgets/custom_app_bar.dart';
-import '../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/data/models/games/game.dart';
 import 'package:dabbler/data/models/games/booking.dart';

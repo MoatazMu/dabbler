@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import '../../../../utils/constants/route_constants.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -72,8 +72,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 onPressed: _isLoading
                     ? null
                     : () async {
-                        if (!(_formKey.currentState?.validate() ?? false))
+                        if (!(_formKey.currentState?.validate() ?? false)) {
                           return;
+                        }
                         setState(() {
                           _isLoading = true;
                           _error = null;

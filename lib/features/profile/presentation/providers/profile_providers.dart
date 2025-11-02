@@ -6,7 +6,7 @@ import '../../data/datasources/profile_data_sources.dart'
     show ProfileLocalDataSource, ProfileLocalDataSourceImpl;
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
-import '../../../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 
 // Domain layer imports
 import 'package:dabbler/data/models/profile/user_profile.dart';

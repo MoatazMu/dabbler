@@ -10,7 +10,7 @@ import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import 'package:dabbler/data/models/authentication/user.dart';
 import 'package:dabbler/data/models/authentication/auth_session.dart';
-import '../../../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 
 // Use the working AuthService instead of unimplemented repository
 final authServiceProvider = Provider<AuthService>((ref) {

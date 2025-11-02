@@ -6,7 +6,7 @@ import '../../widgets/app_button.dart';
 import '../../widgets/custom_app_bar.dart';
 import 'package:dabbler/data/models/payments/payment_method.dart' as pm;
 import 'package:dabbler/features/payments/presentation/providers/payment_providers.dart';
-import '../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 
 class PaymentMethodsScreen extends ConsumerStatefulWidget {
   const PaymentMethodsScreen({super.key});

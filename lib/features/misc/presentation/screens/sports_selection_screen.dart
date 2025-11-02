@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/utils/constants.dart';
-import '../../core/utils/helpers.dart';
+import 'package:dabbler/core/utils/constants.dart';
+import 'package:dabbler/core/utils/helpers.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/onboarding_progress.dart';
 import '../../utils/constants/route_constants.dart';

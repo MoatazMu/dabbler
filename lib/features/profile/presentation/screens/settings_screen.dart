@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import '../../widgets/custom_app_bar.dart';

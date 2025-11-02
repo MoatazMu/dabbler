@@ -23,15 +23,16 @@ class ActivityLogRepositoryImpl implements ActivityLogRepository {
     int limit = 50,
   }) {
     return guardResult(() async {
-      final List<ActivityLog> activities = await remoteDataSource.getUserActivities(
-        userId: userId,
-        type: type,
-        category: category,
-        startDate: startDate,
-        endDate: endDate,
-        page: page,
-        limit: limit,
-      );
+      final List<ActivityLog> activities = await remoteDataSource
+          .getUserActivities(
+            userId: userId,
+            type: type,
+            category: category,
+            startDate: startDate,
+            endDate: endDate,
+            page: page,
+            limit: limit,
+          );
       return activities;
     });
   }
@@ -138,18 +139,20 @@ class ActivityLogRepositoryImpl implements ActivityLogRepository {
   }
 
   @override
-  Future<Result<Map<String, List<ActivityLog>>, Failure>> getActivitiesByDateRange({
+  Future<Result<Map<String, List<ActivityLog>>, Failure>>
+  getActivitiesByDateRange({
     required String userId,
     required DateTime startDate,
     required DateTime endDate,
   }) async {
     final activitiesResult = await guardResult(() async {
-      final List<ActivityLog> activities = await remoteDataSource.getUserActivities(
-        userId: userId,
-        startDate: startDate,
-        endDate: endDate,
-        limit: 1000,
-      );
+      final List<ActivityLog> activities = await remoteDataSource
+          .getUserActivities(
+            userId: userId,
+            startDate: startDate,
+            endDate: endDate,
+            limit: 1000,
+          );
       return activities;
     });
 
@@ -183,11 +186,8 @@ class ActivityLogRepositoryImpl implements ActivityLogRepository {
   }) {
     return guardResult(() async {
       final startDate = DateTime.now().subtract(Duration(days: days));
-      final List<ActivityLog> activities = await remoteDataSource.getUserActivities(
-        userId: userId,
-        startDate: startDate,
-        limit: 100,
-      );
+      final List<ActivityLog> activities = await remoteDataSource
+          .getUserActivities(userId: userId, startDate: startDate, limit: 100);
 
       return activities;
     });

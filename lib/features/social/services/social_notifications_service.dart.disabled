@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import '../../../core/utils/either.dart';
+import 'package:dabbler/core/utils/either.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
-import '../../../core/services/notification_service.dart';
-import '../../../core/services/storage_service.dart';
-import '../data/models/post_model.dart';
-import '../data/models/chat_message_model.dart';
-import '../data/models/message_model.dart';
-import '../data/models/comment_model.dart';
-import '../data/models/friend_request_model.dart';
-import '../data/models/reaction_model.dart';
-import '../data/models/user_model.dart';
+import 'package:dabbler/core/services/notification_service.dart';
+import 'package:dabbler/core/services/storage_service.dart';
+import 'package:dabbler/data/models/post_model.dart';
+import 'package:dabbler/data/models/chat_message_model.dart';
+import 'package:dabbler/data/models/message_model.dart';
+import 'package:dabbler/data/models/comment_model.dart';
+import 'package:dabbler/data/models/friend_request_model.dart';
+import 'package:dabbler/data/models/reaction_model.dart';
+import 'package:dabbler/data/models/user_model.dart';
 
 /// Service for managing social notifications with smart batching and preferences
 class SocialNotificationsService {

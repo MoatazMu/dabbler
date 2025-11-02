@@ -1,5 +1,5 @@
 import 'dart:convert';
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 import 'post.dart';
 
 /// A polymorphic feed item. For now only `post`, but intentionally open for future kinds.

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/utils/logger.dart';
+import 'package:dabbler/core/utils/logger.dart';
 
 /// Service for managing GDPR-compliant data retention policies
 class DataRetentionService {

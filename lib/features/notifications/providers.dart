@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../data/models/notification.dart';
+import 'package:dabbler/data/models/notification.dart';
 import '../../data/repositories/notifications_repository.dart';
 import '../../data/repositories/notifications_repository_impl.dart';
 import '../../features/misc/data/datasources/supabase_remote_data_source.dart';

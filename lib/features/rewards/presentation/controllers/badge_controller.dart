@@ -159,8 +159,9 @@ class BadgeState {
   /// Get collection stats
   Map<String, dynamic> get collectionStats {
     final total = userBadges.length;
-    if (total == 0)
+    if (total == 0) {
       return {'total': 0, 'by_rarity': {}, 'completion_rate': 0.0};
+    }
 
     final rarityCount = <String, int>{};
     for (final badge in userBadges) {

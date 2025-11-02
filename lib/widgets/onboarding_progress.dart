@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../core/services/mock_onboarding_service.dart';
-import '../core/utils/constants.dart';
+import 'package:dabbler/core/services/mock_onboarding_service.dart';
+import 'package:dabbler/core/utils/constants.dart';
 
 class OnboardingProgress extends StatelessWidget {
   final MockOnboardingService _onboardingService = MockOnboardingService();

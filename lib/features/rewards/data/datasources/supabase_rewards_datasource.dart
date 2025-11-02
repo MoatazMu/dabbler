@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/data/models/rewards/achievement.dart';
 import 'package:dabbler/data/models/rewards/user_progress.dart';
-import 'package:dabbler/data/models/rewards/points_transaction.dart';
 import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
 import 'package:dabbler/data/models/rewards/achievement_model.dart';

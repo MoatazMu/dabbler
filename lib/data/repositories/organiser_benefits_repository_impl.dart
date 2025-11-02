@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 
 import 'package:dabbler/core/fp/result.dart';
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 import '../models/benefit.dart';
 import 'base_repository.dart';
 import 'organiser_benefits_repository.dart';

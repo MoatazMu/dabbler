@@ -1,4 +1,4 @@
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 
 /// App-level model for a user-submitted abuse report against a post.
 /// This maps to the `public.post_reports` table (fields are tolerant).

@@ -2,7 +2,7 @@ import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/result.dart';
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 import '../models/profile.dart';
 import '../models/venue.dart';
 import '../models/post.dart';

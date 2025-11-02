@@ -4,7 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/notifications_repository.dart';
 import '../providers/notifications_providers.dart';
-import '../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import '../../widgets/custom_app_bar.dart';
 import '../../themes/app_theme.dart';
 

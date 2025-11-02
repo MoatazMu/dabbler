@@ -126,8 +126,9 @@ class CircleRepositoryImpl implements CircleRepository {
   }) async {
     try {
       var q = _db.from('v_squad_card').select();
-      if (squadId != null)
+      if (squadId != null) {
         q = q.eq('id', squadId); // best-effort generic filter
+      }
       if (limit != null && offset != null) {
         q = q.range(offset, offset + limit - 1);
       }

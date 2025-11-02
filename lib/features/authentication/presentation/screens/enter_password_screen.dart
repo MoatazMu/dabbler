@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import '../providers/auth_providers.dart';
 import '../../../../utils/constants/route_constants.dart';
 

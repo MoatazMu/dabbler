@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dabbler/core/fp/result.dart';
 import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
-import '../../data/models/squad.dart';
-import '../../data/models/squad_invite.dart';
-import '../../data/models/squad_join_request.dart';
-import '../../data/models/squad_link_token.dart';
-import '../../data/models/squad_member.dart';
+import 'package:dabbler/data/models/squad.dart';
+import 'package:dabbler/data/models/squad_invite.dart';
+import 'package:dabbler/data/models/squad_join_request.dart';
+import 'package:dabbler/data/models/squad_link_token.dart';
+import 'package:dabbler/data/models/squad_member.dart';
 import '../../data/repositories/squads_repository.dart';
 import '../../data/repositories/squads_repository_impl.dart';
 

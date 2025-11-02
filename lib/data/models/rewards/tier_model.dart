@@ -356,10 +356,12 @@ class TierModel extends UserTier {
 
   static String _getBenefitCategory(String key) {
     if (key.contains('point')) return 'Points & Rewards';
-    if (key.contains('profile') || key.contains('customization'))
+    if (key.contains('profile') || key.contains('customization')) {
       return 'Customization';
-    if (key.contains('matchmaking') || key.contains('priority'))
+    }
+    if (key.contains('matchmaking') || key.contains('priority')) {
       return 'Gameplay';
+    }
     if (key.contains('event') || key.contains('access')) return 'Access';
     return 'General';
   }

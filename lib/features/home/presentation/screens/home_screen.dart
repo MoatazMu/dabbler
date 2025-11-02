@@ -5,14 +5,14 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../themes/app_theme.dart';
 import '../../utils/constants/route_constants.dart';
-import '../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import '../../widgets/game_card.dart';
 import '../../widgets/thoughts_input.dart';
 import '../../widgets/category_buttons.dart';
 import '../../widgets/action_cards.dart';
 import '../../widgets/svg_avatar.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
-import 'package:dabbler/features/games/presentation/screens/join_game/game_detail_screen.dart';
+import 'package:dabbler/features/games/presentation/features/join_game/game_detail_screen.dart';
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {

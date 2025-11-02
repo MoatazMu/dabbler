@@ -1,4 +1,4 @@
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 
 class VenueSpace {
   final String id;

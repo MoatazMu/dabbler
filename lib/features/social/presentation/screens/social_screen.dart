@@ -9,7 +9,7 @@ import '../../widgets/custom_app_bar.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import '../../services/social_service.dart';
 import '../../services/social_rewards_handler.dart';
-import '../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 
 /// Instagram-like social feed screen with posts and interactions
 class SocialScreen extends StatefulWidget {

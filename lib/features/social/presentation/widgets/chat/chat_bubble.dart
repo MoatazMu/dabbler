@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/widgets/custom_avatar.dart';
+import 'package:dabbler/core/widgets/custom_avatar.dart';
 import '../../../../../themes/app_colors.dart';
 import '../../../../../themes/app_text_styles.dart';
 import '../../../../../utils/formatters/time_formatter.dart';
@@ -91,8 +91,9 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
   }
 
   MessageBubbleType get _bubbleType {
-    if (widget.message.messageType == MessageType.system)
+    if (widget.message.messageType == MessageType.system) {
       return MessageBubbleType.system;
+    }
     return widget.message.senderId == 'current_user'
         ? MessageBubbleType.sent
         : MessageBubbleType.received;

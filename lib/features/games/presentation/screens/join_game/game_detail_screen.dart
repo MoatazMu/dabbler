@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../providers/games_providers.dart';
-import '../../../../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 
 class GameDetailScreen extends ConsumerStatefulWidget {
   final String gameId;

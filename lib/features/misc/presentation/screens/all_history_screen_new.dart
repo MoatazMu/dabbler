@@ -4,7 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../widgets/custom_app_bar.dart';
-import '../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/data/models/activities/activity_log.dart';
 import 'package:dabbler/features/activities/presentation/providers/activity_log_providers.dart';
 

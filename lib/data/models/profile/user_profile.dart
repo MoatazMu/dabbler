@@ -73,8 +73,9 @@ class UserProfile {
   static double _calculateInitialCompletion(User user) {
     double completion = 40.0; // Base for having account
     if ((user.fullName?.isNotEmpty ?? false) ||
-        (user.username?.isNotEmpty ?? false))
+        (user.username?.isNotEmpty ?? false)) {
       completion += 10.0;
+    }
     if (user.avatarUrl != null) completion += 20.0;
     return completion;
   }
@@ -149,8 +150,11 @@ class UserProfile {
     // Sports profiles (20%)
     if (sportsProfiles.isNotEmpty) completion += 10.0;
     if (sportsProfiles.any((sport) => sport.isPrimarySport)) completion += 5.0;
-    if (sportsProfiles.any((sport) => sport.skillLevel != SkillLevel.beginner))
+    if (sportsProfiles.any(
+      (sport) => sport.skillLevel != SkillLevel.beginner,
+    )) {
       completion += 5.0;
+    }
 
     // Preferences and settings (10%)
     if (preferences.preferredGameTypes.isNotEmpty) completion += 5.0;

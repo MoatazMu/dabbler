@@ -1,4 +1,4 @@
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 
 /// A read-only projection row from `space_slot_grid`.
 /// Column names vary by deployment; mapping is tolerant.

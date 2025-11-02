@@ -87,9 +87,7 @@ class PaymentMethodsRepositoryImpl implements PaymentMethodsRepository {
   }
 
   @override
-  Future<Result<void, Failure>> deletePaymentMethod(
-    String paymentMethodId,
-  ) {
+  Future<Result<void, Failure>> deletePaymentMethod(String paymentMethodId) {
     return guardResult<void>(() async {
       try {
         await dataSource.deletePaymentMethod(paymentMethodId);

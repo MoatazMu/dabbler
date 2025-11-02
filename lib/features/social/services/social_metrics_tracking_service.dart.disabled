@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
-import '../../../core/utils/either.dart';
+import 'package:dabbler/core/utils/either.dart';
 import 'social_analytics_service.dart';
 import '../../../utils/social/social_constants.dart';
 import '../../../utils/social/social_helpers.dart';

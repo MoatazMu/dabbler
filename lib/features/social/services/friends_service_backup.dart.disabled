@@ -4,11 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
-import '../../../core/services/storage_service.dart';
+import 'package:dabbler/core/services/storage_service.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import '../domain/repositories/social_repository.dart';
 import '../../../core/models/user_model.dart';
-import '../data/models/friend_request_model.dart';
+import 'package:dabbler/data/models/friend_request_model.dart';
 import 'social_notifications_service.dart';
 
 /// Service for managing friend relationships and suggestions

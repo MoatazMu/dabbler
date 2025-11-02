@@ -8,9 +8,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 // import '../domain/entities/user_profile.dart';
-// import '../../../core/utils/logger.dart';
+// import 'package:dabbler/core/utils/logger.dart';
 // import '../../../core/error/exceptions.dart';
-// import '../../../core/services/email_service.dart';
+// import 'package:dabbler/core/services/email_service.dart';
 
 // Temporary stub implementations for missing dependencies
 class Logger {

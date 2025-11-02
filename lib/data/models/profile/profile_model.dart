@@ -437,38 +437,44 @@ class ProfileModel extends UserProfile {
 
     // Basic info (40%)
     completion += 20.0; // Account exists
-    if ((json['display_name'] as String?)?.isNotEmpty == true)
+    if ((json['display_name'] as String?)?.isNotEmpty == true) {
       completion += 10.0;
+    }
     if (json['avatar_url'] != null) completion += 10.0;
 
     // Personal details (30%)
     if ((json['bio'] as String?)?.isNotEmpty == true) completion += 10.0;
     if (json['date_of_birth'] != null) completion += 5.0;
     if ((json['location'] as String?)?.isNotEmpty == true) completion += 5.0;
-    if (json['first_name'] != null && json['last_name'] != null)
+    if (json['first_name'] != null && json['last_name'] != null) {
       completion += 10.0;
+    }
 
     // Sports profiles (20%)
     final sportsProfiles = json['sports_profiles'] ?? json['user_sports'];
     if (sportsProfiles is List && sportsProfiles.isNotEmpty) {
       completion += 10.0;
       // Check for primary sport
-      if (sportsProfiles.any((s) => s['is_primary_sport'] == true))
+      if (sportsProfiles.any((s) => s['is_primary_sport'] == true)) {
         completion += 5.0;
+      }
       // Check for skill levels
       if (sportsProfiles.any(
         (s) => s['skill_level'] != null && s['skill_level'] > 0,
-      ))
+      )) {
         completion += 5.0;
+      }
     }
 
     // Preferences (10%)
     final preferences = json['user_preferences'] ?? json['preferences'];
     if (preferences is Map) {
-      if ((preferences['preferred_game_types'] as List?)?.isNotEmpty == true)
+      if ((preferences['preferred_game_types'] as List?)?.isNotEmpty == true) {
         completion += 5.0;
-      if ((preferences['weekly_availability'] as Map?)?.isNotEmpty == true)
+      }
+      if ((preferences['weekly_availability'] as Map?)?.isNotEmpty == true) {
         completion += 5.0;
+      }
     }
 
     return completion.clamp(0.0, 100.0);

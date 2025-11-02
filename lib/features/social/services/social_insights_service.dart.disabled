@@ -1,5 +1,5 @@
 import 'dart:async';
-import '../../../core/utils/either.dart';
+import 'package:dabbler/core/utils/either.dart';
 import 'social_analytics_service.dart';
 import 'social_metrics_tracking_service.dart';
 

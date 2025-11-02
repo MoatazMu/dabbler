@@ -1,5 +1,5 @@
 import 'package:dabbler/core/fp/failure.dart';
-import '../../../../core/utils/either.dart';
+import 'package:dabbler/core/utils/either.dart';
 import 'package:dabbler/data/models/profile/privacy_settings.dart';
 import '../repositories/settings_repository.dart';
 
@@ -343,8 +343,9 @@ class ManagePrivacyUseCase {
 
     // Communication settings
     if (settings.messagePreference == CommunicationPreference.none) score += 10;
-    if (settings.gameInvitePreference == CommunicationPreference.none)
+    if (settings.gameInvitePreference == CommunicationPreference.none) {
       score += 5;
+    }
 
     // Data sharing
     if (settings.dataSharingLevel == DataSharingLevel.minimal) score += 10;

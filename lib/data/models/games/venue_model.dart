@@ -209,8 +209,9 @@ class VenueModel extends Venue {
   @override
   String get fullAddress {
     final parts = <String>[addressLine1];
-    if (addressLine2 != null && addressLine2!.isNotEmpty)
+    if (addressLine2 != null && addressLine2!.isNotEmpty) {
       parts.add(addressLine2!);
+    }
     if (city.isNotEmpty) parts.add(city);
     if (state.isNotEmpty) parts.add(state);
     if (country.isNotEmpty) parts.add(country);

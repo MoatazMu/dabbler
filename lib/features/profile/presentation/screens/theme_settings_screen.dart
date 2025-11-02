@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/services/theme_service.dart';
+import 'package:dabbler/core/services/theme_service.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class ThemeSettingsScreen extends StatefulWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/services/auth_service.dart';
-import '../../core/utils/constants.dart';
-import '../../core/utils/validators.dart';
+import 'package:dabbler/core/services/auth_service.dart';
+import 'package:dabbler/core/utils/constants.dart';
+import 'package:dabbler/core/utils/validators.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/input_field.dart';
 

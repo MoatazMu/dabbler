@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../routes/route_arguments.dart';
-import 'package:dabbler/features/misc/presentation/screens/activities_screen_v2.dart';
-import 'package:dabbler/features/misc/presentation/screens/create_game_screen.dart';
-import 'package:dabbler/features/home/presentation/screens/home_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/activities_screen_v2.dart';
+import 'package:dabbler/features/misc/presentation/features/create_game_screen.dart';
+import 'package:dabbler/features/home/presentation/features/home_screen.dart';
 
 class AppRoutes {
   AppRoutes._();

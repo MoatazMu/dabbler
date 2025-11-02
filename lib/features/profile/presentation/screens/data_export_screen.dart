@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import '../../services/data_export_service.dart' hide Logger;
 import '../../../../widgets/common/loading_button.dart';
 import '../../../../widgets/common/info_dialog.dart';
-import '../../../../core/utils/logger.dart';
+import 'package:dabbler/core/utils/logger.dart';
 
 /// Data Export UI for GDPR compliance
 class DataExportScreen extends ConsumerStatefulWidget {

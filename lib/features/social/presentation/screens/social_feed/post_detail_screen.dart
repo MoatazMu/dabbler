@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/widgets/loading_widget.dart';
+import 'package:dabbler/core/widgets/loading_widget.dart';
 import '../../../../../core/widgets/error_widget.dart' as core;
 import '../../providers/social_providers.dart';
 import '../../../../../utils/enums/social_enums.dart';

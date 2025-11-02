@@ -438,20 +438,27 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
     final totalFields = 8; // Major fields
     var completedFields = 0;
 
-    if (state.formData['display_name']?.toString().trim().isNotEmpty == true)
+    if (state.formData['display_name']?.toString().trim().isNotEmpty == true) {
       completedFields++;
-    if (state.formData['email']?.toString().trim().isNotEmpty == true)
+    }
+    if (state.formData['email']?.toString().trim().isNotEmpty == true) {
       completedFields++;
-    if (state.formData['bio']?.toString().trim().isNotEmpty == true)
+    }
+    if (state.formData['bio']?.toString().trim().isNotEmpty == true) {
       completedFields++;
-    if (state.formData['location']?.toString().trim().isNotEmpty == true)
+    }
+    if (state.formData['location']?.toString().trim().isNotEmpty == true) {
       completedFields++;
-    if (state.formData['first_name']?.toString().trim().isNotEmpty == true)
+    }
+    if (state.formData['first_name']?.toString().trim().isNotEmpty == true) {
       completedFields++;
-    if (state.formData['last_name']?.toString().trim().isNotEmpty == true)
+    }
+    if (state.formData['last_name']?.toString().trim().isNotEmpty == true) {
       completedFields++;
-    if (state.formData['phone_number']?.toString().trim().isNotEmpty == true)
+    }
+    if (state.formData['phone_number']?.toString().trim().isNotEmpty == true) {
       completedFields++;
+    }
     if (state.formData['date_of_birth'] != null) completedFields++;
 
     return (completedFields / totalFields * 100).clamp(0.0, 100.0);

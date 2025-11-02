@@ -274,8 +274,9 @@ class _DateTimeSelectionScreenState extends State<DateTimeSelectionScreen> {
                             _startTime!.hour * 60 + _startTime!.minute;
                         final endMinutes = time.hour * 60 + time.minute;
                         _durationMinutes = endMinutes - startMinutes;
-                        if (_durationMinutes < 0)
+                        if (_durationMinutes < 0) {
                           _durationMinutes += 24 * 60; // Handle next day
+                        }
                       }
                     });
                     _updateDateTime();

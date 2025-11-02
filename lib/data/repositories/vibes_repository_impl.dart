@@ -3,7 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
 import 'package:dabbler/core/fp/result.dart';
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 import '../models/vibe.dart';
 import 'base_repository.dart';
 import 'vibes_repository.dart';

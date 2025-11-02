@@ -1,5 +1,5 @@
 import 'package:dabbler/core/fp/failure.dart';
-import '../../../../core/utils/either.dart';
+import 'package:dabbler/core/utils/either.dart';
 import 'package:dabbler/data/models/profile/user_settings.dart';
 import '../repositories/settings_repository.dart';
 

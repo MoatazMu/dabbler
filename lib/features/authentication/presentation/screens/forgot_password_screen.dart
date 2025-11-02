@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import '../../../../utils/constants/route_constants.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {

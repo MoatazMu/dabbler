@@ -1,5 +1,5 @@
 import 'package:dabbler/core/fp/failure.dart';
-import '../../../../core/utils/either.dart';
+import 'package:dabbler/core/utils/either.dart';
 import 'package:dabbler/data/models/profile/user_preferences.dart';
 
 /// Repository interface for user preferences related to games, location, and social settings

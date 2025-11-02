@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dabbler/features/rewards/presentation/screens/rewards_dashboard_screen.dart';
+import 'package:dabbler/features/rewards/presentation/features/rewards_dashboard_screen.dart';
 
 /// Simple rewards screen for navigation tab
 /// This serves as the main entry point for the rewards system

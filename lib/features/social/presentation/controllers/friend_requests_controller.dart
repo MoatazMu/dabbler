@@ -537,8 +537,7 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
         id: userId,
         fullName: 'User $userId',
         email: 'user_${userId.split('_').last}@example.com',
-        avatarUrl:
-            'https://example.com/avatar_${userId.split('_').last}.jpg',
+        avatarUrl: 'https://example.com/avatar_${userId.split('_').last}.jpg',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -553,8 +552,7 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
       id: userId,
       fullName: 'User $userId',
       email: 'user_${userId.split('_').last}@example.com',
-      avatarUrl:
-          'https://example.com/avatar_${userId.split('_').last}.jpg',
+      avatarUrl: 'https://example.com/avatar_${userId.split('_').last}.jpg',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

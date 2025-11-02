@@ -1,10 +1,7 @@
 import 'dart:io';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../../../../core/utils/either.dart';
-import 'package:dabbler/data/models/profile/user_profile.dart';
-import 'package:dabbler/data/models/profile/sports_profile.dart';
-import 'package:dabbler/data/models/profile/profile_statistics.dart';
+import 'package:dabbler/core/utils/either.dart';
 import '../../domain/repositories/profile_repository.dart' as domain;
 import '../datasources/profile_data_sources.dart' show ProfileLocalDataSource;
 import '../datasources/profile_remote_datasource.dart';

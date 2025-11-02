@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import '../../../core/utils/either.dart';
-import '../../../core/services/storage_service.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/core/services/storage_service.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
-import '../data/models/social_monitoring_models.dart';
+import 'package:dabbler/data/models/social_monitoring_models.dart';
 import 'social_analytics_service.dart';
 import 'social_health_monitoring_service.dart';
 import 'social_performance_monitoring_service.dart';

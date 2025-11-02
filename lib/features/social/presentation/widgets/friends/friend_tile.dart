@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/widgets/custom_avatar.dart';
+import 'package:dabbler/core/widgets/custom_avatar.dart';
 import '../../../../../themes/app_colors.dart';
 import '../../../../../themes/app_text_styles.dart';
 import '../../../../../utils/formatters/time_formatter.dart';
-import '../../../../../core/widgets/shimmer_loading.dart';
+import 'package:dabbler/core/widgets/shimmer_loading.dart';
 import 'package:dabbler/data/models/authentication/user_model.dart';
 
 /// A reusable tile widget for displaying friend information

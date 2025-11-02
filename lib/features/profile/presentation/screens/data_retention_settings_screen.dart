@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../services/data_retention_service.dart';
-import '../../../../core/utils/logger.dart';
+import 'package:dabbler/core/utils/logger.dart';
 
 /// Data Retention Settings Screen for GDPR compliance
 class DataRetentionSettingsScreen extends ConsumerStatefulWidget {

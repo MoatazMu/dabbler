@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../../../../core/utils/either.dart';
+import 'package:dabbler/core/utils/either.dart';
 import 'package:dabbler/data/models/profile/user_profile.dart';
 import 'package:dabbler/data/models/profile/sports_profile.dart';
 import 'package:dabbler/data/models/profile/profile_statistics.dart';

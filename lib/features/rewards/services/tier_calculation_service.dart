@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 
 import 'package:dabbler/data/models/rewards/badge_tier.dart';
-import 'package:dabbler/data/models/rewards/points_transaction.dart';
 import 'package:dabbler/data/models/rewards/tier.dart';
 import '../domain/repositories/rewards_repository.dart';
 

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 import '../../../core/viewmodels/game_creation_viewmodel.dart';
-import '../../../core/utils/sports_config.dart';
+import 'package:dabbler/core/utils/sports_config.dart';
 import '../../../themes/app_theme.dart';
 
 class SportFormatStep extends StatefulWidget {

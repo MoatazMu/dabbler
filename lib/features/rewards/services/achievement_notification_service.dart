@@ -278,8 +278,9 @@ class AchievementNotificationService extends ChangeNotifier {
     Duration? delay,
     Map<String, dynamic>? metadata,
   }) async {
-    if (!_notificationsEnabled || userId != _currentUserId || points <= 0)
+    if (!_notificationsEnabled || userId != _currentUserId || points <= 0) {
       return;
+    }
 
     // Don't spam notifications for small point amounts
     if (points < 10) return;

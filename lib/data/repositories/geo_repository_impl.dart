@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/result.dart' as core;
 import 'package:dabbler/core/fp/failure.dart';
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 import '../models/venue.dart';
 import 'base_repository.dart';
 import 'geo_repository.dart';

@@ -1,9 +1,9 @@
 import 'package:riverpod/riverpod.dart';
 
-import '../../data/models/abuse_flag.dart';
-import '../../data/models/ban_term.dart';
-import '../../data/models/moderation_action.dart';
-import '../../data/models/moderation_ticket.dart';
+import 'package:dabbler/data/models/abuse_flag.dart';
+import 'package:dabbler/data/models/ban_term.dart';
+import 'package:dabbler/data/models/moderation_action.dart';
+import 'package:dabbler/data/models/moderation_ticket.dart';
 import '../../data/repositories/audit_safety_repository.dart';
 import '../../data/repositories/audit_safety_repository_impl.dart';
 import '../../features/misc/data/datasources/supabase_remote_data_source.dart';

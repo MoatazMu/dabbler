@@ -1,4 +1,4 @@
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 
 /// Keep the name distinct from platform classes.
 class AppNotification {

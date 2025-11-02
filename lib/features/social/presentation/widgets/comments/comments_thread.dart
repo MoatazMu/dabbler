@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/widgets/custom_avatar.dart';
+import 'package:dabbler/core/widgets/custom_avatar.dart';
 
 class CommentsThread extends StatelessWidget {
   final dynamic comment;

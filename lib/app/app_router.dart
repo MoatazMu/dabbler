@@ -5,70 +5,70 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // Onboarding screens
-import 'package:dabbler/features/misc/presentation/screens/phone_input_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/email_input_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/otp_verification_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/create_user_information.dart';
-import 'package:dabbler/features/misc/presentation/screens/sports_selection_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/intent_selection_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/set_password_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/set_username_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/welcome_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/phone_input_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/email_input_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/otp_verification_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/create_user_information.dart';
+import 'package:dabbler/features/misc/presentation/features/sports_selection_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/intent_selection_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/set_password_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/set_username_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/welcome_screen.dart';
 
 // Authentication screens
-import 'package:dabbler/features/authentication/presentation/screens/forgot_password_screen.dart';
-import 'package:dabbler/features/authentication/presentation/screens/enter_password_screen.dart';
-import 'package:dabbler/features/authentication/presentation/screens/reset_password_screen.dart';
-import 'package:dabbler/features/authentication/presentation/screens/register_screen.dart';
+import 'package:dabbler/features/authentication/presentation/features/forgot_password_screen.dart';
+import 'package:dabbler/features/authentication/presentation/features/enter_password_screen.dart';
+import 'package:dabbler/features/authentication/presentation/features/reset_password_screen.dart';
+import 'package:dabbler/features/authentication/presentation/features/register_screen.dart';
 
 // Core screens
 import 'package:dabbler/features/error/presentation/pages/error_page.dart';
-import 'package:dabbler/features/home/presentation/screens/home_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/social_screen.dart';
-import 'package:dabbler/features/explore/presentation/screens/explore_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/activities_screen_v2.dart';
-import 'package:dabbler/features/misc/presentation/screens/rewards_screen.dart';
+import 'package:dabbler/features/home/presentation/features/home_screen.dart';
+import 'package:dabbler/features/social/presentation/features/social_screen.dart';
+import 'package:dabbler/features/explore/presentation/features/explore_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/activities_screen_v2.dart';
+import 'package:dabbler/features/misc/presentation/features/rewards_screen.dart';
 
 // Profile screens
-import 'package:dabbler/features/profile/presentation/screens/profile/profile_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/profile_edit_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/settings/settings_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/settings/profile_avatar_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/settings/profile_sports_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/settings/account_management_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/settings/privacy_settings_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/settings/notification_settings_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/preferences/game_preferences_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/preferences/availability_preferences_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/theme_settings_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/language_selection_screen.dart';
-import 'package:dabbler/features/misc/presentation/screens/help_center_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/support/contact_support_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/support/bug_report_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/about/terms_of_service_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/about/privacy_policy_screen.dart';
-import 'package:dabbler/features/profile/presentation/screens/about/licenses_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/profile/profile_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/profile_edit_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/settings/settings_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/settings/profile_avatar_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/settings/profile_sports_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/settings/account_management_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/settings/privacy_settings_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/settings/notification_settings_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/preferences/game_preferences_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/preferences/availability_preferences_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/theme_settings_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/language_selection_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/help_center_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/support/contact_support_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/support/bug_report_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/about/terms_of_service_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/about/privacy_policy_screen.dart';
+import 'package:dabbler/features/profile/presentation/features/about/licenses_screen.dart';
 
 // Transactions screens
-import 'package:dabbler/features/misc/presentation/screens/transactions_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/transactions_screen.dart';
 
 // Notifications screens
-import 'package:dabbler/features/notifications/presentation/screens/notifications_screen_v2.dart';
+import 'package:dabbler/features/notifications/presentation/features/notifications_screen_v2.dart';
 
 // Game screens
-import 'package:dabbler/features/misc/presentation/screens/create_game_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/create_game_screen.dart';
 
 // Social screens
-import 'package:dabbler/features/misc/presentation/screens/add_post_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/social_feed_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/social_search_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/placeholders/social_profile_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/social_feed/post_detail_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_welcome_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_friends_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_privacy_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_notifications_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_complete_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/add_post_screen.dart';
+import 'package:dabbler/features/social/presentation/features/social_feed_screen.dart';
+import 'package:dabbler/features/social/presentation/features/social_search_screen.dart';
+import 'package:dabbler/features/social/presentation/features/placeholders/social_profile_screen.dart';
+import 'package:dabbler/features/social/presentation/features/social_feed/post_detail_screen.dart';
+import 'package:dabbler/features/social/presentation/features/onboarding/social_onboarding_welcome_screen.dart';
+import 'package:dabbler/features/social/presentation/features/onboarding/social_onboarding_friends_screen.dart';
+import 'package:dabbler/features/social/presentation/features/onboarding/social_onboarding_privacy_screen.dart';
+import 'package:dabbler/features/social/presentation/features/onboarding/social_onboarding_notifications_screen.dart';
+import 'package:dabbler/features/social/presentation/features/onboarding/social_onboarding_complete_screen.dart';
 
 // Utilities
 import '../utils/constants/route_constants.dart';

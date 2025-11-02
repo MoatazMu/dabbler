@@ -110,10 +110,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
     final responseResult = await guardResult(() async {
       try {
-        return await remoteDataSource.signUp(
-          email: email,
-          password: password,
-        );
+        return await remoteDataSource.signUp(email: email, password: password);
       } on EmailAlreadyExistsException {
         throw const ConflictFailure(message: 'Email already exists');
       } on WeakPasswordException {
@@ -195,9 +192,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Result<void, Failure>> resetPassword({
-    required String email,
-  }) async {
+  Future<Result<void, Failure>> resetPassword({required String email}) async {
     return guardResult<void>(() async {
       try {
         await remoteDataSource.resetPassword(email: email);
@@ -229,10 +224,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }) async {
     final responseResult = await guardResult(() async {
       try {
-        return await remoteDataSource.verifyOTP(
-          phone: phone,
-          token: token,
-        );
+        return await remoteDataSource.verifyOTP(phone: phone, token: token);
       } on AuthException catch (e) {
         throw AuthFailure(message: e.message);
       }

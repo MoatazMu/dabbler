@@ -1,8 +1,8 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/result.dart';
-import '../../core/utils/json.dart';
-import '../../data/models/notification.dart';
+import 'package:dabbler/core/utils/json.dart';
+import 'package:dabbler/data/models/notification.dart';
 import 'notifications_repository.dart';
 import 'base_repository.dart';
 import 'package:meta/meta.dart';
