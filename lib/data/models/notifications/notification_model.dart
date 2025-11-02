@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:dabbler/data/models/notification.dart' as domain;
+import 'package:dabbler/data/models/notifications/notification.dart' as domain;
 
 /// Data model for notifications
 class NotificationModel {

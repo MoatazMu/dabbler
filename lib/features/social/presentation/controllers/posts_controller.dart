@@ -669,8 +669,7 @@ class PostsController extends StateNotifier<PostsState> {
       5,
       (index) => UserModel(
         id: 'mention_user_$index',
-        firstName: 'Mention',
-        lastName: 'User $index',
+        fullName: 'User $index',
         email: 'mention_user_$index@example.com',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

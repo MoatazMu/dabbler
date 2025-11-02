@@ -11,6 +11,10 @@ import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
 import 'package:dabbler/data/models/rewards/points_transaction.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
+// Type aliases for backward compatibility
+typedef PointTransaction = PointsTransaction;
+typedef TransactionType = PointsTransactionType;
+
 /// Simple implementation of RewardsRepository with placeholder methods
 /// This will be expanded with actual data sources later
 class RewardsRepositoryImpl implements RewardsRepository {
@@ -451,12 +455,11 @@ class RewardsRepositoryImpl implements RewardsRepository {
       final transaction = PointTransaction(
         id: 'tx_${DateTime.now().millisecondsSinceEpoch}',
         userId: userId,
-        type: TransactionType.achievement,
-        basePoints: points.toDouble(),
-        finalPoints: points.toDouble(),
-        runningBalance: points.toDouble(),
-        description: reason,
-        metadata: metadata,
+        points: points,
+        type: TransactionType.earned,
+        reason: reason,
+        sourceId: metadata?['sourceId'] as String?,
+        sourceType: metadata?['sourceType'] as String?,
         createdAt: DateTime.now(),
       );
       return Right(transaction);

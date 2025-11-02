@@ -8,13 +8,16 @@ import 'package:dabbler/data/models/rewards/tier.dart';
 import 'package:dabbler/data/models/rewards/points_transaction.dart';
 import '../../domain/repositories/rewards_repository.dart';
 import '../../data/repositories/rewards_repository_impl.dart';
-
 import '../controllers/rewards_controller.dart';
 import '../controllers/achievements_controller.dart';
 import '../controllers/tier_controller.dart';
 import '../controllers/badge_controller.dart';
 import '../controllers/leaderboard_controller.dart';
 import '../controllers/progress_tracking_controller.dart';
+
+// Type aliases for backward compatibility
+typedef PointTransaction = PointsTransaction;
+typedef TransactionType = PointsTransactionType;
 
 // =============================================================================
 // REPOSITORY PROVIDERS
@@ -384,8 +387,8 @@ final userRewardsProfileProvider = Provider<Map<String, dynamic>>((ref) {
         .map(
           (t) => {
             'type': t.type.name,
-            'amount': t.finalPoints,
-            'description': t.description,
+            'amount': t.points,
+            'description': t.reason,
             'created_at': t.createdAt,
           },
         )

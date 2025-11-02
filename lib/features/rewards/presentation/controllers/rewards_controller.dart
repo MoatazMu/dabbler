@@ -4,6 +4,10 @@ import 'package:dabbler/data/models/rewards/points_transaction.dart';
 import 'package:dabbler/data/models/rewards/tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
+// Type aliases for backward compatibility
+typedef PointTransaction = PointsTransaction;
+typedef TransactionType = PointsTransactionType;
+
 /// Overall state for the rewards system
 class RewardsState {
   final double totalPoints;
@@ -156,7 +160,10 @@ class RewardsController extends StateNotifier<RewardsState> {
           throw Exception('Failed to load transactions: ${failure.message}'),
       (transactions) async {
         // Calculate totals from transactions
-        totalPoints = transactions.fold(0.0, (sum, t) => sum + t.finalPoints);
+        totalPoints = transactions.fold(
+          0.0,
+          (sum, t) => sum + t.points.toDouble(),
+        );
 
         final now = DateTime.now();
         final startOfDay = DateTime(now.year, now.month, now.day);
@@ -169,11 +176,11 @@ class RewardsController extends StateNotifier<RewardsState> {
 
         todayPoints = transactions
             .where((t) => t.createdAt.isAfter(startOfDay))
-            .fold(0.0, (sum, t) => sum + t.finalPoints);
+            .fold(0.0, (sum, t) => sum + t.points.toDouble());
 
         weeklyPoints = transactions
             .where((t) => t.createdAt.isAfter(startOfWeekDay))
-            .fold(0.0, (sum, t) => sum + t.finalPoints);
+            .fold(0.0, (sum, t) => sum + t.points.toDouble());
 
         await tierResult.fold(
           (failure) =>
@@ -233,14 +240,12 @@ class RewardsController extends StateNotifier<RewardsState> {
       final transaction = PointTransaction(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: userId,
-        basePoints: points,
-        finalPoints: points,
-        runningBalance: state.totalPoints + points,
+        points: points.round(),
         type: type,
-        description: description,
+        reason: description,
+        sourceId: metadata?['sourceId'] as String?,
+        sourceType: metadata?['sourceType'] as String?,
         createdAt: DateTime.now(),
-        metadata: metadata,
-        multipliersApplied: {},
       );
 
       // Update local state immediately

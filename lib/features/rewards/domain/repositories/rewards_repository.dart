@@ -9,6 +9,10 @@ import 'package:dabbler/data/models/rewards/tier.dart';
 import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
 import 'package:dabbler/data/models/rewards/points_transaction.dart';
 
+// Type aliases for backward compatibility
+typedef PointTransaction = PointsTransaction;
+typedef TransactionType = PointsTransactionType;
+
 /// Event types for tracking user actions
 enum EventType {
   gameStart,

@@ -535,9 +535,9 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
     for (final userId in userIds) {
       users[userId] = core.UserModel(
         id: userId,
-        firstName: 'User $userId',
+        fullName: 'User $userId',
         email: 'user_${userId.split('_').last}@example.com',
-        profileImageUrl:
+        avatarUrl:
             'https://example.com/avatar_${userId.split('_').last}.jpg',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
@@ -551,9 +551,9 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
 
     return core.UserModel(
       id: userId,
-      firstName: 'User $userId',
+      fullName: 'User $userId',
       email: 'user_${userId.split('_').last}@example.com',
-      profileImageUrl:
+      avatarUrl:
           'https://example.com/avatar_${userId.split('_').last}.jpg',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
@@ -568,9 +568,9 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
       mutualCount,
       (index) => core.UserModel(
         id: 'mutual_friend_${userId}_$index',
-        firstName: 'Mutual Friend $index',
+        fullName: 'Mutual Friend $index',
         email: 'mutual_friend_$index@example.com',
-        profileImageUrl: 'https://example.com/mutual_avatar_$index.jpg',
+        avatarUrl: 'https://example.com/mutual_avatar_$index.jpg',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
