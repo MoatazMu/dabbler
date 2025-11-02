@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../utils/enums/social_enums.dart'; // For MessageType enum
-import '../../domain/entities/post.dart';
-import '../../data/models/conversation_model.dart';
-import '../../data/models/chat_message_model.dart';
+import 'package:dabbler/data/models/social/post.dart';
+import 'package:dabbler/data/models/social/conversation_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
 
 /// State for chat management
 class ChatState {

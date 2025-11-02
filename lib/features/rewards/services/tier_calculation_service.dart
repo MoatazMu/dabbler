@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 
-import '../domain/entities/badge_tier.dart';
-import '../domain/entities/point_transaction.dart';
-import '../domain/entities/tier.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/points_transaction.dart';
+import 'package:dabbler/data/models/rewards/tier.dart';
 import '../domain/repositories/rewards_repository.dart';
 
 /// Tier benefit data

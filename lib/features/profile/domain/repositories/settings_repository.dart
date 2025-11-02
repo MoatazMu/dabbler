@@ -1,7 +1,7 @@
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
-import '../entities/user_settings.dart';
-import '../entities/privacy_settings.dart';
+import 'package:dabbler/data/models/profile/user_settings.dart';
+import 'package:dabbler/data/models/profile/privacy_settings.dart';
 
 /// Repository interface for user settings and privacy preferences
 /// Handles both local storage for quick access and remote sync

@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/tier.dart';
+import 'package:dabbler/data/models/rewards/tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// State for tier management

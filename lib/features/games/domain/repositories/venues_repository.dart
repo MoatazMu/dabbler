@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/venue.dart';
-import '../entities/sport_config.dart';
+import 'package:dabbler/data/models/games/venue.dart';
+import 'package:dabbler/data/models/games/sport_config.dart';
 
 /// Time slot model for availability checking
 class TimeSlot {

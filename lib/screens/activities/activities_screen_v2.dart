@@ -7,9 +7,9 @@ import '../../themes/app_theme.dart';
 import '../../widgets/custom_app_bar.dart';
 import '../../core/services/auth_service.dart';
 import '../../features/games/providers/games_providers.dart';
-import '../../features/games/domain/entities/game.dart';
-import '../../features/games/domain/entities/booking.dart';
-import '../../features/activities/domain/entities/activity_log.dart';
+import 'package:dabbler/data/models/games/game.dart';
+import 'package:dabbler/data/models/games/booking.dart';
+import 'package:dabbler/data/models/activities/activity_log.dart';
 import '../../features/activities/presentation/providers/activity_log_providers.dart';
 
 /// **Activities Screen V2** - Polished & Restructured

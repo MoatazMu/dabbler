@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/widgets/custom_avatar.dart';
 import '../../../../../themes/app_colors.dart';
 import '../../../../../themes/app_text_styles.dart';
-import '../../../data/models/chat_message_model.dart';
-import '../../../../../core/models/user_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart';
 
 /// A comprehensive chat input widget with text field, attachments,
 /// emoji picker, voice messages, and reply functionality

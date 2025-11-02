@@ -1,8 +1,8 @@
-import '../domain/entities/badge_tier.dart';
-import '../domain/entities/achievement.dart';
-import '../domain/entities/badge.dart';
-import '../domain/entities/user_progress.dart';
-import '../domain/entities/points_transaction.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
+import 'package:dabbler/data/models/rewards/points_transaction.dart';
 
 /// Stub implementation of RewardsService for quick app compilation
 class RewardsService {

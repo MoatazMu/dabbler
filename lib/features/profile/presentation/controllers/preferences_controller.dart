@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/user_preferences.dart';
+import 'package:dabbler/data/models/profile/user_preferences.dart';
 import '../../domain/usecases/update_preferences_usecase.dart';
 import 'package:dabbler/core/fp/failure.dart';
 

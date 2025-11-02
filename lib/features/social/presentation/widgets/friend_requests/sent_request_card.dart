@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/friend_request_model.dart';
-import '../../../domain/entities/friend_request.dart';
-import '../../../../../core/models/user_model.dart' as core;
+import 'package:dabbler/data/models/social/friend_request_model.dart';
+import 'package:dabbler/data/models/social/friend_request.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart' as core;
 
 /// Widget for displaying sent friend requests
 class SentRequestCard extends StatelessWidget {

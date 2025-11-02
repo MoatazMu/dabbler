@@ -1,9 +1,9 @@
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
-import '../entities/user_profile.dart';
-import '../entities/sports_profile.dart';
-import '../entities/privacy_settings.dart';
-import '../entities/user_settings.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
+import 'package:dabbler/data/models/profile/sports_profile.dart';
+import 'package:dabbler/data/models/profile/privacy_settings.dart';
+import 'package:dabbler/data/models/profile/user_settings.dart';
 
 /// Parameters for calculating profile completion
 class CalculateProfileCompletionParams {

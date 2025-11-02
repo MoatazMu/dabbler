@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/payment_method_model.dart';
+import 'package:dabbler/data/models/payments/payment_method_model.dart';
 
 /// Exception for payment methods operations
 class PaymentMethodsException implements Exception {

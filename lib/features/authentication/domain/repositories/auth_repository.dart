@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../entities/user.dart';
-import '../entities/auth_session.dart';
+import 'package:dabbler/data/models/authentication/user.dart';
+import 'package:dabbler/data/models/authentication/auth_session.dart';
 import 'package:dabbler/core/fp/failure.dart';
 
 abstract class AuthRepository {

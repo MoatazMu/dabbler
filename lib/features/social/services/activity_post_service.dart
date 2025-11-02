@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/models/post_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
 import '../../../utils/enums/social_enums.dart';
 import '../domain/repositories/posts_repository.dart';
 

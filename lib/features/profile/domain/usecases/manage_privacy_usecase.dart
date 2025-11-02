@@ -1,6 +1,6 @@
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
-import '../entities/privacy_settings.dart';
+import 'package:dabbler/data/models/profile/privacy_settings.dart';
 import '../repositories/settings_repository.dart';
 
 /// Parameters for managing privacy settings

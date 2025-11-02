@@ -1,7 +1,7 @@
 import 'dart:io';
-import '../models/post_model.dart';
-import '../models/social_feed_model.dart';
-import '../models/reaction_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/data/models/social/social_feed_model.dart';
+import 'package:dabbler/data/models/social/reaction_model.dart';
 import '../../../../utils/enums/social_enums.dart';
 
 /// Exception types for posts data source operations

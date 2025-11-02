@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../controllers/profile_controller.dart';
 import '../../controllers/sports_profile_controller.dart';
 import '../../providers/profile_providers.dart';
-import '../../../domain/entities/user_profile.dart';
-import '../../../domain/entities/sports_profile.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
+import 'package:dabbler/data/models/profile/sports_profile.dart';
 import '../../widgets/profile_rewards_widget.dart';
 import '../../../../../utils/constants/route_constants.dart';
 

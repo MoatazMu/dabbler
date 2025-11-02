@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../../domain/entities/booking.dart';
+import 'package:dabbler/data/models/games/booking.dart';
 import '../../domain/repositories/bookings_repository.dart';
 import '../datasources/bookings_remote_data_source.dart';
-import '../models/booking_model.dart';
+import 'package:dabbler/data/models/games/booking_model.dart';
 
 // Custom exceptions for bookings
 class BookingServerException implements Exception {

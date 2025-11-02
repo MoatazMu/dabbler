@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'games_remote_data_source.dart';
-import '../models/game_model.dart';
-import '../models/player_model.dart';
+import 'package:dabbler/data/models/games/game_model.dart';
+import 'package:dabbler/data/models/games/player_model.dart';
 
 class SupabaseGamesDataSource implements GamesRemoteDataSource {
   final SupabaseClient _supabaseClient;

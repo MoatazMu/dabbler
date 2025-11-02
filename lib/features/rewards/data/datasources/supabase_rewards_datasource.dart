@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../domain/entities/achievement.dart';
-import '../../domain/entities/user_progress.dart';
-import '../../domain/entities/point_transaction.dart';
-import '../../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
+import 'package:dabbler/data/models/rewards/points_transaction.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
-import '../models/achievement_model.dart';
-import '../models/user_progress_model.dart';
-import '../models/badge_model.dart';
-import '../models/tier_model.dart';
-import '../models/leaderboard_model.dart';
+import 'package:dabbler/data/models/rewards/achievement_model.dart';
+import 'package:dabbler/data/models/rewards/user_progress_model.dart';
+import 'package:dabbler/data/models/rewards/badge_model.dart';
+import 'package:dabbler/data/models/rewards/tier_model.dart';
+import 'package:dabbler/data/models/rewards/leaderboard_model.dart';
 
 /// Supabase data source for rewards system
 /// Handles all remote operations for achievements, points, leaderboards, and progress tracking

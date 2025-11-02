@@ -1,9 +1,9 @@
 import 'package:fpdart/fpdart.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/friend.dart';
+import 'package:dabbler/data/models/social/friend.dart';
 import '../repositories/friends_repository.dart';
-import '../../data/models/friend_model.dart';
+import 'package:dabbler/data/models/social/friend_model.dart';
 
 /// Parameters for adding a friend
 class AddFriendParams {

@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/entities/auth_session.dart';
+import 'package:dabbler/data/models/authentication/user.dart';
+import 'package:dabbler/data/models/authentication/auth_session.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../../../../core/errors/exceptions.dart';

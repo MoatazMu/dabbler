@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/booking.dart';
+import 'package:dabbler/data/models/games/booking.dart';
 
 /// Booking filter options
 class BookingFilters {

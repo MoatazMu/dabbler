@@ -4,8 +4,8 @@ import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../../features/games/data/models/game_model.dart';
-import '../../features/games/domain/entities/game.dart' as domain;
+import 'package:dabbler/data/models/games/game_model.dart';
+import 'package:dabbler/data/models/games/game.dart' as domain;
 import 'base_repository.dart';
 import 'games_repository.dart';
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../themes/app_theme.dart';
-import '../../features/social/data/models/chat_message_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
 import '../../features/social/presentation/widgets/chat/chat_bubble.dart';
 import '../../widgets/avatar_widget.dart';
 import '../../utils/enums/social_enums.dart';

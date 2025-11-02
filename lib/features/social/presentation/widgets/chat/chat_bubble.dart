@@ -7,8 +7,8 @@ import '../../../../../themes/app_text_styles.dart';
 import '../../../../../utils/formatters/time_formatter.dart';
 import '../../../../../utils/enums/social_enums.dart'; // For MessageType
 // Removed broken image/video widget imports
-import '../../../data/models/chat_message_model.dart';
-import '../../../../../core/models/user_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart';
 import 'message_status_indicator.dart';
 
 /// Message bubble types

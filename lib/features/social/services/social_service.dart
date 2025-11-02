@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../data/models/post_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
 import '../../../utils/enums/social_enums.dart';
 
 class SocialService {

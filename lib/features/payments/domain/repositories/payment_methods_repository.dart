@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/payment_method.dart';
+import 'package:dabbler/data/models/payments/payment_method.dart';
 
 /// Payment methods repository interface
 abstract class PaymentMethodsRepository {

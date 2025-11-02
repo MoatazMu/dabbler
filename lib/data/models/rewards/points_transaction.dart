@@ -1,4 +1,4 @@
-import '../../../core/entities/base_entity.dart';
+import 'package:dabbler/features/core/entities/base_entity.dart';
 
 /// Entity representing a points transaction (earning or spending)
 class PointsTransaction extends BaseEntity {

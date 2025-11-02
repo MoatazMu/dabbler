@@ -1,9 +1,9 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
-import '../../domain/entities/payment_method.dart';
+import 'package:dabbler/data/models/payments/payment_method.dart';
 import '../../domain/repositories/payment_methods_repository.dart';
 import '../datasources/payment_methods_datasource.dart';
-import '../models/payment_method_model.dart';
+import 'package:dabbler/data/models/payments/payment_method_model.dart';
 
 /// Implementation of payment methods repository
 class PaymentMethodsRepositoryImpl implements PaymentMethodsRepository {

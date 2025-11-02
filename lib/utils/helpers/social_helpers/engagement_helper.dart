@@ -1,5 +1,5 @@
 import 'dart:math';
-import '../../../features/social/data/models/post_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
 
 /// Helper class for calculating engagement metrics
 class EngagementHelper {

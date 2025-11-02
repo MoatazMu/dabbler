@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../domain/entities/achievement.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
 
 enum BadgeRarity { common, uncommon, rare, epic, legendary, mythic }
 

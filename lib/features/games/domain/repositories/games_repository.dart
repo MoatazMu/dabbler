@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/game.dart';
-import '../entities/player.dart';
+import 'package:dabbler/data/models/games/game.dart';
+import 'package:dabbler/data/models/games/player.dart';
 
 abstract class GamesRepository {
   /// Creates a new game with the provided data

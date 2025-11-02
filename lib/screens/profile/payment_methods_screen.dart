@@ -4,7 +4,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/custom_app_bar.dart';
-import '../../features/payments/domain/entities/payment_method.dart' as pm;
+import 'package:dabbler/data/models/payments/payment_method.dart' as pm;
 import '../../features/payments/presentation/providers/payment_providers.dart';
 import '../../core/services/auth_service.dart';
 

@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import '../package:dabbler/core/fp/failure.dart';
-import '../entities/post.dart';
-import '../entities/chat_message.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/social/post.dart';
+import 'package:dabbler/data/models/social/chat_message.dart';
 
 /// Main social repository interface that coordinates all social features
 abstract class SocialRepository {

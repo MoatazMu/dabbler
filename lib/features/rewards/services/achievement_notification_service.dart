@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-import '../domain/entities/achievement.dart';
-import '../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import '../presentation/widgets/celebrations/achievement_notification.dart';
 import '../presentation/widgets/celebrations/confetti_animation.dart';
 

@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/notification.dart';
+import 'package:dabbler/data/models/notifications/notification.dart';
 
 /// Repository interface for notifications
 abstract class NotificationsRepository {

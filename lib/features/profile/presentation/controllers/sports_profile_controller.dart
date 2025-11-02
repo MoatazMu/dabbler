@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/sports_profile.dart';
+import 'package:dabbler/data/models/profile/sports_profile.dart';
 import '../../domain/usecases/manage_sports_profile_usecase.dart';
 import 'package:dabbler/core/fp/failure.dart';
 

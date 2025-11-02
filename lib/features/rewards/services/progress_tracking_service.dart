@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../domain/entities/achievement.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
 import '../domain/repositories/rewards_repository.dart';
 import 'rewards_service.dart';
 

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:math' as math;
 
-import '../../domain/entities/achievement.dart';
-import '../../domain/entities/badge_tier.dart';
-import '../../domain/entities/user_progress.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
 
 enum ProgressSize { small, medium, large }
 

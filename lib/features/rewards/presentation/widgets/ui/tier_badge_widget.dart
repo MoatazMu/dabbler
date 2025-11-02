@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 
 /// A simple tier badge widget for displaying user tiers
 class TierBadgeWidget extends StatelessWidget {

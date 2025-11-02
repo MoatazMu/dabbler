@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../../../domain/entities/achievement.dart';
-import '../../../domain/entities/user_progress.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
 
 enum AchievementCardMode { grid, list }
 

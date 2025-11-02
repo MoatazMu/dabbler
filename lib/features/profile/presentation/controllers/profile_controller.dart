@@ -1,7 +1,7 @@
 import 'package:dabbler/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/user_profile.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
 import '../../domain/usecases/update_profile_usecase.dart';
 import '../../domain/usecases/calculate_profile_completion_usecase.dart';
 import 'package:dabbler/core/fp/failure.dart';

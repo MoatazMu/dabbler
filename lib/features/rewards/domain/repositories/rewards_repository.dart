@@ -1,13 +1,13 @@
 import 'package:fpdart/fpdart.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/achievement.dart';
-import '../entities/user_progress.dart';
-import '../entities/badge.dart';
-import '../entities/badge_tier.dart';
-import '../entities/tier.dart';
-import '../entities/leaderboard_entry.dart';
-import '../entities/point_transaction.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
+import 'package:dabbler/data/models/rewards/badge.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/tier.dart';
+import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
+import 'package:dabbler/data/models/rewards/points_transaction.dart';
 
 /// Event types for tracking user actions
 enum EventType {

@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/usecases/add_friend_usecase.dart';
-import '../../data/models/friend_request_model.dart';
-import 'package:dabbler/core/models/user_model.dart' as core;
-import '../../domain/entities/friend_request.dart';
+import 'package:dabbler/data/models/social/friend_request_model.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart' as core;
+import 'package:dabbler/data/models/social/friend_request.dart';
 
 /// State for friend requests management
 class FriendRequestsState {

@@ -1,6 +1,6 @@
 // Social post validation utilities
-import '../../../features/social/data/models/post_model.dart';
-import '../../../features/profile/domain/entities/user_profile.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
 import '../../constants/social_constants.dart';
 import 'text_content_validator.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import '../models/models.dart';
+import 'package:dabbler/data/models/models.dart';
 
 /// Progress callback for file upload operations
 typedef UploadProgressCallback = void Function(double progress);

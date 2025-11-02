@@ -1,5 +1,5 @@
-import '../models/friend_model.dart';
-import '../../domain/entities/friend.dart';
+import 'package:dabbler/data/models/social/friend_model.dart';
+import 'package:dabbler/data/models/social/friend.dart';
 
 /// Exception types for friends data source operations
 class FriendsDataSourceException implements Exception {

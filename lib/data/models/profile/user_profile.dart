@@ -1,4 +1,4 @@
-import '../../../authentication/domain/entities/user.dart';
+import 'package:dabbler/data/models/authentication/user.dart';
 import 'sports_profile.dart';
 import 'profile_statistics.dart';
 import 'privacy_settings.dart';

@@ -1,11 +1,11 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/errors/exceptions.dart';
-import '../../domain/entities/game.dart';
-import '../../domain/entities/player.dart';
+import 'package:dabbler/data/models/games/game.dart';
+import 'package:dabbler/data/models/games/player.dart';
 import '../../domain/repositories/games_repository.dart';
 import '../datasources/games_remote_data_source.dart';
-import '../models/game_model.dart';
+import 'package:dabbler/data/models/games/game_model.dart';
 
 // Additional failures for games
 class ServerFailure extends Failure {

@@ -1,5 +1,5 @@
-import '../models/venue_model.dart';
-import '../models/sport_config_model.dart';
+import 'package:dabbler/data/models/games/venue_model.dart';
+import 'package:dabbler/data/models/games/sport_config_model.dart';
 
 class TimeSlotModel {
   final String startTime;

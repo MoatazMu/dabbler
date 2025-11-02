@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../models/booking_model.dart';
+import 'package:dabbler/data/models/games/booking_model.dart';
 import 'bookings_remote_data_source.dart';
 
 // Custom exceptions for bookings

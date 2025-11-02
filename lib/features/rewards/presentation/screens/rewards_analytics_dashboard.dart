@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:dabbler/features/rewards/domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
 
 class RewardsAnalyticsDashboard extends ConsumerStatefulWidget {

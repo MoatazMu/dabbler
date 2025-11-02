@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/point_transaction.dart';
-import '../../domain/entities/tier.dart';
+import 'package:dabbler/data/models/rewards/points_transaction.dart';
+import 'package:dabbler/data/models/rewards/tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// Overall state for the rewards system

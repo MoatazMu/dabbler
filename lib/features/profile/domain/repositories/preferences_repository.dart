@@ -1,6 +1,6 @@
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
-import '../entities/user_preferences.dart';
+import 'package:dabbler/data/models/profile/user_preferences.dart';
 
 /// Repository interface for user preferences related to games, location, and social settings
 /// Handles complex data like availability schedules and location-based preferences

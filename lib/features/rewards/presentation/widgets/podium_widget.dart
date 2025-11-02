@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../domain/entities/leaderboard_entry.dart';
+import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
 
 class PodiumWidget extends StatefulWidget {
   final List<LeaderboardEntry> entries;

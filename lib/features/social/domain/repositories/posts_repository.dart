@@ -2,9 +2,9 @@ import 'package:fpdart/fpdart.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../utils/enums/social_enums.dart';
-import '../../data/models/post_model.dart';
-import '../../data/models/social_feed_model.dart';
-import '../../data/models/reaction_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/data/models/social/social_feed_model.dart';
+import 'package:dabbler/data/models/social/reaction_model.dart';
 
 /// Abstract repository for posts and social feed operations
 abstract class PostsRepository {

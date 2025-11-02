@@ -9,11 +9,11 @@ import '../../data/repositories/profile_repository_impl.dart';
 import '../../../../core/services/auth_service.dart';
 
 // Domain layer imports
-import '../../domain/entities/user_profile.dart';
-import '../../domain/entities/user_settings.dart';
-import '../../domain/entities/user_preferences.dart';
-import '../../domain/entities/privacy_settings.dart';
-import '../../domain/entities/sports_profile.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
+import 'package:dabbler/data/models/profile/user_settings.dart';
+import 'package:dabbler/data/models/profile/user_preferences.dart';
+import 'package:dabbler/data/models/profile/privacy_settings.dart';
+import 'package:dabbler/data/models/profile/sports_profile.dart';
 
 // Controller imports
 import '../controllers/profile_controller.dart';

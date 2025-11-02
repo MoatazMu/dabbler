@@ -1,4 +1,4 @@
-import '../models/booking_model.dart';
+import 'package:dabbler/data/models/games/booking_model.dart';
 
 abstract class BookingsRemoteDataSource {
   Future<BookingModel> createBooking(

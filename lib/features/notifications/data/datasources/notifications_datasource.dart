@@ -1,5 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/notification_model.dart';
+import 'package:dabbler/data/models/notifications/notification_model.dart';
 
 /// Exception for notification operations
 class NotificationException implements Exception {

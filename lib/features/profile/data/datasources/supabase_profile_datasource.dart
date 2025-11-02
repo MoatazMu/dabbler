@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart' hide StorageException;
 import 'profile_remote_datasource.dart';
-import '../models/models.dart';
+import 'package:dabbler/data/models/models.dart';
 
 /// Supabase implementation of ProfileRemoteDataSource
 class SupabaseProfileDataSource implements ProfileRemoteDataSource {

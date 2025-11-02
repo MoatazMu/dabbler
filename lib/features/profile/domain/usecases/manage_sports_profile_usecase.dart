@@ -1,7 +1,7 @@
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
-import '../entities/sports_profile.dart';
-import '../entities/user_profile.dart';
+import 'package:dabbler/data/models/profile/sports_profile.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
 import '../repositories/profile_repository.dart';
 
 /// Parameters for managing sports profile

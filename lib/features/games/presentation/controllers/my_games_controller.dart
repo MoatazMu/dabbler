@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
-import '../../domain/entities/game.dart';
+import 'package:dabbler/data/models/games/game.dart';
 import '../../domain/usecases/cancel_game_usecase.dart';
 import '../../domain/repositories/games_repository.dart';
 

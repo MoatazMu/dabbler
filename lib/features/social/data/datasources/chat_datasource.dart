@@ -1,8 +1,8 @@
 import 'dart:io';
 import '../../../../utils/enums/social_enums.dart'; // For MessageType enum
-import '../models/chat_message_model.dart';
-import '../models/conversation_model.dart';
-import '../../domain/entities/post.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
+import 'package:dabbler/data/models/social/conversation_model.dart';
+import 'package:dabbler/data/models/social/post.dart';
 
 /// Exception types for chat data source operations
 class ChatDataSourceException implements Exception {

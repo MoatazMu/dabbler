@@ -8,8 +8,8 @@ import '../controllers/register_controller.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
-import '../../domain/entities/user.dart';
-import '../../domain/entities/auth_session.dart';
+import 'package:dabbler/data/models/authentication/user.dart';
+import 'package:dabbler/data/models/authentication/auth_session.dart';
 import '../../../../core/services/auth_service.dart';
 
 // Use the working AuthService instead of unimplemented repository

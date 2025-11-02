@@ -1,4 +1,4 @@
-import '../../domain/entities/profile_statistics.dart';
+import 'package:dabbler/data/models/profile/profile_statistics.dart';
 
 /// Profile statistics repository interface
 class ProfileStatsRepository {

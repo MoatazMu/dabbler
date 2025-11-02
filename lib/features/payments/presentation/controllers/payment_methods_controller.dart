@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/payment_method.dart';
+import 'package:dabbler/data/models/payments/payment_method.dart';
 import '../../domain/repositories/payment_methods_repository.dart';
 
 /// Payment methods state

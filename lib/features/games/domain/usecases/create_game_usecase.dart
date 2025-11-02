@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../features/authentication/domain/usecases/usecase.dart';
-import '../entities/game.dart';
+import 'package:dabbler/data/models/games/game.dart';
 import '../repositories/games_repository.dart';
 import '../repositories/venues_repository.dart';
 import '../repositories/bookings_repository.dart';

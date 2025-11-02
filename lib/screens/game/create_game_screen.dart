@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/models/game_creation_model.dart';
+import 'package:dabbler/data/models/core/game_creation_model.dart';
 import '../../core/viewmodels/game_creation_viewmodel.dart';
 import '../../routes/route_arguments.dart';
 import '../../themes/app_theme.dart';

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supa;
-import '../../domain/entities/user.dart';
-import '../../domain/entities/auth_session.dart';
+import 'package:dabbler/data/models/authentication/user.dart';
+import 'package:dabbler/data/models/authentication/auth_session.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/usecase.dart';
 import 'package:dabbler/core/services/auth_service.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../core/models/match_model.dart';
+import 'package:dabbler/data/models/core/match_model.dart';
 import '../../themes/app_theme.dart';
 import '../../widgets/app_button.dart';
 import '../../widgets/avatar_widget.dart';

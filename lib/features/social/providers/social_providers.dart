@@ -3,8 +3,8 @@ import '../presentation/controllers/chat_controller.dart';
 import '../presentation/controllers/friends_controller.dart';
 import '../presentation/controllers/posts_controller.dart';
 import '../presentation/controllers/social_feed_controller.dart';
-import '../data/models/chat_message_model.dart';
-import '../data/models/conversation_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
+import 'package:dabbler/data/models/social/conversation_model.dart';
 import '../../../../utils/enums/social_enums.dart'; // Import MessageType
 
 // =============================================================================

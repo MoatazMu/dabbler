@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../themes/app_theme.dart';
 import '../../features/games/providers/games_providers.dart';
-import '../../features/games/domain/entities/game.dart';
+import 'package:dabbler/data/models/games/game.dart';
 import '../../features/games/presentation/screens/join_game/game_detail_screen.dart';
 
 class MatchListScreen extends ConsumerStatefulWidget {

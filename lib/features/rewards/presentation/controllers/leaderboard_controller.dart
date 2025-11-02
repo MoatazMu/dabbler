@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/leaderboard_entry.dart';
+import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// Leaderboard sorting options

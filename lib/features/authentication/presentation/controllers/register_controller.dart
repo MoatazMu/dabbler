@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/usecases/register_usecase.dart';
-import '../../domain/entities/auth_session.dart';
-import '../../domain/entities/user.dart';
+import 'package:dabbler/data/models/authentication/auth_session.dart';
+import 'package:dabbler/data/models/authentication/user.dart';
 
 class RegisterFormState {
   final String email;

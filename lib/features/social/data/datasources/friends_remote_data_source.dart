@@ -1,5 +1,5 @@
-import '../models/friend_model.dart';
-import '../../domain/entities/friend.dart';
+import 'package:dabbler/data/models/social/friend_model.dart';
+import 'package:dabbler/data/models/social/friend.dart';
 
 /// Abstract interface for friends remote data source
 abstract class FriendsRemoteDataSource {

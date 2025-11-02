@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 
 enum TierDisplayMode { frame, badge, progress, comparison }
 

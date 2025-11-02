@@ -6,9 +6,9 @@ import 'package:share_plus/share_plus.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 import '../../../../themes/app_theme.dart';
-import '../../domain/entities/leaderboard_entry.dart';
-import '../../domain/entities/badge_tier.dart';
-import '../../domain/entities/tier.dart';
+import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
 import '../controllers/leaderboard_controller.dart';
 import '../providers/rewards_providers.dart';

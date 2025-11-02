@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
-import '../entities/user_profile.dart';
-import '../entities/sports_profile.dart';
-import '../entities/profile_statistics.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
+import 'package:dabbler/data/models/profile/sports_profile.dart';
+import 'package:dabbler/data/models/profile/profile_statistics.dart';
 
 /// Progress callback for file upload operations
 typedef UploadProgressCallback = void Function(double progress);

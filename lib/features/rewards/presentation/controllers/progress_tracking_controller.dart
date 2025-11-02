@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/user_progress.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// Progress milestone types

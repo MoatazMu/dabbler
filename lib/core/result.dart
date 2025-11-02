@@ -1,1 +1,1 @@
-export 'types/result.dart';
+export 'fp/result.dart';

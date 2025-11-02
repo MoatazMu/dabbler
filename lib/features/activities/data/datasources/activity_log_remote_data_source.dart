@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../domain/entities/activity_log.dart';
-import '../models/activity_log_model.dart';
+import 'package:dabbler/data/models/activities/activity_log.dart';
+import 'package:dabbler/data/models/activities/activity_log_model.dart';
 
 /// Remote data source for activity logs using Supabase
 abstract class ActivityLogRemoteDataSource {

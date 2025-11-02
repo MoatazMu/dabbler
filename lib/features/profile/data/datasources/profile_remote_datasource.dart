@@ -1,5 +1,5 @@
 import 'dart:io';
-import '../models/models.dart';
+import 'package:dabbler/data/models/models.dart';
 
 /// Exception types for remote data source operations
 class ProfileRemoteDataSourceException implements Exception {

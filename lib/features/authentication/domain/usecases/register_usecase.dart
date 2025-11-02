@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/auth_session.dart';
+import 'package:dabbler/data/models/authentication/auth_session.dart';
 import '../repositories/auth_repository.dart';
 import 'usecase.dart';
 

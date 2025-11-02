@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
-import '../models/user_model.dart';
-import '../models/auth_response_model.dart';
-import '../../domain/entities/auth_session.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart';
+import 'package:dabbler/data/models/authentication/auth_response_model.dart';
+import 'package:dabbler/data/models/authentication/auth_session.dart';
 // Removed unused direct user entity import; using UserModel conversion
 import 'auth_remote_datasource.dart';
 import '../../../../core/errors/exceptions.dart';

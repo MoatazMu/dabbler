@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/badge.dart';
-import '../../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/badge.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// Badge collection sorting options

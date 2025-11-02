@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../domain/entities/activity_log.dart';
+import 'package:dabbler/data/models/activities/activity_log.dart';
 import '../../domain/usecases/activity_usecases.dart';
 import '../../domain/repositories/activity_log_repository.dart';
 import '../../data/datasources/activity_log_remote_data_source.dart';

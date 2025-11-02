@@ -1,8 +1,8 @@
 import 'package:fpdart/fpdart.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/friend.dart';
-import '../../data/models/friend_model.dart';
+import 'package:dabbler/data/models/social/friend.dart';
+import 'package:dabbler/data/models/social/friend_model.dart';
 
 /// Abstract repository for friend management operations
 abstract class FriendsRepository {

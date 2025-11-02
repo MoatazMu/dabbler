@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/game.dart';
+import 'package:dabbler/data/models/games/game.dart';
 import '../../domain/usecases/find_games_usecase.dart';
 
 enum GameListType { upcoming, nearby, all }

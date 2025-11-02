@@ -6,7 +6,7 @@ import '../../themes/app_theme.dart';
 import '../../features/social/presentation/widgets/feed/post_card.dart';
 import '../../widgets/thoughts_input.dart';
 import '../../widgets/custom_app_bar.dart';
-import '../../features/social/data/models/post_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
 import '../../features/social/services/social_service.dart';
 import '../../features/social/services/social_rewards_handler.dart';
 import '../../core/services/auth_service.dart';

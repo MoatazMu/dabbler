@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/conversation_model.dart';
-import '../../../data/models/chat_message_model.dart';
+import 'package:dabbler/data/models/social/conversation_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
 
 class ConversationTile extends StatelessWidget {
   final ConversationModel conversation;

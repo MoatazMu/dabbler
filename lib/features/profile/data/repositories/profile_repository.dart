@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/services/profile_cache_service.dart';
-import '../../domain/entities/user_profile.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
 // Import for future exception handling when implementing actual Supabase functionality
 
 /// Profile repository interface

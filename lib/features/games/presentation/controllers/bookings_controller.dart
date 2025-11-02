@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/booking.dart';
+import 'package:dabbler/data/models/games/booking.dart';
 import '../../domain/repositories/bookings_repository.dart';
 
 class BookingsState {

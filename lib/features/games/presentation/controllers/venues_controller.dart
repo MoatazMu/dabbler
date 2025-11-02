@@ -4,7 +4,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/result.dart' as core;
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../data/repositories/geo_repository.dart' as geo;
-import '../../domain/entities/venue.dart' as domain;
+import 'package:dabbler/data/models/games/venue.dart' as domain;
 import '../../domain/repositories/venues_repository.dart' as repo;
 
 typedef Result<T> = core.Result<T, Failure>;

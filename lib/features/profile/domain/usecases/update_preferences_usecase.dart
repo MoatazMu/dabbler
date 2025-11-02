@@ -1,6 +1,6 @@
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
-import '../entities/user_preferences.dart';
+import 'package:dabbler/data/models/profile/user_preferences.dart';
 import '../repositories/preferences_repository.dart';
 
 /// Parameters for updating preferences

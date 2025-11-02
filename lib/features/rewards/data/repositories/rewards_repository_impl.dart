@@ -2,13 +2,13 @@ import 'dart:async';
 import 'package:fpdart/fpdart.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../../domain/entities/achievement.dart';
-import '../../domain/entities/user_progress.dart';
-import '../../domain/entities/badge.dart';
-import '../../domain/entities/badge_tier.dart';
-import '../../domain/entities/tier.dart';
-import '../../domain/entities/leaderboard_entry.dart';
-import '../../domain/entities/point_transaction.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
+import 'package:dabbler/data/models/rewards/badge.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/tier.dart';
+import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
+import 'package:dabbler/data/models/rewards/points_transaction.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// Simple implementation of RewardsRepository with placeholder methods

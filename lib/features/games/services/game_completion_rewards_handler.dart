@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../rewards/domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 
 /// Game completion integration with rewards system
 class GameCompletionRewardsHandler {

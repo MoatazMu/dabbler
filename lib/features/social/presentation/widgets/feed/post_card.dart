@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../data/models/post_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
 import '../../../../../themes/app_theme.dart';
 
 /// A card widget for displaying social posts in the feed

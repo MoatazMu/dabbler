@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../entities/post.dart'; // For ConversationType
+import 'package:dabbler/data/models/social/post.dart'; // For ConversationType
 import '../../../../utils/enums/social_enums.dart'; // For MessageType
-import '../../data/models/conversation_model.dart';
-import '../../data/models/chat_message_model.dart';
+import 'package:dabbler/data/models/social/conversation_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
 
 /// Abstract repository for chat and conversation operations
 abstract class ChatRepository {

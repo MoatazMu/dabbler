@@ -6,7 +6,7 @@ import '../../../../../themes/app_colors.dart';
 import '../../../../../themes/app_text_styles.dart';
 import '../../../../../utils/formatters/time_formatter.dart';
 import '../../../../../core/widgets/shimmer_loading.dart';
-import '../../../../../core/models/user_model.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart';
 
 /// A reusable tile widget for displaying friend information
 /// with online status, activity, and quick actions

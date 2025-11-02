@@ -1,9 +1,9 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
-import '../../domain/entities/activity_log.dart';
+import 'package:dabbler/data/models/activities/activity_log.dart';
 import '../../domain/repositories/activity_log_repository.dart';
 import '../datasources/activity_log_remote_data_source.dart';
-import '../models/activity_log_model.dart';
+import 'package:dabbler/data/models/activities/activity_log_model.dart';
 
 /// Implementation of ActivityLogRepository
 class ActivityLogRepositoryImpl implements ActivityLogRepository {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../rewards/services/rewards_service_stub.dart' as rewards;
-import '../../../rewards/domain/entities/achievement.dart';
-import '../../../rewards/domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import '../../../rewards/presentation/widgets/ui/tier_badge_widget.dart';
 
 /// Profile integration with rewards system

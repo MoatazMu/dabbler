@@ -3,15 +3,15 @@ import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
-import '../../domain/entities/achievement.dart';
-import '../../domain/entities/user_progress.dart';
-import '../../domain/entities/point_transaction.dart';
-import '../../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
+import 'package:dabbler/data/models/rewards/points_transaction.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 
-import '../models/achievement_model.dart';
-import '../models/user_progress_model.dart';
-import '../models/badge_model.dart';
-import '../models/tier_model.dart';
+import 'package:dabbler/data/models/rewards/achievement_model.dart';
+import 'package:dabbler/data/models/rewards/user_progress_model.dart';
+import 'package:dabbler/data/models/rewards/badge_model.dart';
+import 'package:dabbler/data/models/rewards/tier_model.dart';
 
 /// Local SQLite data source for rewards system
 /// Handles offline storage, caching, and sync status tracking

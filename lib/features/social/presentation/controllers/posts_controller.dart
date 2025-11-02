@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/usecases/create_post_usecase.dart';
-import '../../data/models/post_model.dart';
-import '../../../../core/models/user_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart';
 import '../../../../utils/enums/social_enums.dart';
 
 /// State for post creation and management

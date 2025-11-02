@@ -1,12 +1,12 @@
 import 'package:fpdart/fpdart.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../../domain/entities/venue.dart';
-import '../../domain/entities/sport_config.dart';
+import 'package:dabbler/data/models/games/venue.dart';
+import 'package:dabbler/data/models/games/sport_config.dart';
 import '../../domain/repositories/venues_repository.dart';
 import '../datasources/venues_remote_data_source.dart';
-import '../models/venue_model.dart';
-import '../models/sport_config_model.dart';
+import 'package:dabbler/data/models/games/venue_model.dart';
+import 'package:dabbler/data/models/games/sport_config_model.dart';
 
 // Custom exceptions for venues
 class VenueServerException implements Exception {

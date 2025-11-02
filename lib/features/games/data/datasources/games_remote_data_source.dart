@@ -1,5 +1,5 @@
-import '../models/game_model.dart';
-import '../models/player_model.dart';
+import 'package:dabbler/data/models/games/game_model.dart';
+import 'package:dabbler/data/models/games/player_model.dart';
 
 // Custom exceptions for game operations
 class GameServerException implements Exception {

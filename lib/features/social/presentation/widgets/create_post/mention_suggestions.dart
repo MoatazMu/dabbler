@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/models/user_model.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart';
 
 class MentionSuggestions extends StatelessWidget {
   final List<UserModel> suggestions;
