@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/types/result.dart';
+import '../../core/result.dart';
 import '../../services/supabase/supabase_service.dart';
 import '../../data/models/squad.dart';
 import '../../data/models/squad_invite.dart';

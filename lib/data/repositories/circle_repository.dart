@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import '../../core/result.dart';
 import '../models/circle_contact.dart';
 
 /// Circle/Feed repository (views + RPCs).

@@ -1,9 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fpdart/fpdart.dart';
-
-import '../../../../core/types/result.dart';
-import '../../../../data/repositories/geo_repository.dart' as geo;
-import '../../domain/entities/venue.dart' as domain;
+import '../../domain/entities/venue.dart';
 import '../../domain/repositories/venues_repository.dart' as repo;
 
 enum VenueSortBy {
@@ -69,7 +65,7 @@ class VenueFilters {
 }
 
 class VenueWithDistance {
-  final domain.Venue venue;
+  final Venue venue;
   final double distanceKm;
   final bool isAvailable;
   final bool isFavorite;
@@ -82,7 +78,7 @@ class VenueWithDistance {
   });
 
   VenueWithDistance copyWith({
-    domain.Venue? venue,
+    Venue? venue,
     double? distanceKm,
     bool? isAvailable,
     bool? isFavorite,
@@ -111,7 +107,7 @@ class VenueWithDistance {
 
 class VenuesState {
   final List<VenueWithDistance> venues;
-  final List<domain.Venue> favoriteVenues;
+  final List<Venue> favoriteVenues;
   final bool isLoading;
   final bool isLoadingFavorites;
   final String? error;
@@ -152,7 +148,7 @@ class VenuesState {
 
   VenuesState copyWith({
     List<VenueWithDistance>? venues,
-    List<domain.Venue>? favoriteVenues,
+    List<Venue>? favoriteVenues,
     bool? isLoading,
     bool? isLoadingFavorites,
     String? error,
@@ -181,15 +177,10 @@ class VenuesState {
 
 class VenuesController extends StateNotifier<VenuesState> {
   final repo.VenuesRepository _venuesRepository;
-  final geo.GeoRepository _geoRepository;
 
   static const Duration _cacheValidity = Duration(minutes: 10);
 
-  VenuesController(
-    this._venuesRepository, {
-    required geo.GeoRepository geoRepository,
-  })  : _geoRepository = geoRepository,
-        super(const VenuesState());
+  VenuesController(this._venuesRepository) : super(const VenuesState());
 
   /// Set user location and load nearby venues
   Future<void> setUserLocation(double latitude, double longitude) async {
@@ -225,15 +216,13 @@ class VenuesController extends StateNotifier<VenuesState> {
       // Don't pass 'distance' to database - it's not a column, we calculate it client-side
       final dbSortBy = state.sortBy == VenueSortBy.distance ? 'name' : state.sortBy.name;
       
-      final venuesResult = await _venuesRepository.getVenues(
+      final result = await _venuesRepository.getVenues(
         filters: repoFilters,
         sortBy: dbSortBy,
         ascending: state.ascending,
       );
 
-      final filteredResult = await _applyGeoFiltering(venuesResult);
-
-      filteredResult.fold(
+      result.fold(
         (failure) {
           print('❌ [CONTROLLER] Failed to load venues: ${failure.message}');
           state = state.copyWith(
@@ -243,7 +232,7 @@ class VenuesController extends StateNotifier<VenuesState> {
         },
         (venues) {
           print('✅ [CONTROLLER] Loaded ${venues.length} venues successfully');
-
+          
           final venuesWithDistance = venues.map((venue) {
             final distance = state.hasLocation
                 ? _calculateDistance(
@@ -280,57 +269,6 @@ class VenuesController extends StateNotifier<VenuesState> {
         error: 'Failed to load venues: $e',
       );
     }
-  }
-
-  Future<Result<List<domain.Venue>>> _applyGeoFiltering(
-    Result<List<domain.Venue>> baseResult,
-  ) {
-    if (!state.hasLocation) {
-      return Future.value(baseResult);
-    }
-
-    return baseResult.fold(
-      (failure) async => left(failure),
-      (venues) async {
-        final radiusMeters = (state.filters.maxDistance ?? 10.0) * 1000;
-        final geoLimit = venues.isEmpty
-            ? 20
-            : (venues.length > 50 ? 50 : venues.length);
-        final geoResult = await _geoRepository.nearbyVenues(
-          lat: state.userLatitude!,
-          lng: state.userLongitude!,
-          radiusMeters: radiusMeters,
-          limit: geoLimit,
-        );
-
-        return geoResult.fold(
-          (geoFailure) {
-            print('⚠️ [CONTROLLER] Geo lookup failed: ${geoFailure.message}');
-            return right(venues);
-          },
-          (geoVenues) {
-            if (geoVenues.isEmpty) {
-              return right(<domain.Venue>[]);
-            }
-
-            final order = <String, int>{};
-            for (var i = 0; i < geoVenues.length; i++) {
-              order[geoVenues[i].id] = i;
-            }
-
-            final filtered = venues
-                .where((venue) => order.containsKey(venue.id))
-                .toList();
-
-            filtered.sort(
-              (a, b) => order[a.id]!.compareTo(order[b.id]!),
-            );
-
-            return right(filtered);
-          },
-        );
-      },
-    );
   }
 
   /// Update filters and reload venues

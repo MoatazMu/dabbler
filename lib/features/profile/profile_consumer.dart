@@ -57,7 +57,9 @@ class _ProfileView extends StatelessWidget {
       );
     }
 
-    final username = '@${profile!.username}';
+    final username = profile!.username != null
+        ? '@${profile!.username}'
+        : 'No username';
 
     return Column(
       mainAxisSize: MainAxisSize.min,

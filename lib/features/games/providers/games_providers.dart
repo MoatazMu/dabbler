@@ -5,7 +5,6 @@ import '../presentation/controllers/game_detail_controller.dart';
 import '../presentation/controllers/venues_controller.dart';
 import '../presentation/controllers/my_games_controller.dart';
 import '../presentation/controllers/bookings_controller.dart';
-import 'package:dabbler/core/providers/geo_providers.dart';
 import '../domain/usecases/find_games_usecase.dart';
 import '../domain/usecases/join_game_usecase.dart';
 import '../domain/entities/game.dart';
@@ -18,7 +17,6 @@ import '../data/datasources/supabase_games_datasource.dart';
 import '../data/datasources/venues_datasource.dart';
 import '../data/datasources/bookings_datasource.dart';
 import '../data/datasources/bookings_remote_data_source.dart';
-import 'package:dabbler/data/repositories/joinability_repository_impl.dart';
 
 // =============================================================================
 // DATA SOURCE PROVIDERS
@@ -39,7 +37,7 @@ final venuesDataSourceProvider = Provider<SupabaseVenuesDataSource>((ref) {
   return SupabaseVenuesDataSource(ref.watch(supabaseClientProvider));
 });
 
-/// Provides the bookings remote data source
+/// Provides the bookings remote data source  
 final bookingsDataSourceProvider = Provider<BookingsDataSource>((ref) {
   return SupabaseBookingsDataSource(ref.watch(supabaseClientProvider));
 });
@@ -50,11 +48,6 @@ final bookingsDataSourceProvider = Provider<BookingsDataSource>((ref) {
 
 /// Provides the games repository with Supabase implementation
 final gamesRepositoryProvider = Provider((ref) {
-  return ref.watch(featuresGamesRepositoryProvider);
-});
-
-/// Features layer games repository (the correct one to use)
-final featuresGamesRepositoryProvider = Provider((ref) {
   return GamesRepositoryImpl(
     remoteDataSource: ref.watch(gamesDataSourceProvider),
   );
@@ -70,8 +63,7 @@ final venuesRepositoryProvider = Provider((ref) {
 /// Provides the bookings repository
 final bookingsRepositoryProvider = Provider<BookingsRepository>((ref) {
   return BookingsRepositoryImpl(
-    remoteDataSource:
-        ref.watch(bookingsDataSourceProvider) as BookingsRemoteDataSource,
+    remoteDataSource: ref.watch(bookingsDataSourceProvider) as BookingsRemoteDataSource,
   );
 });
 
@@ -80,7 +72,9 @@ final bookingsRepositoryProvider = Provider<BookingsRepository>((ref) {
 // =============================================================================
 
 final findGamesUseCaseProvider = Provider<FindGamesUseCase>((ref) {
-  return FindGamesUseCase(gamesRepository: ref.watch(gamesRepositoryProvider));
+  return FindGamesUseCase(
+    gamesRepository: ref.watch(gamesRepositoryProvider),
+  );
 });
 
 // final createGameUseCaseProvider = Provider<CreateGameUseCase>((ref) {
@@ -97,7 +91,9 @@ final findGamesUseCaseProvider = Provider<FindGamesUseCase>((ref) {
 // });
 
 final joinGameUseCaseProvider = Provider<JoinGameUseCase>((ref) {
-  return JoinGameUseCase(gamesRepository: ref.watch(gamesRepositoryProvider));
+  return JoinGameUseCase(
+    gamesRepository: ref.watch(gamesRepositoryProvider),
+  );
 });
 
 // final cancelGameUseCaseProvider = Provider<CancelGameUseCase>((ref) {
@@ -117,12 +113,11 @@ final joinGameUseCaseProvider = Provider<JoinGameUseCase>((ref) {
 // =============================================================================
 
 /// Main games controller for discovering and browsing games
-final gamesControllerProvider =
-    StateNotifierProvider<GamesController, GamesState>((ref) {
-      return GamesController(
-        findGamesUseCase: ref.watch(findGamesUseCaseProvider),
-      );
-    });
+final gamesControllerProvider = StateNotifierProvider<GamesController, GamesState>((ref) {
+  return GamesController(
+    findGamesUseCase: ref.watch(findGamesUseCaseProvider),
+  );
+});
 
 // Create game controller for multi-step game creation
 // final createGameControllerProvider = StateNotifierProvider<CreateGameController, CreateGameState>((ref) {
@@ -132,61 +127,44 @@ final gamesControllerProvider =
 // });
 
 /// Venues controller for venue discovery and management
-final venuesControllerProvider =
-    StateNotifierProvider<VenuesController, VenuesState>((ref) {
-      final venuesRepository = ref.watch(venuesRepositoryProvider);
-      final geoRepository = ref.watch(geoRepositoryProvider);
-      return VenuesController(venuesRepository, geoRepository: geoRepository);
-    });
+final venuesControllerProvider = StateNotifierProvider<VenuesController, VenuesState>((ref) {
+  final venuesRepository = ref.watch(venuesRepositoryProvider);
+  return VenuesController(venuesRepository);
+});
 
 /// My games controller for user's personal game management
-final myGamesControllerProvider =
-    StateNotifierProvider.family<MyGamesController, MyGamesState, String>((
-      ref,
-      userId,
-    ) {
-      return MyGamesController(
-        cancelGameUseCase: null,
-        gamesRepository: ref.watch(gamesRepositoryProvider),
-        userId: userId,
-      );
-    });
+final myGamesControllerProvider = StateNotifierProvider.family<MyGamesController, MyGamesState, String>((ref, userId) {
+  return MyGamesController(
+    cancelGameUseCase: null,
+    gamesRepository: ref.watch(gamesRepositoryProvider),
+    userId: userId,
+  );
+});
 
 /// Bookings controller for user's venue bookings
-final bookingsControllerProvider =
-    StateNotifierProvider.family<BookingsController, BookingsState, String>((
-      ref,
-      userId,
-    ) {
-      return BookingsController(ref.watch(bookingsRepositoryProvider));
-    });
+final bookingsControllerProvider = StateNotifierProvider.family<BookingsController, BookingsState, String>((ref, userId) {
+  return BookingsController(
+    ref.watch(bookingsRepositoryProvider),
+  );
+});
 
 /// Game detail controller for individual game management (family provider for different games)
-final gameDetailControllerProvider =
-    StateNotifierProvider.family<
-      GameDetailController,
-      GameDetailState,
-      GameDetailParams
-    >((ref, params) {
-      return GameDetailController(
-        joinGameUseCase: ref.watch(joinGameUseCaseProvider),
-        gamesRepository: ref.watch(gamesRepositoryProvider),
-        venuesRepository: ref.watch(venuesRepositoryProvider),
-        joinabilityRepository: ref.watch(joinabilityRepositoryProvider),
-        gameId: params.gameId,
-        currentUserId: params.currentUserId,
-      );
-    });
+final gameDetailControllerProvider = StateNotifierProvider.family<GameDetailController, GameDetailState, GameDetailParams>((ref, params) {
+  return GameDetailController(
+    joinGameUseCase: ref.watch(joinGameUseCaseProvider),
+    gamesRepository: ref.watch(gamesRepositoryProvider),
+    venuesRepository: ref.watch(venuesRepositoryProvider),
+    gameId: params.gameId,
+    currentUserId: params.currentUserId,
+  );
+});
 
 // =============================================================================
 // CONVENIENCE PROVIDERS
 // =============================================================================
 
 /// Current user's games
-final myGamesProvider = Provider.family<MyGamesController, String>((
-  ref,
-  userId,
-) {
+final myGamesProvider = Provider.family<MyGamesController, String>((ref, userId) {
   return ref.watch(myGamesControllerProvider(userId).notifier);
 });
 
@@ -209,10 +187,7 @@ final todayGamesProvider = Provider.family<List<Game>, String>((ref, userId) {
 });
 
 /// This week's games for current user
-final thisWeekGamesProvider = Provider.family<List<Game>, String>((
-  ref,
-  userId,
-) {
+final thisWeekGamesProvider = Provider.family<List<Game>, String>((ref, userId) {
   final myGamesState = ref.watch(myGamesControllerProvider(userId));
   return myGamesState.thisWeekGames;
 });
@@ -227,19 +202,17 @@ final currentUserIdProvider = Provider<String?>((ref) {
 });
 
 /// Fetches user's upcoming games from Supabase
-final userUpcomingGamesProvider = FutureProvider.autoDispose<List<Game>>((
-  ref,
-) async {
+final userUpcomingGamesProvider = FutureProvider.autoDispose<List<Game>>((ref) async {
   final userId = ref.watch(currentUserIdProvider);
   if (userId == null) return [];
-
+  
   final repository = ref.watch(gamesRepositoryProvider);
   final result = await repository.getMyGames(
     userId,
     status: 'upcoming',
     limit: 50,
   );
-
+  
   return result.fold(
     (failure) {
       // Log error but return empty list to avoid breaking UI
@@ -257,7 +230,7 @@ final userUpcomingGamesProvider = FutureProvider.autoDispose<List<Game>>((
 /// Fetches user's next upcoming game
 final nextUpcomingGameProvider = Provider.autoDispose<AsyncValue<Game?>>((ref) {
   final gamesAsync = ref.watch(userUpcomingGamesProvider);
-
+  
   return gamesAsync.when(
     data: (games) {
       if (games.isEmpty) return const AsyncValue.data(null);
@@ -272,22 +245,20 @@ final nextUpcomingGameProvider = Provider.autoDispose<AsyncValue<Game?>>((ref) {
 /// Fetches all public games from Supabase (for Explore screen)
 final publicGamesProvider = FutureProvider.autoDispose<List<Game>>((ref) async {
   print('🔍 [DEBUG] publicGamesProvider: Fetching public games...');
-
+  
   final repository = ref.watch(gamesRepositoryProvider);
   final result = await repository.getGames(
     filters: {'is_public': true, 'status': 'upcoming'},
     limit: 100,
   );
-
+  
   return result.fold(
     (failure) {
       print('❌ [ERROR] publicGamesProvider: ${failure.message}');
       throw Exception(failure.message);
     },
     (games) {
-      print(
-        '✅ [DEBUG] publicGamesProvider: Loaded ${games.length} public games',
-      );
+      print('✅ [DEBUG] publicGamesProvider: Loaded ${games.length} public games');
       // Sort by date (earliest first)
       games.sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
       return games;
@@ -296,21 +267,13 @@ final publicGamesProvider = FutureProvider.autoDispose<List<Game>>((ref) async {
 });
 
 /// Active check-in reminders
-final activeRemindersProvider = Provider.family<List<CheckInReminder>, String>((
-  ref,
-  userId,
-) {
+final activeRemindersProvider = Provider.family<List<CheckInReminder>, String>((ref, userId) {
   final myGamesState = ref.watch(myGamesControllerProvider(userId));
-  return myGamesState.checkInReminders
-      .where((r) => r.isActive && r.shouldShowReminder)
-      .toList();
+  return myGamesState.checkInReminders.where((r) => r.isActive && r.shouldShowReminder).toList();
 });
 
 /// User's game statistics
-final gameStatisticsProvider = Provider.family<GameStatistics?, String>((
-  ref,
-  userId,
-) {
+final gameStatisticsProvider = Provider.family<GameStatistics?, String>((ref, userId) {
   final myGamesState = ref.watch(myGamesControllerProvider(userId));
   return myGamesState.statistics;
 });
@@ -364,39 +327,32 @@ final currentVenueFiltersProvider = Provider((ref) {
 /// Specific game detail by ID
 final gameByIdProvider = Provider.family<Game?, String>((ref, gameId) {
   final gamesState = ref.watch(gamesControllerProvider);
-
+  
   // Search in all game lists
-  for (final game in [
-    ...gamesState.upcomingGames,
-    ...gamesState.nearbyGames,
-    ...gamesState.allGames,
-  ]) {
+  for (final game in [...gamesState.upcomingGames, ...gamesState.nearbyGames, ...gamesState.allGames]) {
     if (game.id == gameId) return game;
   }
-
+  
   return null;
 });
 
 /// Venue detail by ID
 final venueByIdProvider = Provider.family<Venue?, String>((ref, venueId) {
   final venuesState = ref.watch(venuesControllerProvider);
-
+  
   for (final venueWithDistance in venuesState.venues) {
     if (venueWithDistance.venue.id == venueId) {
       return venueWithDistance.venue;
     }
   }
-
+  
   return null;
 });
 
 /// Games organized by specific user
-final gamesByOrganizerProvider = Provider.family<List<Game>, String>((
-  ref,
-  organizerId,
-) {
+final gamesByOrganizerProvider = Provider.family<List<Game>, String>((ref, organizerId) {
   final gamesState = ref.watch(gamesControllerProvider);
-
+  
   return [
     ...gamesState.upcomingGames.where((g) => g.organizerId == organizerId),
     ...gamesState.allGames.where((g) => g.organizerId == organizerId),
@@ -406,31 +362,20 @@ final gamesByOrganizerProvider = Provider.family<List<Game>, String>((
 /// Games by sport
 final gamesBySportProvider = Provider.family<List<Game>, String>((ref, sport) {
   final gamesState = ref.watch(gamesControllerProvider);
-
+  
   return [
-    ...gamesState.upcomingGames.where(
-      (g) => g.sport.toLowerCase() == sport.toLowerCase(),
-    ),
-    ...gamesState.allGames.where(
-      (g) => g.sport.toLowerCase() == sport.toLowerCase(),
-    ),
+    ...gamesState.upcomingGames.where((g) => g.sport.toLowerCase() == sport.toLowerCase()),
+    ...gamesState.allGames.where((g) => g.sport.toLowerCase() == sport.toLowerCase()),
   ];
 });
 
 /// Venues by sport
-final venuesBySportProvider = Provider.family<List<VenueWithDistance>, String>((
-  ref,
-  sport,
-) {
+final venuesBySportProvider = Provider.family<List<VenueWithDistance>, String>((ref, sport) {
   final venuesState = ref.watch(venuesControllerProvider);
-
-  return venuesState.venues
-      .where(
-        (vwd) => vwd.venue.supportedSports.any(
-          (s) => s.toLowerCase() == sport.toLowerCase(),
-        ),
-      )
-      .toList();
+  
+  return venuesState.venues.where((vwd) => 
+    vwd.venue.supportedSports.any((s) => s.toLowerCase() == sport.toLowerCase())
+  ).toList();
 });
 
 // =============================================================================
@@ -442,16 +387,13 @@ final gamesActionsProvider = Provider((ref) {
   return GamesActions(ref);
 });
 
-/// Venues actions provider
+/// Venues actions provider  
 final venuesActionsProvider = Provider((ref) {
   return VenuesActions(ref);
 });
 
 /// My games actions provider
-final myGamesActionsProvider = Provider.family<MyGamesActions, String>((
-  ref,
-  userId,
-) {
+final myGamesActionsProvider = Provider.family<MyGamesActions, String>((ref, userId) {
   return MyGamesActions(ref, userId);
 });
 
@@ -469,15 +411,18 @@ class GameDetailParams {
   final String gameId;
   final String? currentUserId;
 
-  const GameDetailParams({required this.gameId, this.currentUserId});
+  const GameDetailParams({
+    required this.gameId,
+    this.currentUserId,
+  });
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is GameDetailParams &&
-          runtimeType == other.runtimeType &&
-          gameId == other.gameId &&
-          currentUserId == other.currentUserId;
+    identical(this, other) ||
+    other is GameDetailParams &&
+    runtimeType == other.runtimeType &&
+    gameId == other.gameId &&
+    currentUserId == other.currentUserId;
 
   @override
   int get hashCode => gameId.hashCode ^ currentUserId.hashCode;
@@ -501,9 +446,7 @@ class GamesActions {
   }
 
   Future<void> setUserLocation(double latitude, double longitude) async {
-    await _ref
-        .read(gamesControllerProvider.notifier)
-        .setUserLocation(latitude, longitude);
+    await _ref.read(gamesControllerProvider.notifier).setUserLocation(latitude, longitude);
   }
 
   Future<void> loadMore() async {
@@ -524,9 +467,7 @@ class VenuesActions {
   }
 
   Future<void> setUserLocation(double latitude, double longitude) async {
-    await _ref
-        .read(venuesControllerProvider.notifier)
-        .setUserLocation(latitude, longitude);
+    await _ref.read(venuesControllerProvider.notifier).setUserLocation(latitude, longitude);
   }
 
   Future<void> updateFilters(VenueFilters filters) async {
@@ -542,9 +483,7 @@ class VenuesActions {
   }
 
   Future<void> removeFromFavorites(String venueId) async {
-    await _ref
-        .read(venuesControllerProvider.notifier)
-        .removeFromFavorites(venueId);
+    await _ref.read(venuesControllerProvider.notifier).removeFromFavorites(venueId);
   }
 
   Future<void> refresh() async {
@@ -562,27 +501,19 @@ class MyGamesActions {
   }
 
   Future<void> cancelGame(String gameId, String reason) async {
-    await _ref
-        .read(myGamesControllerProvider(_userId).notifier)
-        .cancelGame(gameId, reason);
+    await _ref.read(myGamesControllerProvider(_userId).notifier).cancelGame(gameId, reason);
   }
 
   Future<String> shareGame(String gameId) async {
-    return await _ref
-        .read(myGamesControllerProvider(_userId).notifier)
-        .shareGame(gameId);
+    return await _ref.read(myGamesControllerProvider(_userId).notifier).shareGame(gameId);
   }
 
   Future<void> checkInToGame(String gameId) async {
-    await _ref
-        .read(myGamesControllerProvider(_userId).notifier)
-        .checkInToGame(gameId);
+    await _ref.read(myGamesControllerProvider(_userId).notifier).checkInToGame(gameId);
   }
 
   Future<void> executeQuickAction(QuickAction action, String gameId) async {
-    await _ref
-        .read(myGamesControllerProvider(_userId).notifier)
-        .executeQuickAction(action, gameId);
+    await _ref.read(myGamesControllerProvider(_userId).notifier).executeQuickAction(action, gameId);
   }
 }
 
@@ -651,3 +582,4 @@ class MyGamesActions {
 //     _ref.read(createGameControllerProvider.notifier).reset();
 //   }
 // }
+

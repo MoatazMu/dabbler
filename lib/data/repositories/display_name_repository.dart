@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import '../../core/result.dart';
 import '../models/profile.dart';
 
 /// Display-name operations on `profiles`.

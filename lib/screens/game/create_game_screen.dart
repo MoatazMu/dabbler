@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../core/models/game_creation_model.dart';
 import '../../core/viewmodels/game_creation_viewmodel.dart';
-import '../../routes/route_arguments.dart';
 import '../../themes/app_theme.dart';
 import '../../widgets/custom_button.dart';
 import 'steps/sport_format_step.dart';
@@ -12,9 +11,9 @@ import 'steps/player_invitation_step.dart';
 import 'steps/review_confirmation_step.dart';
 
 class CreateGameScreen extends StatefulWidget {
-  final CreateGameRouteArgs? initialData;
-
-  const CreateGameScreen({super.key, this.initialData});
+  final String? draftId;
+  
+  const CreateGameScreen({super.key, this.draftId});
 
   @override
   State<CreateGameScreen> createState() => _CreateGameScreenState();
@@ -27,19 +26,14 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   void initState() {
     super.initState();
     _viewModel = GameCreationViewModel();
-    final draftId = widget.initialData?.draftId;
-    if (draftId != null) {
-      _loadDraft(draftId);
-    }
-    final seed = widget.initialData?.fromBooking;
-    if (seed != null) {
-      _viewModel.applyBookingSeed(seed);
+    if (widget.draftId != null) {
+      _loadDraft();
     }
   }
 
-  Future<void> _loadDraft(String draftId) async {
+  Future<void> _loadDraft() async {
     try {
-      await _viewModel.loadDraft(draftId);
+      await _viewModel.loadDraft(widget.draftId!);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

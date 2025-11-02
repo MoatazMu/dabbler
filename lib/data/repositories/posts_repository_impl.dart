@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/post.dart';
 import 'base_repository.dart';
 import 'posts_repository.dart';
@@ -29,7 +30,7 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
     return guard<List<Post>>(() async {
       final q = _db
           .from(_table)
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .order('created_at', ascending: false)
           .limit(limit);
 
@@ -52,7 +53,7 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
     return guard<List<Post>>(() async {
       final q = _db
           .from(_table)
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('author_user_id', authorUserId)
           .order('created_at', ascending: false)
           .limit(limit);

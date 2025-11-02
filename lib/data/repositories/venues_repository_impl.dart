@@ -24,7 +24,8 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
     String? q,
   }) async {
     try {
-      var query = svc.from(venuesTable).select();
+      PostgrestFilterBuilder<Map<String, dynamic>> query =
+          svc.from(venuesTable).select();
 
       if (activeOnly) {
         query = query.eq('is_active', true);
@@ -55,7 +56,9 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final query = svc.from(venuesTable).select().eq('id', venueId);
       final data = await svc.maybeSingle(query);
       if (data == null) {
-        return left(NotFoundFailure(message: 'Venue $venueId not found'));
+        return left(
+          NotFoundFailure(message: 'Venue $venueId not found'),
+        );
       }
       return right(Venue.fromJson(data));
     } catch (error, stackTrace) {
@@ -69,16 +72,17 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
     bool activeOnly = true,
   }) async {
     try {
-      var query = svc.from(spacesTable).select().eq('venue_id', venueId);
+      PostgrestFilterBuilder<Map<String, dynamic>> query =
+          svc.from(spacesTable).select().eq('venue_id', venueId);
 
       if (activeOnly) {
         query = query.eq('is_active', true);
       }
 
-      final data = await query.order('name') as List;
-      final spaces = data
-          .map((e) => VenueSpace.fromMap(e))
-          .toList(growable: false);
+      query = query.order('name');
+
+      final data = await svc.getList(query);
+      final spaces = data.map(VenueSpace.fromJson).toList(growable: false);
       return right(spaces);
     } catch (error, stackTrace) {
       return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
@@ -91,9 +95,11 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final query = svc.from(spacesTable).select().eq('id', spaceId);
       final data = await svc.maybeSingle(query);
       if (data == null) {
-        return left(NotFoundFailure(message: 'Venue space $spaceId not found'));
+        return left(
+          NotFoundFailure(message: 'Venue space $spaceId not found'),
+        );
       }
-      return right(VenueSpace.fromMap(data));
+      return right(VenueSpace.fromJson(data));
     } catch (error, stackTrace) {
       return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
@@ -115,11 +121,12 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final lngDenominator = (111.320 * (cosLat < 1e-6 ? 1e-6 : cosLat));
       final dLng = withinKm / lngDenominator;
 
-      var query = svc.from(venuesTable).select()
-        ..gte('lat', lat - dLat)
-        ..lte('lat', lat + dLat)
-        ..gte('lng', lng - dLng)
-        ..lte('lng', lng + dLng);
+      PostgrestFilterBuilder<Map<String, dynamic>> query =
+          svc.from(venuesTable).select()
+            ..gte('lat', lat - dLat)
+            ..lte('lat', lat + dLat)
+            ..gte('lng', lng - dLng)
+            ..lte('lng', lng + dLng);
 
       if (activeOnly) {
         query = query.eq('is_active', true);
@@ -149,9 +156,7 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
 
     void emitError(Object error, [StackTrace? stackTrace]) {
       if (!controller.isClosed) {
-        controller.add(
-          left(svc.mapPostgrestError(error, stackTrace: stackTrace)),
-        );
+        controller.add(left(svc.mapPostgrestError(error, stackTrace: stackTrace)));
       }
     }
 
@@ -161,11 +166,7 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
           event: PostgresChangeEvent.insert,
           schema: 'public',
           table: spacesTable,
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'venue_id',
-            value: venueId,
-          ),
+          filter: 'venue_id=eq.$venueId',
           callback: (payload) {
             unawaited(emitCurrent());
           },
@@ -174,11 +175,7 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
           event: PostgresChangeEvent.update,
           schema: 'public',
           table: spacesTable,
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'venue_id',
-            value: venueId,
-          ),
+          filter: 'venue_id=eq.$venueId',
           callback: (payload) {
             unawaited(emitCurrent());
           },
@@ -187,15 +184,16 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
           event: PostgresChangeEvent.delete,
           schema: 'public',
           table: spacesTable,
-          filter: PostgresChangeFilter(
-            type: PostgresChangeFilterType.eq,
-            column: 'venue_id',
-            value: venueId,
-          ),
+          filter: 'venue_id=eq.$venueId',
           callback: (payload) {
             unawaited(emitCurrent());
           },
-        )
+        );
+
+      channel!
+        ..onError((error, {StackTrace? stackTrace}) {
+          emitError(error, stackTrace);
+        })
         ..subscribe();
 
       unawaited(emitCurrent());

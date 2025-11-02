@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/venue_space.dart';
 import 'base_repository.dart';
 import 'venue_config_repository.dart';
@@ -22,7 +23,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
     return guard<List<VenueSpace>>(() async {
       final query = _db
           .from('venue_spaces')
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('is_active', true)
           .order('name', ascending: true)
           .limit(limit);
@@ -43,7 +44,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
       // RLS: public read (hours_public_read).
       final rows = await _db
           .from('venue_opening_hours')
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('venue_space_id', venueSpaceId)
           .order('day_of_week', ascending: true);
 
@@ -57,7 +58,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
       // RLS: public read but only is_active=true (prices_public_read).
       final rows = await _db
           .from('venue_price_rules')
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('venue_space_id', venueSpaceId)
           .eq('is_active', true)
           .order('amount', ascending: true);

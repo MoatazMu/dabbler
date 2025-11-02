@@ -1,7 +1,9 @@
 import 'package:meta/meta.dart';
 
+import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/benefit.dart';
 import 'base_repository.dart';
 import 'organiser_benefits_repository.dart';
@@ -22,7 +24,7 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
     return guard<List<Benefit>>(() async {
       final q = svc.client
           .from(_table)
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 
@@ -43,7 +45,7 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
     return guard<List<Benefit>>(() async {
       final q = svc.client
           .from(_table)
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('venue_id', venueId)
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);

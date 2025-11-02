@@ -1,29 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import '../core/config/feature_flags.dart';
 
 /// Action Cards Widget - Create Game and Join Game cards
 class ActionCards extends StatelessWidget {
-  const ActionCards({super.key, this.onCreateGameTap, this.onJoinGameTap});
+  const ActionCards({
+    super.key,
+    this.onCreateGameTap,
+    this.onJoinGameTap,
+  });
 
   final VoidCallback? onCreateGameTap;
   final VoidCallback? onJoinGameTap;
 
   @override
   Widget build(BuildContext context) {
-    // MVP: Hide Create Game card if feature is disabled
-    if (!FeatureFlags.enableGameCreation) {
-      // Show only Join Game card, centered and full width
-      return _ActionCard(
-        icon: Iconsax.discover_copy,
-        title: 'Join Game',
-        subtitle: 'Find nearby games',
-        backgroundColor: const Color(0xFF3D2463),
-        iconBackgroundColor: const Color(0xFF3B4A5C),
-        onTap: onJoinGameTap,
-      );
-    }
-
     return Row(
       children: [
         // Create Game Card
@@ -38,7 +28,7 @@ class ActionCards extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 16),
-
+        
         // Join Game Card
         Expanded(
           child: _ActionCard(
@@ -94,10 +84,14 @@ class _ActionCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 color: iconBackgroundColor,
               ),
-              child: Icon(icon, color: Colors.white, size: 28),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 28,
+              ),
             ),
             const SizedBox(height: 16),
-
+            
             // Title
             Text(
               title,
@@ -110,7 +104,7 @@ class _ActionCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 4),
-
+            
             // Subtitle
             Text(
               subtitle,

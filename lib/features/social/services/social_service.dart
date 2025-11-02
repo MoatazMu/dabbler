@@ -26,154 +26,97 @@ class SocialService {
 
       // Get user profile information (for validation - profile should exist)
       await _supabase
-          .from('profiles')
+          .from('users')
           .select('display_name')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
           .single();
 
       // Check for duplicate posts to prevent spam/reposting
       await _checkForDuplicatePost(user.id, content, mediaUrls);
 
-      // Map to actual database schema
       final postData = {
-        // Required fields - author_user_id and author_profile_id handled by RLS/triggers
-        'kind': 'moment', // Default post type
+        'author_id': user.id,
+        'content': content,
+        'media_urls': mediaUrls,
+        'location_name': locationName,
         'visibility': visibility.name,
-        'body': content, // Map content -> body
-        'media': mediaUrls
-            .map((url) => {'url': url})
-            .toList(), // Map to media array format
-        // Optional fields
-        if (locationName != null) 'venue_id': locationName,
-        // Stats fields default on server side
-        // Timestamps handled by server
+        'tags': tags,
+        'created_at': DateTime.now().toIso8601String(),
+        'updated_at': DateTime.now().toIso8601String(),
+        'likes_count': 0,
+        'comments_count': 0,
+        'shares_count': 0,
       };
-
-      // Insert the post using actual database schema
+      // Insert the post (don't try to join to a view via FK — views don't have FK constraints)
       final inserted = await _supabase
           .from('posts')
           .insert(postData)
           .select()
           .single();
 
-      // Fetch the author profile from the profiles table separately
+      // Fetch the author profile from the users table separately
       final profile = await _supabase
-          .from('profiles')
-          .select('user_id, display_name, avatar_url, verified')
-          .eq('user_id', user.id)
+          .from('users')
+          .select('display_name, avatar_url, id')
+          .eq('id', user.id)
           .maybeSingle();
 
-      // Transform database response to PostModel format
-      final transformedPost = {
-        'id': inserted['id'],
-        'author_id':
-            inserted['author_user_id'], // Map author_user_id -> author_id
-        'content': inserted['body'] ?? '', // Map body -> content
-        'media_urls': inserted['media'] ?? [], // Map media array -> media_urls
-        'visibility': inserted['visibility'],
-        'created_at': inserted['created_at'],
-        'updated_at': inserted['updated_at'],
-        'likes_count': inserted['like_count'] ?? 0,
-        'comments_count': inserted['comment_count'] ?? 0,
-        'shares_count': 0,
-        'location_name': inserted['venue_id'],
-        'tags': tags,
-        'profiles': profile != null
-            ? {
-                'id': profile['user_id'],
-                'display_name': profile['display_name'],
-                'avatar_url': profile['avatar_url'],
-                'verified': profile['verified'],
-              }
-            : null,
-      };
+      // Merge the inserted post and the profile into the shape expected by PostModel
+      final insertedMap = Map<String, dynamic>.from(inserted as Map);
+      insertedMap['profiles'] = profile;
 
-      return PostModel.fromJson(transformedPost);
+      final response = insertedMap;
+
+      return PostModel.fromJson(response);
     } catch (e) {
       throw Exception('Failed to create post: $e');
     }
   }
 
   /// Get posts for the social feed
-  Future<List<PostModel>> getFeedPosts({int limit = 20, int offset = 0}) async {
+  Future<List<PostModel>> getFeedPosts({
+    int limit = 20,
+    int offset = 0,
+  }) async {
     try {
-      // Query posts using actual database schema
+      // First, get posts without joins
       final postsResponse = await _supabase
           .from('posts')
           .select('*')
           .eq('visibility', 'public')
-          .eq('is_deleted', false)
-          .eq('is_hidden_admin', false)
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 
-      // Get unique author IDs from actual field name
+      // Get unique author IDs
       final authorIds = postsResponse
-          .map((post) => post['author_user_id'] as String)
+          .map((post) => post['author_id'] as String)
           .toSet()
           .toList();
 
       // Fetch all required profiles in batch
       final profilesResponse = await _supabase
-          .from('profiles')
-          .select('user_id, display_name, avatar_url, verified')
-          .inFilter('user_id', authorIds);
+          .from('users')
+          .select('id, display_name, avatar_url')
+          .inFilter('id', authorIds);
 
       // Create a map for quick profile lookup
       final profilesMap = <String, Map<String, dynamic>>{};
       for (final profile in profilesResponse) {
-        profilesMap[profile['user_id']] = profile;
+        profilesMap[profile['id']] = profile;
       }
 
-      // Transform database posts to match PostModel expectations
+      // Merge posts with their profiles
       final enrichedPosts = postsResponse.map((post) {
-        final authorId = post['author_user_id'] as String;
+        final authorId = post['author_id'] as String;
         final profile = profilesMap[authorId];
-
-        // Extract media URLs from media array
-        List<String> mediaUrls = [];
-        final mediaArray = post['media'];
-        if (mediaArray is List) {
-          for (var mediaItem in mediaArray) {
-            if (mediaItem is Map && mediaItem['url'] != null) {
-              mediaUrls.add(mediaItem['url'].toString());
-            } else if (mediaItem is String) {
-              mediaUrls.add(mediaItem);
-            }
-          }
-        }
-
-        // Transform database schema to PostModel schema
+        
         return {
-          'id': post['id'],
-          'author_id':
-              post['author_user_id'], // Map author_user_id -> author_id
-          'content': post['body'] ?? '', // Map body -> content
-          'media_urls': mediaUrls, // Extract URLs from media array
-          'visibility': post['visibility'],
-          'created_at': post['created_at'],
-          'updated_at': post['updated_at'],
-          'likes_count':
-              post['like_count'] ?? 0, // Map like_count -> likes_count
-          'comments_count':
-              post['comment_count'] ?? 0, // Map comment_count -> comments_count
-          'shares_count': 0, // Not in database, default to 0
-          'location_name': post['venue_id'], // Could be mapped differently
-          'tags': [], // Not directly in schema
-          'profiles': profile != null
-              ? {
-                  'id': profile['user_id'],
-                  'display_name': profile['display_name'],
-                  'avatar_url': profile['avatar_url'],
-                  'verified': profile['verified'],
-                }
-              : null,
+          ...post,
+          'profiles': profile,
         };
       }).toList();
 
-      return enrichedPosts
-          .map<PostModel>((json) => PostModel.fromJson(json))
-          .toList();
+      return enrichedPosts.map<PostModel>((json) => PostModel.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Failed to load feed posts: $e');
     }
@@ -186,68 +129,30 @@ class SocialService {
     int offset = 0,
   }) async {
     try {
-      // Query posts using actual database schema
+      // First, get posts without joins
       final postsResponse = await _supabase
           .from('posts')
           .select('*')
-          .eq('author_user_id', userId) // Use correct field name
-          .eq('is_deleted', false)
-          .eq('is_hidden_admin', false)
+          .eq('author_id', userId)
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
 
       // Get the user profile
       final profileResponse = await _supabase
-          .from('profiles')
-          .select('user_id, display_name, avatar_url, verified')
-          .eq('user_id', userId)
+          .from('users')
+          .select('id, display_name, avatar_url')
+          .eq('id', userId)
           .maybeSingle();
 
-      // Transform database posts to match PostModel expectations
+      // Merge posts with profile
       final enrichedPosts = postsResponse.map((post) {
-        // Extract media URLs from media array
-        List<String> mediaUrls = [];
-        final mediaArray = post['media'];
-        if (mediaArray is List) {
-          for (var mediaItem in mediaArray) {
-            if (mediaItem is Map && mediaItem['url'] != null) {
-              mediaUrls.add(mediaItem['url'].toString());
-            } else if (mediaItem is String) {
-              mediaUrls.add(mediaItem);
-            }
-          }
-        }
-
         return {
-          'id': post['id'],
-          'author_id':
-              post['author_user_id'], // Map author_user_id -> author_id
-          'content': post['body'] ?? '', // Map body -> content
-          'media_urls': mediaUrls, // Extract URLs from media array
-          'visibility': post['visibility'],
-          'created_at': post['created_at'],
-          'updated_at': post['updated_at'],
-          'likes_count':
-              post['like_count'] ?? 0, // Map like_count -> likes_count
-          'comments_count':
-              post['comment_count'] ?? 0, // Map comment_count -> comments_count
-          'shares_count': 0, // Not in database, default to 0
-          'location_name': post['venue_id'], // Could be mapped differently
-          'tags': [], // Not directly in schema
-          'profiles': profileResponse != null
-              ? {
-                  'id': profileResponse['user_id'],
-                  'display_name': profileResponse['display_name'],
-                  'avatar_url': profileResponse['avatar_url'],
-                  'verified': profileResponse['verified'],
-                }
-              : null,
+          ...post,
+          'profiles': profileResponse,
         };
       }).toList();
 
-      return enrichedPosts
-          .map<PostModel>((json) => PostModel.fromJson(json))
-          .toList();
+      return enrichedPosts.map<PostModel>((json) => PostModel.fromJson(json)).toList();
     } catch (e) {
       throw Exception('Failed to load user posts: $e');
     }
@@ -278,10 +183,9 @@ class SocialService {
             .eq('user_id', user.id);
 
         // Decrement likes count
-        await _supabase.rpc(
-          'decrement_likes_count',
-          params: {'post_id': postId},
-        );
+        await _supabase.rpc('decrement_likes_count', params: {
+          'post_id': postId,
+        });
       } else {
         // Like: Add the like
         await _supabase.from('post_likes').insert({
@@ -291,10 +195,9 @@ class SocialService {
         });
 
         // Increment likes count
-        await _supabase.rpc(
-          'increment_likes_count',
-          params: {'post_id': postId},
-        );
+        await _supabase.rpc('increment_likes_count', params: {
+          'post_id': postId,
+        });
       }
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
@@ -312,9 +215,8 @@ class SocialService {
       final List<String> uploadedUrls = [];
 
       for (final imagePath in imagePaths) {
-        final fileName =
-            '${user.id}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
+        final fileName = '${user.id}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+        
         await _supabase.storage
             .from('post-images')
             .upload(fileName, File(imagePath));
@@ -334,47 +236,37 @@ class SocialService {
 
   /// Check for duplicate posts to prevent spam/reposting
   Future<void> _checkForDuplicatePost(
-    String userId,
-    String content,
-    List<String> mediaUrls,
+    String userId, 
+    String content, 
+    List<String> mediaUrls
   ) async {
     try {
       // Define time window for duplicate checking (e.g., 5 minutes)
       final timeWindow = DateTime.now().subtract(const Duration(minutes: 5));
-
+      
       // Check for exact content duplicates from the same user in recent time
-      // Using correct field names: author_user_id and body
       final duplicateContentCheck = await _supabase
           .from('posts')
           .select('id, created_at')
-          .eq('author_user_id', userId) // Correct field name
-          .eq('body', content) // Correct field name
+          .eq('author_id', userId)
+          .eq('content', content)
           .gte('created_at', timeWindow.toIso8601String())
           .limit(1);
 
       if (duplicateContentCheck.isNotEmpty) {
-        throw Exception(
-          'You recently posted the same content. Please wait before posting again.',
-        );
+        throw Exception('You recently posted the same content. Please wait before posting again.');
       }
 
       // Check for rapid posting from the same user (rate limiting)
       final recentPostsCheck = await _supabase
           .from('posts')
           .select('id, created_at')
-          .eq('author_user_id', userId) // Correct field name
-          .gte(
-            'created_at',
-            DateTime.now()
-                .subtract(const Duration(minutes: 1))
-                .toIso8601String(),
-          )
+          .eq('author_id', userId)
+          .gte('created_at', DateTime.now().subtract(const Duration(minutes: 1)).toIso8601String())
           .limit(3); // Allow max 3 posts per minute
 
       if (recentPostsCheck.length >= 3) {
-        throw Exception(
-          'You are posting too frequently. Please wait a moment before posting again.',
-        );
+        throw Exception('You are posting too frequently. Please wait a moment before posting again.');
       }
 
       // If content is very short and no media, check for identical recent posts
@@ -382,22 +274,16 @@ class SocialService {
         final shortContentCheck = await _supabase
             .from('posts')
             .select('id')
-            .eq('author_user_id', userId) // Correct field name
-            .eq('body', content.trim()) // Correct field name
-            .gte(
-              'created_at',
-              DateTime.now()
-                  .subtract(const Duration(hours: 1))
-                  .toIso8601String(),
-            )
+            .eq('author_id', userId)
+            .eq('content', content.trim())
+            .gte('created_at', DateTime.now().subtract(const Duration(hours: 1)).toIso8601String())
             .limit(1);
 
         if (shortContentCheck.isNotEmpty) {
-          throw Exception(
-            'You already posted this content recently. Please create a new post with different content.',
-          );
+          throw Exception('You already posted this content recently. Please create a new post with different content.');
         }
       }
+
     } catch (e) {
       // Re-throw the exception to be handled by the calling method
       rethrow;
