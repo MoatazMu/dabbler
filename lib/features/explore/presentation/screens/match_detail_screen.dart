@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/match_model.dart';
-import '../../themes/app_theme.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/avatar_widget.dart';
+import 'package:dabbler/themes/app_theme.dart';
+import 'package:dabbler/widgets/app_button.dart';
+import 'package:dabbler/widgets/avatar_widget.dart';
 
 class MatchDetailScreen extends StatefulWidget {
   final Match match;

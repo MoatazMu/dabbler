@@ -8,7 +8,7 @@ import '../../controllers/sports_profile_controller.dart';
 import '../../providers/profile_providers.dart';
 import 'package:dabbler/data/models/profile/user_profile.dart';
 import 'package:dabbler/data/models/profile/sports_profile.dart';
-import '../../widgets/profile_rewards_widget.dart';
+import 'package:dabbler/features/profile/presentation/widgets/profile_rewards_widget.dart';
 import '../../../../../utils/constants/route_constants.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {

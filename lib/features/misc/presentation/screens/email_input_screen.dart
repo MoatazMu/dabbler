@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../utils/constants/route_constants.dart';
+import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';

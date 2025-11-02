@@ -5,12 +5,12 @@ import 'package:dabbler/core/widgets/loading_widget.dart';
 import '../../../../../core/widgets/error_widget.dart' as core;
 import '../../providers/social_providers.dart';
 import '../../../../../utils/enums/social_enums.dart';
-import '../../widgets/post/post_content_widget.dart';
-import '../../widgets/post/post_actions_widget.dart';
-import '../../widgets/post/post_author_widget.dart';
-import '../../widgets/post/share_post_bottom_sheet.dart';
-import '../../widgets/comments/comments_thread.dart';
-import '../../widgets/comments/comment_input.dart';
+import 'package:dabbler/features/social/presentation/widgets/post/post_content_widget.dart';
+import 'package:dabbler/features/social/presentation/widgets/post/post_actions_widget.dart';
+import 'package:dabbler/features/social/presentation/widgets/post/post_author_widget.dart';
+import 'package:dabbler/features/social/presentation/widgets/post/share_post_bottom_sheet.dart';
+import 'package:dabbler/features/social/presentation/widgets/comments/comments_thread.dart';
+import 'package:dabbler/features/social/presentation/widgets/comments/comment_input.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;

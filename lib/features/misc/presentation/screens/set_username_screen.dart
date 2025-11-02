@@ -4,10 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
-import '../../utils/constants/app_constants.dart';
-import '../../utils/constants/route_constants.dart';
-import '../../widgets/input_field.dart';
-import '../../widgets/onboarding_progress.dart';
+import 'package:dabbler/utils/constants/app_constants.dart';
+import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:dabbler/widgets/input_field.dart';
+import 'package:dabbler/widgets/onboarding_progress.dart';
 import 'dart:async';
 
 class SetUsernameScreen extends ConsumerStatefulWidget {

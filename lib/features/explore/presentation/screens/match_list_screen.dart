@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../themes/app_theme.dart';
+import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/data/models/games/game.dart';
-import 'package:dabbler/features/games/presentation/features/join_game/game_detail_screen.dart';
+import 'package:dabbler/features/games/presentation/screens/join_game/game_detail_screen.dart';
 
 class MatchListScreen extends ConsumerStatefulWidget {
   final String sport;

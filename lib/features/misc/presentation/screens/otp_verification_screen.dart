@@ -7,8 +7,8 @@ import 'package:dabbler/core/utils/constants.dart';
 import 'package:dabbler/core/utils/validators.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
-import '../../utils/constants/route_constants.dart';
-import '../../widgets/app_button.dart';
+import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:dabbler/widgets/app_button.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   final String? phoneNumber;

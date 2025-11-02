@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/core/utils/constants.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/input_field.dart';
+import 'package:dabbler/widgets/app_button.dart';
+import 'package:dabbler/widgets/input_field.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/services/onboarding_service.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/features/username_engine/providers.dart';
-import '../../utils/constants/route_constants.dart';
+import 'package:dabbler/utils/constants/route_constants.dart';
 
 class SetPasswordScreen extends ConsumerStatefulWidget {
   const SetPasswordScreen({super.key});

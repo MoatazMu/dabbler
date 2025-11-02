@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../themes/app_theme.dart';
+import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/data/models/social/chat_message_model.dart';
 import '../widgets/chat/chat_bubble.dart';
-import '../../widgets/avatar_widget.dart';
-import '../../utils/enums/social_enums.dart';
+import 'package:dabbler/widgets/avatar_widget.dart';
+import 'package:dabbler/utils/enums/social_enums.dart';
 
 class ChatScreen extends ConsumerStatefulWidget {
   final String userName;

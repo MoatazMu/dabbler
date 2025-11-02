@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/utils/constants.dart';
 import 'package:dabbler/core/utils/validators.dart';
-import '../../widgets/app_button.dart';
-import '../../widgets/input_field.dart';
+import 'package:dabbler/widgets/app_button.dart';
+import 'package:dabbler/widgets/input_field.dart';
 
 class ChangePhoneScreen extends StatefulWidget {
   const ChangePhoneScreen({super.key});

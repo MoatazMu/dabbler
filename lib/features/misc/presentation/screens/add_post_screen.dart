@@ -4,10 +4,10 @@ import 'package:lucide_icons/lucide_icons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import '../../themes/app_theme.dart';
+import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
-import '../../utils/enums/social_enums.dart';
-import '../../widgets/custom_app_bar.dart';
+import 'package:dabbler/utils/enums/social_enums.dart';
+import 'package:dabbler/widgets/custom_app_bar.dart';
 
 class AddPostScreen extends StatefulWidget {
   const AddPostScreen({super.key});

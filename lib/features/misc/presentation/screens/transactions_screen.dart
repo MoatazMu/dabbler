@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
-import '../../themes/app_theme.dart';
-import '../../widgets/custom_app_bar.dart';
+import 'package:dabbler/themes/app_theme.dart';
+import 'package:dabbler/widgets/custom_app_bar.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 
 /// Professional Transactions History Screen

@@ -5,8 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../data/notifications_repository.dart';
 import '../providers/notifications_providers.dart';
 import 'package:dabbler/core/services/auth_service.dart';
-import '../../widgets/custom_app_bar.dart';
-import '../../themes/app_theme.dart';
+import 'package:dabbler/widgets/custom_app_bar.dart';
+import 'package:dabbler/themes/app_theme.dart';
 
 class NotificationsScreenV2 extends ConsumerStatefulWidget {
   const NotificationsScreenV2({super.key});

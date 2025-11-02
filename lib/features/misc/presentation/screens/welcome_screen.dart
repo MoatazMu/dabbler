@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/themes/design_system.dart';
+
 import 'package:go_router/go_router.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../themes/design_system.dart';
-import '../../utils/constants/app_constants.dart';
+import 'package:dabbler/themes/design_system.dart';
+import 'package:dabbler/utils/constants/app_constants.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final String displayName;

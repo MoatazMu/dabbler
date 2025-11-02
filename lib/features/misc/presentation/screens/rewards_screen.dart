@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dabbler/features/rewards/presentation/features/rewards_dashboard_screen.dart';
 
 /// Simple rewards screen for navigation tab
 /// This serves as the main entry point for the rewards system
@@ -8,6 +7,9 @@ class RewardsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const RewardsDashboardScreen();
+    return Scaffold(
+      appBar: AppBar(title: const Text('Rewards')),
+      body: const Center(child: Text('Rewards Screen - Under Construction')),
+    );
   }
 }

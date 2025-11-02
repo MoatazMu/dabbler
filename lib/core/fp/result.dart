@@ -59,3 +59,18 @@ class Unit {
 }
 
 const unit = Unit();
+
+extension ResultConvenience<T, E> on Result<T, E> {
+  /// Mirrors legacy Either.match signature where failure handler comes first.
+  R match<R>(R Function(E err) onErr, R Function(T val) onOk) =>
+      fold(onErr, onOk);
+
+  /// Backwards-compatible aliases for success/failure checks.
+  bool get isRight => isSuccess;
+  bool get isLeft => isFailure;
+
+  /// Maps the error side while keeping the success value untouched.
+  Result<T, R> mapError<R>(R Function(E err) transform) => this is Err<T, E>
+      ? Err<T, R>(transform((this as Err<T, E>).error))
+      : Ok<T, R>((this as Ok<T, E>).value);
+}
