@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/utils/constants.dart';
 import '../../core/utils/helpers.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/onboarding_progress.dart';
 import '../../utils/constants/route_constants.dart';
 import '../../features/authentication/presentation/providers/onboarding_data_provider.dart';
@@ -479,11 +479,11 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                           const SizedBox(height: 32),
 
                           // Continue Button
-                          CustomButton(
+                          AppButton(
                             onPressed: (_isLoading || _preferredSport == null)
                                 ? null
                                 : _handleSubmit,
-                            text: _isLoading ? 'Continuing...' : 'Continue',
+                            label: _isLoading ? 'Continuing...' : 'Continue',
                           ),
 
                           const SizedBox(height: 32),

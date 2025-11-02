@@ -6,7 +6,7 @@ import '../../core/services/auth_service.dart';
 import '../../core/utils/constants.dart';
 import '../../core/utils/validators.dart';
 import '../../core/utils/helpers.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/input_field.dart';
 import '../../widgets/onboarding_progress.dart';
 import '../../core/services/user_service.dart';
@@ -702,15 +702,15 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                             const SizedBox(height: 32),
 
                             // Continue Button
-                            CustomButton(
+                            AppButton(
                               onPressed: (_isLoading || !_areAllFieldsValid())
                                   ? null
                                   : _handleSubmit,
-                              text: _isLoading
+                              label: _isLoading
                                   ? 'Saving...'
                                   : _areAllFieldsValid()
-                                  ? 'Continue'
-                                  : 'Fill all fields to continue',
+                                      ? 'Continue'
+                                      : 'Fill all fields to continue',
                               variant: _areAllFieldsValid()
                                   ? ButtonVariant.primary
                                   : ButtonVariant.secondary,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/services/mock_localization_service.dart';
 import '../../core/utils/constants.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 
 class LanguageSelectionScreen extends StatefulWidget {
   const LanguageSelectionScreen({super.key});
@@ -186,9 +186,9 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
               const Spacer(),
               
               // Continue Button
-              CustomButton(
+              AppButton(
                 onPressed: _isLoading ? null : _handleSubmit,
-                text: _isLoading ? 'Saving...' : 'Continue',
+                label: _isLoading ? 'Saving...' : 'Continue',
               ),
               
               const SizedBox(height: 32),

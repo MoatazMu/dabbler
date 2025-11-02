@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/utils/constants.dart';
 import '../../core/utils/validators.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/input_field.dart';
 
 class ChangePhoneScreen extends StatefulWidget {
@@ -155,9 +155,9 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
                 const SizedBox(height: 32),
                 
                 // Update Button
-                CustomButton(
+                AppButton(
                   onPressed: _isLoading ? null : _handleSubmit,
-                  text: _isLoading ? 'Saving...' : 'Continue',
+                  label: _isLoading ? 'Saving...' : 'Continue',
                 ),
                 
                 const Spacer(),

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/utils/constants.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/input_field.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/onboarding_service.dart';
@@ -493,14 +493,14 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
                 const SizedBox(height: 32),
 
                 // Create Account Button
-                CustomButton(
-                  text: _isLoading
+                AppButton(
+                  label: _isLoading
                       ? 'Creating account...'
                       : (_cooldown > 0
                             ? 'Wait $_cooldown s'
                             : 'Create Account'),
                   onPressed: _isLoading || _cooldown > 0 ? null : _handleSubmit,
-                  loading: _isLoading,
+                  isLoading: _isLoading,
                   fullWidth: true,
                 ),
 

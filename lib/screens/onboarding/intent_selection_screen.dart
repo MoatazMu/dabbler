@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../utils/constants/route_constants.dart';
 import '../../core/utils/constants.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/onboarding_progress.dart';
 import '../../features/authentication/presentation/providers/onboarding_data_provider.dart';
 import '../../core/config/feature_flags.dart';
@@ -280,11 +280,11 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                           const SizedBox(height: 32),
 
                           // Continue Button
-                          CustomButton(
+                          AppButton(
                             onPressed: (_isLoading || _selectedIntent == null)
                                 ? null
                                 : _handleSubmit,
-                            text: _isLoading ? 'Continuing...' : 'Continue',
+                            label: _isLoading ? 'Continuing...' : 'Continue',
                           ),
 
                           const SizedBox(height: 32),

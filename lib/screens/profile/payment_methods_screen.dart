@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 import '../../widgets/custom_app_bar.dart';
 import '../../features/payments/domain/entities/payment_method.dart' as pm;
 import '../../features/payments/presentation/providers/payment_providers.dart';
@@ -185,14 +185,14 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
   Widget _buildAddPaymentButton(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      child: CustomButton(
-        text: 'Add Payment Method',
+      child: AppButton(
+        label: 'Add Payment Method',
         onPressed: () {
           _showAddPaymentDialog(context);
         },
         variant: ButtonVariant.primary,
         size: ButtonSize.large,
-        icon: LucideIcons.plus,
+        leadingIcon: LucideIcons.plus,
       ),
     );
   }

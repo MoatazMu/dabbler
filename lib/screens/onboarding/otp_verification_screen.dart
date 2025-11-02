@@ -8,7 +8,7 @@ import '../../core/utils/validators.dart';
 import '../../features/authentication/presentation/providers/onboarding_data_provider.dart';
 import '../../features/authentication/presentation/providers/auth_providers.dart';
 import '../../utils/constants/route_constants.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   final String? phoneNumber;
@@ -325,9 +325,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
               const SizedBox(height: 32),
 
               // Verify Button
-              CustomButton(
+              AppButton(
                 onPressed: _isLoading ? null : _handleSubmit,
-                text: _isLoading ? 'Verifying...' : 'Verify',
+                label: _isLoading ? 'Verifying...' : 'Verify',
               ),
 
               const SizedBox(height: 24),

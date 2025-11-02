@@ -4,7 +4,7 @@ import '../../core/models/game_creation_model.dart';
 import '../../core/viewmodels/game_creation_viewmodel.dart';
 import '../../routes/route_arguments.dart';
 import '../../themes/app_theme.dart';
-import '../../widgets/custom_button.dart';
+import '../../widgets/app_button.dart';
 import 'steps/sport_format_step.dart';
 import 'steps/venue_slot_step.dart';
 import 'steps/participation_payment_step.dart';
@@ -468,11 +468,11 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
           // Back button
           if (canGoBack)
             Expanded(
-              child: CustomButton(
-                text: 'Back',
+              child: AppButton(
+                label: 'Back',
                 onPressed: isLoading ? null : () => _viewModel.previousStep(),
                 variant: ButtonVariant.secondary,
-                icon: LucideIcons.arrowLeft,
+                leadingIcon: LucideIcons.arrowLeft,
               ),
             ),
           
@@ -481,12 +481,12 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
           // Next/Create button
           Expanded(
             flex: canGoBack ? 1 : 2,
-            child: CustomButton(
-              text: isLastStep ? 'Create Game' : 'Continue',
+            child: AppButton(
+              label: isLastStep ? 'Create Game' : 'Continue',
               onPressed: canGoNext && !isLoading ? _handleNextPressed : null,
               variant: ButtonVariant.primary,
-              icon: isLastStep ? null : LucideIcons.arrowRight,
-              loading: isLoading,
+              leadingIcon: isLastStep ? null : LucideIcons.arrowRight,
+              isLoading: isLoading,
             ),
           ),
         ],
@@ -549,13 +549,13 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
           ),
         ),
         actions: [
-          CustomButton(
-            text: 'Cancel',
+          AppButton(
+            label: 'Cancel',
             onPressed: () => Navigator.of(context).pop(),
             variant: ButtonVariant.secondary,
           ),
-          CustomButton(
-            text: 'Confirm Cancel',
+          AppButton(
+            label: 'Confirm Cancel',
             onPressed: () {
               Navigator.of(context).pop(); // Close dialog
               Navigator.of(context).pop(); // Close create game screen
@@ -604,8 +604,8 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
           ),
         ),
         actions: [
-          CustomButton(
-            text: 'Done',
+          AppButton(
+            label: 'Done',
             onPressed: () {
               Navigator.of(context).pop(); // Close dialog
               Navigator.of(context).pop(); // Close create game screen
@@ -653,8 +653,8 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
           ),
         ),
         actions: [
-          CustomButton(
-            text: 'Try Again',
+          AppButton(
+            label: 'Try Again',
             onPressed: () => Navigator.of(context).pop(),
             variant: ButtonVariant.secondary,
           ),
