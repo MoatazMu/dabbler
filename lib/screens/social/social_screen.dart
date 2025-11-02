@@ -198,7 +198,7 @@ class _SocialScreenState extends State<SocialScreen> {
         bottom: false,
         top: false,
         child: Padding(
-          padding: const EdgeInsets.only(top: 100),
+          padding: const EdgeInsets.only(top: 0),
           child: _buildFeed(),
         ),
       ),
@@ -241,7 +241,7 @@ class _SocialScreenState extends State<SocialScreen> {
           ),
 
           // Bottom padding for navigation
-          const SliverToBoxAdapter(child: SizedBox(height: 100)),
+          //const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
     );

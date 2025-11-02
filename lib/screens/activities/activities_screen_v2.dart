@@ -126,7 +126,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
       ),
       body: Column(
         children: [
-          const SizedBox(height: 100),
+          //const SizedBox(height: 100),
           _buildHeader(context),
           Expanded(
             child: user == null

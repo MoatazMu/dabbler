@@ -7,6 +7,7 @@ import '../../widgets/custom_button.dart';
 import '../../widgets/onboarding_progress.dart';
 import '../../utils/constants/route_constants.dart';
 import '../../features/authentication/presentation/providers/onboarding_data_provider.dart';
+import '../../core/config/feature_flags.dart';
 
 class SportsSelectionScreen extends ConsumerStatefulWidget {
   const SportsSelectionScreen({super.key});
@@ -262,9 +263,19 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                   mainAxisSpacing: 12,
                                   childAspectRatio: 1.0,
                                 ),
-                            itemCount: AppConstants.availableSports.length,
+                            itemCount: AppConstants.availableSports
+                                .where(
+                                  (sport) => FeatureFlags.isSportEnabled(sport),
+                                )
+                                .length,
                             itemBuilder: (context, index) {
-                              final sport = AppConstants.availableSports[index];
+                              final enabledSports = AppConstants.availableSports
+                                  .where(
+                                    (sport) =>
+                                        FeatureFlags.isSportEnabled(sport),
+                                  )
+                                  .toList();
+                              final sport = enabledSports[index];
                               final isSelected = _preferredSport == sport;
 
                               return GestureDetector(
@@ -382,9 +393,19 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                   mainAxisSpacing: 12,
                                   childAspectRatio: 1.0,
                                 ),
-                            itemCount: AppConstants.availableSports.length,
+                            itemCount: AppConstants.availableSports
+                                .where(
+                                  (sport) => FeatureFlags.isSportEnabled(sport),
+                                )
+                                .length,
                             itemBuilder: (context, index) {
-                              final sport = AppConstants.availableSports[index];
+                              final enabledSports = AppConstants.availableSports
+                                  .where(
+                                    (sport) =>
+                                        FeatureFlags.isSportEnabled(sport),
+                                  )
+                                  .toList();
+                              final sport = enabledSports[index];
                               final isSelected = _interests.contains(sport);
                               final isPreferred = _preferredSport == sport;
                               final isDisabled =

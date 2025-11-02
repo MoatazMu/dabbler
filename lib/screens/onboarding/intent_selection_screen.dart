@@ -6,6 +6,7 @@ import '../../core/utils/constants.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/onboarding_progress.dart';
 import '../../features/authentication/presentation/providers/onboarding_data_provider.dart';
+import '../../core/config/feature_flags.dart';
 
 class IntentSelectionScreen extends ConsumerStatefulWidget {
   const IntentSelectionScreen({super.key});
@@ -20,27 +21,36 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
   bool _isLoading = false;
   bool _isLoadingData = true;
 
-  // 3 intention options as requested
-  final List<Map<String, String>> _intentOptions = [
-    {
-      'value': 'organise',
-      'title': 'Organise',
-      'description': 'List games, manage slots, and host matches',
-      'icon': 'calendar',
-    },
-    {
-      'value': 'compete',
-      'title': 'Compete',
-      'description': 'Serious matches, rankings, and tournaments',
-      'icon': 'trophy',
-    },
-    {
-      'value': 'social',
-      'title': 'Social',
-      'description': 'Casual play, meet people, and have fun',
-      'icon': 'people',
-    },
-  ];
+  // MVP: Filter intentions based on feature flags
+  List<Map<String, String>> get _intentOptions {
+    final allOptions = [
+      {
+        'value': 'organise',
+        'title': 'Organise',
+        'description': 'List games, manage slots, and host matches',
+        'icon': 'calendar',
+      },
+      {
+        'value': 'compete',
+        'title': 'Compete',
+        'description': 'Serious matches, rankings, and tournaments',
+        'icon': 'trophy',
+      },
+      {
+        'value': 'social',
+        'title': 'Social',
+        'description': 'Casual play, meet people, and have fun',
+        'icon': 'people',
+      },
+    ];
+
+    // MVP: Hide organise option if organiser profile is disabled
+    if (!FeatureFlags.enableOrganiserProfile) {
+      return allOptions.where((opt) => opt['value'] != 'organise').toList();
+    }
+
+    return allOptions;
+  }
 
   @override
   void initState() {
@@ -173,7 +183,7 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
 
                           const SizedBox(height: 48),
 
-                          // Intent Options - Show only 3 options
+                          // Intent Options - Filtered by feature flags
                           ..._intentOptions.map((option) {
                             final isSelected =
                                 _selectedIntent == option['value'];
