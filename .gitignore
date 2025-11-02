@@ -16,6 +16,17 @@
 .buildlog/
 .history
 .svn/
+node_modules/**/node_modules/
+
+# Project-specific build artifacts and vendor directories
+build/
+.dart_tool/
+ios/Pods/
+android/.gradle/
+
+# Exclude generated minified bundles from review diffs
+*.min.js
+*.min.css
 
 # As packages are no longer pinned, we use a lockfile for testing locally.
 # When unpinning packages, Using lockfiles ensures that failures in PRs are
