@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../data/datasources/supabase_profile_datasource.dart';
-import '../../data/datasources/profile_data_sources.dart' show ProfileLocalDataSource, ProfileLocalDataSourceImpl;
+import '../../data/datasources/profile_data_sources.dart'
+    show ProfileLocalDataSource, ProfileLocalDataSourceImpl;
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
 import '../../../../core/services/auth_service.dart';
@@ -32,7 +33,9 @@ final supabaseProvider = Provider<SupabaseClient>((ref) {
 });
 
 // Data sources
-final profileRemoteDataSourceProvider = Provider<ProfileRemoteDataSource>((ref) {
+final profileRemoteDataSourceProvider = Provider<ProfileRemoteDataSource>((
+  ref,
+) {
   final client = ref.watch(supabaseProvider);
   return SupabaseProfileDataSource(client);
 });
@@ -56,36 +59,42 @@ final getProfileUseCaseProvider = Provider<GetProfileUseCase>((ref) {
 });
 
 /// Main profile controller provider
-final profileControllerProvider = StateNotifierProvider<ProfileController, ProfileState>((ref) {
-  return ProfileController(
-    getProfileUseCase: ref.watch(getProfileUseCaseProvider),
-  );
-});
+final profileControllerProvider =
+    StateNotifierProvider<ProfileController, ProfileState>((ref) {
+      return ProfileController(
+        getProfileUseCase: ref.watch(getProfileUseCaseProvider),
+      );
+    });
 
 /// Sports profile controller provider
-final sportsProfileControllerProvider = StateNotifierProvider<SportsProfileController, SportsProfileState>((ref) {
-  return SportsProfileController();
-});
+final sportsProfileControllerProvider =
+    StateNotifierProvider<SportsProfileController, SportsProfileState>((ref) {
+      return SportsProfileController();
+    });
 
 /// Profile edit controller provider
-final profileEditControllerProvider = StateNotifierProvider<ProfileEditController, ProfileEditState>((ref) {
-  return ProfileEditController();
-});
+final profileEditControllerProvider =
+    StateNotifierProvider<ProfileEditController, ProfileEditState>((ref) {
+      return ProfileEditController();
+    });
 
 /// Settings controller provider
-final settingsControllerProvider = StateNotifierProvider<SettingsController, SettingsState>((ref) {
-  return SettingsController();
-});
+final settingsControllerProvider =
+    StateNotifierProvider<SettingsController, SettingsState>((ref) {
+      return SettingsController();
+    });
 
 /// Preferences controller provider
-final preferencesControllerProvider = StateNotifierProvider<PreferencesController, PreferencesState>((ref) {
-  return PreferencesController();
-});
+final preferencesControllerProvider =
+    StateNotifierProvider<PreferencesController, PreferencesState>((ref) {
+      return PreferencesController();
+    });
 
 /// Privacy controller provider
-final privacyControllerProvider = StateNotifierProvider<PrivacyController, PrivacyState>((ref) {
-  return PrivacyController();
-});
+final privacyControllerProvider =
+    StateNotifierProvider<PrivacyController, PrivacyState>((ref) {
+      return PrivacyController();
+    });
 
 // =============================================================================
 // COMPUTED STATE PROVIDERS
@@ -147,7 +156,7 @@ final profileCompletionProvider = Provider<double>((ref) {
   if (profile == null) return 0.0;
 
   double completion = 0.0;
-  
+
   // Basic profile info (40%)
   if (profile.firstName?.isNotEmpty == true) completion += 8.0;
   if (profile.lastName?.isNotEmpty == true) completion += 8.0;
@@ -182,10 +191,10 @@ final isProfileLoadingProvider = Provider<bool>((ref) {
   final sportsState = ref.watch(sportsProfileControllerProvider);
 
   return profileState.isLoading ||
-         settingsState.isLoading ||
-         preferencesState.isLoading ||
-         privacyState.isLoading ||
-         sportsState.isLoading;
+      settingsState.isLoading ||
+      preferencesState.isLoading ||
+      privacyState.isLoading ||
+      sportsState.isLoading;
 });
 
 /// Profile has unsaved changes provider
@@ -197,10 +206,10 @@ final hasUnsavedChangesProvider = Provider<bool>((ref) {
   final sportsState = ref.watch(sportsProfileControllerProvider);
 
   return profileState.hasUnsavedChanges ||
-         settingsState.hasUnsavedChanges ||
-         preferencesState.hasUnsavedChanges ||
-         privacyState.hasUnsavedChanges ||
-         sportsState.hasUnsavedChanges;
+      settingsState.hasUnsavedChanges ||
+      preferencesState.hasUnsavedChanges ||
+      privacyState.hasUnsavedChanges ||
+      sportsState.hasUnsavedChanges;
 });
 
 // =============================================================================
@@ -208,7 +217,10 @@ final hasUnsavedChangesProvider = Provider<bool>((ref) {
 // =============================================================================
 
 /// Get sports profile by ID
-final sportsProfileByIdProvider = Provider.family<SportProfile?, String>((ref, sportId) {
+final sportsProfileByIdProvider = Provider.family<SportProfile?, String>((
+  ref,
+  sportId,
+) {
   final sportsController = ref.watch(sportsProfileControllerProvider.notifier);
   return sportsController.getProfileBySport(sportId);
 });
@@ -221,7 +233,9 @@ final sportsProfileByIdProvider = Provider.family<SportProfile?, String>((ref, s
 final initializeProfileDataProvider = FutureProvider<bool>((ref) async {
   final profileController = ref.read(profileControllerProvider.notifier);
   final settingsController = ref.read(settingsControllerProvider.notifier);
-  final preferencesController = ref.read(preferencesControllerProvider.notifier);
+  final preferencesController = ref.read(
+    preferencesControllerProvider.notifier,
+  );
   final privacyController = ref.read(privacyControllerProvider.notifier);
   final sportsController = ref.read(sportsProfileControllerProvider.notifier);
 
@@ -247,7 +261,9 @@ final saveAllProfileChangesProvider = FutureProvider<bool>((ref) async {
   if (!hasChanges) return true;
 
   final settingsController = ref.read(settingsControllerProvider.notifier);
-  final preferencesController = ref.read(preferencesControllerProvider.notifier);
+  final preferencesController = ref.read(
+    preferencesControllerProvider.notifier,
+  );
   final privacyController = ref.read(privacyControllerProvider.notifier);
 
   final results = await Future.wait([
@@ -270,9 +286,10 @@ final currentUserProvider = Provider<UserProfile?>((ref) {
   if (authUser == null) return null;
   final now = DateTime.now();
   final metadata = authUser.userMetadata;
-  final displayName = (metadata?['display_name'] as String?)
-      ?? (metadata?['full_name'] as String?)
-      ?? (authUser.email ?? '');
+  final displayName =
+      (metadata?['display_name'] as String?) ??
+      (metadata?['full_name'] as String?) ??
+      (authUser.email ?? '');
   final avatarUrl = metadata?['avatar_url'] as String?;
 
   // Safely convert timestamps that may be DateTime or String or other

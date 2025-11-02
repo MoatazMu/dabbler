@@ -15,10 +15,7 @@ import '../../widgets/comments/comment_input.dart';
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
 
-  const PostDetailScreen({
-    super.key,
-    required this.postId,
-  });
+  const PostDetailScreen({super.key, required this.postId});
 
   @override
   ConsumerState<PostDetailScreen> createState() => _PostDetailScreenState();
@@ -28,16 +25,18 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _commentController = TextEditingController();
   final FocusNode _commentFocus = FocusNode();
-  
+
   String? _replyingToCommentId;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Load post details
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(socialFeedControllerProvider.notifier).loadPostDetails(widget.postId);
+      ref
+          .read(socialFeedControllerProvider.notifier)
+          .loadPostDetails(widget.postId);
     });
   }
 
@@ -53,7 +52,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final postAsync = ref.watch(postDetailsProvider(widget.postId));
-    
+
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: _buildAppBar(context, theme),
@@ -115,10 +114,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
   }
 
-  Widget _buildPostContent(BuildContext context, ThemeData theme, dynamic post) {
+  Widget _buildPostContent(
+    BuildContext context,
+    ThemeData theme,
+    dynamic post,
+  ) {
     final currentUserId = ref.watch(currentUserIdProvider);
     final isOwnPost = post.authorId == currentUserId;
-    
+
     return Column(
       children: [
         Expanded(
@@ -139,30 +142,32 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         location: post.location,
                         isEdited: post.isEdited,
                         onProfileTap: () => _navigateToProfile(post.authorId),
-                        actions: isOwnPost ? [
-                          PostAction(
-                            icon: Icons.edit,
-                            label: 'Edit',
-                            onTap: () => _editPost(post),
-                          ),
-                          PostAction(
-                            icon: Icons.delete,
-                            label: 'Delete',
-                            onTap: () => _deletePost(post.id),
-                            isDestructive: true,
-                          ),
-                        ] : [
-                          PostAction(
-                            icon: Icons.person_off,
-                            label: 'Block User',
-                            onTap: () => _blockUser(post.authorId),
-                            isDestructive: true,
-                          ),
-                        ],
+                        actions: isOwnPost
+                            ? [
+                                PostAction(
+                                  icon: Icons.edit,
+                                  label: 'Edit',
+                                  onTap: () => _editPost(post),
+                                ),
+                                PostAction(
+                                  icon: Icons.delete,
+                                  label: 'Delete',
+                                  onTap: () => _deletePost(post.id),
+                                  isDestructive: true,
+                                ),
+                              ]
+                            : [
+                                PostAction(
+                                  icon: Icons.person_off,
+                                  label: 'Block User',
+                                  onTap: () => _blockUser(post.authorId),
+                                  isDestructive: true,
+                                ),
+                              ],
                       ),
-                      
+
                       const SizedBox(height: 12),
-                      
+
                       // Post content
                       PostContentWidget(
                         content: post.content,
@@ -170,35 +175,41 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                         sports: post.sports,
                         mentions: post.mentions,
                         hashtags: post.hashtags,
-                        onMediaTap: (mediaIndex) => _viewMedia(post.media, mediaIndex),
+                        onMediaTap: (mediaIndex) =>
+                            _viewMedia(post.media, mediaIndex),
                         onMentionTap: (userId) => _navigateToProfile(userId),
                         onHashtagTap: (hashtag) => _searchHashtag(hashtag),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Post actions
                       PostActionsWidget(
                         post: post,
                         onLike: () => _handleLike(post.id),
                         onComment: () => _focusCommentInput(),
                         onShare: () => _sharePost(post),
-                        onReaction: (reaction) => _handleReaction(post.id, reaction),
+                        onReaction: (reaction) =>
+                            _handleReaction(post.id, reaction),
                       ),
-                      
+
                       // Engagement stats
                       _buildEngagementStats(theme, post),
                     ],
                   ),
                 ),
               ),
-              
+
               // Comments header
               SliverToBoxAdapter(
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                    color: theme.colorScheme.surfaceContainerHighest
+                        .withOpacity(0.3),
                     border: Border(
                       top: BorderSide(
                         color: theme.colorScheme.outline.withOpacity(0.2),
@@ -219,7 +230,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                       const Spacer(),
                       Consumer(
                         builder: (context, ref, child) {
-                          final commentsCount = ref.watch(postCommentsCountProvider(widget.postId));
+                          final commentsCount = ref.watch(
+                            postCommentsCountProvider(widget.postId),
+                          );
                           return Text(
                             '$commentsCount',
                             style: theme.textTheme.bodyMedium?.copyWith(
@@ -232,12 +245,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ),
                 ),
               ),
-              
+
               // Comments thread
               Consumer(
                 builder: (context, ref, child) {
-                  final commentsAsync = ref.watch(postCommentsProvider(widget.postId));
-                  
+                  final commentsAsync = ref.watch(
+                    postCommentsProvider(widget.postId),
+                  );
+
                   return commentsAsync.when(
                     data: (comments) {
                       if (comments.isEmpty) {
@@ -270,7 +285,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                           ),
                         );
                       }
-                      
+
                       return SliverList(
                         delegate: SliverChildBuilderDelegate(
                           (context, index) => CommentsThread(
@@ -302,11 +317,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   );
                 },
               ),
-              
+
               // Bottom padding for comment input
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100),
-              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 100)),
             ],
           ),
         ),
@@ -327,12 +340,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               label: 'likes',
               onTap: () => _showLikesList(post.id),
             ),
-            
+
             VerticalDivider(
               color: theme.colorScheme.outline.withOpacity(0.3),
               width: 32,
             ),
-            
+
             _buildStatItem(
               theme,
               icon: Icons.comment,
@@ -340,12 +353,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               label: 'comments',
               onTap: () => _focusCommentInput(),
             ),
-            
+
             VerticalDivider(
               color: theme.colorScheme.outline.withOpacity(0.3),
               width: 32,
             ),
-            
+
             _buildStatItem(
               theme,
               icon: Icons.share,
@@ -353,9 +366,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               label: 'shares',
               onTap: () => _sharePost(post),
             ),
-            
+
             const Spacer(),
-            
+
             Text(
               _formatPostTime(post.createdAt),
               style: theme.textTheme.bodySmall?.copyWith(
@@ -383,11 +396,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 16,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+            Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
             const SizedBox(width: 4),
             Text(
               count.toString(),
@@ -419,9 +428,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
-          top: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.2),
-          ),
+          top: BorderSide(color: theme.colorScheme.outline.withOpacity(0.2)),
         ),
       ),
       child: SafeArea(
@@ -462,17 +469,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                   ],
                 ),
               ),
-            
-            if (_replyingToCommentId != null)
-              const SizedBox(height: 8),
-            
+
+            if (_replyingToCommentId != null) const SizedBox(height: 8),
+
             // Comment input
             CommentInput(
               controller: _commentController,
               focusNode: _commentFocus,
-              hintText: _replyingToCommentId != null 
-                ? 'Write a reply...'
-                : 'Add a comment...',
+              hintText: _replyingToCommentId != null
+                  ? 'Write a reply...'
+                  : 'Add a comment...',
               onSubmit: (content) => _submitComment(content),
               onChanged: (text) {
                 // Handle mention suggestions
@@ -500,11 +506,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   void _handleLike(String postId) {
-    ref.read(socialFeedControllerProvider.notifier).reactToPost(postId, ReactionType.like.toString().split('.').last);
+    ref
+        .read(socialFeedControllerProvider.notifier)
+        .reactToPost(postId, ReactionType.like.toString().split('.').last);
   }
 
   void _handleReaction(String postId, ReactionType reaction) {
-    ref.read(socialFeedControllerProvider.notifier).reactToPost(postId, reaction.toString().split('.').last);
+    ref
+        .read(socialFeedControllerProvider.notifier)
+        .reactToPost(postId, reaction.toString().split('.').last);
   }
 
   void _focusCommentInput() {
@@ -531,12 +541,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
   void _submitComment(String content) {
     if (content.trim().isNotEmpty) {
-      ref.read(socialFeedControllerProvider.notifier).addComment(
-        postId: widget.postId,
-        content: content,
-        parentCommentId: _replyingToCommentId,
-      );
-      
+      ref
+          .read(socialFeedControllerProvider.notifier)
+          .addComment(
+            postId: widget.postId,
+            content: content,
+            parentCommentId: _replyingToCommentId,
+          );
+
       _commentController.clear();
       setState(() => _replyingToCommentId = null);
     }
@@ -549,7 +561,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       final beforeCursor = text.substring(0, selection.baseOffset);
       final words = beforeCursor.split(' ');
       final lastWord = words.isNotEmpty ? words.last : '';
-      
+
       if (lastWord.startsWith('@') && lastWord.length > 1) {
         // Trigger mention suggestions for query: ${lastWord.substring(1)}
       }
@@ -587,9 +599,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     // Show report dialog
     showDialog(
       context: context,
-      builder: (context) => const ReportDialog(
-        type: ReportType.comment,
-      ),
+      builder: (context) => const ReportDialog(type: ReportType.comment),
     );
   }
 
@@ -606,7 +616,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Post'),
-        content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete this post? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -615,9 +627,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(context);
-              final success = await ref.read(socialFeedControllerProvider.notifier)
-                .deletePost(postId);
-              
+              final success = await ref
+                  .read(socialFeedControllerProvider.notifier)
+                  .deletePost(postId);
+
               if (success && mounted) {
                 Navigator.pop(context); // Go back to feed
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -637,7 +650,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Block User'),
-        content: const Text('Are you sure you want to block this user? You won\'t see their posts anymore.'),
+        content: const Text(
+          'Are you sure you want to block this user? You won\'t see their posts anymore.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -665,17 +680,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   void _copyPostLink() {
     final link = 'https://dabbler.app/post/${widget.postId}';
     Clipboard.setData(ClipboardData(text: link));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Link copied to clipboard')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Link copied to clipboard')));
   }
 
   void _reportPost() {
     showDialog(
       context: context,
-      builder: (context) => const ReportDialog(
-        type: ReportType.post,
-      ),
+      builder: (context) => const ReportDialog(type: ReportType.post),
     );
   }
 
@@ -691,19 +704,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     Navigator.pushNamed(
       context,
       '/media-viewer',
-      arguments: {
-        'media': media,
-        'initialIndex': initialIndex,
-      },
+      arguments: {'media': media, 'initialIndex': initialIndex},
     );
   }
 
   void _navigateToProfile(String userId) {
-    Navigator.pushNamed(
-      context,
-      '/profile',
-      arguments: {'userId': userId},
-    );
+    Navigator.pushNamed(context, '/profile', arguments: {'userId': userId});
   }
 
   void _searchHashtag(String hashtag) {
@@ -717,7 +723,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   String _formatPostTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inDays > 7) {
       return '${time.day}/${time.month}/${time.year}';
     } else if (difference.inDays > 0) {
@@ -736,16 +742,13 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 class LikesListSheet extends ConsumerWidget {
   final String postId;
 
-  const LikesListSheet({
-    super.key,
-    required this.postId,
-  });
+  const LikesListSheet({super.key, required this.postId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final likesAsync = ref.watch(postLikesProvider(postId));
-    
+
     return Container(
       height: MediaQuery.of(context).size.height * 0.6,
       padding: const EdgeInsets.all(16),
@@ -767,36 +770,38 @@ class LikesListSheet extends ConsumerWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Expanded(
             child: likesAsync.when(
               data: (likes) => ListView.builder(
                 itemCount: likes.length,
                 itemBuilder: (context, index) {
                   final like = likes[index];
-                  
+
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: like.avatarUrl != null && like.avatarUrl!.isNotEmpty
-                        ? NetworkImage(like.avatarUrl!)
-                        : null,
+                      backgroundImage:
+                          like.avatarUrl != null && like.avatarUrl!.isNotEmpty
+                          ? NetworkImage(like.avatarUrl!)
+                          : null,
                       child: like.avatarUrl == null || like.avatarUrl!.isEmpty
-                        ? Text(like.displayName[0].toUpperCase())
-                        : null,
+                          ? Text(like.displayName[0].toUpperCase())
+                          : null,
                     ),
                     title: Text(like.displayName),
                     subtitle: Text('@${like.email}'),
-                    trailing: const Icon(Icons.favorite), // Default to like icon for now
+                    trailing: const Icon(
+                      Icons.favorite,
+                    ), // Default to like icon for now
                     onTap: () => _navigateToProfile(context, like.id),
                   );
                 },
               ),
               loading: () => const Center(child: LoadingWidget()),
-              error: (error, stack) => Center(
-                child: Text('Error loading likes: $error'),
-              ),
+              error: (error, stack) =>
+                  Center(child: Text('Error loading likes: $error')),
             ),
           ),
         ],
@@ -805,11 +810,7 @@ class LikesListSheet extends ConsumerWidget {
   }
 
   void _navigateToProfile(BuildContext context, String userId) {
-    Navigator.pushNamed(
-      context,
-      '/profile',
-      arguments: {'userId': userId},
-    );
+    Navigator.pushNamed(context, '/profile', arguments: {'userId': userId});
   }
 }
 
@@ -817,10 +818,7 @@ class LikesListSheet extends ConsumerWidget {
 class ReportDialog extends StatefulWidget {
   final ReportType type;
 
-  const ReportDialog({
-    super.key,
-    required this.type,
-  });
+  const ReportDialog({super.key, required this.type});
 
   @override
   State<ReportDialog> createState() => _ReportDialogState();
@@ -850,13 +848,13 @@ class _ReportDialogState extends State<ReportDialog> {
         children: [
           Text('Why are you reporting this ${widget.type.name}?'),
           const SizedBox(height: 16),
-          
+
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: _reportReasons.map((reason) {
               final isSelected = _selectedReason == reason;
-              
+
               return ChoiceChip(
                 label: Text(reason),
                 selected: isSelected,
@@ -866,7 +864,7 @@ class _ReportDialogState extends State<ReportDialog> {
               );
             }).toList(),
           ),
-          
+
           if (_selectedReason != null) ...[
             const SizedBox(height: 16),
             TextField(

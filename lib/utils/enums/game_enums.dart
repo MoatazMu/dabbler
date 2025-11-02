@@ -2,31 +2,31 @@
 enum GameStatus {
   /// Game is being created but not yet published
   draft,
-  
+
   /// Game is published and accepting players
   open,
-  
+
   /// Game is published but full (no more players can join)
   full,
-  
+
   /// Game is starting soon (within check-in window)
   starting,
-  
+
   /// Game is currently in progress
   inProgress,
-  
+
   /// Game has finished successfully
   completed,
-  
+
   /// Game was cancelled by organizer
   cancelled,
-  
+
   /// Game was cancelled due to weather
   weatherCancelled,
-  
+
   /// Game was cancelled due to venue issues
   venueCancelled,
-  
+
   /// Game expired (start time passed with insufficient players)
   expired,
 }
@@ -94,25 +94,25 @@ extension GameStatusExtension on GameStatus {
 enum PlayerStatus {
   /// Player has joined and confirmed attendance
   joined,
-  
+
   /// Player is on the waitlist
   waitlisted,
-  
+
   /// Player has checked in to the game
   checkedIn,
-  
+
   /// Player attended and participated in the game
   attended,
-  
+
   /// Player joined but didn't show up
   noShow,
-  
+
   /// Player cancelled their participation
   cancelled,
-  
+
   /// Player was removed by organizer
   removed,
-  
+
   /// Player's participation is pending approval
   pendingApproval,
 }
@@ -152,10 +152,7 @@ extension PlayerStatusExtension on PlayerStatus {
 
   /// Whether the player actually participated
   bool get didParticipate {
-    return [
-      PlayerStatus.attended,
-      PlayerStatus.checkedIn,
-    ].contains(this);
+    return [PlayerStatus.attended, PlayerStatus.checkedIn].contains(this);
   }
 }
 
@@ -163,22 +160,22 @@ extension PlayerStatusExtension on PlayerStatus {
 enum BookingStatus {
   /// Booking is being processed
   pending,
-  
+
   /// Booking is confirmed and active
   confirmed,
-  
+
   /// Booking was cancelled by organizer
   cancelled,
-  
+
   /// Booking was rejected by venue
   rejected,
-  
+
   /// Booking expired due to non-payment
   expired,
-  
+
   /// Booking is on hold pending payment
   paymentPending,
-  
+
   /// Booking requires modification
   modificationRequired,
 }
@@ -218,28 +215,28 @@ extension BookingStatusExtension on BookingStatus {
 enum PaymentStatus {
   /// No payment required
   notRequired,
-  
+
   /// Payment is pending
   pending,
-  
+
   /// Payment completed successfully
   completed,
-  
+
   /// Payment failed
   failed,
-  
+
   /// Payment was refunded
   refunded,
-  
+
   /// Partial refund issued
   partialRefund,
-  
+
   /// Payment is being processed
   processing,
-  
+
   /// Payment requires manual review
   underReview,
-  
+
   /// Payment was disputed/charged back
   disputed,
 }
@@ -276,10 +273,7 @@ extension PaymentStatusExtension on PaymentStatus {
 
   /// Whether payment can be retried
   bool get canRetry {
-    return [
-      PaymentStatus.failed,
-      PaymentStatus.pending,
-    ].contains(this);
+    return [PaymentStatus.failed, PaymentStatus.pending].contains(this);
   }
 }
 
@@ -287,22 +281,22 @@ extension PaymentStatusExtension on PaymentStatus {
 enum CheckInMethod {
   /// Manual check-in by organizer
   manual,
-  
+
   /// QR code scan
   qrCode,
-  
+
   /// Location-based check-in (GPS)
   location,
-  
+
   /// Check-in code entry
   code,
-  
+
   /// NFC tap
   nfc,
-  
+
   /// Bluetooth proximity
   bluetooth,
-  
+
   /// Self check-in by player
   selfCheckIn,
 }
@@ -343,37 +337,37 @@ extension CheckInMethodExtension on CheckInMethod {
 enum WeatherCondition {
   /// Clear and sunny
   clear,
-  
+
   /// Partly cloudy
   partlyCloudy,
-  
+
   /// Overcast/cloudy
   cloudy,
-  
+
   /// Light rain
   lightRain,
-  
+
   /// Heavy rain
   heavyRain,
-  
+
   /// Thunderstorms
   thunderstorm,
-  
+
   /// Snow
   snow,
-  
+
   /// Extreme heat
   extremeHeat,
-  
+
   /// Extreme cold
   extremeCold,
-  
+
   /// High winds
   highWinds,
-  
+
   /// Fog
   fog,
-  
+
   /// Unknown/unavailable
   unknown,
 }
@@ -458,22 +452,22 @@ extension WeatherConditionExtension on WeatherCondition {
 enum TeamAssignment {
   /// No team assignment (individual play)
   none,
-  
+
   /// Automatically balanced teams
   autoBalanced,
-  
+
   /// Teams chosen by captains
   captainsPick,
-  
+
   /// Random team assignment
   random,
-  
+
   /// Manual assignment by organizer
   manual,
-  
+
   /// Self-selected teams
   selfSelected,
-  
+
   /// Pre-formed teams
   preFormed,
 }
@@ -506,10 +500,7 @@ extension TeamAssignmentExtension on TeamAssignment {
 
   /// Whether assignment happens automatically
   bool get isAutomatic {
-    return [
-      TeamAssignment.autoBalanced,
-      TeamAssignment.random,
-    ].contains(this);
+    return [TeamAssignment.autoBalanced, TeamAssignment.random].contains(this);
   }
 }
 
@@ -517,16 +508,16 @@ extension TeamAssignmentExtension on TeamAssignment {
 enum SkillLevel {
   /// Beginner level
   beginner,
-  
-  /// Intermediate level  
+
+  /// Intermediate level
   intermediate,
-  
+
   /// Advanced level
   advanced,
-  
+
   /// Professional/expert level
   expert,
-  
+
   /// Mixed skill levels welcome
   mixed,
 }

@@ -14,9 +14,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: CustomAppBar(
-        actionIcon: Iconsax.setting_2_copy,
-      ),
+      appBar: CustomAppBar(actionIcon: Iconsax.setting_2_copy),
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 116, 20, 16),
         child: Column(
@@ -40,253 +38,243 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Widget _buildAccountSection(BuildContext context) {
-    return _buildSettingsCard(
-      context,
-      'Account',
-      [
-        _buildSettingItem(
-          context,
-          'Profile Information',
-          'Update your personal details',
-          LucideIcons.user,
-          () {
-            context.push('/edit_profile');
-          },
-        ),
-        _buildSettingItem(
-          context,
-          'Password & Security',
-          'Change password and security settings',
-          LucideIcons.shield,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🔐 Password & Security - Coming soon!'),
-                backgroundColor: Colors.indigo,
-              ),
-            );
-          },
-        ),
-        _buildSettingItem(
-          context,
-          'Connected Accounts',
-          'Manage social media connections',
-          LucideIcons.link,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🔗 Connected Accounts - Link your social media!'),
-                backgroundColor: Colors.indigo,
-              ),
-            );
-          },
-        ),
-      ],
-    );
+    return _buildSettingsCard(context, 'Account', [
+      _buildSettingItem(
+        context,
+        'Profile Information',
+        'Update your personal details',
+        LucideIcons.user,
+        () {
+          context.push('/edit_profile');
+        },
+      ),
+      _buildSettingItem(
+        context,
+        'Password & Security',
+        'Change password and security settings',
+        LucideIcons.shield,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🔐 Password & Security - Coming soon!'),
+              backgroundColor: Colors.indigo,
+            ),
+          );
+        },
+      ),
+      _buildSettingItem(
+        context,
+        'Connected Accounts',
+        'Manage social media connections',
+        LucideIcons.link,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🔗 Connected Accounts - Link your social media!'),
+              backgroundColor: Colors.indigo,
+            ),
+          );
+        },
+      ),
+    ]);
   }
 
   Widget _buildPrivacySection(BuildContext context) {
-    return _buildSettingsCard(
-      context,
-      'Privacy & Security',
-      [
-        _buildSwitchItem(
-          context,
-          'Location Services',
-          'Allow app to access your location',
-          LucideIcons.mapPin,
-          true,
-          (value) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(value 
-                  ? '📍 Location services enabled!'
-                  : '📍 Location services disabled!'),
-                backgroundColor: value ? Colors.green : Colors.grey,
+    return _buildSettingsCard(context, 'Privacy & Security', [
+      _buildSwitchItem(
+        context,
+        'Location Services',
+        'Allow app to access your location',
+        LucideIcons.mapPin,
+        true,
+        (value) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                value
+                    ? '📍 Location services enabled!'
+                    : '📍 Location services disabled!',
               ),
-            );
-          },
-        ),
-        _buildSwitchItem(
-          context,
-          'Profile Visibility',
-          'Make your profile visible to others',
-          LucideIcons.eye,
-          true,
-          (value) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(value 
-                  ? '👁️ Profile is now visible to others!'
-                  : '👁️ Profile is now private!'),
-                backgroundColor: value ? Colors.green : Colors.grey,
+              backgroundColor: value ? Colors.green : Colors.grey,
+            ),
+          );
+        },
+      ),
+      _buildSwitchItem(
+        context,
+        'Profile Visibility',
+        'Make your profile visible to others',
+        LucideIcons.eye,
+        true,
+        (value) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                value
+                    ? '👁️ Profile is now visible to others!'
+                    : '👁️ Profile is now private!',
               ),
-            );
-          },
-        ),
-        _buildSettingItem(
-          context,
-          'Data & Privacy',
-          'Manage your data and privacy settings',
-          LucideIcons.database,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🗃️ Data & Privacy settings - Coming soon!'),
-                backgroundColor: Colors.purple,
-              ),
-            );
-          },
-        ),
-      ],
-    );
+              backgroundColor: value ? Colors.green : Colors.grey,
+            ),
+          );
+        },
+      ),
+      _buildSettingItem(
+        context,
+        'Data & Privacy',
+        'Manage your data and privacy settings',
+        LucideIcons.database,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🗃️ Data & Privacy settings - Coming soon!'),
+              backgroundColor: Colors.purple,
+            ),
+          );
+        },
+      ),
+    ]);
   }
 
   Widget _buildGeneralSection(BuildContext context) {
-    return _buildSettingsCard(
-      context,
-      'General',
-      [
-        _buildSettingItem(
-          context,
-          'Payment Methods',
-          'Manage your payment cards and methods',
-          LucideIcons.creditCard,
-          () {
-            context.push('/payment_methods');
-          },
-        ),
-        _buildSettingItem(
-          context,
-          'Language',
-          'Choose your preferred language',
-          LucideIcons.languages,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🌍 Language: English (Arabic coming soon!)'),
-                backgroundColor: Colors.teal,
-              ),
-            );
-          },
-        ),
-        _buildSettingItem(
-          context,
-          'Theme & Appearance',
-          'Switch between light and dark mode',
-          LucideIcons.palette,
-          () {
-            context.push('/theme_settings');
-          },
-        ),
-      ],
-    );
+    return _buildSettingsCard(context, 'General', [
+      _buildSettingItem(
+        context,
+        'Payment Methods',
+        'Manage your payment cards and methods',
+        LucideIcons.creditCard,
+        () {
+          context.push('/payment_methods');
+        },
+      ),
+      _buildSettingItem(
+        context,
+        'Language',
+        'Choose your preferred language',
+        LucideIcons.languages,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🌍 Language: English (Arabic coming soon!)'),
+              backgroundColor: Colors.teal,
+            ),
+          );
+        },
+      ),
+      _buildSettingItem(
+        context,
+        'Theme & Appearance',
+        'Switch between light and dark mode',
+        LucideIcons.palette,
+        () {
+          context.push('/theme_settings');
+        },
+      ),
+    ]);
   }
 
   Widget _buildSupportSection(BuildContext context) {
-    return _buildSettingsCard(
-      context,
-      'Support',
-      [
-        _buildSettingItem(
-          context,
-          'Help & Support',
-          'Get help and contact support',
-          LucideIcons.info,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('💬 Help & Support - FAQ available soon!'),
-                backgroundColor: Colors.amber,
-              ),
-            );
-          },
-        ),
-        _buildSettingItem(
-          context,
-          'Report a Problem',
-          'Report bugs or issues',
-          LucideIcons.flag,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🚩 Report Problem - Thank you for feedback!'),
-                backgroundColor: Colors.amber,
-              ),
-            );
-          },
-        ),
-        _buildSettingItem(
-          context,
-          'Contact Us',
-          'Get in touch with our team',
-          LucideIcons.mail,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('📧 Contact: support@dabbler.app'),
-                backgroundColor: Colors.amber,
-              ),
-            );
-          },
-        ),
-      ],
-    );
+    return _buildSettingsCard(context, 'Support', [
+      _buildSettingItem(
+        context,
+        'Help & Support',
+        'Get help and contact support',
+        LucideIcons.info,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('💬 Help & Support - FAQ available soon!'),
+              backgroundColor: Colors.amber,
+            ),
+          );
+        },
+      ),
+      _buildSettingItem(
+        context,
+        'Report a Problem',
+        'Report bugs or issues',
+        LucideIcons.flag,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🚩 Report Problem - Thank you for feedback!'),
+              backgroundColor: Colors.amber,
+            ),
+          );
+        },
+      ),
+      _buildSettingItem(
+        context,
+        'Contact Us',
+        'Get in touch with our team',
+        LucideIcons.mail,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('📧 Contact: support@dabbler.app'),
+              backgroundColor: Colors.amber,
+            ),
+          );
+        },
+      ),
+    ]);
   }
 
   Widget _buildAboutSection(BuildContext context) {
-    return _buildSettingsCard(
-      context,
-      'About',
-      [
-        _buildSettingItem(
-          context,
-          'App Information',
-          'Version, terms, and privacy policy',
-          LucideIcons.info,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('ℹ️ App Version: 1.0.0 Beta'),
-                backgroundColor: Colors.blueGrey,
+    return _buildSettingsCard(context, 'About', [
+      _buildSettingItem(
+        context,
+        'App Information',
+        'Version, terms, and privacy policy',
+        LucideIcons.info,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('ℹ️ App Version: 1.0.0 Beta'),
+              backgroundColor: Colors.blueGrey,
+            ),
+          );
+        },
+      ),
+      _buildSettingItem(
+        context,
+        'Terms of Service',
+        'Read our terms and conditions',
+        LucideIcons.fileText,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                '📄 Terms of Service - Legal document coming soon!',
               ),
-            );
-          },
-        ),
-        _buildSettingItem(
-          context,
-          'Terms of Service',
-          'Read our terms and conditions',
-          LucideIcons.fileText,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('📄 Terms of Service - Legal document coming soon!'),
-                backgroundColor: Colors.blueGrey,
-              ),
-            );
-          },
-        ),
-        _buildSettingItem(
-          context,
-          'Privacy Policy',
-          'Learn how we protect your data',
-          LucideIcons.shield,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🛡️ Privacy Policy - We protect your data!'),
-                backgroundColor: Colors.blueGrey,
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        Divider(color: Colors.grey.withValues(alpha: 0.2), thickness: 1, height: 1),
-        const SizedBox(height: 8),
-        _buildSignOutItem(context),
-      ],
-    );
+              backgroundColor: Colors.blueGrey,
+            ),
+          );
+        },
+      ),
+      _buildSettingItem(
+        context,
+        'Privacy Policy',
+        'Learn how we protect your data',
+        LucideIcons.shield,
+        () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🛡️ Privacy Policy - We protect your data!'),
+              backgroundColor: Colors.blueGrey,
+            ),
+          );
+        },
+      ),
+      const SizedBox(height: 16),
+      Divider(
+        color: Colors.grey.withValues(alpha: 0.2),
+        thickness: 1,
+        height: 1,
+      ),
+      const SizedBox(height: 8),
+      _buildSignOutItem(context),
+    ]);
   }
 
   Widget _buildSignOutItem(BuildContext context) {
@@ -307,7 +295,11 @@ class SettingsScreen extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
         ),
-        trailing: Icon(LucideIcons.chevronRight, size: 16, color: Colors.red.shade600),
+        trailing: Icon(
+          LucideIcons.chevronRight,
+          size: 16,
+          color: Colors.red.shade600,
+        ),
         onTap: () => _showSignOutDialog(context),
       ),
     );
@@ -330,18 +322,12 @@ class SettingsScreen extends StatelessWidget {
                   color: Colors.red.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  Icons.logout_rounded,
-                  color: Colors.red,
-                  size: 20,
-                ),
+                child: Icon(Icons.logout_rounded, color: Colors.red, size: 20),
               ),
               const SizedBox(width: 12),
               const Text(
                 'Sign Out',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ],
           ),
@@ -351,17 +337,12 @@ class SettingsScreen extends StatelessWidget {
             children: [
               const Text(
                 'Are you sure you want to sign out?',
-                style: TextStyle(
-                  fontSize: 16,
-                ),
+                style: TextStyle(fontSize: 16),
               ),
               const SizedBox(height: 8),
               Text(
                 'You\'ll need to sign in again to access your account.',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[600]),
               ),
             ],
           ),
@@ -375,15 +356,13 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: const Text(
                 'Cancel',
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w500),
               ),
             ),
             ElevatedButton(
               onPressed: () async {
                 Navigator.of(context).pop();
-                
+
                 // Show loading indicator
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -394,7 +373,9 @@ class SettingsScreen extends StatelessWidget {
                           height: 16,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         ),
                         SizedBox(width: 12),
@@ -405,16 +386,18 @@ class SettingsScreen extends StatelessWidget {
                     backgroundColor: Colors.blue,
                   ),
                 );
-                
+
                 try {
                   await AuthService().signOut();
                   // Proactively notify router (legacy screen not using SimpleAuthNotifier)
-                  try { routerRefreshNotifier.notifyAuthStateChanged(); } catch (_) {}
-                  
+                  try {
+                    routerRefreshNotifier.notifyAuthStateChanged();
+                  } catch (_) {}
+
                   if (context.mounted) {
                     // Navigate to primary auth entry (phone input)
                     context.go(RoutePaths.phoneInput);
-                    
+
                     // Show success message
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
@@ -463,13 +446,14 @@ class SettingsScreen extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
               child: const Text(
                 'Sign Out',
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -478,7 +462,11 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsCard(BuildContext context, String title, List<Widget> children) {
+  Widget _buildSettingsCard(
+    BuildContext context,
+    String title,
+    List<Widget> children,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(6.0),
@@ -500,7 +488,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingItem(BuildContext context, String title, String subtitle, IconData icon, VoidCallback onTap) {
+  Widget _buildSettingItem(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+    VoidCallback onTap,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -511,14 +505,15 @@ class SettingsScreen extends StatelessWidget {
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          child: Icon(
+            icon,
+            size: 18,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         subtitle: Text(
           subtitle,
@@ -533,7 +528,14 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSwitchItem(BuildContext context, String title, String subtitle, IconData icon, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildSwitchItem(
+    BuildContext context,
+    String title,
+    String subtitle,
+    IconData icon,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
@@ -544,14 +546,15 @@ class SettingsScreen extends StatelessWidget {
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          child: Icon(
+            icon,
+            size: 18,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         title: Text(
           title,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
         subtitle: Text(
           subtitle,
@@ -563,7 +566,10 @@ class SettingsScreen extends StatelessWidget {
         trailing: Switch(
           value: value,
           onChanged: (v) {
-            Future.delayed(const Duration(milliseconds: 350), () => onChanged(v));
+            Future.delayed(
+              const Duration(milliseconds: 350),
+              () => onChanged(v),
+            );
           },
           activeThumbColor: Theme.of(context).colorScheme.primary,
         ),

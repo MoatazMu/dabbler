@@ -1,5 +1,6 @@
 /// Profile-related enum definitions for status, completion levels, and sport categories
 library;
+
 import 'package:flutter/material.dart';
 
 /// Enum representing the current status of a user profile
@@ -60,12 +61,17 @@ enum ProfileCompletionLevel {
   final int minPercentage;
   final int maxPercentage;
   final String message;
-  const ProfileCompletionLevel(this.minPercentage, this.maxPercentage, this.message);
+  const ProfileCompletionLevel(
+    this.minPercentage,
+    this.maxPercentage,
+    this.message,
+  );
 
   /// Get completion level from percentage value
   static ProfileCompletionLevel fromPercentage(int percentage) {
     return ProfileCompletionLevel.values.firstWhere(
-      (level) => percentage >= level.minPercentage && percentage < level.maxPercentage,
+      (level) =>
+          percentage >= level.minPercentage && percentage < level.maxPercentage,
       orElse: () => ProfileCompletionLevel.complete,
     );
   }
@@ -119,11 +125,8 @@ enum SportCategory {
   const SportCategory(this.value, this.displayName, this.icon);
 
   /// Create SportCategory from string value
-  static SportCategory fromString(String value) =>
-      SportCategory.values.firstWhere(
-        (e) => e.value == value,
-        orElse: () => SportCategory.other,
-      );
+  static SportCategory fromString(String value) => SportCategory.values
+      .firstWhere((e) => e.value == value, orElse: () => SportCategory.other);
 
   /// Get color representation for the sport category
   Color get color {
@@ -155,7 +158,13 @@ enum SportCategory {
       case SportCategory.water:
         return ['Swimming', 'Surfing', 'Kayaking', 'Water Polo', 'Sailing'];
       case SportCategory.winter:
-        return ['Skiing', 'Snowboarding', 'Ice Hockey', 'Figure Skating', 'Curling'];
+        return [
+          'Skiing',
+          'Snowboarding',
+          'Ice Hockey',
+          'Figure Skating',
+          'Curling',
+        ];
       case SportCategory.other:
         return ['Mixed Martial Arts', 'Rock Climbing', 'Gymnastics', 'Dancing'];
     }

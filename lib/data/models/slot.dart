@@ -35,20 +35,25 @@ class Slot {
 
   factory Slot.fromMap(Map<String, dynamic> row) {
     final m = asMap(row);
-    final startRaw = m['start_ts'] ?? m['start_at'] ?? m['start'] ?? m['begin_ts'];
-    final endRaw   = m['end_ts']   ?? m['end_at']   ?? m['end']   ?? m['finish_ts'];
+    final startRaw =
+        m['start_ts'] ?? m['start_at'] ?? m['start'] ?? m['begin_ts'];
+    final endRaw = m['end_ts'] ?? m['end_at'] ?? m['end'] ?? m['finish_ts'];
 
-    final open  = asBool(m['is_open']) ?? asBool(m['open']) ?? true;
+    final open = asBool(m['is_open']) ?? asBool(m['open']) ?? true;
     final booked = asBool(m['is_booked']) ?? asBool(m['booked']) ?? false;
-    final held   = asBool(m['is_held']) ?? asBool(m['held']) ?? false;
+    final held = asBool(m['is_held']) ?? asBool(m['held']) ?? false;
 
     final explicitAvail = asBool(m['is_available']) ?? asBool(m['available']);
     final computedAvail = (open == true) && (booked != true) && (held != true);
 
     return Slot(
       venueSpaceId: (m['venue_space_id'] ?? m['space_id'] ?? '').toString(),
-      start: asDateTime(startRaw) ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-      end: asDateTime(endRaw) ?? DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      start:
+          asDateTime(startRaw) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
+      end:
+          asDateTime(endRaw) ??
+          DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       isOpen: open ?? true,
       isBooked: booked,
       isHeld: held,
@@ -83,9 +88,11 @@ class SlotHold {
     return SlotHold(
       id: (m['id'] ?? '').toString(),
       venueSpaceId: (m['venue_space_id'] ?? m['space_id'] ?? '').toString(),
-      start: asDateTime(m['start_ts'] ?? m['start_at'] ?? m['start']) ??
+      start:
+          asDateTime(m['start_ts'] ?? m['start_at'] ?? m['start']) ??
           DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
-      end: asDateTime(m['end_ts'] ?? m['end_at'] ?? m['end']) ??
+      end:
+          asDateTime(m['end_ts'] ?? m['end_at'] ?? m['end']) ??
           DateTime.fromMillisecondsSinceEpoch(0, isUtc: true),
       createdBy: (m['created_by'] ?? '').toString(),
       createdAt: asDateTime(m['created_at']),
@@ -94,18 +101,18 @@ class SlotHold {
   }
 
   Map<String, dynamic> toInsertMap({required String createdBy}) => {
-        // id may be db-generated
-        'venue_space_id': venueSpaceId,
-        'start_ts': start.toUtc().toIso8601String(),
-        'end_ts': end.toUtc().toIso8601String(),
-        'created_by': createdBy, // satisfy WITH CHECK on RLS
-        if (note != null) 'note': note,
-      };
+    // id may be db-generated
+    'venue_space_id': venueSpaceId,
+    'start_ts': start.toUtc().toIso8601String(),
+    'end_ts': end.toUtc().toIso8601String(),
+    'created_by': createdBy, // satisfy WITH CHECK on RLS
+    if (note != null) 'note': note,
+  };
 
   Map<String, dynamic> toUpdateMap() => {
-        'venue_space_id': venueSpaceId,
-        'start_ts': start.toUtc().toIso8601String(),
-        'end_ts': end.toUtc().toIso8601String(),
-        if (note != null) 'note': note,
-      };
+    'venue_space_id': venueSpaceId,
+    'start_ts': start.toUtc().toIso8601String(),
+    'end_ts': end.toUtc().toIso8601String(),
+    if (note != null) 'note': note,
+  };
 }

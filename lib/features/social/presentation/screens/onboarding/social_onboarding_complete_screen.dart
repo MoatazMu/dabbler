@@ -14,7 +14,7 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
         child: Column(
           children: [
             const Spacer(),
-            
+
             // Success Animation/Icon
             Container(
               width: 120,
@@ -30,26 +30,26 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // Success Message
             Text(
               'Welcome to Social!',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
-            
+
             Text(
               'You\'re all set up! Start connecting with friends, sharing your game experiences, and discovering new players in your area.',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 40),
-            
+
             // Feature Preview Cards
             Card(
               child: Padding(
@@ -61,7 +61,9 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).primaryColor.withOpacity(0.1),
+                            color: Theme.of(
+                              context,
+                            ).primaryColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
@@ -80,9 +82,8 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                               ),
                               Text(
                                 'Find and add friends who love the same sports',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: Colors.grey[600]),
                               ),
                             ],
                           ),
@@ -114,9 +115,8 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                               ),
                               Text(
                                 'Post updates, photos, and celebrate your wins',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: Colors.grey[600]),
                               ),
                             ],
                           ),
@@ -148,9 +148,8 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                               ),
                               Text(
                                 'See what games your friends are playing',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: Colors.grey[600]),
                               ),
                             ],
                           ),
@@ -161,9 +160,9 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const Spacer(),
-            
+
             // Action Buttons
             Column(
               children: [
@@ -190,9 +189,9 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Skip for now option
             TextButton(
               onPressed: () {
@@ -200,9 +199,7 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
               },
               child: Text(
                 'I\'ll explore later',
-                style: TextStyle(
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(color: Colors.grey[600]),
               ),
             ),
           ],

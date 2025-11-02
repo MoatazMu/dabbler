@@ -74,7 +74,7 @@ class RewardsEvent {
       data: Map<String, dynamic>.from(map['data']),
       timestamp: DateTime.parse(map['timestamp']),
       sourceId: map['sourceId'],
-      metadata: map['metadata'] != null 
+      metadata: map['metadata'] != null
           ? Map<String, dynamic>.from(map['metadata'])
           : null,
     );
@@ -127,18 +127,20 @@ class RewardsService extends ChangeNotifier {
     required ProgressTrackingService progressTrackingService,
     required RewardsAnalyticsService analyticsService,
     required SupabaseClient supabase,
-  })  : _repository = repository,
-        _notificationService = notificationService,
-        _tierCalculationService = tierCalculationService,
-        _progressTrackingService = progressTrackingService,
-        _analyticsService = analyticsService,
-        _supabase = supabase,
-        _eventStreamController = StreamController<RewardsEvent>.broadcast();
+  }) : _repository = repository,
+       _notificationService = notificationService,
+       _tierCalculationService = tierCalculationService,
+       _progressTrackingService = progressTrackingService,
+       _analyticsService = analyticsService,
+       _supabase = supabase,
+       _eventStreamController = StreamController<RewardsEvent>.broadcast();
 
   /// Create a mock instance for development/testing
   factory RewardsService.mock() {
     // Create minimal mock implementations
-    throw UnimplementedError('Mock RewardsService - individual methods should be stubbed for testing');
+    throw UnimplementedError(
+      'Mock RewardsService - individual methods should be stubbed for testing',
+    );
   }
 
   Stream<RewardsEvent> get eventStream => _eventStreamController.stream;
@@ -151,7 +153,7 @@ class RewardsService extends ChangeNotifier {
 
     try {
       _currentUserId = userId;
-      
+
       // Initialize dependent services
       await Future.wait([
         _notificationService.initialize(userId),
@@ -162,13 +164,13 @@ class RewardsService extends ChangeNotifier {
 
       // Setup event processing
       _eventSubscription = _eventStreamController.stream.listen(_handleEvent);
-      
+
       // Setup real-time subscriptions
       await _setupRealtimeSubscriptions();
-      
+
       // Load initial data
       await _loadInitialData();
-      
+
       _isInitialized = true;
       notifyListeners();
 
@@ -176,7 +178,6 @@ class RewardsService extends ChangeNotifier {
         'userId': userId,
         'timestamp': DateTime.now().toIso8601String(),
       });
-
     } catch (e) {
       debugPrint('Error initializing RewardsService: $e');
       rethrow;
@@ -199,7 +200,7 @@ class RewardsService extends ChangeNotifier {
   Future<void> processEvent(RewardsEvent event) async {
     _eventQueue.add(event);
     _eventStreamController.add(event);
-    
+
     if (!_isProcessingEvents) {
       await _processEventQueue();
     }
@@ -216,8 +217,11 @@ class RewardsService extends ChangeNotifier {
   }) async {
     try {
       // Calculate final points with multipliers
-      final finalPoints = _calculatePointsWithMultipliers(points, multipliers ?? []);
-      
+      final finalPoints = _calculatePointsWithMultipliers(
+        points,
+        multipliers ?? [],
+      );
+
       // Create transaction
       final transaction = PointsTransaction(
         id: _generateTransactionId(),
@@ -229,35 +233,32 @@ class RewardsService extends ChangeNotifier {
       );
 
       // Save transaction via claimReward
-      await _repository.claimReward(
-        transaction.id,
-        RewardType.points,
-        userId,
-      );
-      
+      await _repository.claimReward(transaction.id, RewardType.points, userId);
+
       // Invalidate cache
       _invalidateUserCache(userId);
-      
+
       // Process related events
-      await processEvent(RewardsEvent(
-        type: RewardsEventType.pointsEarned,
-        userId: userId,
-        data: {
-          'points': finalPoints,
-          'reason': reason,
-          'source': source,
-          'transactionId': transaction.id,
-        },
-        timestamp: DateTime.now(),
-        sourceId: source,
-        metadata: metadata,
-      ));
+      await processEvent(
+        RewardsEvent(
+          type: RewardsEventType.pointsEarned,
+          userId: userId,
+          data: {
+            'points': finalPoints,
+            'reason': reason,
+            'source': source,
+            'transactionId': transaction.id,
+          },
+          timestamp: DateTime.now(),
+          sourceId: source,
+          metadata: metadata,
+        ),
+      );
 
       // Check for achievements and tier upgrades
       await _checkAchievementsAndTiers(userId);
-      
-      return transaction;
 
+      return transaction;
     } catch (e) {
       debugPrint('Error awarding points: $e');
       _analyticsService.trackError('points_award_failed', e.toString(), {
@@ -281,9 +282,11 @@ class RewardsService extends ChangeNotifier {
       // Check if user has enough points
       final currentBalance = await getUserPoints(userId);
       if (currentBalance < points) {
-        throw InsufficientPointsException('User has $currentBalance points, needs $points');
+        throw InsufficientPointsException(
+          'User has $currentBalance points, needs $points',
+        );
       }
-      
+
       // Create transaction
       final transaction = PointsTransaction(
         id: _generateTransactionId(),
@@ -296,15 +299,11 @@ class RewardsService extends ChangeNotifier {
       );
 
       // Save transaction via claimReward
-      await _repository.claimReward(
-        transaction.id,
-        RewardType.points,
-        userId,
-      );
-      
+      await _repository.claimReward(transaction.id, RewardType.points, userId);
+
       // Invalidate cache
       _invalidateUserCache(userId);
-      
+
       // Track analytics
       _analyticsService.trackEvent('points_spent', {
         'userId': userId,
@@ -312,9 +311,8 @@ class RewardsService extends ChangeNotifier {
         'reason': reason,
         'source': source,
       });
-      
-      return transaction;
 
+      return transaction;
     } catch (e) {
       debugPrint('Error spending points: $e');
       rethrow;
@@ -329,19 +327,27 @@ class RewardsService extends ChangeNotifier {
   }) async {
     try {
       // Get achievement definition
-      final achievementResult = await _repository.getAchievementById(achievementId);
+      final achievementResult = await _repository.getAchievementById(
+        achievementId,
+      );
       final achievement = achievementResult.fold(
         (failure) => null,
         (achievement) => achievement,
       );
-      
+
       if (achievement == null) {
-        throw AchievementNotFoundException('Achievement $achievementId not found');
+        throw AchievementNotFoundException(
+          'Achievement $achievementId not found',
+        );
       }
 
       // Unlock achievement via claimReward
-      await _repository.claimReward(achievementId, RewardType.achievement, userId);
-      
+      await _repository.claimReward(
+        achievementId,
+        RewardType.achievement,
+        userId,
+      );
+
       // Award points
       if (achievement.points > 0) {
         await awardPoints(
@@ -362,24 +368,25 @@ class RewardsService extends ChangeNotifier {
       );
 
       // Process event
-      await processEvent(RewardsEvent(
-        type: RewardsEventType.achievementUnlocked,
-        userId: userId,
-        data: {
-          'achievementId': achievementId,
-          'achievementName': achievement.name,
-          'pointsRewarded': achievement.points,
-        },
-        timestamp: DateTime.now(),
-        sourceId: achievementId,
-        metadata: metadata,
-      ));
+      await processEvent(
+        RewardsEvent(
+          type: RewardsEventType.achievementUnlocked,
+          userId: userId,
+          data: {
+            'achievementId': achievementId,
+            'achievementName': achievement.name,
+            'pointsRewarded': achievement.points,
+          },
+          timestamp: DateTime.now(),
+          sourceId: achievementId,
+          metadata: metadata,
+        ),
+      );
 
       // Invalidate cache
       _invalidateUserCache(userId);
-      
-      return achievement;
 
+      return achievement;
     } catch (e) {
       debugPrint('Error unlocking achievement: $e');
       _analyticsService.trackError('achievement_unlock_failed', e.toString(), {
@@ -394,16 +401,20 @@ class RewardsService extends ChangeNotifier {
   Future<int> getUserPoints(String userId) async {
     final cacheKey = 'user_points_$userId';
     final cached = _getCachedData<int>(cacheKey);
-    
+
     if (cached != null) {
       return cached;
     }
 
     try {
-      final transactionsResult = await _repository.getPointTransactions(userId, limit: 1);
+      final transactionsResult = await _repository.getPointTransactions(
+        userId,
+        limit: 1,
+      );
       final points = transactionsResult.fold(
         (failure) => 0,
-        (transactions) => transactions.isEmpty ? 0 : transactions.first.finalPoints,
+        (transactions) =>
+            transactions.isEmpty ? 0 : transactions.first.finalPoints,
       );
       _setCachedData(cacheKey, points, _defaultCacheTtl);
       return points.toInt();
@@ -417,20 +428,17 @@ class RewardsService extends ChangeNotifier {
   Future<UserProgress?> getUserProgress(String userId) async {
     final cacheKey = 'user_progress_$userId';
     final cached = _getCachedData<UserProgress?>(cacheKey);
-    
+
     if (cached != null) {
       return cached;
     }
 
     try {
       final result = await _repository.getUserProgress(userId);
-      final progress = result.fold(
-        (failure) {
-          debugPrint('Error getting user progress: ${failure.message}');
-          return null;
-        },
-        (progressList) => progressList.isNotEmpty ? progressList.first : null,
-      );
+      final progress = result.fold((failure) {
+        debugPrint('Error getting user progress: ${failure.message}');
+        return null;
+      }, (progressList) => progressList.isNotEmpty ? progressList.first : null);
       _setCachedData(cacheKey, progress, _defaultCacheTtl);
       return progress;
     } catch (e) {
@@ -443,20 +451,17 @@ class RewardsService extends ChangeNotifier {
   Future<List<Badge>> getUserBadges(String userId) async {
     final cacheKey = 'user_badges_$userId';
     final cached = _getCachedData<List<Badge>>(cacheKey);
-    
+
     if (cached != null) {
       return cached;
     }
 
     try {
       final result = await _repository.getUserBadges(userId);
-      final badges = result.fold(
-        (failure) {
-          debugPrint('Error getting user badges: ${failure.message}');
-          return <Badge>[];
-        },
-        (badges) => badges,
-      );
+      final badges = result.fold((failure) {
+        debugPrint('Error getting user badges: ${failure.message}');
+        return <Badge>[];
+      }, (badges) => badges);
       _setCachedData(cacheKey, badges, _longCacheTtl);
       return badges;
     } catch (e) {
@@ -472,14 +477,15 @@ class RewardsService extends ChangeNotifier {
     int offset = 0,
   }) async {
     try {
-      final result = await _repository.getPointTransactions(userId, limit: limit, offset: offset);
-      return result.fold(
-        (failure) {
-          debugPrint('Error getting transaction history: ${failure.message}');
-          return <PointTransaction>[];
-        },
-        (transactions) => transactions,
+      final result = await _repository.getPointTransactions(
+        userId,
+        limit: limit,
+        offset: offset,
       );
+      return result.fold((failure) {
+        debugPrint('Error getting transaction history: ${failure.message}');
+        return <PointTransaction>[];
+      }, (transactions) => transactions);
     } catch (e) {
       debugPrint('Error getting transaction history: $e');
       return <PointTransaction>[];
@@ -524,26 +530,29 @@ class RewardsService extends ChangeNotifier {
         default:
           await _handleCustomEvent(event);
       }
-      
+
       // Track event analytics
       _analyticsService.trackRewardsEvent(event);
-      
     } catch (e) {
       debugPrint('Error handling event ${event.type}: $e');
-      _analyticsService.trackError('event_processing_failed', e.toString(), event.toMap());
+      _analyticsService.trackError(
+        'event_processing_failed',
+        e.toString(),
+        event.toMap(),
+      );
     }
   }
 
   Future<void> _processEventQueue() async {
     if (_isProcessingEvents || _eventQueue.isEmpty) return;
-    
+
     _isProcessingEvents = true;
-    
+
     try {
       while (_eventQueue.isNotEmpty) {
         final event = _eventQueue.removeAt(0);
         await _handleEvent(event);
-        
+
         // Add small delay to prevent overwhelming the system
         await Future.delayed(const Duration(milliseconds: 10));
       }
@@ -569,12 +578,14 @@ class RewardsService extends ChangeNotifier {
           ),
           callback: (payload) {
             final data = payload.newRecord;
-            processEvent(RewardsEvent(
-              type: RewardsEventType.achievementUnlocked,
-              userId: _currentUserId!,
-              data: data,
-              timestamp: DateTime.now(),
-            ));
+            processEvent(
+              RewardsEvent(
+                type: RewardsEventType.achievementUnlocked,
+                userId: _currentUserId!,
+                data: data,
+                timestamp: DateTime.now(),
+              ),
+            );
           },
         )
         .subscribe();
@@ -594,17 +605,19 @@ class RewardsService extends ChangeNotifier {
           callback: (payload) {
             final oldRecord = payload.oldRecord;
             final newRecord = payload.newRecord;
-            
+
             if (oldRecord['tier'] != newRecord['tier']) {
-              processEvent(RewardsEvent(
-                type: RewardsEventType.tierUpgrade,
-                userId: _currentUserId!,
-                data: {
-                  'oldTier': oldRecord['tier'],
-                  'newTier': newRecord['tier'],
-                },
-                timestamp: DateTime.now(),
-              ));
+              processEvent(
+                RewardsEvent(
+                  type: RewardsEventType.tierUpgrade,
+                  userId: _currentUserId!,
+                  data: {
+                    'oldTier': oldRecord['tier'],
+                    'newTier': newRecord['tier'],
+                  },
+                  timestamp: DateTime.now(),
+                ),
+              );
             }
           },
         )
@@ -613,7 +626,7 @@ class RewardsService extends ChangeNotifier {
 
   Future<void> _loadInitialData() async {
     if (_currentUserId == null) return;
-    
+
     try {
       // Preload critical data
       await Future.wait([
@@ -626,9 +639,12 @@ class RewardsService extends ChangeNotifier {
     }
   }
 
-  int _calculatePointsWithMultipliers(int basePoints, List<MultiplierData> multipliers) {
+  int _calculatePointsWithMultipliers(
+    int basePoints,
+    List<MultiplierData> multipliers,
+  ) {
     if (multipliers.isEmpty) return basePoints;
-    
+
     double total = basePoints.toDouble();
     for (final multiplier in multipliers) {
       total *= multiplier.value;
@@ -639,12 +655,10 @@ class RewardsService extends ChangeNotifier {
   Future<void> _checkAchievementsAndTiers(String userId) async {
     // Check for new achievements
     await _progressTrackingService.checkAchievementProgress(userId);
-    
+
     // Check for tier upgrades
     await _tierCalculationService.checkTierUpgrade(userId);
   }
-
-
 
   String _generateTransactionId() {
     return '${DateTime.now().millisecondsSinceEpoch}_${_currentUserId ?? 'unknown'}';
@@ -671,7 +685,7 @@ class RewardsService extends ChangeNotifier {
     final keysToRemove = _cache.keys
         .where((key) => key.contains(userId))
         .toList();
-    
+
     for (final key in keysToRemove) {
       _cache.remove(key);
     }
@@ -682,20 +696,20 @@ class RewardsService extends ChangeNotifier {
     final gameType = event.data['gameType'] as String?;
     final score = event.data['score'] as int?;
     final duration = event.data['duration'] as int?;
-    
+
     if (gameType == null) return;
-    
+
     // Calculate points based on game performance
     int points = 10; // Base points
-    
+
     if (score != null && score > 100) {
       points += (score / 10).round();
     }
-    
+
     if (duration != null && duration < 60) {
       points += 5; // Speed bonus
     }
-    
+
     await awardPoints(
       userId: event.userId,
       points: points,
@@ -708,11 +722,11 @@ class RewardsService extends ChangeNotifier {
   Future<void> _handleChallengeCompleted(RewardsEvent event) async {
     final challengeId = event.data['challengeId'] as String?;
     final difficulty = event.data['difficulty'] as String?;
-    
+
     if (challengeId == null) return;
-    
+
     int points = 50; // Base challenge points
-    
+
     switch (difficulty) {
       case 'easy':
         points = 25;
@@ -727,7 +741,7 @@ class RewardsService extends ChangeNotifier {
         points = 200;
         break;
     }
-    
+
     await awardPoints(
       userId: event.userId,
       points: points,
@@ -739,12 +753,12 @@ class RewardsService extends ChangeNotifier {
 
   Future<void> _handleDailyLoginStreak(RewardsEvent event) async {
     final streakDays = event.data['streakDays'] as int? ?? 1;
-    
+
     // Escalating rewards for streaks
     int points = streakDays * 5;
     if (streakDays >= 7) points += 25; // Weekly bonus
     if (streakDays >= 30) points += 100; // Monthly bonus
-    
+
     await awardPoints(
       userId: event.userId,
       points: points,
@@ -756,7 +770,7 @@ class RewardsService extends ChangeNotifier {
 
   Future<void> _handleSocialInteraction(RewardsEvent event) async {
     final interactionType = event.data['type'] as String?;
-    
+
     int points = 0;
     switch (interactionType) {
       case 'like':
@@ -772,7 +786,7 @@ class RewardsService extends ChangeNotifier {
         points = 50;
         break;
     }
-    
+
     if (points > 0) {
       await awardPoints(
         userId: event.userId,
@@ -787,7 +801,7 @@ class RewardsService extends ChangeNotifier {
   Future<void> _handleAchievementUnlocked(RewardsEvent event) async {
     // Achievement unlocking is handled in unlockAchievement method
     // This is for additional processing after unlock
-    
+
     final achievementId = event.data['achievementId'] as String?;
     if (achievementId != null) {
       _invalidateUserCache(event.userId);
@@ -797,14 +811,14 @@ class RewardsService extends ChangeNotifier {
   Future<void> _handleTierUpgrade(RewardsEvent event) async {
     final oldTier = event.data['oldTier'] as String?;
     final newTier = event.data['newTier'] as String?;
-    
+
     if (oldTier != null && newTier != null) {
       await _notificationService.queueTierUpgradeNotification(
         userId: event.userId,
         oldTier: BadgeTier.values.firstWhere((t) => t.name == oldTier),
         newTier: BadgeTier.values.firstWhere((t) => t.name == newTier),
       );
-      
+
       _invalidateUserCache(event.userId);
     }
   }
@@ -813,7 +827,7 @@ class RewardsService extends ChangeNotifier {
     // Handle custom events based on metadata
     final customPoints = event.metadata?['points'] as int?;
     final customReason = event.metadata?['reason'] as String?;
-    
+
     if (customPoints != null && customReason != null) {
       await awardPoints(
         userId: event.userId,
@@ -826,18 +840,30 @@ class RewardsService extends ChangeNotifier {
   }
 
   /// Update leaderboard position for a user
-  Future<void> updateLeaderboardPosition(String userId, String sport, int points) async {
+  Future<void> updateLeaderboardPosition(
+    String userId,
+    String sport,
+    int points,
+  ) async {
     try {
-      debugPrint('Updated leaderboard for user $userId in $sport with $points points');
+      debugPrint(
+        'Updated leaderboard for user $userId in $sport with $points points',
+      );
     } catch (e) {
       debugPrint('Error updating leaderboard position: $e');
     }
   }
 
   /// Update sport-specific leaderboard
-  Future<void> updateSportLeaderboard(String userId, String sport, int points) async {
+  Future<void> updateSportLeaderboard(
+    String userId,
+    String sport,
+    int points,
+  ) async {
     try {
-      debugPrint('Updated sport leaderboard for user $userId in $sport with $points points');
+      debugPrint(
+        'Updated sport leaderboard for user $userId in $sport with $points points',
+      );
     } catch (e) {
       debugPrint('Error updating sport leaderboard: $e');
     }
@@ -846,7 +872,9 @@ class RewardsService extends ChangeNotifier {
   /// Update friends leaderboard
   Future<void> updateFriendsLeaderboard(String userId, int points) async {
     try {
-      debugPrint('Updated friends leaderboard for user $userId with $points points');
+      debugPrint(
+        'Updated friends leaderboard for user $userId with $points points',
+      );
     } catch (e) {
       debugPrint('Error updating friends leaderboard: $e');
     }
@@ -879,10 +907,7 @@ class RewardsService extends ChangeNotifier {
   /// Gets user achievements with optional filtering
   Future<List<Achievement>> getUserAchievements(String userId) async {
     final result = await _repository.getAchievements(userId: userId);
-    return result.fold(
-      (failure) => [],
-      (achievements) => achievements,
-    );
+    return result.fold((failure) => [], (achievements) => achievements);
   }
 
   /// Filters achievements by category
@@ -899,10 +924,7 @@ class RewardsService extends ChangeNotifier {
     List<Achievement> achievements,
   ) async {
     final result = await _repository.searchAchievements(query);
-    return result.fold(
-      (failure) => [],
-      (results) => results,
-    );
+    return result.fold((failure) => [], (results) => results);
   }
 
   /// Sorts achievements by progress
@@ -917,7 +939,9 @@ class RewardsService extends ChangeNotifier {
   }
 
   /// Sorts achievements by points reward
-  List<Achievement> sortAchievementsByPointsReward(List<Achievement> achievements) {
+  List<Achievement> sortAchievementsByPointsReward(
+    List<Achievement> achievements,
+  ) {
     return achievements..sort((a, b) => b.points.compareTo(a.points));
   }
 
@@ -931,10 +955,7 @@ class RewardsService extends ChangeNotifier {
       TimeFrame.allTime,
       pageSize: limit,
     );
-    return result.fold(
-      (failure) => [],
-      (entries) => entries,
-    );
+    return result.fold((failure) => [], (entries) => entries);
   }
 
   /// Gets user rank
@@ -944,10 +965,7 @@ class RewardsService extends ChangeNotifier {
       LeaderboardType.overall,
       TimeFrame.allTime,
     );
-    return result.fold(
-      (failure) => null,
-      (rank) => rank,
-    );
+    return result.fold((failure) => null, (rank) => rank);
   }
 
   /// Calculates batch progress
@@ -955,12 +973,16 @@ class RewardsService extends ChangeNotifier {
     List<String> userIds,
     List<Achievement> achievements,
   ) {
-    return userIds.map((userId) => {
-      'userId': userId,
-      'progress': 0.0,
-      'completed': 0,
-      'total': achievements.length,
-    }).toList();
+    return userIds
+        .map(
+          (userId) => {
+            'userId': userId,
+            'progress': 0.0,
+            'completed': 0,
+            'total': achievements.length,
+          },
+        )
+        .toList();
   }
 
   /// Calculates achievement progress data
@@ -1019,10 +1041,7 @@ class RewardsService extends ChangeNotifier {
   }
 
   /// Updates particle system
-  void updateParticleSystem(
-    Map<String, dynamic> system,
-    double deltaTime,
-  ) {
+  void updateParticleSystem(Map<String, dynamic> system, double deltaTime) {
     system['lastUpdate'] = DateTime.now().millisecondsSinceEpoch;
   }
 
@@ -1044,7 +1063,7 @@ class RewardsService extends ChangeNotifier {
   }
 
   // CALCULATION METHODS FOR TESTING
-  
+
   /// Calculates points with multiplier
   int calculatePoints({
     required int basePoints,
@@ -1083,11 +1102,11 @@ class RewardsService extends ChangeNotifier {
     required UserProgress userProgress,
   }) {
     final criteria = achievement.criteria;
-    
+
     for (final entry in criteria.entries) {
       final key = entry.key;
       final requiredValue = entry.value;
-      
+
       // Check in stats first
       if (userProgress.stats.containsKey(key)) {
         final currentValue = userProgress.stats[key];
@@ -1096,9 +1115,9 @@ class RewardsService extends ChangeNotifier {
         }
         continue;
       }
-      
+
       // Check in streaks for streak-type achievements
-      if (achievement.type == AchievementType.streak && 
+      if (achievement.type == AchievementType.streak &&
           userProgress.streaks.containsKey(key)) {
         final currentValue = userProgress.streaks[key];
         if (!_meetsRequirement(currentValue, requiredValue)) {
@@ -1106,35 +1125,35 @@ class RewardsService extends ChangeNotifier {
         }
         continue;
       }
-      
+
       // Check total points for cumulative achievements
-      if (achievement.type == AchievementType.cumulative && 
+      if (achievement.type == AchievementType.cumulative &&
           key == 'totalPoints') {
         if (!_meetsRequirement(userProgress.totalPoints, requiredValue)) {
           return false;
         }
         continue;
       }
-      
+
       // If we can't find the criteria key, it's not met
       return false;
     }
-    
+
     return true;
   }
 
   /// Helper method to check if current value meets requirement
   bool _meetsRequirement(dynamic current, dynamic required) {
     if (current == null) return false;
-    
+
     if (current is num && required is num) {
       return current >= required;
     }
-    
+
     if (current is String && required is String) {
       return current == required;
     }
-    
+
     return current == required;
   }
 
@@ -1145,12 +1164,12 @@ class RewardsService extends ChangeNotifier {
   }) {
     if (target == null || target == 0) return 0.0;
     if (current == null || current < 0) return 0.0;
-    
+
     if (current is num && target is num) {
       final progress = current / target;
       return progress.clamp(0.0, 1.0);
     }
-    
+
     return 0.0;
   }
 
@@ -1160,14 +1179,14 @@ class RewardsService extends ChangeNotifier {
     required Map<String, dynamic> currentProgress,
   }) {
     if (criteria.isEmpty) return 0.0;
-    
+
     double totalProgress = 0.0;
     int validCriteria = 0;
-    
+
     for (final entry in criteria.entries) {
       final key = entry.key;
       final target = entry.value;
-      
+
       if (currentProgress.containsKey(key)) {
         final current = currentProgress[key];
         totalProgress += calculateAchievementProgress(
@@ -1177,7 +1196,7 @@ class RewardsService extends ChangeNotifier {
         validCriteria++;
       }
     }
-    
+
     return validCriteria > 0 ? totalProgress / validCriteria : 0.0;
   }
 
@@ -1193,7 +1212,7 @@ class RewardsService extends ChangeNotifier {
   /// Calculate points needed for next tier
   int calculatePointsToNextTier(int currentPoints) {
     final currentTier = calculateTierFromPoints(currentPoints);
-    
+
     switch (currentTier) {
       case BadgeTier.bronze:
         return 1000 - currentPoints;
@@ -1211,7 +1230,7 @@ class RewardsService extends ChangeNotifier {
   /// Calculate tier progress percentage
   double calculateTierProgress(int currentPoints) {
     final currentTier = calculateTierFromPoints(currentPoints);
-    
+
     switch (currentTier) {
       case BadgeTier.bronze:
         return currentPoints / 1000.0;
@@ -1233,7 +1252,7 @@ class RewardsService extends ChangeNotifier {
   }) {
     final oldTier = calculateTierFromPoints(oldPoints);
     final newTier = calculateTierFromPoints(newPoints);
-    
+
     if (oldTier != newTier) {
       return TierPromotion(
         oldTier: oldTier,
@@ -1242,7 +1261,7 @@ class RewardsService extends ChangeNotifier {
         promotionTime: DateTime.now(),
       );
     }
-    
+
     return null;
   }
 
@@ -1292,13 +1311,13 @@ class RewardsService extends ChangeNotifier {
     required List<MultiplierData> multipliers,
   }) {
     double result = baseValue.toDouble();
-    
+
     for (final multiplier in multipliers) {
       if (isMultiplierActive(multiplier)) {
         result *= multiplier.value;
       }
     }
-    
+
     return result.round();
   }
 
@@ -1319,8 +1338,8 @@ class RewardsService extends ChangeNotifier {
       currentCount: streak.currentCount + 1,
       lastActivity: DateTime.now(),
       isActive: true,
-      bestStreak: streak.bestStreak > streak.currentCount + 1 
-          ? streak.bestStreak 
+      bestStreak: streak.bestStreak > streak.currentCount + 1
+          ? streak.bestStreak
           : streak.currentCount + 1,
     );
   }
@@ -1329,7 +1348,7 @@ class RewardsService extends ChangeNotifier {
   StreakData checkStreakValidity(StreakData streak) {
     final now = DateTime.now();
     final daysSinceLastActivity = now.difference(streak.lastActivity).inDays;
-    
+
     // Break streak if more than 2 days gap
     if (daysSinceLastActivity > 2) {
       return StreakData(
@@ -1341,7 +1360,7 @@ class RewardsService extends ChangeNotifier {
         bestStreak: streak.bestStreak,
       );
     }
-    
+
     return streak;
   }
 
@@ -1353,57 +1372,63 @@ class RewardsService extends ChangeNotifier {
   /// Calculate total streak value
   double calculateTotalStreakValue(Map<String, StreakData> streaks) {
     double totalValue = 0.0;
-    
+
     for (final streak in streaks.values) {
       if (streak.isActive) {
         final multiplier = getStreakMultiplier(streak.currentCount);
         totalValue += streak.currentCount * multiplier;
       }
     }
-    
+
     return totalValue;
   }
 
   /// Rank users by points
   List<RankedUser> rankUsersByPoints(List<LeaderboardEntry> users) {
-    final sortedUsers = [...users]..sort((a, b) => b.totalPoints.compareTo(a.totalPoints));
-    
+    final sortedUsers = [...users]
+      ..sort((a, b) => b.totalPoints.compareTo(a.totalPoints));
+
     final rankedUsers = <RankedUser>[];
     int currentRank = 1;
-    
+
     for (int i = 0; i < sortedUsers.length; i++) {
       final user = sortedUsers[i];
-      
+
       // Handle ties - users with same points get same rank
       if (i > 0 && sortedUsers[i - 1].totalPoints != user.totalPoints) {
         currentRank = i + 1;
       }
-      
-      rankedUsers.add(RankedUser(
-        userId: user.userId,
-        points: user.totalPoints.toInt(),
-        rank: currentRank,
-        tier: calculateTierFromPoints(user.totalPoints.toInt()),
-      ));
+
+      rankedUsers.add(
+        RankedUser(
+          userId: user.userId,
+          points: user.totalPoints.toInt(),
+          rank: currentRank,
+          tier: calculateTierFromPoints(user.totalPoints.toInt()),
+        ),
+      );
     }
-    
+
     return rankedUsers;
   }
 
   /// Rank users with tiebreaker
-  List<RankedUser> rankUsersWithTiebreaker(List<LeaderboardEntryWithActivity> users) {
-    final sortedUsers = [...users]..sort((a, b) {
-      final pointsComparison = b.totalPoints.compareTo(a.totalPoints);
-      if (pointsComparison != 0) return pointsComparison;
-      
-      // Tiebreaker: more recent activity wins
-      return b.lastActivity.compareTo(a.lastActivity);
-    });
-    
+  List<RankedUser> rankUsersWithTiebreaker(
+    List<LeaderboardEntryWithActivity> users,
+  ) {
+    final sortedUsers = [...users]
+      ..sort((a, b) {
+        final pointsComparison = b.totalPoints.compareTo(a.totalPoints);
+        if (pointsComparison != 0) return pointsComparison;
+
+        // Tiebreaker: more recent activity wins
+        return b.lastActivity.compareTo(a.lastActivity);
+      });
+
     return sortedUsers.asMap().entries.map((entry) {
       final index = entry.key;
       final user = entry.value;
-      
+
       return RankedUser(
         userId: user.userId,
         points: user.totalPoints,
@@ -1414,8 +1439,13 @@ class RewardsService extends ChangeNotifier {
   }
 
   /// Calculate percentile rank
-  double calculatePercentileRank(LeaderboardEntry user, List<LeaderboardEntry> allUsers) {
-    final betterUsers = allUsers.where((u) => u.totalPoints > user.totalPoints).length;
+  double calculatePercentileRank(
+    LeaderboardEntry user,
+    List<LeaderboardEntry> allUsers,
+  ) {
+    final betterUsers = allUsers
+        .where((u) => u.totalPoints > user.totalPoints)
+        .length;
     return (betterUsers / allUsers.length) * 100;
   }
 
@@ -1433,10 +1463,13 @@ class RewardsService extends ChangeNotifier {
     required DateTime startDate,
     required DateTime endDate,
   }) {
-    return users.where((user) => 
-      user.lastActiveAt.isAfter(startDate) && 
-      user.lastActiveAt.isBefore(endDate)
-    ).toList();
+    return users
+        .where(
+          (user) =>
+              user.lastActiveAt.isAfter(startDate) &&
+              user.lastActiveAt.isBefore(endDate),
+        )
+        .toList();
   }
 }
 
@@ -1444,7 +1477,7 @@ class RewardsService extends ChangeNotifier {
 class InsufficientPointsException implements Exception {
   final String message;
   InsufficientPointsException(this.message);
-  
+
   @override
   String toString() => 'InsufficientPointsException: $message';
 }
@@ -1452,7 +1485,7 @@ class InsufficientPointsException implements Exception {
 class AchievementAlreadyUnlockedException implements Exception {
   final String message;
   AchievementAlreadyUnlockedException(this.message);
-  
+
   @override
   String toString() => 'AchievementAlreadyUnlockedException: $message';
 }
@@ -1460,7 +1493,7 @@ class AchievementAlreadyUnlockedException implements Exception {
 class AchievementNotFoundException implements Exception {
   final String message;
   AchievementNotFoundException(this.message);
-  
+
   @override
   String toString() => 'AchievementNotFoundException: $message';
 }
@@ -1542,7 +1575,7 @@ class MultiplierData {
   });
 
   bool get isExpired => DateTime.now().isAfter(expiresAt);
-  
+
   Map<String, dynamic> toMap() {
     return {
       'name': name,

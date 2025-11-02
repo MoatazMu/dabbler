@@ -8,9 +8,9 @@ class AbuseFlag {
   final String postId;
 
   /// Optional metadata if present in your schema.
-  final String? reason;      // e.g. 'spam', 'abuse', 'nsfw'
-  final String? details;     // freeform text
-  final String? status;      // if your schema tracks workflow status
+  final String? reason; // e.g. 'spam', 'abuse', 'nsfw'
+  final String? details; // freeform text
+  final String? status; // if your schema tracks workflow status
   final DateTime createdAt;
 
   const AbuseFlag({
@@ -32,7 +32,8 @@ class AbuseFlag {
       reason: m['reason']?.toString(),
       details: m['details']?.toString() ?? m['note']?.toString(),
       status: m['status']?.toString(),
-      createdAt: asDateTime(m['created_at']) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      createdAt:
+          asDateTime(m['created_at']) ?? DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 
@@ -45,4 +46,3 @@ class AbuseFlag {
     };
   }
 }
-

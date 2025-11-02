@@ -59,14 +59,10 @@ class _FriendTileState extends ConsumerState<FriendTile>
       duration: const Duration(milliseconds: 150),
       vsync: this,
     );
-    
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.95,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
   }
 
   @override
@@ -118,8 +114,8 @@ class _FriendTileState extends ConsumerState<FriendTile>
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Row(
-          mainAxisAlignment: isLeft 
-              ? MainAxisAlignment.start 
+          mainAxisAlignment: isLeft
+              ? MainAxisAlignment.start
               : MainAxisAlignment.end,
           children: [
             Icon(
@@ -159,9 +155,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
               Navigator.of(context).pop(true);
               widget.onRemove?.call();
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Remove'),
           ),
         ],
@@ -173,7 +167,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return AnimatedBuilder(
       animation: _scaleAnimation,
       builder: (context, child) {
@@ -181,10 +175,9 @@ class _FriendTileState extends ConsumerState<FriendTile>
           scale: _scaleAnimation.value,
           child: _buildSwipeActions(
             Container(
-              margin: widget.padding ?? const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 4,
-              ),
+              margin:
+                  widget.padding ??
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
                 color: theme.cardColor,
                 borderRadius: BorderRadius.circular(12),
@@ -196,7 +189,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
                   ),
                 ],
                 border: Border.all(
-                  color: _isPressed 
+                  color: _isPressed
                       ? AppColors.primary.withOpacity(0.2)
                       : Colors.transparent,
                   width: 1,
@@ -218,9 +211,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
                           children: [
                             _buildAvatar(),
                             const SizedBox(width: 12),
-                            Expanded(
-                              child: _buildUserInfo(),
-                            ),
+                            Expanded(child: _buildUserInfo()),
                             if (widget.trailing != null) ...[
                               const SizedBox(width: 8),
                               widget.trailing!,
@@ -338,9 +329,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
 
     return Text(
       'Last seen ${TimeFormatter.format(DateTime.now().subtract(const Duration(hours: 2)))}',
-      style: AppTextStyles.bodySmall.copyWith(
-        color: AppColors.textSecondary,
-      ),
+      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
     );
   }
 
@@ -349,17 +338,15 @@ class _FriendTileState extends ConsumerState<FriendTile>
     final mockActivity = {
       'type': 'football',
       'description': 'Playing Football',
-      'location': 'Central Park'
+      'location': 'Central Park',
     };
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
         color: AppColors.primary.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.primary.withOpacity(0.2),
-        ),
+        border: Border.all(color: AppColors.primary.withOpacity(0.2)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -435,11 +422,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.all(8),
-            child: Icon(
-              icon,
-              size: 20,
-              color: AppColors.textSecondary,
-            ),
+            child: Icon(icon, size: 20, color: AppColors.textSecondary),
           ),
         ),
       ),
@@ -448,14 +431,8 @@ class _FriendTileState extends ConsumerState<FriendTile>
 
   Widget _buildMoreActionsButton() {
     return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_horiz,
-        size: 20,
-        color: AppColors.textSecondary,
-      ),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      icon: Icon(Icons.more_horiz, size: 20, color: AppColors.textSecondary),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       itemBuilder: (context) => [
         PopupMenuItem(
           value: 'profile',
@@ -473,10 +450,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
             children: [
               const Icon(Icons.block, color: Colors.orange),
               const SizedBox(width: 12),
-              Text(
-                'Block User',
-                style: TextStyle(color: Colors.orange),
-              ),
+              Text('Block User', style: TextStyle(color: Colors.orange)),
             ],
           ),
         ),
@@ -486,10 +460,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
             children: [
               const Icon(Icons.person_remove, color: Colors.red),
               const SizedBox(width: 12),
-              Text(
-                'Remove Friend',
-                style: TextStyle(color: Colors.red),
-              ),
+              Text('Remove Friend', style: TextStyle(color: Colors.red)),
             ],
           ),
         ),
@@ -532,9 +503,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
               Navigator.of(context).pop();
               // Handle block user
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.orange,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.orange),
             child: const Text('Block'),
           ),
         ],
@@ -571,7 +540,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
   Future<List<UserModel>> _getMutualFriends() async {
     // In real implementation, fetch mutual friends from repository
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     // Mock data
     return [
       UserModel(

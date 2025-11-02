@@ -47,9 +47,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: CustomAppBar(
-        actionIcon: Iconsax.calendar_copy,
-      ),
+      appBar: CustomAppBar(actionIcon: Iconsax.calendar_copy),
       body: Column(
         children: [
           const SizedBox(height: 100),
@@ -60,19 +58,19 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
               child: activityState.isLoading
                   ? const Center(child: CircularProgressIndicator())
                   : activityState.error != null
-                      ? _buildErrorState(context, activityState.error!)
-                      : SingleChildScrollView(
-                          padding: const EdgeInsets.all(20),
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _buildHistoryStats(context, categoryStats),
-                              const SizedBox(height: 24),
-                              _buildHistoryList(context, user.id),
-                            ],
-                          ),
-                        ),
+                  ? _buildErrorState(context, activityState.error!)
+                  : SingleChildScrollView(
+                      padding: const EdgeInsets.all(20),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildHistoryStats(context, categoryStats),
+                          const SizedBox(height: 24),
+                          _buildHistoryList(context, user.id),
+                        ],
+                      ),
+                    ),
             ),
           ),
         ],
@@ -93,7 +91,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
           children: filters.map((filter) {
             final isSelected = selectedFilter == filter;
             final count = stats[filter] ?? 0;
-            
+
             return GestureDetector(
               onTap: () {
                 setState(() {
@@ -108,7 +106,10 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
               },
               child: Container(
                 margin: const EdgeInsets.only(right: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Theme.of(context).colorScheme.primary
@@ -126,14 +127,17 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                     Text(
                       filter,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: isSelected ? Colors.white : Colors.grey[700],
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: isSelected ? Colors.white : Colors.grey[700],
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     if (count > 0) ...[
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: isSelected
                               ? Colors.white.withOpacity(0.3)
@@ -245,7 +249,12 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
   }
 
   Widget _buildStatItem(
-      BuildContext context, String label, String value, IconData icon, Color color) {
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
         Container(
@@ -260,16 +269,16 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
         Text(
           value,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: color,
-              ),
+            fontWeight: FontWeight.w700,
+            color: color,
+          ),
         ),
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-                fontSize: 11,
-              ),
+            color: Colors.grey[600],
+            fontSize: 11,
+          ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -278,7 +287,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
 
   Widget _buildHistoryList(BuildContext context, String userId) {
     final state = ref.watch(activityLogControllerProvider(userId));
-    
+
     // Group activities by date
     final groupedActivities = <String, List<ActivityLog>>{};
     for (var activity in state.activities) {
@@ -289,21 +298,25 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
         dateGroup = 'Yesterday';
       } else if (activity.isThisWeek) {
         dateGroup = 'This Week';
-      } else if (activity.createdAt.isAfter(DateTime.now().subtract(const Duration(days: 30)))) {
+      } else if (activity.createdAt.isAfter(
+        DateTime.now().subtract(const Duration(days: 30)),
+      )) {
         dateGroup = 'This Month';
       } else {
         dateGroup = 'Older';
       }
-      
+
       if (!groupedActivities.containsKey(dateGroup)) {
         groupedActivities[dateGroup] = [];
       }
       groupedActivities[dateGroup]!.add(activity);
     }
-    
+
     // Check if we have any activities
-    bool hasActivities = groupedActivities.values.any((list) => list.isNotEmpty);
-    
+    bool hasActivities = groupedActivities.values.any(
+      (list) => list.isNotEmpty,
+    );
+
     if (!hasActivities) {
       return _buildEmptyState(context);
     }
@@ -314,30 +327,34 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
         Text(
           'Activity Timeline',
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-              ),
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
         ),
         const SizedBox(height: 16),
         // Show each date group
-        ...groupedActivities.entries.where((entry) => entry.value.isNotEmpty).map((entry) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                child: Text(
-                  entry.key,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        ...groupedActivities.entries
+            .where((entry) => entry.value.isNotEmpty)
+            .map((entry) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    child: Text(
+                      entry.key,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: Colors.grey[700],
                       ),
-                ),
-              ),
-              ...entry.value.map((activity) => _buildActivityCard(context, activity)),
-            ],
-          );
-        }),
+                    ),
+                  ),
+                  ...entry.value.map(
+                    (activity) => _buildActivityCard(context, activity),
+                  ),
+                ],
+              );
+            }),
       ],
     );
   }
@@ -387,14 +404,14 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                           Expanded(
                             child: Text(
                               activity.title,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w600),
                             ),
                           ),
                           Text(
                             dateFormat.format(activity.createdAt),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
                                   color: Colors.grey[500],
                                   fontSize: 11,
                                 ),
@@ -405,9 +422,8 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                         const SizedBox(height: 4),
                         Text(
                           activity.description!,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: Colors.grey[600]),
                         ),
                       ],
                       const SizedBox(height: 8),
@@ -416,7 +432,11 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                         runSpacing: 8,
                         children: [
                           if (activity.venue != null)
-                            _buildInfoChip(context, LucideIcons.mapPin, activity.venue!),
+                            _buildInfoChip(
+                              context,
+                              LucideIcons.mapPin,
+                              activity.venue!,
+                            ),
                           if (activity.amount != null)
                             _buildInfoChip(
                               context,
@@ -469,9 +489,9 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
           Text(
             text,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                  fontSize: 11,
-                ),
+              color: Colors.grey[600],
+              fontSize: 11,
+            ),
           ),
         ],
       ),
@@ -577,26 +597,22 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
               color: Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              LucideIcons.history,
-              size: 40,
-              color: Colors.grey[400],
-            ),
+            child: Icon(LucideIcons.history, size: 40, color: Colors.grey[400]),
           ),
           const SizedBox(height: 16),
           Text(
             'No ${selectedFilter.toLowerCase()} activities',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[600],
-                ),
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[600],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             'Your ${selectedFilter.toLowerCase()} activities will appear here',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[500],
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -614,16 +630,16 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
           Text(
             'Failed to load activities',
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
+              fontWeight: FontWeight.w600,
+              color: Colors.grey[700],
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             error,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[500],
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
@@ -631,7 +647,9 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
             onPressed: () {
               final user = _authService.getCurrentUser();
               if (user != null) {
-                ref.read(activityLogControllerProvider(user.id).notifier).refresh(user.id);
+                ref
+                    .read(activityLogControllerProvider(user.id).notifier)
+                    .refresh(user.id);
               }
             },
             icon: const Icon(LucideIcons.refreshCw),
@@ -643,7 +661,9 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
   }
 
   Future<void> _refreshHistoryData(BuildContext context, String userId) async {
-    await ref.read(activityLogControllerProvider(userId).notifier).refresh(userId);
+    await ref
+        .read(activityLogControllerProvider(userId).notifier)
+        .refresh(userId);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

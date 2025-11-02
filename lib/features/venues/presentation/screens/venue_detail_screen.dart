@@ -3,11 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class VenueDetailScreen extends ConsumerStatefulWidget {
   final String venueId;
-  
-  const VenueDetailScreen({
-    super.key,
-    required this.venueId,
-  });
+
+  const VenueDetailScreen({super.key, required this.venueId});
 
   @override
   ConsumerState<VenueDetailScreen> createState() => _VenueDetailScreenState();
@@ -17,11 +14,12 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
   int _currentImageIndex = 0;
-  
+
   final Map<String, dynamic> _venueData = {
     'id': '1',
     'name': 'Central Park Basketball Court',
-    'description': 'A beautiful outdoor basketball court located in the heart of Central Park. Features professional-grade surfaces and equipment with stunning city views.',
+    'description':
+        'A beautiful outdoor basketball court located in the heart of Central Park. Features professional-grade surfaces and equipment with stunning city views.',
     'address': '123 Main Street, New York, NY 10001',
     'coordinates': {'lat': 40.7831, 'lng': -73.9712},
     'phone': '+1 (555) 123-4567',
@@ -36,8 +34,19 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
       'https://example.com/image3.jpg',
     ],
     'sports': ['Basketball', 'Tennis'],
-    'amenities': ['Free Parking', 'Restrooms', 'Water Fountain', 'Lighting', 'Seating Area'],
-    'features': ['Outdoor Courts', '2 Basketball Courts', 'Professional Grade Surface', 'Spectator Seating'],
+    'amenities': [
+      'Free Parking',
+      'Restrooms',
+      'Water Fountain',
+      'Lighting',
+      'Seating Area',
+    ],
+    'features': [
+      'Outdoor Courts',
+      '2 Basketball Courts',
+      'Professional Grade Surface',
+      'Spectator Seating',
+    ],
     'hours': {
       'monday': '6:00 AM - 10:00 PM',
       'tuesday': '6:00 AM - 10:00 PM',
@@ -92,17 +101,11 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
-          children: [
-            _buildImageCarousel(),
-            _buildImageOverlay(),
-          ],
+          children: [_buildImageCarousel(), _buildImageOverlay()],
         ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.share),
-          onPressed: _shareVenue,
-        ),
+        IconButton(icon: const Icon(Icons.share), onPressed: _shareVenue),
         IconButton(
           icon: const Icon(Icons.favorite_border),
           onPressed: _toggleFavorite,
@@ -113,7 +116,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
 
   Widget _buildImageCarousel() {
     final images = _venueData['images'] as List<String>;
-    
+
     return PageView.builder(
       itemCount: images.length,
       onPageChanged: (index) {
@@ -138,16 +141,13 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
 
   Widget _buildImageOverlay() {
     final images = _venueData['images'] as List<String>;
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Colors.transparent,
-            Colors.black.withOpacity(0.7),
-          ],
+          colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
         ),
       ),
       child: Stack(
@@ -175,7 +175,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                 }).toList(),
               ),
             ),
-          
+
           // Venue info overlay
           Positioned(
             bottom: 16,
@@ -194,11 +194,13 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: _venueData['isOpen'] ? Colors.green : Colors.red,
+                          color: _venueData['isOpen']
+                              ? Colors.green
+                              : Colors.red,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          _venueData['isOpen'] 
+                          _venueData['isOpen']
                               ? 'OPEN until ${_venueData['openUntil']}'
                               : 'CLOSED',
                           style: const TextStyle(
@@ -209,7 +211,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                         ),
                       ),
                       const SizedBox(height: 8),
-                      
+
                       // Rating
                       Row(
                         children: [
@@ -228,7 +230,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                     ],
                   ),
                 ),
-                
+
                 // Quick action buttons
                 Column(
                   children: [
@@ -326,7 +328,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Sports Available
           Card(
             child: Padding(
@@ -352,34 +354,36 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                     spacing: 8,
                     runSpacing: 8,
                     children: (_venueData['sports'] as List<String>)
-                        .map((sport) => Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.blue[100],
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    _getSportIcon(sport),
-                                    size: 16,
+                        .map(
+                          (sport) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.blue[100],
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _getSportIcon(sport),
+                                  size: 16,
+                                  color: Colors.blue[800],
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  sport,
+                                  style: TextStyle(
                                     color: Colors.blue[800],
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    sport,
-                                    style: TextStyle(
-                                      color: Colors.blue[800],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ))
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
                         .toList(),
                   ),
                 ],
@@ -387,7 +391,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Features
           Card(
             child: Padding(
@@ -409,24 +413,28 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                     ],
                   ),
                   const SizedBox(height: 12),
-                  ...(_venueData['features'] as List<String>)
-                      .map((feature) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              children: [
-                                Icon(Icons.check_circle, color: Colors.green[600], size: 20),
-                                const SizedBox(width: 8),
-                                Text(feature, style: const TextStyle(fontSize: 16)),
-                              ],
-                            ),
-                          ))
-                      ,
+                  ...(_venueData['features'] as List<String>).map(
+                    (feature) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.check_circle,
+                            color: Colors.green[600],
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(feature, style: const TextStyle(fontSize: 16)),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Rules
           Card(
             child: Padding(
@@ -448,20 +456,29 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                     ],
                   ),
                   const SizedBox(height: 12),
-                  ...(_venueData['rules'] as List<String>)
-                      .map((rule) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('• ', style: TextStyle(color: Colors.orange[600], fontSize: 18)),
-                                Expanded(
-                                  child: Text(rule, style: const TextStyle(fontSize: 16)),
-                                ),
-                              ],
+                  ...(_venueData['rules'] as List<String>).map(
+                    (rule) => Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '• ',
+                            style: TextStyle(
+                              color: Colors.orange[600],
+                              fontSize: 18,
                             ),
-                          ))
-                      ,
+                          ),
+                          Expanded(
+                            child: Text(
+                              rule,
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -499,15 +516,17 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                   GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 4,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          childAspectRatio: 4,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                        ),
                     itemCount: (_venueData['amenities'] as List<String>).length,
                     itemBuilder: (context, index) {
-                      final amenity = (_venueData['amenities'] as List<String>)[index];
+                      final amenity =
+                          (_venueData['amenities'] as List<String>)[index];
                       return Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
@@ -543,7 +562,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Pricing Information
           Card(
             child: Padding(
@@ -674,7 +693,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Individual Reviews
           ...List.generate(
             3,
@@ -698,7 +717,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                             children: [
                               Text(
                                 'User ${index + 1}',
-                                style: const TextStyle(fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               Row(
                                 children: [
@@ -740,7 +761,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
               ),
             ),
           ),
-          
+
           // Write Review Button
           SizedBox(
             width: double.infinity,
@@ -784,7 +805,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
 
   Widget _buildHoursTab() {
     final hours = _venueData['hours'] as Map<String, String>;
-    
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Card(
@@ -799,15 +820,12 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                   SizedBox(width: 8),
                   Text(
                     'Operating Hours',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 16),
-              
+
               ...hours.entries.map((entry) {
                 final isToday = _isToday(entry.key);
                 return Padding(
@@ -819,7 +837,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                         _capitalizeFirst(entry.key),
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isToday
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           color: isToday ? Colors.blue : null,
                         ),
                       ),
@@ -827,7 +847,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                         entry.value,
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                          fontWeight: isToday
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                           color: isToday ? Colors.blue : Colors.grey[600],
                         ),
                       ),
@@ -835,30 +857,38 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                   ),
                 );
               }),
-              
+
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _venueData['isOpen'] ? Colors.green[50] : Colors.red[50],
+                  color: _venueData['isOpen']
+                      ? Colors.green[50]
+                      : Colors.red[50],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: _venueData['isOpen'] ? Colors.green[200]! : Colors.red[200]!,
+                    color: _venueData['isOpen']
+                        ? Colors.green[200]!
+                        : Colors.red[200]!,
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
                       _venueData['isOpen'] ? Icons.check_circle : Icons.cancel,
-                      color: _venueData['isOpen'] ? Colors.green[600] : Colors.red[600],
+                      color: _venueData['isOpen']
+                          ? Colors.green[600]
+                          : Colors.red[600],
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      _venueData['isOpen'] 
+                      _venueData['isOpen']
                           ? 'Currently Open until ${_venueData['openUntil']}'
                           : 'Currently Closed',
                       style: TextStyle(
-                        color: _venueData['isOpen'] ? Colors.green[800] : Colors.red[800],
+                        color: _venueData['isOpen']
+                            ? Colors.green[800]
+                            : Colors.red[800],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -903,15 +933,12 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                   ),
                   Text(
                     _venueData['address'].split(',')[0],
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
                 ],
               ),
             ),
-            
+
             // Action Buttons
             Row(
               children: [
@@ -1018,27 +1045,27 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
   }
 
   void _shareVenue() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sharing venue...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Sharing venue...')));
   }
 
   void _toggleFavorite() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Added to favorites')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Added to favorites')));
   }
 
   void _getDirections() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening directions...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Opening directions...')));
   }
 
   void _callVenue() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Calling ${_venueData['phone']}')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Calling ${_venueData['phone']}')));
   }
 
   void _writeReview() {
@@ -1085,8 +1112,8 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
   }
 
   void _bookNow() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening booking...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Opening booking...')));
   }
 }

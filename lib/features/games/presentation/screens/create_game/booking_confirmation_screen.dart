@@ -11,14 +11,15 @@ class BookingConfirmationScreen extends StatefulWidget {
   });
 
   @override
-  State<BookingConfirmationScreen> createState() => _BookingConfirmationScreenState();
+  State<BookingConfirmationScreen> createState() =>
+      _BookingConfirmationScreenState();
 }
 
 class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   String _paymentMethod = 'credit_card';
   bool _agreedToTerms = false;
   bool _isProcessing = false;
-  
+
   final List<Map<String, dynamic>> _paymentMethods = [
     {
       'id': 'credit_card',
@@ -63,46 +64,40 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 children: [
                   const Text(
                     'Review & Confirm',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Review your game details before creating',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 24),
-                  
+
                   _buildGameSummary(),
                   const SizedBox(height: 16),
-                  
+
                   if (hasVenue) ...[
                     _buildVenueBooking(),
                     const SizedBox(height: 16),
                   ],
-                  
+
                   _buildCostBreakdown(),
                   const SizedBox(height: 16),
-                  
+
                   if (needsPayment) ...[
                     _buildPaymentMethod(),
                     const SizedBox(height: 16),
                   ],
-                  
+
                   _buildTermsAndConditions(),
                   const SizedBox(height: 16),
-                  
+
                   _buildGamePolicies(),
                 ],
               ),
             ),
           ),
-          
+
           _buildBottomActions(context),
         ],
       ),
@@ -131,15 +126,12 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 const SizedBox(width: 8),
                 const Text(
                   'Game Summary',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const Divider(height: 24),
-            
+
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -155,20 +147,29 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      
+
                       _buildInfoRow(Icons.calendar_today, _formatDate(date)),
                       const SizedBox(height: 4),
-                      _buildInfoRow(Icons.access_time, '$time • ${duration}min'),
+                      _buildInfoRow(
+                        Icons.access_time,
+                        '$time • ${duration}min',
+                      ),
                       const SizedBox(height: 4),
-                      _buildInfoRow(Icons.people, '$minPlayers-$maxPlayers players'),
+                      _buildInfoRow(
+                        Icons.people,
+                        '$minPlayers-$maxPlayers players',
+                      ),
                       const SizedBox(height: 4),
                       _buildInfoRow(Icons.star, skillLevel),
                     ],
                   ),
                 ),
-                
+
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.blue[50],
                     borderRadius: BorderRadius.circular(16),
@@ -184,15 +185,12 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 ),
               ],
             ),
-            
+
             if (widget.gameData['description']?.isNotEmpty == true) ...[
               const SizedBox(height: 12),
               Text(
                 widget.gameData['description'],
-                style: TextStyle(
-                  color: Colors.grey[700],
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.grey[700], fontSize: 14),
               ),
             ],
           ],
@@ -217,14 +215,14 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 const SizedBox(width: 8),
                 const Text(
                   'Venue Booking',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green[50],
                     borderRadius: BorderRadius.circular(12),
@@ -241,7 +239,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               ],
             ),
             const Divider(height: 24),
-            
+
             Row(
               children: [
                 ClipRRect(
@@ -263,7 +261,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   ),
                 ),
                 const SizedBox(width: 12),
-                
+
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -278,19 +276,16 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                       const SizedBox(height: 4),
                       Text(
                         venue['address'] ?? 'Address not available',
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -304,10 +299,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   Expanded(
                     child: Text(
                       'Booking confirmation will be sent to venue. You may receive a confirmation call.',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.amber[700],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.amber[700]),
                     ),
                   ),
                 ],
@@ -325,7 +317,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     final venue = widget.gameData['venue'];
     final venuePrice = venue?['pricePerHour'] ?? 0.0;
     final duration = widget.gameData['duration'] ?? 60;
-    
+
     final playerTotal = pricePerPlayer * maxPlayers;
     final venueTotal = (venuePrice * duration / 60).round().toDouble();
     final subtotal = playerTotal + venueTotal;
@@ -344,30 +336,30 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Cost Breakdown',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const Divider(height: 24),
-            
+
             if (pricePerPlayer > 0) ...[
-              _buildCostRow('Player fees ($maxPlayers × \$${pricePerPlayer.toStringAsFixed(2)})', playerTotal),
+              _buildCostRow(
+                'Player fees ($maxPlayers × \$${pricePerPlayer.toStringAsFixed(2)})',
+                playerTotal,
+              ),
               const SizedBox(height: 8),
             ],
-            
+
             if (venueTotal > 0) ...[
               _buildCostRow('Venue booking (${duration}min)', venueTotal),
               const SizedBox(height: 8),
             ],
-            
+
             if (fee > 0) ...[
               _buildCostRow('Service fee', fee),
               const SizedBox(height: 8),
             ],
-            
+
             if (total == 0) ...[
               Row(
                 children: [
@@ -391,10 +383,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 children: [
                   const Text(
                     'Total',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     '\$${total.toStringAsFixed(2)}',
@@ -418,12 +407,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Expanded(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.grey[700],
-            ),
-          ),
+          child: Text(label, style: TextStyle(color: Colors.grey[700])),
         ),
         Text(
           '\$${amount.toStringAsFixed(2)}',
@@ -448,33 +432,32 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Payment Method',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            
-            ..._paymentMethods.map((method) => RadioListTile<String>(
-              value: method['id'],
-              groupValue: _paymentMethod,
-              onChanged: (value) {
-                setState(() {
-                  _paymentMethod = value!;
-                });
-              },
-              title: Row(
-                children: [
-                  Icon(method['icon'], size: 20),
-                  const SizedBox(width: 8),
-                  Text(method['name']),
-                ],
+
+            ..._paymentMethods.map(
+              (method) => RadioListTile<String>(
+                value: method['id'],
+                groupValue: _paymentMethod,
+                onChanged: (value) {
+                  setState(() {
+                    _paymentMethod = value!;
+                  });
+                },
+                title: Row(
+                  children: [
+                    Icon(method['icon'], size: 20),
+                    const SizedBox(width: 8),
+                    Text(method['name']),
+                  ],
+                ),
+                subtitle: Text(method['subtitle']),
+                contentPadding: EdgeInsets.zero,
               ),
-              subtitle: Text(method['subtitle']),
-              contentPadding: EdgeInsets.zero,
-            )),
+            ),
           ],
         ),
       ),
@@ -494,15 +477,12 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Terms & Conditions',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            
+
             CheckboxListTile(
               value: _agreedToTerms,
               onChanged: (value) {
@@ -515,9 +495,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               contentPadding: EdgeInsets.zero,
               controlAffinity: ListTileControlAffinity.leading,
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Text(
               'By creating this game, you agree to:',
               style: TextStyle(
@@ -527,7 +507,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            
+
             const Text('• Show up on time and be respectful to other players'),
             const SizedBox(height: 4),
             const Text('• Follow cancellation policy (24hr notice)'),
@@ -554,22 +534,27 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                 const SizedBox(width: 8),
                 const Text(
                   'Game Policies',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            
-            const Text('📋 Cancellation: Free cancellation 24 hours before game time'),
+
+            const Text(
+              '📋 Cancellation: Free cancellation 24 hours before game time',
+            ),
             const SizedBox(height: 6),
-            const Text('🌧️ Weather: Games may be cancelled due to severe weather'),
+            const Text(
+              '🌧️ Weather: Games may be cancelled due to severe weather',
+            ),
             const SizedBox(height: 6),
-            const Text('💰 Refunds: Full refund for cancellations within policy'),
+            const Text(
+              '💰 Refunds: Full refund for cancellations within policy',
+            ),
             const SizedBox(height: 6),
-            const Text('👥 No-shows: Players who don\'t show up won\'t be refunded'),
+            const Text(
+              '👥 No-shows: Players who don\'t show up won\'t be refunded',
+            ),
           ],
         ),
       ),
@@ -602,10 +587,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
               children: [
                 const Text(
                   'Total',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 Text(
                   '\$${total.toStringAsFixed(2)}',
@@ -619,7 +601,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
             ),
             const SizedBox(width: 16),
           ],
-          
+
           Expanded(
             child: ElevatedButton(
               onPressed: _isProcessing || !canConfirm ? null : _confirmBooking,
@@ -640,7 +622,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                           height: 20,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
                           ),
                         ),
                         SizedBox(width: 8),
@@ -669,10 +653,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
         Expanded(
           child: Text(
             text,
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey[700], fontSize: 14),
           ),
         ),
       ],
@@ -681,12 +662,12 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Date not set';
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final gameDate = DateTime(date.year, date.month, date.day);
-    
+
     if (gameDate == today) {
       return 'Today, ${_formatDateString(date)}';
     } else if (gameDate == tomorrow) {
@@ -698,11 +679,21 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
 
   String _formatDateString(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
   }
 
@@ -712,12 +703,12 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     final venue = widget.gameData['venue'];
     final venuePrice = venue?['pricePerHour'] ?? 0.0;
     final duration = widget.gameData['duration'] ?? 60;
-    
+
     final playerTotal = pricePerPlayer * maxPlayers;
     final venueTotal = (venuePrice * duration / 60).round().toDouble();
     final subtotal = playerTotal + venueTotal;
     final fee = subtotal * 0.05; // 5% service fee
-    
+
     return subtotal + fee;
   }
 
@@ -729,7 +720,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
     try {
       // Simulate API call
       await Future.delayed(const Duration(seconds: 2));
-      
+
       widget.onBookingConfirmed({
         'paymentMethod': _paymentMethod,
         'totalCost': _getTotalCost(),

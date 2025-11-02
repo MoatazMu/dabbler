@@ -20,7 +20,7 @@ class BulkActionsBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -49,9 +49,9 @@ class BulkActionsBar extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           // Action buttons
           Expanded(
             child: Row(
@@ -67,9 +67,9 @@ class BulkActionsBar extends StatelessWidget {
                     label: const Text('Accept All'),
                   ),
                 ),
-                
+
                 const SizedBox(width: 12),
-                
+
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: isLoading ? null : onDeclineAll,
@@ -84,9 +84,9 @@ class BulkActionsBar extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           // Cancel selection button
           TextButton.icon(
             onPressed: isLoading ? null : onCancel,

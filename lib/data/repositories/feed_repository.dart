@@ -6,12 +6,11 @@ abstract class FeedRepository {
   /// Server-side RLS decides visibility; client just paginates.
   Future<Result<List<FeedItem>>> listRecent({
     int limit = 50,
-    String? afterCursor,   // not used in desc sort (kept for symmetry)
-    String? beforeCursor,  // fetch older items before this cursor
+    String? afterCursor, // not used in desc sort (kept for symmetry)
+    String? beforeCursor, // fetch older items before this cursor
   });
 
   /// Convenience: return the next page cursor given the last page returned.
   /// Implemented client-side as the last item's cursor (or null if empty).
   String? nextCursorFrom(List<FeedItem> page);
 }
-

@@ -50,7 +50,7 @@ class AnalyticsEvent {
       properties: Map<String, dynamic>.from(map['properties']),
       timestamp: DateTime.parse(map['timestamp']),
       sessionId: map['sessionId'],
-      context: map['context'] != null 
+      context: map['context'] != null
           ? Map<String, dynamic>.from(map['context'])
           : null,
       isCustom: map['isCustom'] ?? false,
@@ -98,7 +98,9 @@ class UserBehaviorMetrics {
       userId: map['userId'],
       sessionsCount: map['sessionsCount'],
       totalTimeSpent: Duration(milliseconds: map['totalTimeSpent']),
-      averageSessionDuration: Duration(milliseconds: map['averageSessionDuration']),
+      averageSessionDuration: Duration(
+        milliseconds: map['averageSessionDuration'],
+      ),
       totalEvents: map['totalEvents'],
       lastActiveAt: DateTime.parse(map['lastActiveAt']),
       eventCounts: Map<String, int>.from(map['eventCounts']),
@@ -203,10 +205,10 @@ class ABTestData {
       testConfig: Map<String, dynamic>.from(map['testConfig']),
       goalEvents: List<String>.from(map['goalEvents']),
       hasConverted: map['hasConverted'] ?? false,
-      convertedAt: map['convertedAt'] != null 
+      convertedAt: map['convertedAt'] != null
           ? DateTime.parse(map['convertedAt'])
           : null,
-      conversionData: map['conversionData'] != null 
+      conversionData: map['conversionData'] != null
           ? Map<String, dynamic>.from(map['conversionData'])
           : null,
     );
@@ -244,10 +246,10 @@ class FunnelStep {
       stepId: map['stepId'],
       stepName: map['stepName'],
       requiredEvents: List<String>.from(map['requiredEvents']),
-      maxTimeToNext: map['maxTimeToNext'] != null 
+      maxTimeToNext: map['maxTimeToNext'] != null
           ? Duration(milliseconds: map['maxTimeToNext'])
           : null,
-      conditions: map['conditions'] != null 
+      conditions: map['conditions'] != null
           ? Map<String, dynamic>.from(map['conditions'])
           : null,
     );
@@ -284,11 +286,9 @@ class ConversionFunnel {
     return ConversionFunnel(
       funnelId: map['funnelId'],
       name: map['name'],
-      steps: (map['steps'] as List)
-          .map((s) => FunnelStep.fromMap(s))
-          .toList(),
+      steps: (map['steps'] as List).map((s) => FunnelStep.fromMap(s)).toList(),
       createdAt: DateTime.parse(map['createdAt']),
-      config: map['config'] != null 
+      config: map['config'] != null
           ? Map<String, dynamic>.from(map['config'])
           : null,
     );
@@ -342,7 +342,7 @@ class AnalyticsReport {
       generatedAt: DateTime.parse(map['generatedAt']),
       periodStart: DateTime.parse(map['periodStart']),
       periodEnd: DateTime.parse(map['periodEnd']),
-      filters: map['filters'] != null 
+      filters: map['filters'] != null
           ? Map<String, dynamic>.from(map['filters'])
           : null,
     );
@@ -406,33 +406,32 @@ class RewardsAnalyticsService extends ChangeNotifier {
 
     try {
       _currentUserId = userId;
-      
+
       // Initialize shared preferences
       _prefs = await SharedPreferences.getInstance();
-      
+
       // Load offline queue
       await _loadOfflineQueue();
-      
+
       // Start new session
       await _startNewSession();
-      
+
       // Load cached data
       await _loadCachedData();
-      
+
       // Setup A/B tests
       await _setupABTests();
-      
+
       // Setup conversion funnels
       await _setupConversionFunnels();
-      
+
       // Start processing timers
       _startProcessingTimers();
-      
+
       _isInitialized = true;
       notifyListeners();
-      
+
       debugPrint('RewardsAnalyticsService initialized for user: $userId');
-      
     } catch (e) {
       debugPrint('Error initializing RewardsAnalyticsService: $e');
       rethrow;
@@ -467,41 +466,35 @@ class RewardsAnalyticsService extends ChangeNotifier {
     );
 
     await _queueEvent(event);
-    
+
     // Update session metrics
     _updateSessionMetrics(event);
-    
+
     // Check A/B test conversions
     _checkABTestConversions(event);
-    
+
     // Update funnel progress
     _updateFunnelProgress(event);
   }
 
   /// Track rewards-specific event
   Future<void> trackRewardsEvent(RewardsEvent rewardsEvent) async {
-    await trackEvent(
-      'rewards_${rewardsEvent.type.name}',
-      {
-        ...rewardsEvent.data,
-        'source': rewardsEvent.sourceId,
-        'rewardsMetadata': rewardsEvent.metadata,
-      },
-    );
+    await trackEvent('rewards_${rewardsEvent.type.name}', {
+      ...rewardsEvent.data,
+      'source': rewardsEvent.sourceId,
+      'rewardsMetadata': rewardsEvent.metadata,
+    });
   }
 
   /// Track achievement unlock
   Future<void> trackAchievementUnlock(Achievement achievement) async {
-    await trackEvent(
-      'achievement_unlocked',
-      {
-        'achievementId': achievement.id,
-        'achievementName': achievement.name,
-        'tier': achievement.tier.name,
-        'pointsRewarded': achievement.criteria['pointsReward'] ?? 0,
-        'category': achievement.category,
-      },
-    );
+    await trackEvent('achievement_unlocked', {
+      'achievementId': achievement.id,
+      'achievementName': achievement.name,
+      'tier': achievement.tier.name,
+      'pointsRewarded': achievement.criteria['pointsReward'] ?? 0,
+      'category': achievement.category,
+    });
   }
 
   /// Track error
@@ -510,15 +503,12 @@ class RewardsAnalyticsService extends ChangeNotifier {
     String errorMessage,
     Map<String, dynamic> context,
   ) async {
-    await trackEvent(
-      'error',
-      {
-        'errorType': errorType,
-        'errorMessage': errorMessage,
-        'context': context,
-        'timestamp': DateTime.now().toIso8601String(),
-      },
-    );
+    await trackEvent('error', {
+      'errorType': errorType,
+      'errorMessage': errorMessage,
+      'context': context,
+      'timestamp': DateTime.now().toIso8601String(),
+    });
   }
 
   /// Get user behavior metrics
@@ -531,7 +521,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
     try {
       final metrics = await _calculateBehaviorMetrics(userId);
       _behaviorMetricsCache[userId] = metrics;
-      
+
       return metrics;
     } catch (e) {
       debugPrint('Error getting user behavior metrics: $e');
@@ -549,7 +539,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
     try {
       final metrics = await _calculateEngagementMetrics(userId);
       _engagementMetricsCache[userId] = metrics;
-      
+
       return metrics;
     } catch (e) {
       debugPrint('Error getting engagement metrics: $e');
@@ -561,11 +551,11 @@ class RewardsAnalyticsService extends ChangeNotifier {
   String getABTestVariant(String testId, String userId) {
     final userTests = _activeTests[userId] ?? [];
     final testData = userTests.where((t) => t.testId == testId).firstOrNull;
-    
+
     if (testData != null) {
       return testData.variant;
     }
-    
+
     // Assign new variant
     return _assignABTestVariant(testId, userId);
   }
@@ -578,8 +568,13 @@ class RewardsAnalyticsService extends ChangeNotifier {
     Map<String, dynamic>? filters,
   }) async {
     try {
-      final data = await _generateReportData(type, periodStart, periodEnd, filters);
-      
+      final data = await _generateReportData(
+        type,
+        periodStart,
+        periodEnd,
+        filters,
+      );
+
       final report = AnalyticsReport(
         reportId: _generateReportId(),
         name: _getReportName(type),
@@ -590,7 +585,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
         periodEnd: periodEnd,
         filters: filters,
       );
-      
+
       return report;
     } catch (e) {
       debugPrint('Error generating report: $e');
@@ -602,11 +597,11 @@ class RewardsAnalyticsService extends ChangeNotifier {
   void setOnlineStatus(bool isOnline) {
     if (_isOnline != isOnline) {
       _isOnline = isOnline;
-      
+
       if (isOnline) {
         _syncOfflineQueue();
       }
-      
+
       notifyListeners();
     }
   }
@@ -617,7 +612,10 @@ class RewardsAnalyticsService extends ChangeNotifier {
       'eventsInQueue': _eventQueue.length,
       'offlineEvents': _offlineQueue.length,
       'currentSessionId': _currentSessionId,
-      'sessionEventCount': _sessionEventCounts.values.fold<int>(0, (a, b) => a + b),
+      'sessionEventCount': _sessionEventCounts.values.fold<int>(
+        0,
+        (a, b) => a + b,
+      ),
       'behaviorMetricsCached': _behaviorMetricsCache.length,
       'engagementMetricsCached': _engagementMetricsCache.length,
       'activeABTests': _activeTests.length,
@@ -635,20 +633,21 @@ class RewardsAnalyticsService extends ChangeNotifier {
       _offlineQueue.add(event);
       await _saveOfflineQueue();
     }
-    
+
     notifyListeners();
   }
 
   void _updateSessionMetrics(AnalyticsEvent event) {
-    _sessionEventCounts[event.eventName] = 
+    _sessionEventCounts[event.eventName] =
         (_sessionEventCounts[event.eventName] ?? 0) + 1;
   }
 
   void _checkABTestConversions(AnalyticsEvent event) {
     final userTests = _activeTests[event.userId] ?? [];
-    
+
     for (final testData in userTests) {
-      if (!testData.hasConverted && testData.goalEvents.contains(event.eventName)) {
+      if (!testData.hasConverted &&
+          testData.goalEvents.contains(event.eventName)) {
         // Mark as converted
         final convertedTest = ABTestData(
           testId: testData.testId,
@@ -661,14 +660,16 @@ class RewardsAnalyticsService extends ChangeNotifier {
           convertedAt: DateTime.now(),
           conversionData: event.properties,
         );
-        
+
         // Update test data
         final userTestsList = _activeTests[event.userId]!;
-        final testIndex = userTestsList.indexWhere((t) => t.testId == testData.testId);
+        final testIndex = userTestsList.indexWhere(
+          (t) => t.testId == testData.testId,
+        );
         if (testIndex >= 0) {
           userTestsList[testIndex] = convertedTest;
         }
-        
+
         // Track conversion event
         trackEvent('ab_test_conversion', {
           'testId': testData.testId,
@@ -689,7 +690,11 @@ class RewardsAnalyticsService extends ChangeNotifier {
     }
   }
 
-  void _trackFunnelStepCompletion(String funnelId, String stepId, AnalyticsEvent event) {
+  void _trackFunnelStepCompletion(
+    String funnelId,
+    String stepId,
+    AnalyticsEvent event,
+  ) {
     trackEvent('funnel_step_completed', {
       'funnelId': funnelId,
       'stepId': stepId,
@@ -702,7 +707,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
     _currentSessionId = _generateSessionId();
     _sessionStartTime = DateTime.now();
     _sessionEventCounts.clear();
-    
+
     await trackEvent('session_start', {
       'sessionId': _currentSessionId,
       'timestamp': _sessionStartTime!.toIso8601String(),
@@ -712,13 +717,13 @@ class RewardsAnalyticsService extends ChangeNotifier {
   void _endCurrentSession() {
     if (_currentSessionId != null && _sessionStartTime != null) {
       final sessionDuration = DateTime.now().difference(_sessionStartTime!);
-      
+
       trackEvent('session_end', {
         'sessionId': _currentSessionId,
         'duration': sessionDuration.inMilliseconds,
         'eventCount': _sessionEventCounts.values.fold<int>(0, (a, b) => a + b),
       });
-      
+
       _currentSessionId = null;
       _sessionStartTime = null;
     }
@@ -733,20 +738,19 @@ class RewardsAnalyticsService extends ChangeNotifier {
 
   Future<void> _processEventBatch() async {
     if (_isProcessingEvents || _eventQueue.isEmpty || !_isOnline) return;
-    
+
     _isProcessingEvents = true;
-    
+
     try {
       final batch = _eventQueue.take(_batchSize).toList();
       _eventQueue.removeRange(0, math.min(_batchSize, _eventQueue.length));
-      
+
       // In a real implementation, these events would be sent to an analytics service
       for (final event in batch) {
         await _processAnalyticsEvent(event);
       }
-      
+
       debugPrint('Processed ${batch.length} analytics events');
-      
     } catch (e) {
       debugPrint('Error processing event batch: $e');
     } finally {
@@ -757,21 +761,25 @@ class RewardsAnalyticsService extends ChangeNotifier {
   Future<void> _processAnalyticsEvent(AnalyticsEvent event) async {
     // This would typically send the event to an external analytics service
     // For now, we'll just store it locally for testing
-    debugPrint('Processing analytics event: ${event.eventName} for user: ${event.userId}');
+    debugPrint(
+      'Processing analytics event: ${event.eventName} for user: ${event.userId}',
+    );
   }
 
   Future<UserBehaviorMetrics> _calculateBehaviorMetrics(String userId) async {
     // In a real implementation, this would query the database
     // For now, returning mock data
     final random = math.Random();
-    
+
     return UserBehaviorMetrics(
       userId: userId,
       sessionsCount: random.nextInt(100) + 1,
       totalTimeSpent: Duration(hours: random.nextInt(100) + 10),
       averageSessionDuration: Duration(minutes: random.nextInt(60) + 5),
       totalEvents: random.nextInt(1000) + 100,
-      lastActiveAt: DateTime.now().subtract(Duration(hours: random.nextInt(48))),
+      lastActiveAt: DateTime.now().subtract(
+        Duration(hours: random.nextInt(48)),
+      ),
       eventCounts: {
         'achievement_unlocked': random.nextInt(50),
         'points_earned': random.nextInt(200),
@@ -784,7 +792,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
   Future<EngagementMetrics> _calculateEngagementMetrics(String userId) async {
     // In a real implementation, this would calculate engagement based on user activity
     final random = math.Random();
-    
+
     return EngagementMetrics(
       userId: userId,
       engagementScore: random.nextDouble() * 100,
@@ -811,7 +819,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
     final hash = userId.hashCode + testId.hashCode;
     final variants = ['A', 'B', 'C'];
     final variant = variants[hash.abs() % variants.length];
-    
+
     // Store the assignment
     final testData = ABTestData(
       testId: testId,
@@ -821,15 +829,12 @@ class RewardsAnalyticsService extends ChangeNotifier {
       testConfig: {},
       goalEvents: ['achievement_unlocked', 'tier_upgrade'],
     );
-    
+
     _activeTests[userId] = (_activeTests[userId] ?? [])..add(testData);
-    
+
     // Track assignment
-    trackEvent('ab_test_assigned', {
-      'testId': testId,
-      'variant': variant,
-    });
-    
+    trackEvent('ab_test_assigned', {'testId': testId, 'variant': variant});
+
     return variant;
   }
 
@@ -841,7 +846,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
   ) async {
     // In a real implementation, this would query the database and generate comprehensive reports
     final random = math.Random();
-    
+
     switch (type) {
       case ReportType.achievements:
         return {
@@ -941,7 +946,9 @@ class RewardsAnalyticsService extends ChangeNotifier {
 
   Future<void> _loadOfflineQueue() async {
     try {
-      final queueData = _prefs?.getString('analytics_offline_queue_$_currentUserId');
+      final queueData = _prefs?.getString(
+        'analytics_offline_queue_$_currentUserId',
+      );
       if (queueData != null) {
         final List<dynamic> queueList = jsonDecode(queueData);
         _offlineQueue.addAll(
@@ -967,19 +974,18 @@ class RewardsAnalyticsService extends ChangeNotifier {
 
   Future<void> _syncOfflineQueue() async {
     if (_offlineQueue.isEmpty) return;
-    
+
     try {
       final eventsToSync = List<AnalyticsEvent>.from(_offlineQueue);
       _offlineQueue.clear();
-      
+
       for (final event in eventsToSync) {
         _eventQueue.add(event);
       }
-      
+
       await _saveOfflineQueue();
-      
+
       debugPrint('Synced ${eventsToSync.length} offline analytics events');
-      
     } catch (e) {
       debugPrint('Error syncing offline queue: $e');
     }
@@ -991,14 +997,15 @@ class RewardsAnalyticsService extends ChangeNotifier {
   }
 
   bool _isCacheValid() {
-    return _lastMetricsUpdate != null && 
-           DateTime.now().difference(_lastMetricsUpdate!) < const Duration(minutes: 30);
+    return _lastMetricsUpdate != null &&
+        DateTime.now().difference(_lastMetricsUpdate!) <
+            const Duration(minutes: 30);
   }
 
   Map<String, dynamic> _buildEventContext() {
     return {
       'sessionId': _currentSessionId,
-      'sessionDuration': _sessionStartTime != null 
+      'sessionDuration': _sessionStartTime != null
           ? DateTime.now().difference(_sessionStartTime!).inMilliseconds
           : 0,
       'platform': 'mobile',

@@ -29,11 +29,11 @@ class FriendshipActionsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     if (isBlocked) {
       return _buildBlockedActions(theme);
     }
-    
+
     switch (friendshipStatus.toLowerCase()) {
       case 'friends':
         return _buildFriendsActions(theme);

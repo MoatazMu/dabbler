@@ -22,7 +22,7 @@ class PostAuthorWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Row(
       children: [
         // Author avatar
@@ -34,9 +34,9 @@ class PostAuthorWidget extends StatelessWidget {
             fallbackIcon: Icons.person,
           ),
         ),
-        
+
         const SizedBox(width: 12),
-        
+
         // Author info
         Expanded(
           child: Column(
@@ -61,7 +61,7 @@ class PostAuthorWidget extends StatelessWidget {
                     ),
                 ],
               ),
-              
+
               Row(
                 children: [
                   Text(
@@ -70,7 +70,7 @@ class PostAuthorWidget extends StatelessWidget {
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                  
+
                   if (location != null) ...[
                     const SizedBox(width: 8),
                     Icon(
@@ -86,7 +86,7 @@ class PostAuthorWidget extends StatelessWidget {
                       ),
                     ),
                   ],
-                  
+
                   if (isEdited) ...[
                     const SizedBox(width: 8),
                     Text(
@@ -102,7 +102,7 @@ class PostAuthorWidget extends StatelessWidget {
             ],
           ),
         ),
-        
+
         // Actions menu
         if (actions != null && actions!.isNotEmpty)
           PopupMenuButton<String>(
@@ -116,16 +116,16 @@ class PostAuthorWidget extends StatelessWidget {
                 child: ListTile(
                   leading: Icon(
                     action.icon,
-                    color: action.isDestructive 
-                      ? theme.colorScheme.error 
-                      : theme.colorScheme.onSurfaceVariant,
+                    color: action.isDestructive
+                        ? theme.colorScheme.error
+                        : theme.colorScheme.onSurfaceVariant,
                   ),
                   title: Text(
                     action.label,
                     style: TextStyle(
-                      color: action.isDestructive 
-                        ? theme.colorScheme.error 
-                        : null,
+                      color: action.isDestructive
+                          ? theme.colorScheme.error
+                          : null,
                     ),
                   ),
                   contentPadding: EdgeInsets.zero,
@@ -144,7 +144,7 @@ class PostAuthorWidget extends StatelessWidget {
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inDays > 7) {
       return '${time.day}/${time.month}/${time.year}';
     } else if (difference.inDays > 0) {

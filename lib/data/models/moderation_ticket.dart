@@ -68,12 +68,6 @@ class ModerationTicket {
   }
 
   @override
-  int get hashCode => Object.hash(
-        id,
-        flagId,
-        category,
-        notes,
-        status,
-        createdAt,
-      );
+  int get hashCode =>
+      Object.hash(id, flagId, category, notes, status, createdAt);
 }

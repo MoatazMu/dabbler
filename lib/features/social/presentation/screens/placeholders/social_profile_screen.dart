@@ -5,10 +5,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 class SocialProfileScreen extends StatelessWidget {
   final String userId;
 
-  const SocialProfileScreen({
-    super.key,
-    required this.userId,
-  });
+  const SocialProfileScreen({super.key, required this.userId});
 
   @override
   Widget build(BuildContext context) {
@@ -16,15 +13,10 @@ class SocialProfileScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Profile'),
         actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.share),
-            onPressed: () {
-            },
-          ),
+          IconButton(icon: const Icon(LucideIcons.share), onPressed: () {}),
           IconButton(
             icon: const Icon(LucideIcons.moreHorizontal),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -47,7 +39,7 @@ class SocialProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // User Info
                   Text(
                     'User $userId',
@@ -58,9 +50,9 @@ class SocialProfileScreen extends StatelessWidget {
                   const SizedBox(height: 8),
                   Text(
                     '@user$userId',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: Colors.grey,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge?.copyWith(color: Colors.grey),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -68,34 +60,24 @@ class SocialProfileScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Stats Row
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _StatColumn(
-                        title: 'Posts',
-                        value: '42',
-                      ),
-                      _StatColumn(
-                        title: 'Friends',
-                        value: '156',
-                      ),
-                      _StatColumn(
-                        title: 'Games',
-                        value: '23',
-                      ),
+                      _StatColumn(title: 'Posts', value: '42'),
+                      _StatColumn(title: 'Friends', value: '156'),
+                      _StatColumn(title: 'Games', value: '23'),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   // Action Buttons
                   Row(
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: () {
-                          },
+                          onPressed: () {},
                           icon: const Icon(LucideIcons.userPlus),
                           label: const Text('Add Friend'),
                         ),
@@ -103,8 +85,7 @@ class SocialProfileScreen extends StatelessWidget {
                       const SizedBox(width: 12),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {
-                          },
+                          onPressed: () {},
                           icon: const Icon(LucideIcons.messageCircle),
                           label: const Text('Message'),
                         ),
@@ -115,16 +96,13 @@ class SocialProfileScreen extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Tab Bar
           SliverToBoxAdapter(
             child: Container(
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(
-                    color: Colors.grey[300]!,
-                    width: 0.5,
-                  ),
+                  bottom: BorderSide(color: Colors.grey[300]!, width: 0.5),
                 ),
               ),
               child: TabBar(
@@ -137,7 +115,7 @@ class SocialProfileScreen extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Posts List
           SliverList(
             delegate: SliverChildBuilderDelegate(
@@ -161,28 +139,26 @@ class SocialProfileScreen extends StatelessWidget {
                             children: [
                               Text(
                                 'User $userId',
-                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 '${index + 1} days ago',
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey,
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(color: Colors.grey),
                               ),
                             ],
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      
+
                       // Post Content
                       Text(
                         'This is post ${index + 1} from this user. Great game today! Looking forward to the next one.',
                       ),
                       const SizedBox(height: 12),
-                      
+
                       // Post Actions
                       Row(
                         children: [
@@ -193,7 +169,10 @@ class SocialProfileScreen extends StatelessWidget {
                           Text('${12 + index}'),
                           const SizedBox(width: 16),
                           IconButton(
-                            icon: const Icon(LucideIcons.messageCircle, size: 20),
+                            icon: const Icon(
+                              LucideIcons.messageCircle,
+                              size: 20,
+                            ),
                             onPressed: () {},
                           ),
                           Text('${3 + index}'),
@@ -216,10 +195,7 @@ class _StatColumn extends StatelessWidget {
   final String title;
   final String value;
 
-  const _StatColumn({
-    required this.title,
-    required this.value,
-  });
+  const _StatColumn({required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -227,15 +203,15 @@ class _StatColumn extends StatelessWidget {
       children: [
         Text(
           value,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         Text(
           title,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Colors.grey,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: Colors.grey),
         ),
       ],
     );

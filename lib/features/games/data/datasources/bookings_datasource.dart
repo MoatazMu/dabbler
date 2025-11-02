@@ -119,10 +119,7 @@ abstract class BookingsDataSource extends BookingsRemoteDataSource {
 
   /// Extends booking duration
   @override
-  Future<BookingModel> extendBooking(
-    String bookingId,
-    int additionalMinutes,
-  );
+  Future<BookingModel> extendBooking(String bookingId, int additionalMinutes);
 }
 
 class SupabaseBookingsDataSource implements BookingsDataSource {
@@ -144,7 +141,8 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
   }) async {
     try {
       // Start transaction for booking creation
-      final response = await _supabaseClient.rpc('create_booking_with_game_update', 
+      final response = await _supabaseClient.rpc(
+        'create_booking_with_game_update',
         params: {
           'user_id': userId,
           'venue_id': venueId,
@@ -155,11 +153,13 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
           'sport_type': sport,
           'court_number': courtNumber,
           'booking_metadata': metadata ?? {},
-        }
+        },
       );
 
       if (response['success'] != true) {
-        throw BookingConflictException(response['message'] ?? 'Booking creation failed');
+        throw BookingConflictException(
+          response['message'] ?? 'Booking creation failed',
+        );
       }
 
       // Fetch the created booking with full details
@@ -197,7 +197,8 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
     String? excludeBookingId,
   }) async {
     try {
-      final response = await _supabaseClient.rpc('check_booking_conflicts', 
+      final response = await _supabaseClient.rpc(
+        'check_booking_conflicts',
         params: {
           'venue_id': venueId,
           'booking_date': date,
@@ -206,14 +207,16 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
           'sport_type': sport,
           'court_number': courtNumber,
           'exclude_booking_id': excludeBookingId,
-        }
+        },
       );
 
       return response['has_conflicts'] as bool;
     } on PostgrestException catch (e) {
       throw BookingServerException('Database error: ${e.message}');
     } catch (e) {
-      throw BookingServerException('Failed to check booking conflicts: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to check booking conflicts: ${e.toString()}',
+      );
     }
   }
 
@@ -238,7 +241,7 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
       query = query.or(
         'and(start_time.lte.$startTime,end_time.gt.$startTime),'
         'and(start_time.lt.$endTime,end_time.gte.$endTime),'
-        'and(start_time.gte.$startTime,end_time.lte.$endTime)'
+        'and(start_time.gte.$startTime,end_time.lte.$endTime)',
       );
 
       if (sport != null) {
@@ -249,11 +252,15 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
       }
 
       final response = await query;
-      return response.map<BookingModel>((json) => BookingModel.fromJson(json)).toList();
+      return response
+          .map<BookingModel>((json) => BookingModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw BookingServerException('Database error: ${e.message}');
     } catch (e) {
-      throw BookingServerException('Failed to get conflicting bookings: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to get conflicting bookings: ${e.toString()}',
+      );
     }
   }
 
@@ -296,11 +303,15 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
           .order(sortBy ?? 'booking_date', ascending: ascending)
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<BookingModel>((json) => BookingModel.fromJson(json)).toList();
+      return response
+          .map<BookingModel>((json) => BookingModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw BookingServerException('Database error: ${e.message}');
     } catch (e) {
-      throw BookingServerException('Failed to get user bookings: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to get user bookings: ${e.toString()}',
+      );
     }
   }
 
@@ -359,16 +370,19 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
   }) async {
     try {
       // Use RPC function to handle cancellation logic
-      final response = await _supabaseClient.rpc('cancel_booking_with_refund',
+      final response = await _supabaseClient.rpc(
+        'cancel_booking_with_refund',
         params: {
           'booking_id': bookingId,
           'cancellation_reason': reason,
           'request_refund': requestRefund,
-        }
+        },
       );
 
       if (response['success'] != true) {
-        throw BookingServerException(response['message'] ?? 'Cancellation failed');
+        throw BookingServerException(
+          response['message'] ?? 'Cancellation failed',
+        );
       }
 
       // Fetch updated booking
@@ -393,16 +407,19 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
     String reason,
   ) async {
     try {
-      final response = await _supabaseClient.rpc('process_booking_refund',
+      final response = await _supabaseClient.rpc(
+        'process_booking_refund',
         params: {
           'booking_id': bookingId,
           'refund_amount': amount,
           'refund_reason': reason,
-        }
+        },
       );
 
       if (response['success'] != true) {
-        throw PaymentFailedException(response['message'] ?? 'Refund processing failed');
+        throw PaymentFailedException(
+          response['message'] ?? 'Refund processing failed',
+        );
       }
 
       return {
@@ -429,7 +446,7 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
   }) async {
     try {
       final endDate = DateTime.now().add(Duration(days: days));
-      
+
       final response = await _supabaseClient
           .from('bookings')
           .select('''
@@ -445,11 +462,15 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
           .order('start_time')
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<BookingModel>((json) => BookingModel.fromJson(json)).toList();
+      return response
+          .map<BookingModel>((json) => BookingModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw BookingServerException('Database error: ${e.message}');
     } catch (e) {
-      throw BookingServerException('Failed to get upcoming bookings: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to get upcoming bookings: ${e.toString()}',
+      );
     }
   }
 
@@ -462,7 +483,7 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
   }) async {
     try {
       final startDate = DateTime.now().subtract(Duration(days: days));
-      
+
       final response = await _supabaseClient
           .from('bookings')
           .select('''
@@ -476,11 +497,15 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
           .order('booking_date', ascending: false)
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<BookingModel>((json) => BookingModel.fromJson(json)).toList();
+      return response
+          .map<BookingModel>((json) => BookingModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw BookingServerException('Database error: ${e.message}');
     } catch (e) {
-      throw BookingServerException('Failed to get past bookings: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to get past bookings: ${e.toString()}',
+      );
     }
   }
 
@@ -490,16 +515,19 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
     int additionalMinutes,
   ) async {
     try {
-      final response = await _supabaseClient.rpc('extend_booking',
+      final response = await _supabaseClient.rpc(
+        'extend_booking',
         params: {
           'booking_id': bookingId,
           'additional_minutes': additionalMinutes,
-        }
+        },
       );
 
       if (response['success'] != true) {
         if (response['error_code'] == 'BOOKING_CONFLICT') {
-          throw BookingConflictException(response['message'] ?? 'Extension conflicts with another booking');
+          throw BookingConflictException(
+            response['message'] ?? 'Extension conflicts with another booking',
+          );
         }
         throw BookingServerException(response['message'] ?? 'Extension failed');
       }
@@ -525,12 +553,15 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
   /// Gets booking statistics for a user
   Future<Map<String, dynamic>> getUserBookingStats(String userId) async {
     try {
-      final response = await _supabaseClient.rpc('get_user_booking_stats', 
-        params: {'user_id': userId}
+      final response = await _supabaseClient.rpc(
+        'get_user_booking_stats',
+        params: {'user_id': userId},
       );
       return response as Map<String, dynamic>;
     } catch (e) {
-      throw BookingServerException('Failed to get booking stats: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to get booking stats: ${e.toString()}',
+      );
     }
   }
 
@@ -542,20 +573,23 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
     String? courtNumber,
   }) async {
     try {
-      final response = await _supabaseClient.rpc('get_available_time_slots',
+      final response = await _supabaseClient.rpc(
+        'get_available_time_slots',
         params: {
           'venue_id': venueId,
           'booking_date': date,
           'sport_type': sport,
           'court_number': courtNumber,
-        }
+        },
       );
 
       return List<Map<String, dynamic>>.from(response);
     } on PostgrestException catch (e) {
       throw BookingServerException('Database error: ${e.message}');
     } catch (e) {
-      throw BookingServerException('Failed to get available time slots: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to get available time slots: ${e.toString()}',
+      );
     }
   }
 
@@ -577,19 +611,22 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
     String? endDate,
   }) async {
     try {
-      final response = await _supabaseClient.rpc('get_booking_revenue',
+      final response = await _supabaseClient.rpc(
+        'get_booking_revenue',
         params: {
           'venue_id': venueId,
           'start_date': startDate,
           'end_date': endDate,
-        }
+        },
       );
 
       return response as Map<String, dynamic>;
     } on PostgrestException catch (e) {
       throw BookingServerException('Database error: ${e.message}');
     } catch (e) {
-      throw BookingServerException('Failed to get booking revenue: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to get booking revenue: ${e.toString()}',
+      );
     }
   }
 
@@ -609,7 +646,9 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
     } on PostgrestException catch (e) {
       throw BookingServerException('Database error: ${e.message}');
     } catch (e) {
-      throw BookingServerException('Failed to mark booking as no-show: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to mark booking as no-show: ${e.toString()}',
+      );
     }
   }
 
@@ -643,11 +682,15 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
           .order('start_time', ascending: false)
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<BookingModel>((json) => BookingModel.fromJson(json)).toList();
+      return response
+          .map<BookingModel>((json) => BookingModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw BookingServerException('Database error: ${e.message}');
     } catch (e) {
-      throw BookingServerException('Failed to get venue booking history: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to get venue booking history: ${e.toString()}',
+      );
     }
   }
 
@@ -671,15 +714,17 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
         sport: sport,
         courtNumber: courtNumber,
       );
-      
+
       // Filter out the excluded booking if provided
       final relevantConflicts = excludeBookingId != null
           ? conflicts.where((b) => b.id != excludeBookingId).toList()
           : conflicts;
-      
+
       return relevantConflicts.isEmpty;
     } catch (e) {
-      throw BookingServerException('Failed to check slot availability: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to check slot availability: ${e.toString()}',
+      );
     }
   }
 
@@ -689,7 +734,9 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
       // For now, return true as a placeholder
       return true;
     } catch (e) {
-      throw BookingServerException('Failed to send booking reminder: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to send booking reminder: ${e.toString()}',
+      );
     }
   }
 
@@ -699,7 +746,9 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
       // For now, return a placeholder URL
       return 'https://api.qrserver.com/v1/create-qr-code/?data=$bookingId&size=200x200';
     } catch (e) {
-      throw BookingServerException('Failed to get booking QR code: ${e.toString()}');
+      throw BookingServerException(
+        'Failed to get booking QR code: ${e.toString()}',
+      );
     }
   }
 }

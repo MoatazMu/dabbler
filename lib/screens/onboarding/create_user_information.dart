@@ -709,8 +709,8 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                               label: _isLoading
                                   ? 'Saving...'
                                   : _areAllFieldsValid()
-                                      ? 'Continue'
-                                      : 'Fill all fields to continue',
+                                  ? 'Continue'
+                                  : 'Fill all fields to continue',
                               variant: _areAllFieldsValid()
                                   ? ButtonVariant.primary
                                   : ButtonVariant.secondary,

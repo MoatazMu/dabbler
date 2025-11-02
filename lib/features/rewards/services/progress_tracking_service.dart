@@ -77,7 +77,7 @@ class ProgressEvent {
       timestamp: DateTime.parse(map['timestamp']),
       isProcessed: map['isProcessed'] ?? false,
       retryCount: map['retryCount'] ?? 0,
-      metadata: map['metadata'] != null 
+      metadata: map['metadata'] != null
           ? Map<String, dynamic>.from(map['metadata'])
           : null,
     );
@@ -151,7 +151,8 @@ class DailyGoal {
     );
   }
 
-  double get progress => targetValue > 0 ? (currentValue / targetValue).clamp(0.0, 1.0) : 0.0;
+  double get progress =>
+      targetValue > 0 ? (currentValue / targetValue).clamp(0.0, 1.0) : 0.0;
   int get remainingValue => math.max(0, targetValue - currentValue);
   bool get isAchieved => currentValue >= targetValue;
 
@@ -284,7 +285,11 @@ class ProgressTrackingService extends ChangeNotifier {
 
   // Streaks
   final Map<String, StreakData> _streaksCache = {};
-  final Set<String> _trackedStreakTypes = {'daily_login', 'games_played', 'social_activity'};
+  final Set<String> _trackedStreakTypes = {
+    'daily_login',
+    'games_played',
+    'social_activity',
+  };
 
   // Achievement progress
   final Map<String, Map<String, double>> _achievementProgress = {};
@@ -302,8 +307,8 @@ class ProgressTrackingService extends ChangeNotifier {
   ProgressTrackingService({
     required RewardsRepository repository,
     required RewardsService rewardsService,
-  })  : _repository = repository,
-        _rewardsService = rewardsService;
+  }) : _repository = repository,
+       _rewardsService = rewardsService;
 
   // Getters
   bool get isInitialized => _isInitialized;
@@ -318,33 +323,32 @@ class ProgressTrackingService extends ChangeNotifier {
 
     try {
       _currentUserId = userId;
-      
+
       // Initialize shared preferences
       _prefs = await SharedPreferences.getInstance();
-      
+
       // Load offline queue
       await _loadOfflineQueue();
-      
+
       // Load cached data
       await _loadCachedData();
-      
+
       // Setup event listeners
       _setupEventListeners();
-      
+
       // Start processing timers
       _startProcessingTimers();
-      
+
       // Load daily goals
       await _loadDailyGoals();
-      
+
       // Load streaks
       await _loadStreaks();
-      
+
       _isInitialized = true;
       notifyListeners();
-      
+
       debugPrint('ProgressTrackingService initialized for user: $userId');
-      
     } catch (e) {
       debugPrint('Error initializing ProgressTrackingService: $e');
       rethrow;
@@ -368,17 +372,16 @@ class ProgressTrackingService extends ChangeNotifier {
         _offlineQueue.add(event);
         await _saveOfflineQueue();
       }
-      
+
       // Process immediately if queue is small
       if (_eventQueue.length < 10) {
         await _processEventBatch();
       }
-      
+
       notifyListeners();
-      
     } catch (e) {
       debugPrint('Error tracking event: $e');
-      
+
       // Fallback to offline queue
       _offlineQueue.add(event);
       await _saveOfflineQueue();
@@ -397,11 +400,12 @@ class ProgressTrackingService extends ChangeNotifier {
     final targetDate = date ?? DateTime.now();
     final dateKey = _formatDateKey(targetDate);
     final cacheKey = '${userId}_$dateKey';
-    
+
     // Check cache first
-    if (_dailyGoalsCache.containsKey(cacheKey) && 
+    if (_dailyGoalsCache.containsKey(cacheKey) &&
         _lastDailyGoalsUpdate != null &&
-        DateTime.now().difference(_lastDailyGoalsUpdate!) < const Duration(minutes: 5)) {
+        DateTime.now().difference(_lastDailyGoalsUpdate!) <
+            const Duration(minutes: 5)) {
       return _dailyGoalsCache[cacheKey]!;
     }
 
@@ -409,7 +413,7 @@ class ProgressTrackingService extends ChangeNotifier {
       final goals = await _fetchDailyGoals(userId, targetDate);
       _dailyGoalsCache[cacheKey] = goals;
       _lastDailyGoalsUpdate = DateTime.now();
-      
+
       return goals;
     } catch (e) {
       debugPrint('Error getting daily goals: $e');
@@ -426,7 +430,7 @@ class ProgressTrackingService extends ChangeNotifier {
     try {
       final streaks = await _fetchStreaks(userId);
       _streaksCache.addAll(streaks);
-      
+
       return streaks;
     } catch (e) {
       debugPrint('Error getting streaks: $e');
@@ -444,37 +448,40 @@ class ProgressTrackingService extends ChangeNotifier {
     try {
       final today = DateTime.now();
       final goals = await getDailyGoals(userId, date: today);
-      
+
       final goalIndex = goals.indexWhere((g) => g.id == goalId);
       if (goalIndex == -1) return;
-      
+
       final goal = goals[goalIndex];
-      final newValue = isIncrement 
+      final newValue = isIncrement
           ? goal.currentValue + progressValue
           : progressValue;
-      
+
       final updatedGoal = goal.copyWith(
         currentValue: newValue,
         isCompleted: newValue >= goal.targetValue,
       );
-      
+
       goals[goalIndex] = updatedGoal;
-      
+
       // Update cache
       final dateKey = _formatDateKey(today);
       final cacheKey = '${userId}_$dateKey';
       _dailyGoalsCache[cacheKey] = goals;
-      
+
       // Save to repository
-      await _repository.updateDailyGoalProgress(userId, goalId, newValue.toDouble());
-      
+      await _repository.updateDailyGoalProgress(
+        userId,
+        goalId,
+        newValue.toDouble(),
+      );
+
       // Check if goal was just completed
       if (!goal.isCompleted && updatedGoal.isCompleted) {
         await _handleDailyGoalCompleted(userId, updatedGoal);
       }
-      
+
       notifyListeners();
-      
     } catch (e) {
       debugPrint('Error updating daily goal progress: $e');
     }
@@ -485,9 +492,9 @@ class ProgressTrackingService extends ChangeNotifier {
     try {
       final currentStreak = _streaksCache[streakType];
       final now = DateTime.now();
-      
+
       StreakData updatedStreak;
-      
+
       if (currentStreak == null) {
         // New streak
         updatedStreak = StreakData(
@@ -499,8 +506,10 @@ class ProgressTrackingService extends ChangeNotifier {
         );
       } else if (currentStreak.isActive) {
         // Continue existing streak
-        final daysSinceLastActivity = now.difference(currentStreak.lastActivityAt).inDays;
-        
+        final daysSinceLastActivity = now
+            .difference(currentStreak.lastActivityAt)
+            .inDays;
+
         if (daysSinceLastActivity == 0) {
           // Same day, no change to streak count
           updatedStreak = currentStreak.copyWith(lastActivityAt: now);
@@ -509,7 +518,10 @@ class ProgressTrackingService extends ChangeNotifier {
           final newStreakCount = currentStreak.currentStreak + 1;
           updatedStreak = currentStreak.copyWith(
             currentStreak: newStreakCount,
-            longestStreak: math.max(currentStreak.longestStreak, newStreakCount),
+            longestStreak: math.max(
+              currentStreak.longestStreak,
+              newStreakCount,
+            ),
             lastActivityAt: now,
           );
         } else {
@@ -532,10 +544,10 @@ class ProgressTrackingService extends ChangeNotifier {
           streakStartedAt: now,
         );
       }
-      
+
       // Update cache
       _streaksCache[streakType] = updatedStreak;
-      
+
       // Save to repository
       await _repository.updateStreak(userId, {
         'type': updatedStreak.type,
@@ -545,14 +557,13 @@ class ProgressTrackingService extends ChangeNotifier {
         'streakStartedAt': updatedStreak.streakStartedAt.toIso8601String(),
         'metadata': updatedStreak.metadata,
       });
-      
+
       // Track streak milestone achievements
       if (updatedStreak.currentStreak > (currentStreak?.currentStreak ?? 0)) {
         await _checkStreakMilestones(userId, updatedStreak);
       }
-      
+
       notifyListeners();
-      
     } catch (e) {
       debugPrint('Error updating streak: $e');
     }
@@ -562,16 +573,16 @@ class ProgressTrackingService extends ChangeNotifier {
   Future<void> checkAchievementProgress(String userId) async {
     try {
       final achievementsResult = await _repository.getAllAchievements();
-      
+
       achievementsResult.fold(
-        (failure) => debugPrint('Error getting achievements: ${failure.message}'),
+        (failure) =>
+            debugPrint('Error getting achievements: ${failure.message}'),
         (achievements) async {
           for (final achievement in achievements) {
             await _checkSingleAchievementProgress(userId, achievement);
           }
         },
       );
-      
     } catch (e) {
       debugPrint('Error checking achievement progress: $e');
     }
@@ -581,11 +592,11 @@ class ProgressTrackingService extends ChangeNotifier {
   void setOnlineStatus(bool isOnline) {
     if (_isOnline != isOnline) {
       _isOnline = isOnline;
-      
+
       if (isOnline) {
         _syncOfflineQueue();
       }
-      
+
       notifyListeners();
     }
   }
@@ -634,11 +645,13 @@ class ProgressTrackingService extends ChangeNotifier {
       timestamp: event.timestamp,
       metadata: event.metadata,
     );
-    
+
     trackEvent(progressEvent);
   }
 
-  ProgressEventType _mapRewardsEventToProgressEvent(RewardsEventType rewardsEventType) {
+  ProgressEventType _mapRewardsEventToProgressEvent(
+    RewardsEventType rewardsEventType,
+  ) {
     switch (rewardsEventType) {
       case RewardsEventType.gameCompleted:
         return ProgressEventType.gameCompleted;
@@ -675,15 +688,14 @@ class ProgressTrackingService extends ChangeNotifier {
 
   Future<void> _processEventBatch() async {
     if (_isProcessingEvents || _eventQueue.isEmpty) return;
-    
+
     _isProcessingEvents = true;
-    
+
     try {
       final batch = _eventQueue.take(_batchSize).toList();
       _eventQueue.removeRange(0, math.min(_batchSize, _eventQueue.length));
-      
+
       await _processBatch(batch);
-      
     } catch (e) {
       debugPrint('Error processing event batch: $e');
     } finally {
@@ -697,7 +709,7 @@ class ProgressTrackingService extends ChangeNotifier {
         await _processEvent(event);
       } catch (e) {
         debugPrint('Error processing event ${event.id}: $e');
-        
+
         // Retry logic
         if (event.retryCount < _maxRetries) {
           final retryEvent = event.copyWith(retryCount: event.retryCount + 1);
@@ -728,24 +740,20 @@ class ProgressTrackingService extends ChangeNotifier {
       default:
         await _handleCustomEvent(event);
     }
-    
+
     // Update daily goals based on event
     await _updateDailyGoalsFromEvent(event);
-    
+
     // Update streaks based on event
     await _updateStreaksFromEvent(event);
-    
+
     // Check achievement progress
     await _updateAchievementProgressFromEvent(event);
   }
 
   Future<void> _handleGameCompleted(ProgressEvent event) async {
     // Update game-related daily goals
-    await updateDailyGoalProgress(
-      event.userId,
-      'play_games',
-      1,
-    );
+    await updateDailyGoalProgress(event.userId, 'play_games', 1);
   }
 
   Future<void> _handleDailyLogin(ProgressEvent event) async {
@@ -759,11 +767,7 @@ class ProgressTrackingService extends ChangeNotifier {
 
   Future<void> _handleSocialInteraction(ProgressEvent event) async {
     // Update social activity goals
-    await updateDailyGoalProgress(
-      event.userId,
-      'social_interactions',
-      1,
-    );
+    await updateDailyGoalProgress(event.userId, 'social_interactions', 1);
   }
 
   Future<void> _handleCustomEvent(ProgressEvent event) async {
@@ -773,7 +777,7 @@ class ProgressTrackingService extends ChangeNotifier {
   Future<void> _updateDailyGoalsFromEvent(ProgressEvent event) async {
     final today = DateTime.now();
     final goals = await getDailyGoals(event.userId, date: today);
-    
+
     for (final goal in goals) {
       if (_shouldUpdateGoalFromEvent(goal, event)) {
         final increment = _calculateGoalIncrement(goal, event);
@@ -837,29 +841,39 @@ class ProgressTrackingService extends ChangeNotifier {
     await checkAchievementProgress(event.userId);
   }
 
-  Future<void> _checkSingleAchievementProgress(String userId, Achievement achievement) async {
+  Future<void> _checkSingleAchievementProgress(
+    String userId,
+    Achievement achievement,
+  ) async {
     try {
       // Get current progress for this achievement
       final progressKey = '${userId}_${achievement.id}';
       // Calculate new progress based on achievement criteria
-      final newProgress = await _calculateAchievementProgress(userId, achievement);
-      
+      final newProgress = await _calculateAchievementProgress(
+        userId,
+        achievement,
+      );
+
       // Check if achievement should be unlocked
-      bool shouldUnlock = true; // Assume it should unlock unless a criteria fails
+      bool shouldUnlock =
+          true; // Assume it should unlock unless a criteria fails
       for (final criteriaEntry in achievement.criteria.entries) {
         final criteriaKey = criteriaEntry.key;
         final criteriaValue = criteriaEntry.value;
-        
+
         // Extract target value from criteria - adapt based on your actual criteria structure
-        final targetValue = criteriaValue is Map ? (criteriaValue['target'] ?? criteriaValue['count'] ?? 1.0) : criteriaValue;
+        final targetValue = criteriaValue is Map
+            ? (criteriaValue['target'] ?? criteriaValue['count'] ?? 1.0)
+            : criteriaValue;
         final progressValue = newProgress[criteriaKey] ?? 0.0;
-        
-        if (progressValue < (targetValue is num ? targetValue.toDouble() : 1.0)) {
+
+        if (progressValue <
+            (targetValue is num ? targetValue.toDouble() : 1.0)) {
           shouldUnlock = false;
           break;
         }
       }
-      
+
       if (shouldUnlock) {
         // Unlock achievement via rewards service
         await _rewardsService.unlockAchievement(
@@ -870,43 +884,50 @@ class ProgressTrackingService extends ChangeNotifier {
         // Update progress cache
         _achievementProgress[progressKey] = newProgress;
       }
-      
     } catch (e) {
-      debugPrint('Error checking achievement progress for ${achievement.id}: $e');
+      debugPrint(
+        'Error checking achievement progress for ${achievement.id}: $e',
+      );
     }
   }
 
-  Future<Map<String, double>> _calculateAchievementProgress(String userId, Achievement achievement) async {
+  Future<Map<String, double>> _calculateAchievementProgress(
+    String userId,
+    Achievement achievement,
+  ) async {
     final progress = <String, double>{};
-    
+
     // This would involve complex calculations based on user data
     // For now, returning mock progress based on criteria keys
     for (final criteriaEntry in achievement.criteria.entries) {
       final criteriaKey = criteriaEntry.key;
       final criteriaValue = criteriaEntry.value;
-      
+
       // Extract target value and calculate mock progress
-      final targetValue = criteriaValue is Map ? (criteriaValue['target'] ?? criteriaValue['count'] ?? 100.0) : 100.0;
-      progress[criteriaKey] = math.Random().nextDouble() * (targetValue is num ? targetValue.toDouble() : 100.0);
+      final targetValue = criteriaValue is Map
+          ? (criteriaValue['target'] ?? criteriaValue['count'] ?? 100.0)
+          : 100.0;
+      progress[criteriaKey] =
+          math.Random().nextDouble() *
+          (targetValue is num ? targetValue.toDouble() : 100.0);
     }
-    
+
     return progress;
   }
 
   Future<void> _checkStreakMilestones(String userId, StreakData streak) async {
     final milestones = [7, 30, 100, 365]; // Common milestone days
-    
+
     if (milestones.contains(streak.currentStreak)) {
-      await trackEvent(ProgressEvent(
-        id: _generateEventId(),
-        userId: userId,
-        type: ProgressEventType.milestoneReached,
-        data: {
-          'streakType': streak.type,
-          'milestone': streak.currentStreak,
-        },
-        timestamp: DateTime.now(),
-      ));
+      await trackEvent(
+        ProgressEvent(
+          id: _generateEventId(),
+          userId: userId,
+          type: ProgressEventType.milestoneReached,
+          data: {'streakType': streak.type, 'milestone': streak.currentStreak},
+          timestamp: DateTime.now(),
+        ),
+      );
     }
   }
 
@@ -920,34 +941,35 @@ class ProgressTrackingService extends ChangeNotifier {
     );
 
     // Track goal completion event
-    await trackEvent(ProgressEvent(
-      id: _generateEventId(),
-      userId: userId,
-      type: ProgressEventType.milestoneReached,
-      data: {
-        'goalId': goal.id,
-        'goalName': goal.name,
-        'pointsRewarded': goal.pointsReward,
-      },
-      timestamp: DateTime.now(),
-    ));
+    await trackEvent(
+      ProgressEvent(
+        id: _generateEventId(),
+        userId: userId,
+        type: ProgressEventType.milestoneReached,
+        data: {
+          'goalId': goal.id,
+          'goalName': goal.name,
+          'pointsRewarded': goal.pointsReward,
+        },
+        timestamp: DateTime.now(),
+      ),
+    );
   }
 
   Future<void> _syncOfflineQueue() async {
     if (_offlineQueue.isEmpty) return;
-    
+
     try {
       final eventsToSync = List<ProgressEvent>.from(_offlineQueue);
       _offlineQueue.clear();
-      
+
       for (final event in eventsToSync) {
         _eventQueue.add(event);
       }
-      
+
       await _saveOfflineQueue();
-      
+
       debugPrint('Synced ${eventsToSync.length} offline events');
-      
     } catch (e) {
       debugPrint('Error syncing offline queue: $e');
     }

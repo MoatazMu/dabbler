@@ -17,19 +17,19 @@ class CacheService {
   /// Get cached value
   Future<T?> get<T>(String key) async {
     await _initialize();
-    
+
     try {
       final cachedData = _prefs.getString(key);
       if (cachedData == null) return null;
-      
+
       final Map<String, dynamic> data = json.decode(cachedData);
       final expiresAt = DateTime.parse(data['expires_at']);
-      
+
       if (DateTime.now().isAfter(expiresAt)) {
         await delete(key);
         return null;
       }
-      
+
       return data['value'] as T?;
     } catch (e) {
       await delete(key);
@@ -38,16 +38,17 @@ class CacheService {
   }
 
   /// Set cached value with duration
-  Future<void> set<T>(String key, T value, {Duration duration = const Duration(hours: 1)}) async {
+  Future<void> set<T>(
+    String key,
+    T value, {
+    Duration duration = const Duration(hours: 1),
+  }) async {
     await _initialize();
-    
+
     try {
       final expiresAt = DateTime.now().add(duration);
-      final data = {
-        'value': value,
-        'expires_at': expiresAt.toIso8601String(),
-      };
-      
+      final data = {'value': value, 'expires_at': expiresAt.toIso8601String()};
+
       await _prefs.setString(key, json.encode(data));
     } catch (e) {
       // Ignore cache errors
@@ -76,20 +77,35 @@ class CacheService {
 /// Simple analytics service for tracking events
 class AnalyticsService {
   /// Track an event
-  Future<void> trackEvent(String eventName, [Map<String, dynamic>? parameters]) async {
+  Future<void> trackEvent(
+    String eventName, [
+    Map<String, dynamic>? parameters,
+  ]) async {
     // This would integrate with Firebase Analytics, Mixpanel, etc.
-    print('Analytics: $eventName ${parameters != null ? json.encode(parameters) : ''}');
+    print(
+      'Analytics: $eventName ${parameters != null ? json.encode(parameters) : ''}',
+    );
   }
 
   /// Track an error
-  Future<void> trackError(String errorName, [Map<String, dynamic>? parameters]) async {
+  Future<void> trackError(
+    String errorName, [
+    Map<String, dynamic>? parameters,
+  ]) async {
     // This would integrate with Crashlytics, Sentry, etc.
-    print('Analytics Error: $errorName ${parameters != null ? json.encode(parameters) : ''}');
+    print(
+      'Analytics Error: $errorName ${parameters != null ? json.encode(parameters) : ''}',
+    );
   }
 
   /// Track screen view
-  Future<void> trackScreenView(String screenName, [Map<String, dynamic>? parameters]) async {
-    print('Analytics Screen: $screenName ${parameters != null ? json.encode(parameters) : ''}');
+  Future<void> trackScreenView(
+    String screenName, [
+    Map<String, dynamic>? parameters,
+  ]) async {
+    print(
+      'Analytics Screen: $screenName ${parameters != null ? json.encode(parameters) : ''}',
+    );
   }
 }
 

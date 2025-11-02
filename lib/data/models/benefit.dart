@@ -39,44 +39,44 @@ class Benefit {
       v == null ? null : DateTime.tryParse(v.toString());
 
   factory Benefit.fromMap(Map<String, dynamic> m) => Benefit(
-        id: m['id']?.toString(),
-        ownerUserId: m['owner_user_id']?.toString() ?? m['ownerId']?.toString(),
-        venueId: m['venue_id']?.toString(),
-        title: (m['title'] ?? m['name'] ?? '').toString(),
-        description: m['description']?.toString(),
-        isActive: _bool(m['is_active'] ?? m['active'] ?? true, def: true),
-        startsAt: _dt(m['starts_at']),
-        endsAt: _dt(m['ends_at']),
-        imageUrl: m['image_url']?.toString(),
-        createdAt: _dt(m['created_at']),
-        updatedAt: _dt(m['updated_at']),
-      );
+    id: m['id']?.toString(),
+    ownerUserId: m['owner_user_id']?.toString() ?? m['ownerId']?.toString(),
+    venueId: m['venue_id']?.toString(),
+    title: (m['title'] ?? m['name'] ?? '').toString(),
+    description: m['description']?.toString(),
+    isActive: _bool(m['is_active'] ?? m['active'] ?? true, def: true),
+    startsAt: _dt(m['starts_at']),
+    endsAt: _dt(m['ends_at']),
+    imageUrl: m['image_url']?.toString(),
+    createdAt: _dt(m['created_at']),
+    updatedAt: _dt(m['updated_at']),
+  );
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'owner_user_id': ownerUserId,
-        'venue_id': venueId,
-        'title': title,
-        'description': description,
-        'is_active': isActive,
-        'starts_at': startsAt?.toIso8601String(),
-        'ends_at': endsAt?.toIso8601String(),
-        'image_url': imageUrl,
-        'created_at': createdAt?.toIso8601String(),
-        'updated_at': updatedAt?.toIso8601String(),
-      };
+    'id': id,
+    'owner_user_id': ownerUserId,
+    'venue_id': venueId,
+    'title': title,
+    'description': description,
+    'is_active': isActive,
+    'starts_at': startsAt?.toIso8601String(),
+    'ends_at': endsAt?.toIso8601String(),
+    'image_url': imageUrl,
+    'created_at': createdAt?.toIso8601String(),
+    'updated_at': updatedAt?.toIso8601String(),
+  };
 
   /// Use for inserts (omit id/created/updated).
   Map<String, dynamic> toInsertMap() => {
-        'owner_user_id': ownerUserId,
-        'venue_id': venueId,
-        'title': title,
-        'description': description,
-        'is_active': isActive,
-        'starts_at': startsAt?.toIso8601String(),
-        'ends_at': endsAt?.toIso8601String(),
-        'image_url': imageUrl,
-      };
+    'owner_user_id': ownerUserId,
+    'venue_id': venueId,
+    'title': title,
+    'description': description,
+    'is_active': isActive,
+    'starts_at': startsAt?.toIso8601String(),
+    'ends_at': endsAt?.toIso8601String(),
+    'image_url': imageUrl,
+  };
 
   /// Use for updates (only non-null fields are applied).
   Map<String, dynamic> toPatchMap() {
@@ -96,4 +96,3 @@ class Benefit {
     return m;
   }
 }
-

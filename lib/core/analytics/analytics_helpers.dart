@@ -6,7 +6,11 @@ mixin AnalyticsTrackingMixin {
   final AnalyticsService _analytics = AnalyticsService();
 
   /// Track game creation funnel step
-  Future<void> trackGameCreationStep(String step, String sportType, [Map<String, dynamic>? data]) {
+  Future<void> trackGameCreationStep(
+    String step,
+    String sportType, [
+    Map<String, dynamic>? data,
+  ]) {
     return _analytics.trackGameCreationStep(
       step: step,
       sportType: sportType,
@@ -34,7 +38,12 @@ mixin AnalyticsTrackingMixin {
   }
 
   /// Track game join
-  Future<void> trackGameJoined(String gameId, String sportType, String joinMethod, int timeToJoin) {
+  Future<void> trackGameJoined(
+    String gameId,
+    String sportType,
+    String joinMethod,
+    int timeToJoin,
+  ) {
     return _analytics.trackGameJoined(
       gameId: gameId,
       sportType: sportType,
@@ -44,7 +53,12 @@ mixin AnalyticsTrackingMixin {
   }
 
   /// Track search query
-  Future<void> trackSearch(String query, int resultsCount, String sportType, Map<String, dynamic> filters) {
+  Future<void> trackSearch(
+    String query,
+    int resultsCount,
+    String sportType,
+    Map<String, dynamic> filters,
+  ) {
     return _analytics.trackGameSearch(
       query: query,
       resultsCount: resultsCount,
@@ -54,7 +68,11 @@ mixin AnalyticsTrackingMixin {
   }
 
   /// Track filter usage
-  Future<void> trackFilter(String filterType, dynamic filterValue, int resultsCount) {
+  Future<void> trackFilter(
+    String filterType,
+    dynamic filterValue,
+    int resultsCount,
+  ) {
     return _analytics.trackFilterUsed(
       filterType: filterType,
       filterValue: filterValue,
@@ -63,7 +81,13 @@ mixin AnalyticsTrackingMixin {
   }
 
   /// Track check-in
-  Future<void> trackCheckIn(String gameId, String sportType, String method, bool successful, [String? error]) {
+  Future<void> trackCheckIn(
+    String gameId,
+    String sportType,
+    String method,
+    bool successful, [
+    String? error,
+  ]) {
     return _analytics.trackGameCheckIn(
       gameId: gameId,
       sportType: sportType,
@@ -101,7 +125,10 @@ mixin AnalyticsTrackingMixin {
   }
 
   /// Track feature usage
-  Future<void> trackFeature(String featureName, [Map<String, dynamic>? context]) {
+  Future<void> trackFeature(
+    String featureName, [
+    Map<String, dynamic>? context,
+  ]) {
     return _analytics.trackFeatureUsed(
       featureName: featureName,
       context: context,
@@ -109,7 +136,12 @@ mixin AnalyticsTrackingMixin {
   }
 
   /// Track error
-  Future<void> trackError(String errorType, String errorMessage, [String? stackTrace, String? screen]) {
+  Future<void> trackError(
+    String errorType,
+    String errorMessage, [
+    String? stackTrace,
+    String? screen,
+  ]) {
     return _analytics.trackError(
       errorType: errorType,
       errorMessage: errorMessage,
@@ -119,7 +151,12 @@ mixin AnalyticsTrackingMixin {
   }
 
   /// Track engagement
-  Future<void> trackEngagement(String gameId, String action, Duration timeSpent, [String? source]) {
+  Future<void> trackEngagement(
+    String gameId,
+    String action,
+    Duration timeSpent, [
+    String? source,
+  ]) {
     return _analytics.trackGameEngagement(
       gameId: gameId,
       action: action,
@@ -149,14 +186,15 @@ class AnalyticsScreenWrapper extends StatefulWidget {
   State<AnalyticsScreenWrapper> createState() => _AnalyticsScreenWrapperState();
 }
 
-class _AnalyticsScreenWrapperState extends State<AnalyticsScreenWrapper> with AnalyticsTrackingMixin {
+class _AnalyticsScreenWrapperState extends State<AnalyticsScreenWrapper>
+    with AnalyticsTrackingMixin {
   DateTime? _screenStartTime;
 
   @override
   void initState() {
     super.initState();
     _screenStartTime = DateTime.now();
-    
+
     // Track screen view
     WidgetsBinding.instance.addPostFrameCallback((_) {
       trackScreen(widget.screenName, widget.screenClass);
@@ -196,25 +234,27 @@ class GameCreationAnalytics {
     );
   }
 
-  static Future<void> trackVenueSelection(String sportType, String venueType, double distance) {
+  static Future<void> trackVenueSelection(
+    String sportType,
+    String venueType,
+    double distance,
+  ) {
     return AnalyticsService().trackGameCreationStep(
       step: _venueSelection,
       sportType: sportType,
-      additionalData: {
-        'venue_type': venueType,
-        'distance_km': distance,
-      },
+      additionalData: {'venue_type': venueType, 'distance_km': distance},
     );
   }
 
-  static Future<void> trackPlayerSettings(String sportType, int minPlayers, int maxPlayers) {
+  static Future<void> trackPlayerSettings(
+    String sportType,
+    int minPlayers,
+    int maxPlayers,
+  ) {
     return AnalyticsService().trackGameCreationStep(
       step: _playerSettings,
       sportType: sportType,
-      additionalData: {
-        'min_players': minPlayers,
-        'max_players': maxPlayers,
-      },
+      additionalData: {'min_players': minPlayers, 'max_players': maxPlayers},
     );
   }
 
@@ -222,14 +262,15 @@ class GameCreationAnalytics {
     return AnalyticsService().trackGameCreationStep(
       step: _priceSettings,
       sportType: sportType,
-      additionalData: {
-        'price': price ?? 0.0,
-        'is_free': price == null,
-      },
+      additionalData: {'price': price ?? 0.0, 'is_free': price == null},
     );
   }
 
-  static Future<void> trackTimeSettings(String sportType, DateTime dateTime, int duration) {
+  static Future<void> trackTimeSettings(
+    String sportType,
+    DateTime dateTime,
+    int duration,
+  ) {
     return AnalyticsService().trackGameCreationStep(
       step: _timeSettings,
       sportType: sportType,
@@ -267,14 +308,15 @@ class GameCreationAnalytics {
     );
   }
 
-  static Future<void> trackAbandoned(String sportType, String lastStep, String reason) {
+  static Future<void> trackAbandoned(
+    String sportType,
+    String lastStep,
+    String reason,
+  ) {
     return AnalyticsService().trackGameCreationStep(
       step: _abandoned,
       sportType: sportType,
-      additionalData: {
-        'last_step': lastStep,
-        'abandon_reason': reason,
-      },
+      additionalData: {'last_step': lastStep, 'abandon_reason': reason},
     );
   }
 }
@@ -311,7 +353,11 @@ class SearchAnalytics {
     );
   }
 
-  static Future<void> trackFilterUsage(String filterType, dynamic value, int resultsCount) {
+  static Future<void> trackFilterUsage(
+    String filterType,
+    dynamic value,
+    int resultsCount,
+  ) {
     return AnalyticsService().trackFilterUsed(
       filterType: filterType,
       filterValue: value,
@@ -319,7 +365,10 @@ class SearchAnalytics {
     );
   }
 
-  static Future<void> trackEmptyResults(String query, Map<String, dynamic> filters) {
+  static Future<void> trackEmptyResults(
+    String query,
+    Map<String, dynamic> filters,
+  ) {
     return AnalyticsService().trackGameSearch(
       query: query,
       resultsCount: 0,
@@ -356,48 +405,50 @@ class CheckInAnalytics {
     ]);
   }
 
-  static Future<void> trackMethodPreference(String preferredMethod, String reason) {
+  static Future<void> trackMethodPreference(
+    String preferredMethod,
+    String reason,
+  ) {
     return AnalyticsService().trackFeatureUsed(
       featureName: 'checkin_method_preference',
-      context: {
-        'preferred_method': preferredMethod,
-        'reason': reason,
-      },
+      context: {'preferred_method': preferredMethod, 'reason': reason},
     );
   }
 
-  static Future<void> trackLocationPermissionRequest(bool granted, String reason) {
+  static Future<void> trackLocationPermissionRequest(
+    bool granted,
+    String reason,
+  ) {
     return AnalyticsService().trackFeatureUsed(
       featureName: 'location_permission_request',
-      context: {
-        'granted': granted,
-        'reason': reason,
-      },
+      context: {'granted': granted, 'reason': reason},
     );
   }
 }
 
 /// Performance analytics helper
 class PerformanceAnalytics {
-  static Future<void> trackScreenLoadTime(String screenName, Duration loadTime) {
+  static Future<void> trackScreenLoadTime(
+    String screenName,
+    Duration loadTime,
+  ) {
     return AnalyticsService().trackPerformanceMetric(
       metricName: 'screen_load_time',
       value: loadTime.inMilliseconds.toDouble(),
       unit: 'ms',
-      additionalData: {
-        'screen_name': screenName,
-      },
+      additionalData: {'screen_name': screenName},
     );
   }
 
-  static Future<void> trackApiResponseTime(String endpoint, Duration responseTime) {
+  static Future<void> trackApiResponseTime(
+    String endpoint,
+    Duration responseTime,
+  ) {
     return AnalyticsService().trackPerformanceMetric(
       metricName: 'api_response_time',
       value: responseTime.inMilliseconds.toDouble(),
       unit: 'ms',
-      additionalData: {
-        'endpoint': endpoint,
-      },
+      additionalData: {'endpoint': endpoint},
     );
   }
 
@@ -406,9 +457,7 @@ class PerformanceAnalytics {
       metricName: 'image_load_time',
       value: loadTime.inMilliseconds.toDouble(),
       unit: 'ms',
-      additionalData: {
-        'image_url': imageUrl,
-      },
+      additionalData: {'image_url': imageUrl},
     );
   }
 

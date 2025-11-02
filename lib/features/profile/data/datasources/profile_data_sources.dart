@@ -92,10 +92,7 @@ abstract class ProfileRemoteDataSource {
   Future<void> updateLastActive(String userId);
 
   /// Gets profile viewers
-  Future<List<ProfileModel>> getProfileViewers(
-    String userId, {
-    int limit = 50,
-  });
+  Future<List<ProfileModel>> getProfileViewers(String userId, {int limit = 50});
 
   /// Records profile view
   Future<void> recordProfileView(String viewedUserId, String viewerUserId);
@@ -142,7 +139,10 @@ abstract class ProfileLocalDataSource {
   Future<ProfileStatisticsModel?> getCachedStatistics(String userId);
 
   /// Caches statistics locally
-  Future<void> cacheStatistics(String userId, ProfileStatisticsModel statistics);
+  Future<void> cacheStatistics(
+    String userId,
+    ProfileStatisticsModel statistics,
+  );
 
   /// Checks if cache is valid (not expired)
   Future<bool> isCacheValid(String userId);
@@ -171,7 +171,8 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   final Map<String, DateTime> _timestamps = {};
 
   @override
-  Future<ProfileModel?> getCachedProfile(String userId) async => _profileCache[userId];
+  Future<ProfileModel?> getCachedProfile(String userId) async =>
+      _profileCache[userId];
 
   @override
   Future<void> cacheProfile(ProfileModel profile) async {
@@ -188,19 +189,28 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   }
 
   @override
-  Future<List<SportProfileModel>?> getCachedSportsProfiles(String userId) async => _sportsCache[userId];
+  Future<List<SportProfileModel>?> getCachedSportsProfiles(
+    String userId,
+  ) async => _sportsCache[userId];
 
   @override
-  Future<void> cacheSportsProfiles(String userId, List<SportProfileModel> profiles) async {
+  Future<void> cacheSportsProfiles(
+    String userId,
+    List<SportProfileModel> profiles,
+  ) async {
     _sportsCache[userId] = profiles;
     _timestamps[userId] = DateTime.now();
   }
 
   @override
-  Future<ProfileStatisticsModel?> getCachedStatistics(String userId) async => _statsCache[userId];
+  Future<ProfileStatisticsModel?> getCachedStatistics(String userId) async =>
+      _statsCache[userId];
 
   @override
-  Future<void> cacheStatistics(String userId, ProfileStatisticsModel statistics) async {
+  Future<void> cacheStatistics(
+    String userId,
+    ProfileStatisticsModel statistics,
+  ) async {
     _statsCache[userId] = statistics;
     _timestamps[userId] = DateTime.now();
   }
@@ -213,7 +223,8 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   }
 
   @override
-  Future<DateTime?> getCacheTimestamp(String userId) async => _timestamps[userId];
+  Future<DateTime?> getCacheTimestamp(String userId) async =>
+      _timestamps[userId];
 
   @override
   Future<void> clearCache() async {
@@ -232,7 +243,8 @@ class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
   }
 
   @override
-  Future<int> getCacheSize() async => _profileCache.length + _sportsCache.length + _statsCache.length;
+  Future<int> getCacheSize() async =>
+      _profileCache.length + _sportsCache.length + _statsCache.length;
 
   @override
   Future<void> optimizeCache() async {

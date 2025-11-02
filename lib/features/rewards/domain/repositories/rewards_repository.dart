@@ -46,27 +46,15 @@ enum LeaderboardType {
 }
 
 /// Time frames for leaderboard queries
-enum TimeFrame {
-  today,
-  thisWeek,
-  thisMonth,
-  thisYear,
-  allTime,
-}
+enum TimeFrame { today, thisWeek, thisMonth, thisYear, allTime }
 
 /// Reward types that can be claimed
-enum RewardType {
-  achievement,
-  badge,
-  points,
-  tier,
-  special,
-}
+enum RewardType { achievement, badge, points, tier, special }
 
 /// Abstract repository interface for rewards system
 abstract class RewardsRepository {
   /// Gets all achievements with optional filtering
-  /// 
+  ///
   /// [category] - Filter by achievement category
   /// [includeHidden] - Whether to include hidden achievements
   /// [includeCompleted] - Whether to include user's completed achievements
@@ -82,7 +70,7 @@ abstract class RewardsRepository {
   Future<Either<Failure, Achievement>> getAchievementById(String achievementId);
 
   /// Gets user's progress across all achievements
-  /// 
+  ///
   /// [userId] - User ID to get progress for
   /// [status] - Filter by progress status
   /// [achievementIds] - Specific achievements to get progress for
@@ -99,7 +87,7 @@ abstract class RewardsRepository {
   );
 
   /// Tracks an event that may contribute to achievements
-  /// 
+  ///
   /// [eventType] - Type of event being tracked
   /// [eventData] - Additional data about the event
   /// [userId] - User who performed the action
@@ -111,7 +99,7 @@ abstract class RewardsRepository {
   );
 
   /// Gets leaderboard entries
-  /// 
+  ///
   /// [type] - Type of leaderboard
   /// [timeframe] - Time period for the leaderboard
   /// [page] - Page number for pagination
@@ -126,7 +114,7 @@ abstract class RewardsRepository {
   });
 
   /// Gets user's rank in a specific leaderboard
-  /// 
+  ///
   /// [userId] - User to get rank for
   /// [leaderboardType] - Type of leaderboard
   /// [timeframe] - Time period
@@ -142,7 +130,7 @@ abstract class RewardsRepository {
   Future<Either<Failure, UserTier?>> getUserTier(String userId);
 
   /// Gets user's point transactions history
-  /// 
+  ///
   /// [userId] - User to get transactions for
   /// [type] - Filter by transaction type
   /// [limit] - Maximum number of transactions to return
@@ -155,7 +143,7 @@ abstract class RewardsRepository {
   });
 
   /// Claims a reward (achievement, badge, etc.)
-  /// 
+  ///
   /// [rewardId] - ID of the reward to claim
   /// [rewardType] - Type of reward being claimed
   /// [userId] - User claiming the reward
@@ -166,7 +154,7 @@ abstract class RewardsRepository {
   );
 
   /// Gets user's badges with collection information
-  /// 
+  ///
   /// [userId] - User to get badges for
   /// [tier] - Filter by badge tier
   /// [showcaseOnly] - Only get showcased badges
@@ -177,7 +165,7 @@ abstract class RewardsRepository {
   });
 
   /// Updates badge showcase settings
-  /// 
+  ///
   /// [userId] - User updating showcase
   /// [badgeId] - Badge to update
   /// [isShowcased] - Whether to showcase the badge
@@ -190,14 +178,14 @@ abstract class RewardsRepository {
   });
 
   /// Gets achievement statistics for a user
-  /// 
+  ///
   /// [userId] - User to get stats for
   Future<Either<Failure, Map<String, dynamic>>> getAchievementStats(
     String userId,
   );
 
   /// Gets leaderboard statistics
-  /// 
+  ///
   /// [type] - Leaderboard type
   /// [timeframe] - Time period
   Future<Either<Failure, Map<String, dynamic>>> getLeaderboardStats(
@@ -206,7 +194,7 @@ abstract class RewardsRepository {
   );
 
   /// Searches achievements by name or description
-  /// 
+  ///
   /// [query] - Search query
   /// [userId] - User for personalized results
   /// [category] - Filter by category
@@ -217,7 +205,7 @@ abstract class RewardsRepository {
   });
 
   /// Gets trending/popular achievements
-  /// 
+  ///
   /// [timeframe] - Time period to consider
   /// [limit] - Number of achievements to return
   Future<Either<Failure, List<Achievement>>> getTrendingAchievements(
@@ -226,7 +214,7 @@ abstract class RewardsRepository {
   });
 
   /// Gets recommended achievements for a user
-  /// 
+  ///
   /// [userId] - User to get recommendations for
   /// [limit] - Number of recommendations
   Future<Either<Failure, List<Achievement>>> getRecommendedAchievements(
@@ -235,7 +223,7 @@ abstract class RewardsRepository {
   });
 
   /// Gets achievements that are close to completion
-  /// 
+  ///
   /// [userId] - User to check progress for
   /// [threshold] - Progress threshold (e.g., 80% complete)
   /// [limit] - Maximum number of achievements
@@ -246,7 +234,7 @@ abstract class RewardsRepository {
   });
 
   /// Batch updates user progress (for offline sync)
-  /// 
+  ///
   /// [userId] - User to update progress for
   /// [progressUpdates] - Map of achievement ID to progress delta
   Future<Either<Failure, List<Achievement>>> batchUpdateProgress(
@@ -258,7 +246,7 @@ abstract class RewardsRepository {
   Future<Either<Failure, Map<String, dynamic>>> getCacheStatus();
 
   /// Forces a sync with remote data
-  /// 
+  ///
   /// [userId] - User to sync data for
   Future<Either<Failure, void>> syncUserData(String userId);
 
@@ -269,7 +257,7 @@ abstract class RewardsRepository {
   Future<Either<Failure, int>> processQueuedEvents();
 
   /// Validates if a user can claim a specific reward
-  /// 
+  ///
   /// [userId] - User attempting to claim
   /// [rewardId] - Reward being claimed
   /// [rewardType] - Type of reward
@@ -280,7 +268,7 @@ abstract class RewardsRepository {
   );
 
   /// Gets reward claim history for a user
-  /// 
+  ///
   /// [userId] - User to get history for
   /// [rewardType] - Filter by reward type
   /// [limit] - Maximum number of claims to return
@@ -291,7 +279,7 @@ abstract class RewardsRepository {
   });
 
   /// Preloads commonly accessed data for better performance
-  /// 
+  ///
   /// [userId] - User to preload data for
   Future<Either<Failure, void>> preloadUserData(String userId);
 
@@ -302,7 +290,7 @@ abstract class RewardsRepository {
   Future<Either<Failure, bool>> isOnline();
 
   /// Subscribes to real-time updates for user progress
-  /// 
+  ///
   /// [userId] - User to subscribe updates for
   /// [callback] - Function to call when updates occur
   Stream<Either<Failure, UserProgress>> subscribeToProgressUpdates(
@@ -310,7 +298,7 @@ abstract class RewardsRepository {
   );
 
   /// Subscribes to real-time leaderboard updates
-  /// 
+  ///
   /// [type] - Leaderboard type to subscribe to
   /// [timeframe] - Time period
   Stream<Either<Failure, List<LeaderboardEntry>>> subscribeToLeaderboardUpdates(
@@ -319,7 +307,7 @@ abstract class RewardsRepository {
   );
 
   // Missing methods needed by award_achievement_usecase.dart
-  
+
   /// Awards points to a user and creates a transaction record
   Future<Either<Failure, PointTransaction>> awardPoints(
     String userId,
@@ -332,7 +320,9 @@ abstract class RewardsRepository {
   Future<Either<Failure, Map<String, dynamic>?>> getUserStats(String userId);
 
   /// Gets all badges associated with a specific achievement
-  Future<Either<Failure, List<Badge>>> getBadgesForAchievement(String achievementId);
+  Future<Either<Failure, List<Badge>>> getBadgesForAchievement(
+    String achievementId,
+  );
 
   /// Awards a specific badge to a user
   Future<Either<Failure, void>> awardBadge(String userId, String badgeId);
@@ -359,12 +349,14 @@ abstract class RewardsRepository {
   });
 
   // Missing methods for tier_calculation_service.dart
-  
+
   /// Gets user points total
   Future<Either<Failure, double>> getUserPoints(String userId);
 
   /// Gets tier upgrade history for a user
-  Future<Either<Failure, List<Map<String, dynamic>>>> getTierUpgradeHistory(String userId);
+  Future<Either<Failure, List<Map<String, dynamic>>>> getTierUpgradeHistory(
+    String userId,
+  );
 
   /// Updates user tier information
   Future<Either<Failure, void>> updateUserTier(String userId, UserTier tier);
@@ -385,8 +377,8 @@ abstract class RewardsRepository {
 
   /// Updates daily goal progress
   Future<Either<Failure, void>> updateDailyGoalProgress(
-    String userId, 
-    String goalId, 
+    String userId,
+    String goalId,
     double newValue,
   );
 

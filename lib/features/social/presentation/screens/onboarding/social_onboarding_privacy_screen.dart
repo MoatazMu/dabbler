@@ -7,10 +7,12 @@ class SocialOnboardingPrivacyScreen extends StatefulWidget {
   const SocialOnboardingPrivacyScreen({super.key});
 
   @override
-  State<SocialOnboardingPrivacyScreen> createState() => _SocialOnboardingPrivacyScreenState();
+  State<SocialOnboardingPrivacyScreen> createState() =>
+      _SocialOnboardingPrivacyScreenState();
 }
 
-class _SocialOnboardingPrivacyScreenState extends State<SocialOnboardingPrivacyScreen> {
+class _SocialOnboardingPrivacyScreenState
+    extends State<SocialOnboardingPrivacyScreen> {
   bool _profileVisibleToFriends = true;
   bool _postsVisibleToPublic = false;
   bool _allowFriendRequests = true;
@@ -47,14 +49,14 @@ class _SocialOnboardingPrivacyScreenState extends State<SocialOnboardingPrivacyS
                 const SizedBox(width: 12),
                 Text(
                   '3 of 4',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                 ),
               ],
             ),
             const SizedBox(height: 32),
-            
+
             // Header
             Icon(
               LucideIcons.shield,
@@ -62,23 +64,23 @@ class _SocialOnboardingPrivacyScreenState extends State<SocialOnboardingPrivacyS
               color: Theme.of(context).primaryColor,
             ),
             const SizedBox(height: 24),
-            
+
             Text(
               'Privacy & Safety',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 12),
-            
+
             Text(
               'Control who can see your profile and interact with you. You can always change these settings later.',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 32),
-            
+
             // Privacy Settings
             Expanded(
               child: ListView(
@@ -136,7 +138,7 @@ class _SocialOnboardingPrivacyScreenState extends State<SocialOnboardingPrivacyS
                 ],
               ),
             ),
-            
+
             // Action Buttons
             Row(
               children: [
@@ -172,10 +174,7 @@ class _SocialOnboardingPrivacyScreenState extends State<SocialOnboardingPrivacyS
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: SwitchListTile(
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w500),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
         subtitle: Text(subtitle),
         value: value,
         onChanged: onChanged,

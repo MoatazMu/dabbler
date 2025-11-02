@@ -15,7 +15,9 @@ abstract class PaymentMethodsDataSource {
   Future<List<PaymentMethodModel>> getPaymentMethods(String userId);
   Future<PaymentMethodModel?> getDefaultPaymentMethod(String userId);
   Future<PaymentMethodModel> addPaymentMethod(PaymentMethodModel paymentMethod);
-  Future<PaymentMethodModel> updatePaymentMethod(PaymentMethodModel paymentMethod);
+  Future<PaymentMethodModel> updatePaymentMethod(
+    PaymentMethodModel paymentMethod,
+  );
   Future<void> deletePaymentMethod(String paymentMethodId);
   Future<void> setDefaultPaymentMethod(String userId, String paymentMethodId);
 }
@@ -42,7 +44,9 @@ class SupabasePaymentMethodsDataSource implements PaymentMethodsDataSource {
     } on PostgrestException catch (e) {
       throw PaymentMethodsException('Database error: ${e.message}');
     } catch (e) {
-      throw PaymentMethodsException('Failed to get payment methods: ${e.toString()}');
+      throw PaymentMethodsException(
+        'Failed to get payment methods: ${e.toString()}',
+      );
     }
   }
 
@@ -61,12 +65,16 @@ class SupabasePaymentMethodsDataSource implements PaymentMethodsDataSource {
     } on PostgrestException catch (e) {
       throw PaymentMethodsException('Database error: ${e.message}');
     } catch (e) {
-      throw PaymentMethodsException('Failed to get default payment method: ${e.toString()}');
+      throw PaymentMethodsException(
+        'Failed to get default payment method: ${e.toString()}',
+      );
     }
   }
 
   @override
-  Future<PaymentMethodModel> addPaymentMethod(PaymentMethodModel paymentMethod) async {
+  Future<PaymentMethodModel> addPaymentMethod(
+    PaymentMethodModel paymentMethod,
+  ) async {
     try {
       final response = await _supabaseClient
           .from('payment_methods')
@@ -78,12 +86,16 @@ class SupabasePaymentMethodsDataSource implements PaymentMethodsDataSource {
     } on PostgrestException catch (e) {
       throw PaymentMethodsException('Database error: ${e.message}');
     } catch (e) {
-      throw PaymentMethodsException('Failed to add payment method: ${e.toString()}');
+      throw PaymentMethodsException(
+        'Failed to add payment method: ${e.toString()}',
+      );
     }
   }
 
   @override
-  Future<PaymentMethodModel> updatePaymentMethod(PaymentMethodModel paymentMethod) async {
+  Future<PaymentMethodModel> updatePaymentMethod(
+    PaymentMethodModel paymentMethod,
+  ) async {
     try {
       final response = await _supabaseClient
           .from('payment_methods')
@@ -96,7 +108,9 @@ class SupabasePaymentMethodsDataSource implements PaymentMethodsDataSource {
     } on PostgrestException catch (e) {
       throw PaymentMethodsException('Database error: ${e.message}');
     } catch (e) {
-      throw PaymentMethodsException('Failed to update payment method: ${e.toString()}');
+      throw PaymentMethodsException(
+        'Failed to update payment method: ${e.toString()}',
+      );
     }
   }
 
@@ -110,12 +124,17 @@ class SupabasePaymentMethodsDataSource implements PaymentMethodsDataSource {
     } on PostgrestException catch (e) {
       throw PaymentMethodsException('Database error: ${e.message}');
     } catch (e) {
-      throw PaymentMethodsException('Failed to delete payment method: ${e.toString()}');
+      throw PaymentMethodsException(
+        'Failed to delete payment method: ${e.toString()}',
+      );
     }
   }
 
   @override
-  Future<void> setDefaultPaymentMethod(String userId, String paymentMethodId) async {
+  Future<void> setDefaultPaymentMethod(
+    String userId,
+    String paymentMethodId,
+  ) async {
     try {
       // First, unset all other payment methods as default
       await _supabaseClient
@@ -131,7 +150,9 @@ class SupabasePaymentMethodsDataSource implements PaymentMethodsDataSource {
     } on PostgrestException catch (e) {
       throw PaymentMethodsException('Database error: ${e.message}');
     } catch (e) {
-      throw PaymentMethodsException('Failed to set default payment method: ${e.toString()}');
+      throw PaymentMethodsException(
+        'Failed to set default payment method: ${e.toString()}',
+      );
     }
   }
 }

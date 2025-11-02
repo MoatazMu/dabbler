@@ -17,7 +17,9 @@ abstract class ChatRepository {
   });
 
   /// Get a specific conversation by ID
-  Future<Either<Failure, ConversationModel>> getConversation(String conversationId);
+  Future<Either<Failure, ConversationModel>> getConversation(
+    String conversationId,
+  );
 
   /// Create a new conversation
   Future<Either<Failure, ConversationModel>> createConversation({

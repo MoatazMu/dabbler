@@ -26,7 +26,8 @@ class Squad with _$Squad {
     @JsonKey(name: 'join_policy') String? joinPolicy,
     @JsonKey(name: 'max_members') int? maxMembers,
     String? city,
-    @JsonKey(fromJson: _metaFromJson, toJson: _metaToJson) Map<String, dynamic>? meta,
+    @JsonKey(fromJson: _metaFromJson, toJson: _metaToJson)
+    Map<String, dynamic>? meta,
     @JsonKey(name: 'search_tsv') String? searchTsv,
   }) = _Squad;
 

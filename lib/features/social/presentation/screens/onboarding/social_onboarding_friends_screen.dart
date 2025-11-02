@@ -9,10 +9,12 @@ class SocialOnboardingFriendsScreen extends ConsumerStatefulWidget {
   const SocialOnboardingFriendsScreen({super.key});
 
   @override
-  ConsumerState<SocialOnboardingFriendsScreen> createState() => _SocialOnboardingFriendsScreenState();
+  ConsumerState<SocialOnboardingFriendsScreen> createState() =>
+      _SocialOnboardingFriendsScreenState();
 }
 
-class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboardingFriendsScreen> {
+class _SocialOnboardingFriendsScreenState
+    extends ConsumerState<SocialOnboardingFriendsScreen> {
   bool _contactsPermissionGranted = false;
   bool _isLoadingContacts = false;
   List<_ContactSuggestion> _suggestions = [];
@@ -72,14 +74,14 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
     try {
       // Simulate permission request - in real app would use permission_handler
       await Future.delayed(const Duration(seconds: 1));
-      
+
       setState(() {
         _contactsPermissionGranted = true;
       });
-      
+
       // In a real app, you would load actual contacts here
       await Future.delayed(const Duration(seconds: 2));
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Contacts synced successfully!'),
@@ -108,16 +110,18 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
 
   void _sendFriendRequests() {
     final selectedFriends = _suggestions.where((s) => s.isSelected).toList();
-    
+
     if (selectedFriends.isNotEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Friend requests sent to ${selectedFriends.length} people!'),
+          content: Text(
+            'Friend requests sent to ${selectedFriends.length} people!',
+          ),
           backgroundColor: Colors.green,
         ),
       );
     }
-    
+
     // Continue to next step
     context.push(RoutePaths.socialOnboardingPrivacy);
   }
@@ -126,7 +130,7 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final selectedCount = _suggestions.where((s) => s.isSelected).length;
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Find Friends'),
@@ -158,27 +162,29 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
             const SizedBox(height: 8),
             Text(
               'Connect with friends to share game experiences and discover new opportunities.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: Colors.grey,
-              ),
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey),
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Sync contacts button
             if (!_contactsPermissionGranted) ...[
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton.icon(
-                  onPressed: _isLoadingContacts ? null : _requestContactsPermission,
-                  icon: _isLoadingContacts 
+                  onPressed: _isLoadingContacts
+                      ? null
+                      : _requestContactsPermission,
+                  icon: _isLoadingContacts
                       ? const SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Icon(LucideIcons.userPlus),
-                  label: Text(_isLoadingContacts ? 'Syncing...' : 'Sync Contacts'),
+                  label: Text(
+                    _isLoadingContacts ? 'Syncing...' : 'Sync Contacts',
+                  ),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     backgroundColor: theme.primaryColor.withOpacity(0.1),
@@ -187,7 +193,7 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
                 ),
               ),
               const SizedBox(height: 24),
-              
+
               const Row(
                 children: [
                   Expanded(child: Divider()),
@@ -200,7 +206,7 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
               ),
               const SizedBox(height: 24),
             ],
-            
+
             // Suggested friends section
             Row(
               children: [
@@ -213,7 +219,10 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
                 const Spacer(),
                 if (selectedCount > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: theme.primaryColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -229,9 +238,9 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
                   ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Friends list
             Expanded(
               child: ListView.builder(
@@ -242,10 +251,10 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
                 },
               ),
             ),
-            
+
             // Bottom section
             const SizedBox(height: 16),
-            
+
             // Continue button
             SizedBox(
               width: double.infinity,
@@ -255,15 +264,15 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: Text(
-                  selectedCount > 0 
+                  selectedCount > 0
                       ? 'Send ${selectedCount > 1 ? "$selectedCount Requests" : "Request"} & Continue'
                       : 'Continue',
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Progress indicator
             _buildProgressIndicator(context, 1, 4),
           ],
@@ -274,7 +283,7 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
 
   Widget _buildFriendSuggestionCard(_ContactSuggestion suggestion, int index) {
     final theme = Theme.of(context);
-    
+
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
@@ -297,7 +306,10 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: _getSourceColor(suggestion.source).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(4),
@@ -322,7 +334,10 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
             children: [
               if (suggestion.isSelected)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.green.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
@@ -347,7 +362,10 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
                 ElevatedButton(
                   onPressed: () => _toggleSelection(index),
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     minimumSize: const Size(0, 32),
                     textStyle: const TextStyle(fontSize: 12),
                   ),
@@ -374,7 +392,11 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
     }
   }
 
-  Widget _buildProgressIndicator(BuildContext context, int currentStep, int totalSteps) {
+  Widget _buildProgressIndicator(
+    BuildContext context,
+    int currentStep,
+    int totalSteps,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(totalSteps, (index) {
@@ -384,7 +406,7 @@ class _SocialOnboardingFriendsScreenState extends ConsumerState<SocialOnboarding
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive 
+            color: isActive
                 ? Theme.of(context).primaryColor
                 : Theme.of(context).primaryColor.withOpacity(0.3),
             shape: BoxShape.circle,

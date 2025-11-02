@@ -13,8 +13,16 @@ class SportTagSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final availableSports = [
-      'Football', 'Basketball', 'Tennis', 'Swimming', 'Running',
-      'Cycling', 'Golf', 'Baseball', 'Soccer', 'Volleyball'
+      'Football',
+      'Basketball',
+      'Tennis',
+      'Swimming',
+      'Running',
+      'Cycling',
+      'Golf',
+      'Baseball',
+      'Soccer',
+      'Volleyball',
     ];
 
     return Card(
@@ -33,21 +41,21 @@ class SportTagSelector extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Sports/Activities',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: availableSports.map((sport) {
                 final isSelected = selectedSports.contains(sport);
-                
+
                 return FilterChip(
                   label: Text(sport),
                   selected: isSelected,

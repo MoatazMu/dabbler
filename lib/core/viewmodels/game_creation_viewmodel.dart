@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../models/game_creation_model.dart';
+import 'package:dabbler/data/models/core/game_creation_model.dart';
 import '../services/storage_service.dart';
 import '../../features/games/domain/repositories/games_repository.dart';
 import '../../features/games/data/repositories/games_repository_impl.dart';
@@ -31,7 +31,7 @@ class GameCreationViewModel extends ChangeNotifier {
   void nextStep() {
     if (_state.canProceedToNextStep && _state.nextStep != null) {
       _state = _state.copyWith(currentStep: _state.nextStep);
-      
+
       // Load data for next step
       _loadDataForCurrentStep();
       notifyListeners();
@@ -68,7 +68,7 @@ class GameCreationViewModel extends ChangeNotifier {
       );
 
       await _storageService.saveDraft(draftId, draftData.toJson());
-      
+
       _state = draftData.copyWith(isLoading: false);
       notifyListeners();
     } catch (e) {
@@ -83,7 +83,7 @@ class GameCreationViewModel extends ChangeNotifier {
   // Auto-save draft when significant changes are made
   Future<void> autoSaveDraft({Map<String, dynamic>? stepLocalState}) async {
     if (!_state.canSaveAsDraft) return;
-    
+
     // Auto-save without showing loading state
     try {
       final draftId = _state.draftId ?? _generateDraftId();
@@ -119,72 +119,79 @@ class GameCreationViewModel extends ChangeNotifier {
       if (draftData != null) {
         // Reconstruct GameFormat from saved data
         GameFormat? reconstructedFormat;
-        if (draftData['selectedSport'] != null && draftData['selectedFormat'] != null) {
+        if (draftData['selectedSport'] != null &&
+            draftData['selectedFormat'] != null) {
           reconstructedFormat = _reconstructGameFormat(
-            draftData['selectedSport'], 
-            draftData['selectedFormat']
+            draftData['selectedSport'],
+            draftData['selectedFormat'],
           );
         }
 
         _state = _state.copyWith(
           // Restore current step
-          currentStep: draftData['currentStep'] != null 
-              ? GameCreationStep.values.firstWhere((e) => e.name == draftData['currentStep']) 
+          currentStep: draftData['currentStep'] != null
+              ? GameCreationStep.values.firstWhere(
+                  (e) => e.name == draftData['currentStep'],
+                )
               : GameCreationStep.sportAndFormat,
-          
+
           // Sport & Format Selection
           selectedSport: draftData['selectedSport'],
           selectedFormat: reconstructedFormat,
           skillLevel: draftData['skillLevel'],
           maxPlayers: draftData['maxPlayers'],
           gameDuration: draftData['gameDuration'],
-          
+
           // Venue & Slot Selection
-          selectedVenueSlot: draftData['selectedVenueSlot'] != null 
+          selectedVenueSlot: draftData['selectedVenueSlot'] != null
               ? _reconstructVenueSlot(draftData['selectedVenueSlot'])
               : null,
           amenityFilters: draftData['amenityFilters']?.cast<String>(),
-          
+
           // Participation & Payment
-          participationMode: draftData['participationMode'] != null 
-              ? ParticipationMode.values.firstWhere((e) => e.name == draftData['participationMode']) 
+          participationMode: draftData['participationMode'] != null
+              ? ParticipationMode.values.firstWhere(
+                  (e) => e.name == draftData['participationMode'],
+                )
               : null,
-          paymentSplit: draftData['paymentSplit'] != null 
-              ? PaymentSplit.values.firstWhere((e) => e.name == draftData['paymentSplit']) 
+          paymentSplit: draftData['paymentSplit'] != null
+              ? PaymentSplit.values.firstWhere(
+                  (e) => e.name == draftData['paymentSplit'],
+                )
               : null,
           gameDescription: draftData['gameDescription'],
           allowWaitlist: draftData['allowWaitlist'],
           maxWaitlistSize: draftData['maxWaitlistSize'],
           totalCost: draftData['totalCost'],
-          
+
           // Player Invitation
           invitedPlayerIds: draftData['invitedPlayerIds']?.cast<String>(),
           invitedPlayerEmails: draftData['invitedPlayerEmails']?.cast<String>(),
           allowFriendsToInvite: draftData['allowFriendsToInvite'],
           invitationMessage: draftData['invitationMessage'],
-          
+
           // Review & Confirm
           gameTitle: draftData['gameTitle'],
           agreeToTerms: draftData['agreeToTerms'],
           sendReminders: draftData['sendReminders'],
-          
+
           // Step-specific local state
-          selectedDate: draftData['selectedDate'] != null 
+          selectedDate: draftData['selectedDate'] != null
               ? DateTime.parse(draftData['selectedDate'])
               : null,
           selectedTimeSlot: draftData['selectedTimeSlot'],
           selectedPlayers: draftData['selectedPlayers']?.cast<String>(),
           stepLocalState: draftData['stepLocalState'],
-          
+
           // Draft metadata
           draftId: draftId,
           isDraft: true,
-          lastSaved: draftData['lastSaved'] != null 
+          lastSaved: draftData['lastSaved'] != null
               ? DateTime.parse(draftData['lastSaved'])
               : null,
           isLoading: false,
         );
-        
+
         // Load data for the current step
         _loadDataForCurrentStep();
       }
@@ -200,7 +207,8 @@ class GameCreationViewModel extends ChangeNotifier {
   /// Apply initial values based on an existing booking seed.
   void applyBookingSeed(BookingSeedData seed) {
     final slot = _buildSeedVenueSlot(seed);
-    final inferredTitle = _state.gameTitle ?? '${seed.sport} at ${seed.venueName}';
+    final inferredTitle =
+        _state.gameTitle ?? '${seed.sport} at ${seed.venueName}';
 
     _state = _state.copyWith(
       selectedSport: seed.sport,
@@ -236,11 +244,23 @@ class GameCreationViewModel extends ChangeNotifier {
     final endTime = parts.length > 1 ? _parseSeedTime(parts[1]) : null;
 
     final startDateTime = startTime != null
-        ? DateTime(date.year, date.month, date.day, startTime.hour, startTime.minute)
+        ? DateTime(
+            date.year,
+            date.month,
+            date.day,
+            startTime.hour,
+            startTime.minute,
+          )
         : DateTime(date.year, date.month, date.day, 9);
 
     final calculatedEnd = endTime != null
-        ? DateTime(date.year, date.month, date.day, endTime.hour, endTime.minute)
+        ? DateTime(
+            date.year,
+            date.month,
+            date.day,
+            endTime.hour,
+            endTime.minute,
+          )
         : startDateTime.add(const Duration(hours: 1));
 
     final duration = calculatedEnd.isAfter(startDateTime)
@@ -312,11 +332,11 @@ class GameCreationViewModel extends ChangeNotifier {
     _state = _state.copyWith(
       selectedSport: sport,
       selectedFormat: null, // Don't pre-select format
-      maxPlayers: null,     // Reset to null until format is selected
-      gameDuration: null,   // Reset to null until format is selected
+      maxPlayers: null, // Reset to null until format is selected
+      gameDuration: null, // Reset to null until format is selected
     );
     notifyListeners();
-    
+
     // Auto-save after sport selection
     autoSaveDraft();
   }
@@ -328,7 +348,7 @@ class GameCreationViewModel extends ChangeNotifier {
       gameDuration: format.defaultDuration.inMinutes,
     );
     notifyListeners();
-    
+
     // Auto-save after format selection
     autoSaveDraft();
   }
@@ -336,7 +356,7 @@ class GameCreationViewModel extends ChangeNotifier {
   void updateGameDuration(int durationMinutes) {
     _state = _state.copyWith(gameDuration: durationMinutes);
     notifyListeners();
-    
+
     // Auto-save after duration update
     autoSaveDraft();
   }
@@ -344,7 +364,7 @@ class GameCreationViewModel extends ChangeNotifier {
   void selectSkillLevel(String skillLevel) {
     _state = _state.copyWith(skillLevel: skillLevel);
     notifyListeners();
-    
+
     // Auto-save after skill level selection
     autoSaveDraft();
   }
@@ -365,7 +385,7 @@ class GameCreationViewModel extends ChangeNotifier {
           .from('venues')
           .select()
           .order('name');
-      
+
       if (response.isNotEmpty) {
         _availableVenues = response.map((venueData) {
           // Create VenueSlot from database data
@@ -387,7 +407,7 @@ class GameCreationViewModel extends ChangeNotifier {
       } else {
         _availableVenues = [];
       }
-      
+
       _state = _state.copyWith(isLoading: false, error: null);
     } catch (e) {
       print('❌ Error loading venues: $e');
@@ -459,7 +479,7 @@ class GameCreationViewModel extends ChangeNotifier {
     try {
       // Simulate API call
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       _recentTeammates = [
         'Ahmed Mohamed',
         'Sarah Johnson',
@@ -470,7 +490,7 @@ class GameCreationViewModel extends ChangeNotifier {
         'David Kim',
         'Nour Abdullah',
       ];
-      
+
       _state = _state.copyWith(isLoading: false, error: null);
     } catch (e) {
       _state = _state.copyWith(
@@ -484,9 +504,7 @@ class GameCreationViewModel extends ChangeNotifier {
   void addInvitedPlayer(String playerId) {
     final currentList = _state.invitedPlayerIds ?? [];
     if (!currentList.contains(playerId)) {
-      _state = _state.copyWith(
-        invitedPlayerIds: [...currentList, playerId],
-      );
+      _state = _state.copyWith(invitedPlayerIds: [...currentList, playerId]);
       notifyListeners();
     }
   }
@@ -502,9 +520,7 @@ class GameCreationViewModel extends ChangeNotifier {
   void addInvitedEmail(String email) {
     final currentList = _state.invitedPlayerEmails ?? [];
     if (!currentList.contains(email)) {
-      _state = _state.copyWith(
-        invitedPlayerEmails: [...currentList, email],
-      );
+      _state = _state.copyWith(invitedPlayerEmails: [...currentList, email]);
       notifyListeners();
     }
   }
@@ -597,8 +613,10 @@ class GameCreationViewModel extends ChangeNotifier {
         'title': _state.gameTitle!,
         'sport': _state.selectedSport!,
         'scheduled_date': _state.selectedDate!.toIso8601String().split('T')[0],
-        'start_time': '${_state.selectedVenueSlot!.timeSlot.startTime.hour.toString().padLeft(2, '0')}:${_state.selectedVenueSlot!.timeSlot.startTime.minute.toString().padLeft(2, '0')}',
-        'end_time': '${_state.selectedVenueSlot!.timeSlot.endTime.hour.toString().padLeft(2, '0')}:${_state.selectedVenueSlot!.timeSlot.endTime.minute.toString().padLeft(2, '0')}',
+        'start_time':
+            '${_state.selectedVenueSlot!.timeSlot.startTime.hour.toString().padLeft(2, '0')}:${_state.selectedVenueSlot!.timeSlot.startTime.minute.toString().padLeft(2, '0')}',
+        'end_time':
+            '${_state.selectedVenueSlot!.timeSlot.endTime.hour.toString().padLeft(2, '0')}:${_state.selectedVenueSlot!.timeSlot.endTime.minute.toString().padLeft(2, '0')}',
         'max_players': _state.maxPlayers!,
         'organizer_id': user.id,
         'skill_level': _state.skillLevel!,
@@ -608,12 +626,13 @@ class GameCreationViewModel extends ChangeNotifier {
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
       };
-      
+
       // Add optional fields only if provided by user
-      if (_state.gameDescription != null && _state.gameDescription!.isNotEmpty) {
+      if (_state.gameDescription != null &&
+          _state.gameDescription!.isNotEmpty) {
         gameData['description'] = _state.gameDescription;
       }
-      
+
       // Add venue_id if selected and is a valid UUID format
       if (_state.selectedVenueSlot?.venueId != null) {
         final venueId = _state.selectedVenueSlot!.venueId;
@@ -627,7 +646,7 @@ class GameCreationViewModel extends ChangeNotifier {
 
       // Create game via repository
       final result = await _gamesRepository.createGame(gameData);
-      
+
       result.fold(
         (failure) {
           print('❌ Failed to create game: ${failure.message}');
@@ -642,7 +661,7 @@ class GameCreationViewModel extends ChangeNotifier {
       if (_state.isDraft && _state.draftId != null) {
         await deleteDraft(_state.draftId!);
       }
-      
+
       _state = _state.copyWith(isLoading: false);
       notifyListeners();
       return true;
@@ -682,12 +701,12 @@ class GameCreationViewModel extends ChangeNotifier {
 
   void _recalculatePayments() {
     if (_state.selectedVenueSlot == null || _state.paymentSplit == null) return;
-    
+
     final venueCost = _state.selectedVenueSlot!.timeSlot.price;
     final playerCount = _state.maxPlayers ?? 1;
-    
+
     double totalCost = venueCost;
-    
+
     switch (_state.paymentSplit!) {
       case PaymentSplit.organizer:
         totalCost = venueCost;
@@ -703,7 +722,7 @@ class GameCreationViewModel extends ChangeNotifier {
         totalCost = venueCost;
         break;
     }
-    
+
     _state = _state.copyWith(totalCost: totalCost);
   }
 
@@ -712,9 +731,13 @@ class GameCreationViewModel extends ChangeNotifier {
     try {
       switch (sport.toLowerCase()) {
         case 'football':
-          return FootballFormat.allFormats.firstWhere((f) => f.name == formatName);
+          return FootballFormat.allFormats.firstWhere(
+            (f) => f.name == formatName,
+          );
         case 'cricket':
-          return CricketFormat.allFormats.firstWhere((f) => f.name == formatName);
+          return CricketFormat.allFormats.firstWhere(
+            (f) => f.name == formatName,
+          );
         case 'padel':
           return PadelFormat.allFormats.firstWhere((f) => f.name == formatName);
         default:
@@ -753,11 +776,10 @@ class GameCreationViewModel extends ChangeNotifier {
 
   // Step-specific state management for draft resume
   void updateStepLocalState(Map<String, dynamic> localState) {
-    _state = _state.copyWith(stepLocalState: {
-      ..._state.stepLocalState ?? {},
-      ...localState,
-    });
-    
+    _state = _state.copyWith(
+      stepLocalState: {..._state.stepLocalState ?? {}, ...localState},
+    );
+
     // Auto-save step-specific state
     autoSaveDraft(stepLocalState: _state.stepLocalState);
   }
@@ -765,7 +787,7 @@ class GameCreationViewModel extends ChangeNotifier {
   void updateSelectedDate(DateTime date) {
     _state = _state.copyWith(selectedDate: date);
     notifyListeners();
-    
+
     // Auto-save date selection
     autoSaveDraft();
   }
@@ -773,7 +795,7 @@ class GameCreationViewModel extends ChangeNotifier {
   void updateSelectedTimeSlot(String timeSlot) {
     _state = _state.copyWith(selectedTimeSlot: timeSlot);
     notifyListeners();
-    
+
     // Auto-save time slot selection
     autoSaveDraft();
   }
@@ -781,8 +803,8 @@ class GameCreationViewModel extends ChangeNotifier {
   void updateSelectedPlayers(List<String> players) {
     _state = _state.copyWith(selectedPlayers: players);
     notifyListeners();
-    
+
     // Auto-save player selection
     autoSaveDraft();
   }
-} 
+}

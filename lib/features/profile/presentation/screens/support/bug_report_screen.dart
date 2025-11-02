@@ -22,20 +22,15 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
   final _descriptionController = TextEditingController();
   final _stepsController = TextEditingController();
   final _emailController = TextEditingController();
-  
+
   String _selectedSeverity = 'Medium';
   String _selectedCategory = 'General Bug';
   bool _isSubmitting = false;
   bool _includeDeviceInfo = true;
   bool _includeAppLogs = true;
-  
-  final List<String> _severityLevels = [
-    'Low',
-    'Medium', 
-    'High',
-    'Critical',
-  ];
-  
+
+  final List<String> _severityLevels = ['Low', 'Medium', 'High', 'Critical'];
+
   final List<String> _categories = [
     'General Bug',
     'UI/Visual Issue',
@@ -65,13 +60,13 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -134,25 +129,21 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Icon(
-              Icons.bug_report,
-              size: 48,
-              color: Colors.orange.shade700,
-            ),
+            Icon(Icons.bug_report, size: 48, color: Colors.orange.shade700),
             const SizedBox(height: 16),
             Text(
               'Found a Bug?',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Help us improve by reporting any issues you encounter. The more details you provide, the faster we can fix it!',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -170,12 +161,12 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
           children: [
             Text(
               'Bug Details',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            
+
             // Email
             TextFormField(
               controller: _emailController,
@@ -195,9 +186,9 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Category
             DropdownButtonFormField<String>(
               initialValue: _selectedCategory,
@@ -207,10 +198,7 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                 prefixIcon: Icon(Icons.category),
               ),
               items: _categories.map((category) {
-                return DropdownMenuItem(
-                  value: category,
-                  child: Text(category),
-                );
+                return DropdownMenuItem(value: category, child: Text(category));
               }).toList(),
               onChanged: (value) {
                 setState(() {
@@ -218,9 +206,9 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                 });
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Severity
             DropdownButtonFormField<String>(
               initialValue: _selectedSeverity,
@@ -251,9 +239,9 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                 });
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Title
             TextFormField(
               controller: _titleController,
@@ -270,9 +258,9 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Description
             TextFormField(
               controller: _descriptionController,
@@ -281,7 +269,8 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                 border: OutlineInputBorder(),
                 prefixIcon: Icon(Icons.description),
                 alignLabelWithHint: true,
-                hintText: 'Describe what happened and what you expected to happen',
+                hintText:
+                    'Describe what happened and what you expected to happen',
               ),
               maxLines: 4,
               validator: (value) {
@@ -294,9 +283,9 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                 return null;
               },
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Steps to reproduce
             TextFormField(
               controller: _stepsController,
@@ -330,12 +319,12 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
           children: [
             Text(
               'Additional Information',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            
+
             SwitchListTile(
               title: const Text('Include Device Information'),
               subtitle: const Text('OS version, device model, screen size'),
@@ -346,9 +335,9 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                 });
               },
             ),
-            
+
             const Divider(),
-            
+
             SwitchListTile(
               title: const Text('Include App Logs'),
               subtitle: const Text('Recent app activity and error logs'),
@@ -359,7 +348,7 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                 });
               },
             ),
-            
+
             if (_includeDeviceInfo) ...[
               const Divider(),
               Padding(
@@ -377,7 +366,9 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                     Text('• Platform: ${_getPlatformName()}'),
                     const Text('• App Version: 1.0.0'),
                     const Text('• Flutter Version: 3.x.x'),
-                    Text('• Screen Resolution: ${MediaQuery.of(context).size.width.toInt()}x${MediaQuery.of(context).size.height.toInt()}'),
+                    Text(
+                      '• Screen Resolution: ${MediaQuery.of(context).size.width.toInt()}x${MediaQuery.of(context).size.height.toInt()}',
+                    ),
                   ],
                 ),
               ),
@@ -401,9 +392,15 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
             ? const SizedBox(
                 height: 20,
                 width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: Colors.white,
+                ),
               )
-            : const Text('Submit Bug Report', style: TextStyle(color: Colors.white)),
+            : const Text(
+                'Submit Bug Report',
+                style: TextStyle(color: Colors.white),
+              ),
       ),
     );
   }
@@ -447,11 +444,13 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
 
     try {
       await Future.delayed(const Duration(seconds: 2));
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Bug report submitted successfully! Thank you for helping us improve.'),
+            content: Text(
+              'Bug report submitted successfully! Thank you for helping us improve.',
+            ),
             backgroundColor: Colors.green,
           ),
         );

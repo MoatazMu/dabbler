@@ -10,7 +10,8 @@ class OnboardingSportsScreen extends ConsumerStatefulWidget {
   const OnboardingSportsScreen({super.key});
 
   @override
-  ConsumerState<OnboardingSportsScreen> createState() => _OnboardingSportsScreenState();
+  ConsumerState<OnboardingSportsScreen> createState() =>
+      _OnboardingSportsScreenState();
 }
 
 class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
@@ -18,96 +19,171 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   final Set<String> _selectedSports = {};
   final Map<String, int> _skillLevels = {};
   final Set<String> _interestedSports = {};
   bool _isLoading = false;
-  
+
   // Available sports with categories
   final Map<String, List<Sport>> _sportsByCategory = {
     'Popular': [
-      Sport(id: 'football', name: 'Football', icon: '⚽', description: 'The beautiful game'),
-      Sport(id: 'basketball', name: 'Basketball', icon: '🏀', description: 'Fast-paced court action'),
-      Sport(id: 'tennis', name: 'Tennis', icon: '🎾', description: 'Classic racket sport'),
-      Sport(id: 'badminton', name: 'Badminton', icon: '🏸', description: 'Quick reflexes required'),
+      Sport(
+        id: 'football',
+        name: 'Football',
+        icon: '⚽',
+        description: 'The beautiful game',
+      ),
+      Sport(
+        id: 'basketball',
+        name: 'Basketball',
+        icon: '🏀',
+        description: 'Fast-paced court action',
+      ),
+      Sport(
+        id: 'tennis',
+        name: 'Tennis',
+        icon: '🎾',
+        description: 'Classic racket sport',
+      ),
+      Sport(
+        id: 'badminton',
+        name: 'Badminton',
+        icon: '🏸',
+        description: 'Quick reflexes required',
+      ),
     ],
     'Team Sports': [
-      Sport(id: 'volleyball', name: 'Volleyball', icon: '🏐', description: 'Beach or court'),
-      Sport(id: 'rugby', name: 'Rugby', icon: '🏉', description: 'Contact team sport'),
-      Sport(id: 'hockey', name: 'Hockey', icon: '🏒', description: 'Field or ice hockey'),
-      Sport(id: 'cricket', name: 'Cricket', icon: '🏏', description: 'Bat and ball game'),
+      Sport(
+        id: 'volleyball',
+        name: 'Volleyball',
+        icon: '🏐',
+        description: 'Beach or court',
+      ),
+      Sport(
+        id: 'rugby',
+        name: 'Rugby',
+        icon: '🏉',
+        description: 'Contact team sport',
+      ),
+      Sport(
+        id: 'hockey',
+        name: 'Hockey',
+        icon: '🏒',
+        description: 'Field or ice hockey',
+      ),
+      Sport(
+        id: 'cricket',
+        name: 'Cricket',
+        icon: '🏏',
+        description: 'Bat and ball game',
+      ),
     ],
     'Individual': [
-      Sport(id: 'running', name: 'Running', icon: '🏃', description: 'Solo or group runs'),
-      Sport(id: 'swimming', name: 'Swimming', icon: '🏊', description: 'Pool or open water'),
-      Sport(id: 'cycling', name: 'Cycling', icon: '🚴', description: 'Road or mountain'),
-      Sport(id: 'golf', name: 'Golf', icon: '⛳', description: 'Precision and patience'),
+      Sport(
+        id: 'running',
+        name: 'Running',
+        icon: '🏃',
+        description: 'Solo or group runs',
+      ),
+      Sport(
+        id: 'swimming',
+        name: 'Swimming',
+        icon: '🏊',
+        description: 'Pool or open water',
+      ),
+      Sport(
+        id: 'cycling',
+        name: 'Cycling',
+        icon: '🚴',
+        description: 'Road or mountain',
+      ),
+      Sport(
+        id: 'golf',
+        name: 'Golf',
+        icon: '⛳',
+        description: 'Precision and patience',
+      ),
     ],
     'Fitness': [
-      Sport(id: 'yoga', name: 'Yoga', icon: '🧘', description: 'Mind-body wellness'),
-      Sport(id: 'gym', name: 'Gym Training', icon: '💪', description: 'Strength and conditioning'),
-      Sport(id: 'crossfit', name: 'CrossFit', icon: '🏋️', description: 'High-intensity workouts'),
-      Sport(id: 'martial_arts', name: 'Martial Arts', icon: '🥋', description: 'Discipline and technique'),
+      Sport(
+        id: 'yoga',
+        name: 'Yoga',
+        icon: '🧘',
+        description: 'Mind-body wellness',
+      ),
+      Sport(
+        id: 'gym',
+        name: 'Gym Training',
+        icon: '💪',
+        description: 'Strength and conditioning',
+      ),
+      Sport(
+        id: 'crossfit',
+        name: 'CrossFit',
+        icon: '🏋️',
+        description: 'High-intensity workouts',
+      ),
+      Sport(
+        id: 'martial_arts',
+        name: 'Martial Arts',
+        icon: '🥋',
+        description: 'Discipline and technique',
+      ),
     ],
   };
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
+
     _animationController.forward();
     _loadExistingData();
   }
-  
+
   void _loadExistingData() {
     final controller = ref.read(onboardingControllerProvider);
     final existingData = controller.progress?.stepData['step_2'];
-    
+
     if (existingData != null) {
       final sports = List<String>.from(existingData['sports'] ?? []);
       _selectedSports.addAll(sports);
-      
+
       final skills = Map<String, int>.from(existingData['skill_levels'] ?? {});
       _skillLevels.addAll(skills);
-      
-      final interested = List<String>.from(existingData['interested_sports'] ?? []);
+
+      final interested = List<String>.from(
+        existingData['interested_sports'] ?? [],
+      );
       _interestedSports.addAll(interested);
     }
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(onboardingControllerProvider);
     final variant = controller.currentVariant ?? 'control';
-    
+
     return Scaffold(
       backgroundColor: DesignSystem.colors.background,
       body: SafeArea(
@@ -126,13 +202,13 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       ),
     );
   }
-  
+
   Widget _buildContent(BuildContext context, String variant) {
     return Column(
       children: [
         // App bar
         _buildAppBar(),
-        
+
         // Content
         Expanded(
           child: CustomScrollView(
@@ -144,24 +220,24 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                   child: _buildHeader(variant),
                 ),
               ),
-              
+
               // Sports categories
               SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final categories = _sportsByCategory.keys.toList();
-                    final category = categories[index];
-                    final sports = _sportsByCategory[category]!;
-                    
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                      child: _buildSportsCategory(category, sports, variant),
-                    );
-                  },
-                  childCount: _sportsByCategory.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final categories = _sportsByCategory.keys.toList();
+                  final category = categories[index];
+                  final sports = _sportsByCategory[category]!;
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24.0,
+                      vertical: 8.0,
+                    ),
+                    child: _buildSportsCategory(category, sports, variant),
+                  );
+                }, childCount: _sportsByCategory.length),
               ),
-              
+
               // Skill levels section
               if (_selectedSports.isNotEmpty)
                 SliverToBoxAdapter(
@@ -170,7 +246,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                     child: _buildSkillLevels(variant),
                   ),
                 ),
-              
+
               // Want to try section
               SliverToBoxAdapter(
                 child: Padding(
@@ -178,7 +254,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                   child: _buildWantToTry(variant),
                 ),
               ),
-              
+
               // Bottom section
               SliverToBoxAdapter(
                 child: Padding(
@@ -187,17 +263,17 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                     children: [
                       // Personalized tip
                       _buildPersonalizedTip(variant),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Continue button
                       _buildContinueButton(variant),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Progress indicator
                       _buildProgressIndicator(),
-                      
+
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -209,7 +285,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       ],
     );
   }
-  
+
   Widget _buildAppBar() {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -222,9 +298,9 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
               color: DesignSystem.colors.textPrimary,
             ),
           ),
-          
+
           const Spacer(),
-          
+
           TextButton(
             onPressed: () => _skipStep(),
             child: Text(
@@ -236,13 +312,13 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       ),
     );
   }
-  
+
   Widget _buildHeader(String variant) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          variant == 'gamified' 
+          variant == 'gamified'
               ? '🏆 Choose Your Sports Arena'
               : 'What Sports Do You Play?',
           style: DesignSystem.typography.headlineMedium.copyWith(
@@ -250,9 +326,9 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
             fontWeight: FontWeight.bold,
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         Text(
           variant == 'gamified'
               ? 'Each sport unlocks new game opportunities and rewards!'
@@ -261,7 +337,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
             color: DesignSystem.colors.textSecondary,
           ),
         ),
-        
+
         if (variant == 'gamified' && _selectedSports.isNotEmpty)
           Container(
             margin: const EdgeInsets.only(top: 12),
@@ -281,8 +357,12 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       ],
     );
   }
-  
-  Widget _buildSportsCategory(String category, List<Sport> sports, String variant) {
+
+  Widget _buildSportsCategory(
+    String category,
+    List<Sport> sports,
+    String variant,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -293,24 +373,26 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
             fontWeight: FontWeight.w600,
           ),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: sports.map((sport) => _buildSportChip(sport, variant)).toList(),
+          children: sports
+              .map((sport) => _buildSportChip(sport, variant))
+              .toList(),
         ),
-        
+
         const SizedBox(height: 24),
       ],
     );
   }
-  
+
   Widget _buildSportChip(Sport sport, String variant) {
     final isSelected = _selectedSports.contains(sport.id);
     final isInterested = _interestedSports.contains(sport.id);
-    
+
     return GestureDetector(
       onTap: () => _toggleSport(sport.id),
       onLongPress: () => _showSportDetails(sport),
@@ -318,40 +400,37 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? DesignSystem.colors.primary
               : isInterested
-                  ? DesignSystem.colors.secondary.withOpacity(0.1)
-                  : DesignSystem.colors.surface,
+              ? DesignSystem.colors.secondary.withOpacity(0.1)
+              : DesignSystem.colors.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? DesignSystem.colors.primary
                 : isInterested
-                    ? DesignSystem.colors.secondary
-                    : DesignSystem.colors.border,
+                ? DesignSystem.colors.secondary
+                : DesignSystem.colors.border,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              sport.icon,
-              style: const TextStyle(fontSize: 18),
-            ),
-            
+            Text(sport.icon, style: const TextStyle(fontSize: 18)),
+
             const SizedBox(width: 8),
-            
+
             Text(
               sport.name,
               style: DesignSystem.typography.bodyMedium.copyWith(
-                color: isSelected 
+                color: isSelected
                     ? Colors.white
                     : DesignSystem.colors.textPrimary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
-            
+
             if (variant == 'gamified' && isSelected)
               Container(
                 margin: const EdgeInsets.only(left: 8),
@@ -374,13 +453,13 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       ),
     );
   }
-  
+
   Widget _buildSkillLevels(String variant) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          variant == 'gamified' 
+          variant == 'gamified'
               ? '💪 Rate Your Skills (Bonus Points!)'
               : 'Rate Your Skill Level',
           style: DesignSystem.typography.titleMedium.copyWith(
@@ -388,29 +467,31 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
             fontWeight: FontWeight.w600,
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         Text(
           'This helps us match you with players of similar ability',
           style: DesignSystem.typography.bodyMedium.copyWith(
             color: DesignSystem.colors.textSecondary,
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         ..._selectedSports.map((sportId) {
           final sport = _findSportById(sportId);
-          return sport != null ? _buildSkillSlider(sport, variant) : const SizedBox.shrink();
+          return sport != null
+              ? _buildSkillSlider(sport, variant)
+              : const SizedBox.shrink();
         }),
       ],
     );
   }
-  
+
   Widget _buildSkillSlider(Sport sport, String variant) {
     final skillLevel = _skillLevels[sport.id] ?? 3;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(16),
@@ -443,9 +524,9 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
               ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: DesignSystem.colors.primary,
@@ -465,7 +546,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
               },
             ),
           ),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -487,18 +568,22 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       ),
     );
   }
-  
+
   Widget _buildWantToTry(String variant) {
-    final allSports = _sportsByCategory.values.expand((sports) => sports).toList();
-    final availableToTry = allSports.where((sport) => !_selectedSports.contains(sport.id)).toList();
-    
+    final allSports = _sportsByCategory.values
+        .expand((sports) => sports)
+        .toList();
+    final availableToTry = allSports
+        .where((sport) => !_selectedSports.contains(sport.id))
+        .toList();
+
     if (availableToTry.isEmpty) return const SizedBox.shrink();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          variant == 'gamified' 
+          variant == 'gamified'
               ? '🌟 Sports You Want to Try'
               : 'Interested in Trying?',
           style: DesignSystem.typography.titleMedium.copyWith(
@@ -506,44 +591,45 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
             fontWeight: FontWeight.w600,
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         Text(
           'We\'ll show you beginner-friendly games for these sports',
           style: DesignSystem.typography.bodyMedium.copyWith(
             color: DesignSystem.colors.textSecondary,
           ),
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: availableToTry.take(8).map((sport) => 
-            _buildInterestedChip(sport, variant)
-          ).toList(),
+          children: availableToTry
+              .take(8)
+              .map((sport) => _buildInterestedChip(sport, variant))
+              .toList(),
         ),
       ],
     );
   }
-  
+
   Widget _buildInterestedChip(Sport sport, String variant) {
     final isInterested = _interestedSports.contains(sport.id);
-    
+
     return GestureDetector(
       onTap: () => _toggleInterested(sport.id),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: isInterested 
+          color: isInterested
               ? DesignSystem.colors.secondary.withOpacity(0.1)
               : DesignSystem.colors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isInterested 
+            color: isInterested
                 ? DesignSystem.colors.secondary
                 : DesignSystem.colors.border,
           ),
@@ -556,7 +642,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
             Text(
               sport.name,
               style: DesignSystem.typography.bodySmall.copyWith(
-                color: isInterested 
+                color: isInterested
                     ? DesignSystem.colors.secondary
                     : DesignSystem.colors.textSecondary,
                 fontWeight: isInterested ? FontWeight.w500 : FontWeight.normal,
@@ -567,21 +653,19 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       ),
     );
   }
-  
+
   Widget _buildPersonalizedTip(String variant) {
     final controller = ref.read(onboardingControllerProvider);
     final tip = controller.getPersonalizedTip();
-    
+
     if (tip.isEmpty) return const SizedBox.shrink();
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: DesignSystem.colors.primary.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: DesignSystem.colors.primary.withOpacity(0.2),
-        ),
+        border: Border.all(color: DesignSystem.colors.primary.withOpacity(0.2)),
       ),
       child: Row(
         children: [
@@ -590,9 +674,9 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
             color: DesignSystem.colors.primary,
             size: 20,
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           Expanded(
             child: Text(
               tip,
@@ -605,10 +689,10 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       ),
     );
   }
-  
+
   Widget _buildContinueButton(String variant) {
     final canContinue = _selectedSports.isNotEmpty;
-    
+
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -635,7 +719,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    variant == 'gamified' 
+                    variant == 'gamified'
                         ? 'Collect Points & Continue'
                         : 'Continue',
                     style: DesignSystem.typography.titleMedium.copyWith(
@@ -643,19 +727,16 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  
+
                   const SizedBox(width: 8),
-                  
-                  const Icon(
-                    LucideIcons.arrowRight,
-                    size: 20,
-                  ),
+
+                  const Icon(LucideIcons.arrowRight, size: 20),
                 ],
               ),
       ),
     );
   }
-  
+
   Widget _buildProgressIndicator() {
     return Column(
       children: [
@@ -665,18 +746,20 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
             color: DesignSystem.colors.textSecondary,
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         LinearProgressIndicator(
           value: 0.5,
           backgroundColor: DesignSystem.colors.border,
-          valueColor: AlwaysStoppedAnimation<Color>(DesignSystem.colors.primary),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            DesignSystem.colors.primary,
+          ),
         ),
       ],
     );
   }
-  
+
   void _toggleSport(String sportId) {
     setState(() {
       if (_selectedSports.contains(sportId)) {
@@ -686,14 +769,14 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
         _selectedSports.add(sportId);
         _skillLevels[sportId] = 3; // Default skill level
       }
-      
+
       // Remove from interested if selected
       if (_selectedSports.contains(sportId)) {
         _interestedSports.remove(sportId);
       }
     });
   }
-  
+
   void _toggleInterested(String sportId) {
     setState(() {
       if (_interestedSports.contains(sportId)) {
@@ -703,7 +786,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       }
     });
   }
-  
+
   Sport? _findSportById(String id) {
     for (final sports in _sportsByCategory.values) {
       for (final sport in sports) {
@@ -712,18 +795,24 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
     }
     return null;
   }
-  
+
   String _getSkillLevelText(int level) {
     switch (level) {
-      case 1: return 'Beginner';
-      case 2: return 'Casual';
-      case 3: return 'Intermediate';
-      case 4: return 'Advanced';
-      case 5: return 'Expert';
-      default: return 'Intermediate';
+      case 1:
+        return 'Beginner';
+      case 2:
+        return 'Casual';
+      case 3:
+        return 'Intermediate';
+      case 4:
+        return 'Advanced';
+      case 5:
+        return 'Expert';
+      default:
+        return 'Intermediate';
     }
   }
-  
+
   void _showSportDetails(Sport sport) {
     showModalBottomSheet(
       context: context,
@@ -743,16 +832,13 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
-            Text(
-              sport.icon,
-              style: const TextStyle(fontSize: 40),
-            ),
-            
+
+            Text(sport.icon, style: const TextStyle(fontSize: 40)),
+
             const SizedBox(height: 12),
-            
+
             Text(
               sport.name,
               style: DesignSystem.typography.headlineSmall.copyWith(
@@ -760,9 +846,9 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             Text(
               sport.description,
               style: DesignSystem.typography.bodyMedium.copyWith(
@@ -770,9 +856,9 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -786,7 +872,9 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                       : DesignSystem.colors.primary,
                 ),
                 child: Text(
-                  _selectedSports.contains(sport.id) ? 'Remove' : 'Add to My Sports',
+                  _selectedSports.contains(sport.id)
+                      ? 'Remove'
+                      : 'Add to My Sports',
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
@@ -796,17 +884,17 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       ),
     );
   }
-  
+
   Future<void> _continue() async {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final controller = ref.read(onboardingControllerProvider);
       final gamification = ref.read(onboardingGamificationProvider);
       final variant = controller.currentVariant ?? 'control';
-      
+
       // Prepare step data
       final stepData = {
         'sports': _selectedSports.toList(),
@@ -814,10 +902,10 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
         'interested_sports': _interestedSports.toList(),
         'completed_at': DateTime.now().toIso8601String(),
       };
-      
+
       // Complete the step
       await controller.completeStep(2, stepData);
-      
+
       // Award points for gamified variant
       if (variant == 'gamified') {
         final userId = controller.currentUserId;
@@ -825,7 +913,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
           int points = _selectedSports.length * 5; // 5 points per sport
           if (_skillLevels.isNotEmpty) points += 15; // Skill level bonus
           if (_interestedSports.isNotEmpty) points += 5; // Interest bonus
-          
+
           await gamification.awardPoints(
             userId,
             points,
@@ -834,14 +922,13 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
           );
         }
       }
-      
+
       // Show achievement if gamified
       if (variant == 'gamified') {
         _showAchievement();
       } else {
         _navigateNext();
       }
-      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -855,17 +942,17 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       });
     }
   }
-  
+
   void _skipStep() {
     final controller = ref.read(onboardingControllerProvider);
     controller.skipStep(2, reason: 'user_skipped');
     context.go(RoutePaths.onboardingPreferences);
   }
-  
+
   void _showAchievement() {
     final gamification = ref.read(onboardingGamificationProvider);
     final achievement = gamification.getStepAchievement(2, 'gamified');
-    
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -887,9 +974,9 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                 color: DesignSystem.colors.success,
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             Text(
               achievement.title,
               style: DesignSystem.typography.headlineSmall.copyWith(
@@ -898,9 +985,9 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             Text(
               achievement.description,
               style: DesignSystem.typography.bodyMedium.copyWith(
@@ -918,14 +1005,17 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: DesignSystem.colors.primary,
               ),
-              child: const Text('Continue', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'Continue',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
         ],
       ),
     );
   }
-  
+
   void _navigateNext() {
     context.go(RoutePaths.onboardingPreferences);
   }
@@ -936,7 +1026,7 @@ class Sport {
   final String name;
   final String icon;
   final String description;
-  
+
   Sport({
     required this.id,
     required this.name,

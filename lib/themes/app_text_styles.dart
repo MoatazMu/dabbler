@@ -29,10 +29,7 @@ class AppTextStyles {
     color: Colors.black54,
   );
 
-  static const TextStyle body = TextStyle(
-    fontSize: 16,
-    color: Colors.black87,
-  );
+  static const TextStyle body = TextStyle(fontSize: 16, color: Colors.black87);
 
   static const TextStyle caption = TextStyle(
     fontSize: 12,

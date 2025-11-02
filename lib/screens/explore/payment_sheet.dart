@@ -20,7 +20,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
   String? selectedPaymentMethod;
   bool isLoading = false;
   String? errorMessage;
-  
+
   // Mock payment methods
   final List<Map<String, dynamic>> _paymentMethods = [
     {
@@ -31,7 +31,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
       'color': Colors.blue,
     },
     {
-      'id': 'card_2', 
+      'id': 'card_2',
       'type': 'card',
       'name': 'Mastercard ending in 8888',
       'icon': LucideIcons.creditCard,
@@ -82,28 +82,22 @@ class _PaymentSheetState extends State<PaymentSheet> {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Icon(
-                  LucideIcons.creditCard,
-                  color: DS.primary,
-                  size: 24,
-                ),
+                Icon(LucideIcons.creditCard, color: DS.primary, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   'Payment',
-                  style: DS.headline.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: DS.headline.copyWith(fontWeight: FontWeight.w700),
                 ),
               ],
             ),
           ),
-          
+
           // Amount Display
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -122,9 +116,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                     children: [
                       Text(
                         'Total Amount',
-                        style: DS.caption.copyWith(
-                          color: DS.onSurfaceVariant,
-                        ),
+                        style: DS.caption.copyWith(color: DS.onSurfaceVariant),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -136,18 +128,14 @@ class _PaymentSheetState extends State<PaymentSheet> {
                       ),
                     ],
                   ),
-                  Icon(
-                    LucideIcons.shield,
-                    color: DS.primary,
-                    size: 24,
-                  ),
+                  Icon(LucideIcons.shield, color: DS.primary, size: 24),
                 ],
               ),
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Payment Methods
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -156,18 +144,16 @@ class _PaymentSheetState extends State<PaymentSheet> {
               children: [
                 Text(
                   'Payment Method',
-                  style: DS.subtitle.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
                 ..._paymentMethods.map((method) => _buildPaymentMethod(method)),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Error Message
           if (errorMessage != null)
             Padding(
@@ -180,27 +166,21 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      LucideIcons.alertCircle,
-                      color: DS.error,
-                      size: 16,
-                    ),
+                    Icon(LucideIcons.alertCircle, color: DS.error, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         errorMessage!,
-                        style: DS.caption.copyWith(
-                          color: DS.error,
-                        ),
+                        style: DS.caption.copyWith(color: DS.error),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Action Buttons
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -209,8 +189,8 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: selectedPaymentMethod != null && !isLoading 
-                        ? _handlePayment 
+                    onPressed: selectedPaymentMethod != null && !isLoading
+                        ? _handlePayment
                         : null,
                     style: DS.primaryButton.copyWith(
                       minimumSize: const WidgetStatePropertyAll(
@@ -223,7 +203,9 @@ class _PaymentSheetState extends State<PaymentSheet> {
                             width: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
                         : Text(
@@ -252,7 +234,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
     final isSelected = selectedPaymentMethod == method['id'];
     final icon = method['icon'] as IconData;
     final color = method['color'] as Color;
-    
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -267,7 +249,9 @@ class _PaymentSheetState extends State<PaymentSheet> {
           color: isSelected ? DS.primary.withOpacity(0.05) : DS.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? DS.primary : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+            color: isSelected
+                ? DS.primary
+                : Theme.of(context).colorScheme.outline.withOpacity(0.2),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -279,27 +263,17 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 color: color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                icon,
-                color: color,
-                size: 20,
-              ),
+              child: Icon(icon, color: color, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 method['name'] as String,
-                style: DS.body.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: DS.body.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
             if (isSelected)
-              Icon(
-                LucideIcons.check,
-                color: DS.primary,
-                size: 20,
-              ),
+              Icon(LucideIcons.check, color: DS.primary, size: 20),
           ],
         ),
       ),
@@ -317,10 +291,10 @@ class _PaymentSheetState extends State<PaymentSheet> {
     try {
       // Simulate payment processing
       await Future.delayed(const Duration(seconds: 2));
-      
+
       // Simulate payment success/failure (90% success rate)
       final success = DateTime.now().millisecondsSinceEpoch % 10 != 0;
-      
+
       if (success) {
         // Payment successful
         if (mounted) {
@@ -340,9 +314,10 @@ class _PaymentSheetState extends State<PaymentSheet> {
       }
     } catch (e) {
       setState(() {
-        errorMessage = 'Payment failed. Please check your connection and try again.';
+        errorMessage =
+            'Payment failed. Please check your connection and try again.';
         isLoading = false;
       });
     }
   }
-} 
+}

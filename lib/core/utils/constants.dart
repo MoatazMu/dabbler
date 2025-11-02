@@ -105,7 +105,8 @@ class AppConstants {
   // Validation
   static const int minPhoneLength = 10;
   static const int maxPhoneLength = 15;
-  static const int minNameLength = 5; // Updated to require at least 5 characters
+  static const int minNameLength =
+      5; // Updated to require at least 5 characters
   static const int maxNameLength = 50;
   static const int minAge = 13;
   static const int maxAge = 100;
@@ -152,19 +153,25 @@ class AppConstants {
   static const int sessionTimeoutMinutes = 30;
 
   // Error Messages
-  static const String genericErrorMessage = 'Something went wrong. Please try again.';
-  static const String networkErrorMessage = 'Please check your internet connection.';
+  static const String genericErrorMessage =
+      'Something went wrong. Please try again.';
+  static const String networkErrorMessage =
+      'Please check your internet connection.';
   static const String unauthorizedErrorMessage = 'Please sign in to continue.';
-  static const String forbiddenErrorMessage = 'You don\'t have permission to perform this action.';
-  static const String notFoundErrorMessage = 'The requested resource was not found.';
-  static const String validationErrorMessage = 'Please check your input and try again.';
+  static const String forbiddenErrorMessage =
+      'You don\'t have permission to perform this action.';
+  static const String notFoundErrorMessage =
+      'The requested resource was not found.';
+  static const String validationErrorMessage =
+      'Please check your input and try again.';
 
   // Accessibility Constants
-  static const double minTouchTargetSize = 44.0; // iOS/Android accessibility guidelines
+  static const double minTouchTargetSize =
+      44.0; // iOS/Android accessibility guidelines
   static const double minFocusTargetSize = 48.0; // Material Design guidelines
   static const double minContrastRatio = 4.5; // WCAG AA standard
   static const double largeContrastRatio = 7.0; // WCAG AAA standard
-  
+
   // Semantic Labels
   static const String profileAvatarLabel = 'Profile picture';
   static const String editProfileLabel = 'Edit profile';
@@ -176,7 +183,7 @@ class AppConstants {
   static const String sportsLabel = 'Preferred sports';
   static const String verificationLabel = 'Verified profile';
   static const String incompleteLabel = 'Profile incomplete';
-  
+
   // Profile Module Specific Constants
   static const double profileAvatarSize = 80.0;
   static const double profileCardElevation = 4.0;
@@ -186,7 +193,7 @@ class AppConstants {
   static const double iconSize = 24.0;
   static const double smallIconSize = 20.0;
   static const double largeIconSize = 28.0;
-  
+
   // Profile Module Spacing
   static const double profileHeaderPadding = 8.0;
   static const double profileCardPadding = 16.0;
@@ -194,14 +201,14 @@ class AppConstants {
   static const double menuSpacing = 24.0;
   static const double chipSpacing = 8.0;
   static const double sectionSpacing = 16.0;
-  
+
   // Profile Module Colors (Theme-aware)
   static const Color profileIncompleteColor = Color(0xFFFF9800); // Orange
   static const Color profileVerifiedColor = Color(0xFF2196F3); // Blue
   static const Color profileSuccessColor = Color(0xFF4CAF50); // Green
   static const Color profileWarningColor = Color(0xFFFFC107); // Amber
   static const Color profileErrorColor = Color(0xFFF44336); // Red
-  
+
   // Profile Module Typography
   static const double profileTitleSize = 24.0;
   static const double profileSubtitleSize = 16.0;
@@ -209,31 +216,40 @@ class AppConstants {
   static const double profileCaptionSize = 12.0;
   static const double statsValueSize = 20.0;
   static const double statsLabelSize = 12.0;
-  
+
   // Profile Module Animation
   static const Duration profileRefreshDuration = Duration(milliseconds: 300);
-  static const Duration profileCardAnimationDuration = Duration(milliseconds: 200);
-  static const Duration profileAvatarAnimationDuration = Duration(milliseconds: 150);
-  
+  static const Duration profileCardAnimationDuration = Duration(
+    milliseconds: 200,
+  );
+  static const Duration profileAvatarAnimationDuration = Duration(
+    milliseconds: 150,
+  );
+
   // Profile Module Loading States
   static const Duration profileLoadingTimeout = Duration(seconds: 10);
   static const Duration profileRefreshTimeout = Duration(seconds: 5);
-  
+
   // Profile Module Error Messages
-  static const String profileLoadError = 'Failed to load profile. Please try again.';
-  static const String profileUpdateError = 'Failed to update profile. Please try again.';
-  static const String avatarUploadError = 'Failed to upload profile picture. Please try again.';
+  static const String profileLoadError =
+      'Failed to load profile. Please try again.';
+  static const String profileUpdateError =
+      'Failed to update profile. Please try again.';
+  static const String avatarUploadError =
+      'Failed to upload profile picture. Please try again.';
   static const String statsLoadError = 'Failed to load game statistics.';
   static const String logoutError = 'Failed to logout. Please try again.';
-  
+
   // Profile Module Success Messages
   static const String profileUpdateSuccess = 'Profile updated successfully!';
-  static const String avatarUploadSuccess = 'Profile picture updated successfully!';
+  static const String avatarUploadSuccess =
+      'Profile picture updated successfully!';
   static const String logoutSuccess = 'Logged out successfully!';
-  
+
   // Profile Module Confirmation Messages
   static const String logoutConfirmationTitle = 'Confirm Logout';
-  static const String logoutConfirmationMessage = 'Are you sure you want to logout?';
+  static const String logoutConfirmationMessage =
+      'Are you sure you want to logout?';
   static const String logoutConfirmationCancel = 'Cancel';
   static const String logoutConfirmationConfirm = 'Logout';
 }

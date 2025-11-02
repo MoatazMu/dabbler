@@ -40,28 +40,22 @@ class BookingSummaryModal extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Header
           Padding(
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Icon(
-                  LucideIcons.checkCircle,
-                  color: DS.primary,
-                  size: 24,
-                ),
+                Icon(LucideIcons.checkCircle, color: DS.primary, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   'Booking Summary',
-                  style: DS.headline.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: DS.headline.copyWith(fontWeight: FontWeight.w700),
                 ),
               ],
             ),
           ),
-          
+
           // Venue Info
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -70,7 +64,9 @@ class BookingSummaryModal extends StatelessWidget {
               decoration: BoxDecoration(
                 color: DS.surface,
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Theme.of(context).colorScheme.outline.withOpacity(0.1)),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                ),
               ),
               child: Row(
                 children: [
@@ -114,9 +110,9 @@ class BookingSummaryModal extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Booking Details
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -132,9 +128,9 @@ class BookingSummaryModal extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Cancellation Policy
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -147,11 +143,7 @@ class BookingSummaryModal extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(
-                    LucideIcons.info,
-                    color: DS.primary,
-                    size: 16,
-                  ),
+                  Icon(LucideIcons.info, color: DS.primary, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -166,9 +158,9 @@ class BookingSummaryModal extends StatelessWidget {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Action Buttons
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -179,7 +171,9 @@ class BookingSummaryModal extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(false),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(48),
-                      side: BorderSide(color: Theme.of(context).colorScheme.outline),
+                      side: BorderSide(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -219,12 +213,7 @@ class BookingSummaryModal extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: DS.body.copyWith(
-              color: DS.onSurfaceVariant,
-            ),
-          ),
+          Text(label, style: DS.body.copyWith(color: DS.onSurfaceVariant)),
           Text(
             value,
             style: DS.body.copyWith(
@@ -239,11 +228,21 @@ class BookingSummaryModal extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+
     return '${days[date.weekday - 1]}, ${date.day} ${months[date.month - 1]}';
   }
-} 
+}

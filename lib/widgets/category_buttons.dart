@@ -29,7 +29,7 @@ class CategoryButtons extends StatelessWidget {
           onTap: onCommunityTap,
         ),
         const SizedBox(width: 8),
-        
+
         // Sports Button
         _CategoryButton(
           icon: Iconsax.game_copy,
@@ -38,7 +38,7 @@ class CategoryButtons extends StatelessWidget {
           onTap: onSportsTap,
         ),
         const SizedBox(width: 8),
-        
+
         // Activities Button
         _CategoryButton(
           icon: Iconsax.archive_copy,
@@ -76,11 +76,11 @@ class _CategoryButtonState extends State<_CategoryButton> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
+
     // Background colors based on theme and state
     final backgroundColor = _getBackgroundColor(isDark);
     final borderColor = _getBorderColor(isDark);
-    
+
     return Expanded(
       child: MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
@@ -109,33 +109,28 @@ class _CategoryButtonState extends State<_CategoryButton> {
               boxShadow: _isPressed
                   ? []
                   : _isHovered
-                      ? [
-                          BoxShadow(
-                            color: widget.accentColor.withOpacity(0.15),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ]
-                      : [
-                          BoxShadow(
-                            color: isDark
-                                ? Colors.black.withOpacity(0.2)
-                                : Colors.black.withOpacity(0.04),
-                            blurRadius: 4,
-                            offset: const Offset(0, 1),
-                          ),
-                        ],
+                  ? [
+                      BoxShadow(
+                        color: widget.accentColor.withOpacity(0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ]
+                  : [
+                      BoxShadow(
+                        color: isDark
+                            ? Colors.black.withOpacity(0.2)
+                            : Colors.black.withOpacity(0.04),
+                        blurRadius: 4,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
             ),
-            transform: Matrix4.identity()
-              ..scale(_isPressed ? 0.96 : 1.0),
+            transform: Matrix4.identity()..scale(_isPressed ? 0.96 : 1.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  widget.icon,
-                  size: 18,
-                  color: _getIconColor(isDark),
-                ),
+                Icon(widget.icon, size: 18, color: _getIconColor(isDark)),
                 const SizedBox(width: 8),
                 Flexible(
                   child: Text(
@@ -144,7 +139,9 @@ class _CategoryButtonState extends State<_CategoryButton> {
                       color: _getTextColor(isDark),
                       fontFamily: 'Inter',
                       fontSize: 14,
-                      fontWeight: _isHovered ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: _isHovered
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                       height: 20 / 14,
                       letterSpacing: -0.15,
                     ),
@@ -161,17 +158,15 @@ class _CategoryButtonState extends State<_CategoryButton> {
 
   Color _getBackgroundColor(bool isDark) {
     if (_isPressed) {
-      return isDark
-          ? VioletShades.darkAccent
-          : VioletShades.lightAccent;
+      return isDark ? VioletShades.darkAccent : VioletShades.lightAccent;
     }
-    
+
     if (_isHovered) {
       return isDark
           ? VioletShades.darkWidgetBackground
           : VioletShades.lightWidgetBackground;
     }
-    
+
     return isDark
         ? VioletShades.darkCardBackground
         : VioletShades.lightCardBackground;
@@ -181,7 +176,7 @@ class _CategoryButtonState extends State<_CategoryButton> {
     if (_isHovered || _isPressed) {
       return widget.accentColor.withOpacity(_isPressed ? 0.6 : 0.4);
     }
-    
+
     return isDark
         ? VioletShades.darkBorder.withOpacity(0.3)
         : VioletShades.lightBorder.withOpacity(0.5);
@@ -191,7 +186,7 @@ class _CategoryButtonState extends State<_CategoryButton> {
     if (_isPressed || _isHovered) {
       return widget.accentColor;
     }
-    
+
     return widget.accentColor.withOpacity(isDark ? 0.9 : 0.85);
   }
 
@@ -199,7 +194,7 @@ class _CategoryButtonState extends State<_CategoryButton> {
     if (_isPressed || _isHovered) {
       return widget.accentColor;
     }
-    
+
     return widget.accentColor.withOpacity(isDark ? 0.9 : 0.85);
   }
 }

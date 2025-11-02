@@ -5,41 +5,43 @@ class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
 
   @override
-  State<NotificationSettingsScreen> createState() => _NotificationSettingsScreenState();
+  State<NotificationSettingsScreen> createState() =>
+      _NotificationSettingsScreenState();
 }
 
-class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
+class _NotificationSettingsScreenState
+    extends State<NotificationSettingsScreen> {
   // Game-related notifications
   bool _gameInvites = true;
   bool _gameUpdates = true;
   bool _gameReminders = true;
   bool _gameResults = true;
-  
+
   // Booking-related notifications
   bool _bookingConfirmations = true;
   bool _bookingReminders = true;
   bool _bookingChanges = true;
-  
+
   // Social notifications
   bool _friendRequests = true;
   bool _friendActivity = false;
   bool _teamInvites = true;
-  
+
   // Achievements and rewards
   bool _achievements = true;
   bool _loyaltyPoints = true;
   bool _rewards = true;
-  
+
   // System notifications
   bool _appUpdates = false;
   bool _maintenanceAlerts = true;
   bool _securityAlerts = true;
-  
+
   // Notification methods
   bool _pushNotifications = true;
   bool _emailNotifications = true;
   bool _smsNotifications = false;
-  
+
   // Timing preferences
   String _quietHoursStart = '22:00';
   String _quietHoursEnd = '08:00';
@@ -78,7 +80,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
             _buildNotificationMethodsSection(),
             const SizedBox(height: 32),
-            
+
             _buildSectionHeader(
               context,
               'Game Notifications',
@@ -86,7 +88,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
             _buildGameNotificationsSection(),
             const SizedBox(height: 32),
-            
+
             _buildSectionHeader(
               context,
               'Booking Notifications',
@@ -94,7 +96,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
             _buildBookingNotificationsSection(),
             const SizedBox(height: 32),
-            
+
             _buildSectionHeader(
               context,
               'Social Notifications',
@@ -102,7 +104,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
             _buildSocialNotificationsSection(),
             const SizedBox(height: 32),
-            
+
             _buildSectionHeader(
               context,
               'Achievements & Rewards',
@@ -110,7 +112,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
             _buildAchievementsSection(),
             const SizedBox(height: 32),
-            
+
             _buildSectionHeader(
               context,
               'System Notifications',
@@ -118,7 +120,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
             _buildSystemNotificationsSection(),
             const SizedBox(height: 32),
-            
+
             _buildSectionHeader(
               context,
               'Quiet Hours',
@@ -126,7 +128,7 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             ),
             _buildQuietHoursSection(),
             const SizedBox(height: 32),
-            
+
             _buildTestNotificationButton(),
             const SizedBox(height: 20),
           ],
@@ -135,22 +137,26 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, String title, String subtitle) {
+  Widget _buildSectionHeader(
+    BuildContext context,
+    String title,
+    String subtitle,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 4),
         Text(
           subtitle,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
         ),
         const SizedBox(height: 16),
       ],
@@ -398,17 +404,21 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                       children: [
                         Text(
                           'Start Time',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
                         GestureDetector(
                           onTap: () => _selectTime(context, true),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
-                              border: Border.all(color: Theme.of(context).colorScheme.outline),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
@@ -430,17 +440,21 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
                       children: [
                         Text(
                           'End Time',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 8),
                         GestureDetector(
                           onTap: () => _selectTime(context, false),
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
-                              border: Border.all(color: Theme.of(context).colorScheme.outline),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Row(
@@ -492,9 +506,9 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 2),
               Text(
@@ -536,13 +550,18 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
     final TimeOfDay? picked = await showTimePicker(
       context: context,
       initialTime: TimeOfDay(
-        hour: int.parse((isStartTime ? _quietHoursStart : _quietHoursEnd).split(':')[0]),
-        minute: int.parse((isStartTime ? _quietHoursStart : _quietHoursEnd).split(':')[1]),
+        hour: int.parse(
+          (isStartTime ? _quietHoursStart : _quietHoursEnd).split(':')[0],
+        ),
+        minute: int.parse(
+          (isStartTime ? _quietHoursStart : _quietHoursEnd).split(':')[1],
+        ),
       ),
     );
-    
+
     if (picked != null && mounted) {
-      final formattedTime = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      final formattedTime =
+          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
       setState(() {
         if (isStartTime) {
           _quietHoursStart = formattedTime;
@@ -571,4 +590,4 @@ class _NotificationSettingsScreenState extends State<NotificationSettingsScreen>
       ),
     );
   }
-} 
+}

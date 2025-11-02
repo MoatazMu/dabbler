@@ -131,10 +131,7 @@ abstract class PostsRemoteDataSource {
   Future<bool> removeBookmark(String postId);
 
   /// Get bookmarked posts
-  Future<List<PostModel>> getBookmarkedPosts({
-    int page = 1,
-    int limit = 20,
-  });
+  Future<List<PostModel>> getBookmarkedPosts({int page = 1, int limit = 20});
 
   /// Report a post
   Future<bool> reportPost({

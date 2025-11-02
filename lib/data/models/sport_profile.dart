@@ -18,5 +18,6 @@ class SportProfile with _$SportProfile {
   }) = _SportProfile;
 
   /// Creates a [SportProfile] from a Supabase JSON payload.
-  factory SportProfile.fromJson(Map<String, dynamic> json) => _$SportProfileFromJson(json);
+  factory SportProfile.fromJson(Map<String, dynamic> json) =>
+      _$SportProfileFromJson(json);
 }

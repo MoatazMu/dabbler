@@ -8,7 +8,8 @@ class PrivacySettingsScreen extends ConsumerStatefulWidget {
   const PrivacySettingsScreen({super.key});
 
   @override
-  ConsumerState<PrivacySettingsScreen> createState() => _PrivacySettingsScreenState();
+  ConsumerState<PrivacySettingsScreen> createState() =>
+      _PrivacySettingsScreenState();
 }
 
 class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
@@ -40,15 +41,12 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
   bool _shareAnalytics = false;
 
   // Blocked users list (mock data)
-  final List<String> _blockedUsers = [
-    'user123',
-    'player456',
-  ];
+  final List<String> _blockedUsers = ['user123', 'player456'];
 
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -57,13 +55,13 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -86,7 +84,9 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
             slivers: [
               _buildAppBar(context),
               SliverToBoxAdapter(child: _buildPrivacyPresetsSection(context)),
-              SliverToBoxAdapter(child: _buildProfileVisibilitySection(context)),
+              SliverToBoxAdapter(
+                child: _buildProfileVisibilitySection(context),
+              ),
               SliverToBoxAdapter(child: _buildDataSharingSection(context)),
               SliverToBoxAdapter(child: _buildBlockedUsersSection(context)),
               const SliverToBoxAdapter(child: SizedBox(height: 20)),
@@ -111,18 +111,15 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           'Privacy Settings',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         centerTitle: false,
         titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
       ),
       actions: [
-        TextButton(
-          onPressed: _saveSettings,
-          child: const Text('Save'),
-        ),
+        TextButton(onPressed: _saveSettings, child: const Text('Save')),
         const SizedBox(width: 8),
       ],
     );
@@ -152,9 +149,9 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
               Expanded(
                 child: Text(
                   'You can always customize individual settings below',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.blue[800],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.blue[800]),
                 ),
               ),
             ],
@@ -167,7 +164,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
   Widget _buildPrivacyPresetCard(BuildContext context, PrivacyPreset preset) {
     final isSelected = _selectedPreset == preset;
     final presetData = _getPresetData(preset);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       child: Material(
@@ -185,10 +182,14 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300]!,
+                color: isSelected
+                    ? Theme.of(context).primaryColor
+                    : Colors.grey[300]!,
                 width: isSelected ? 2 : 1,
               ),
-              color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.05) : null,
+              color: isSelected
+                  ? Theme.of(context).primaryColor.withOpacity(0.05)
+                  : null,
             ),
             child: Row(
               children: [
@@ -197,9 +198,13 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
                   height: 12,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+                    color: isSelected
+                        ? Theme.of(context).primaryColor
+                        : Colors.transparent,
                     border: Border.all(
-                      color: isSelected ? Theme.of(context).primaryColor : Colors.grey[400]!,
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : Colors.grey[400]!,
                       width: 2,
                     ),
                   ),
@@ -225,10 +230,13 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
                     children: [
                       Text(
                         presetData['title'],
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isSelected ? Theme.of(context).primaryColor : null,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: isSelected
+                                  ? Theme.of(context).primaryColor
+                                  : null,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -409,14 +417,18 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
             ),
             child: Row(
               children: [
-                const Icon(Icons.check_circle_outline, color: Colors.green, size: 20),
+                const Icon(
+                  Icons.check_circle_outline,
+                  color: Colors.green,
+                  size: 20,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     'You haven\'t blocked any users',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ),
               ],
@@ -449,16 +461,14 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
                       children: [
                         Text(
                           username,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Blocked user',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.grey[600]),
                         ),
                       ],
                     ),
@@ -490,14 +500,17 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, String description, List<Widget> children) {
+  Widget _buildSection(
+    BuildContext context,
+    String title,
+    String description,
+    List<Widget> children,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Card(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -505,16 +518,16 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(height: 16),
               ...children,
@@ -552,7 +565,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: value 
+                    color: value
                         ? Theme.of(context).primaryColor.withOpacity(0.1)
                         : Colors.grey[100],
                     borderRadius: BorderRadius.circular(8),
@@ -560,7 +573,9 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
                   child: Icon(
                     icon,
                     size: 16,
-                    color: value ? Theme.of(context).primaryColor : Colors.grey[600],
+                    color: value
+                        ? Theme.of(context).primaryColor
+                        : Colors.grey[600],
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -573,10 +588,13 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
                           Expanded(
                             child: Text(
                               title,
-                              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: value ? Theme.of(context).primaryColor : null,
-                              ),
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: value
+                                        ? Theme.of(context).primaryColor
+                                        : null,
+                                  ),
                             ),
                           ),
                           GestureDetector(
@@ -619,7 +637,8 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
       case PrivacyPreset.public:
         return {
           'title': 'Public',
-          'description': 'Your profile is visible to everyone for easy discovery',
+          'description':
+              'Your profile is visible to everyone for easy discovery',
           'icon': Icons.public,
           'color': Colors.green,
         };
@@ -711,7 +730,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
 
   void _showBlockUserDialog() {
     final controller = TextEditingController();
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -756,7 +775,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
         _blockedUsers.add(username);
       }
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('User $username has been blocked'),
@@ -769,7 +788,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
     setState(() {
       _blockedUsers.remove(username);
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('User $username has been unblocked'),
@@ -790,9 +809,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
         ),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

@@ -1,74 +1,72 @@
-
-
 /// Game utility functions and helpers
 class GameHelpers {
   // DURATION FORMATTING
-  
+
   /// Format game duration into human-readable string
   static String formatGameDuration(Duration duration) {
     final totalMinutes = duration.inMinutes;
-    
+
     if (totalMinutes < 60) {
       return '$totalMinutes min';
     }
-    
+
     final hours = totalMinutes ~/ 60;
     final minutes = totalMinutes % 60;
-    
+
     if (minutes == 0) {
       return hours == 1 ? '1 hour' : '$hours hours';
     }
-    
+
     if (hours == 1) {
       return '1 hour $minutes min';
     }
-    
+
     return '$hours hours $minutes min';
   }
 
   /// Get suggested duration options for sport
   static List<Duration> getSuggestedDurations(String sport) {
     final suggestions = <Duration>[];
-    
+
     switch (sport.toLowerCase()) {
       case 'basketball':
         suggestions.addAll([
-          const Duration(minutes: 60),   // 1 hour
-          const Duration(minutes: 90),   // 1.5 hours
-          const Duration(minutes: 120),  // 2 hours
+          const Duration(minutes: 60), // 1 hour
+          const Duration(minutes: 90), // 1.5 hours
+          const Duration(minutes: 120), // 2 hours
         ]);
         break;
       case 'soccer':
       case 'football':
         suggestions.addAll([
-          const Duration(minutes: 90),   // 1.5 hours
-          const Duration(minutes: 120),  // 2 hours
-          const Duration(minutes: 150),  // 2.5 hours
+          const Duration(minutes: 90), // 1.5 hours
+          const Duration(minutes: 120), // 2 hours
+          const Duration(minutes: 150), // 2.5 hours
         ]);
         break;
       case 'tennis':
         suggestions.addAll([
-          const Duration(minutes: 60),   // 1 hour
-          const Duration(minutes: 90),   // 1.5 hours
-          const Duration(minutes: 120),  // 2 hours
+          const Duration(minutes: 60), // 1 hour
+          const Duration(minutes: 90), // 1.5 hours
+          const Duration(minutes: 120), // 2 hours
         ]);
         break;
       case 'volleyball':
         suggestions.addAll([
-          const Duration(minutes: 75),   // 1.25 hours
-          const Duration(minutes: 90),   // 1.5 hours
-          const Duration(minutes: 120),  // 2 hours
+          const Duration(minutes: 75), // 1.25 hours
+          const Duration(minutes: 90), // 1.5 hours
+          const Duration(minutes: 120), // 2 hours
         ]);
         break;
       default:
         suggestions.addAll([
-          const Duration(minutes: 60),   // 1 hour
-          const Duration(minutes: 90),   // 1.5 hours
-          const Duration(minutes: 120),  // 2 hours
-          const Duration(minutes: 180),  // 3 hours
+          const Duration(minutes: 60), // 1 hour
+          const Duration(minutes: 90), // 1.5 hours
+          const Duration(minutes: 120), // 2 hours
+          const Duration(minutes: 180), // 3 hours
         ]);
     }
-    
+
     return suggestions;
   }
 
@@ -97,7 +95,7 @@ class GameHelpers {
     );
 
     if (remaining == 0) {
-      return waitlistCount > 0 
+      return waitlistCount > 0
           ? 'Game full • $waitlistCount on waitlist'
           : 'Game full';
     }
@@ -131,9 +129,10 @@ class GameHelpers {
     required int currentPlayers,
   }) {
     return calculateSpotsRemaining(
-      maxPlayers: maxPlayers,
-      currentPlayers: currentPlayers,
-    ) == 0;
+          maxPlayers: maxPlayers,
+          currentPlayers: currentPlayers,
+        ) ==
+        0;
   }
 
   // GAME TITLE GENERATION
@@ -152,20 +151,20 @@ class GameHelpers {
     }
 
     final buffer = StringBuffer();
-    
+
     // Start with skill level and sport
     buffer.write('${_capitalizeFirst(skillLevel)} ${_capitalizeFirst(sport)}');
-    
+
     // Add venue if provided
     if (venueName != null && venueName.isNotEmpty) {
       buffer.write(' at $venueName');
     }
-    
+
     // Add time context if provided
     if (dateTime != null) {
       final now = DateTime.now();
       final difference = dateTime.difference(now);
-      
+
       if (difference.inDays == 0) {
         buffer.write(' Today');
       } else if (difference.inDays == 1) {
@@ -174,7 +173,7 @@ class GameHelpers {
         buffer.write(' This ${_getDayName(dateTime.weekday)}');
       }
     }
-    
+
     return buffer.toString();
   }
 
@@ -185,7 +184,7 @@ class GameHelpers {
     String? customTitle,
   }) {
     if (customTitle != null && customTitle.trim().isNotEmpty) {
-      return customTitle.trim().length > 25 
+      return customTitle.trim().length > 25
           ? '${customTitle.trim().substring(0, 22)}...'
           : customTitle.trim();
     }
@@ -202,11 +201,11 @@ class GameHelpers {
     }
 
     final symbol = _getCurrencySymbol(currency);
-    
+
     if (price == price.roundToDouble()) {
       return '$symbol${price.round()}';
     }
-    
+
     return '$symbol${price.toStringAsFixed(2)}';
   }
 
@@ -226,7 +225,7 @@ class GameHelpers {
 
     final pricePerPerson = totalPrice / numberOfPlayers;
     final symbol = _getCurrencySymbol(currency);
-    
+
     return '$symbol${pricePerPerson.toStringAsFixed(2)} per person';
   }
 
@@ -241,13 +240,13 @@ class GameHelpers {
     }
 
     final symbol = _getCurrencySymbol(currency);
-    final min = minPrice == minPrice.roundToDouble() 
+    final min = minPrice == minPrice.roundToDouble()
         ? minPrice.round().toString()
         : minPrice.toStringAsFixed(2);
     final max = maxPrice == maxPrice.roundToDouble()
-        ? maxPrice.round().toString() 
+        ? maxPrice.round().toString()
         : maxPrice.toStringAsFixed(2);
-        
+
     return '$symbol$min - $symbol$max';
   }
 
@@ -282,7 +281,7 @@ class GameHelpers {
       startTime: startTime,
       duration: duration,
     );
-    
+
     return now.isAfter(startTime) && now.isBefore(endTime);
   }
 
@@ -295,30 +294,30 @@ class GameHelpers {
       startTime: startTime,
       duration: duration,
     );
-    
+
     return DateTime.now().isAfter(endTime);
   }
 
   /// Format time until game
   static String formatTimeUntilGame(DateTime gameTime) {
     final duration = getTimeUntilGame(gameTime);
-    
+
     if (duration.isNegative) {
       return 'Game started';
     }
-    
+
     if (duration.inDays > 0) {
       return '${duration.inDays}d ${duration.inHours % 24}h';
     }
-    
+
     if (duration.inHours > 0) {
       return '${duration.inHours}h ${duration.inMinutes % 60}m';
     }
-    
+
     if (duration.inMinutes > 0) {
       return '${duration.inMinutes}m';
     }
-    
+
     return 'Starting now';
   }
 
@@ -350,21 +349,21 @@ class GameHelpers {
     double? price,
   }) {
     final buffer = StringBuffer();
-    
+
     buffer.write('Join me for $gameTitle! 🏀\n\n');
     buffer.write('📍 $venueName\n');
     buffer.write('📅 ${_formatShareDateTime(dateTime)}\n');
-    
+
     if (skillLevel != null) {
       buffer.write('🎯 ${_capitalizeFirst(skillLevel)} level\n');
     }
-    
+
     if (price != null && price > 0) {
       buffer.write('💰 ${formatPrice(price)}\n');
     }
-    
+
     buffer.write('\nTap the link to join!');
-    
+
     return buffer.toString();
   }
 
@@ -393,8 +392,8 @@ class GameHelpers {
       'location': venueAddress ?? venueName,
       'url': gameId != null ? generateGameShareLink(gameId: gameId) : null,
       'reminder': [
-        {'minutes': 60},  // 1 hour before
-        {'minutes': 15},  // 15 minutes before
+        {'minutes': 60}, // 1 hour before
+        {'minutes': 15}, // 15 minutes before
       ],
     };
   }
@@ -416,9 +415,12 @@ class GameHelpers {
     final params = <String, String>{
       'action': 'TEMPLATE',
       'text': Uri.encodeComponent(title),
-      'dates': '${_formatCalendarDate(startTime)}/${_formatCalendarDate(endTime)}',
+      'dates':
+          '${_formatCalendarDate(startTime)}/${_formatCalendarDate(endTime)}',
       'location': Uri.encodeComponent(venueAddress ?? venueName),
-      'details': Uri.encodeComponent(description ?? 'Game organized through Dabbler'),
+      'details': Uri.encodeComponent(
+        description ?? 'Game organized through Dabbler',
+      ),
     };
 
     final query = params.entries.map((e) => '${e.key}=${e.value}').join('&');
@@ -433,10 +435,13 @@ class GameHelpers {
   }
 
   /// Validate if date is within booking window (not too far in future)
-  static bool isWithinBookingWindow(DateTime dateTime, {int maxDaysInFuture = 90}) {
+  static bool isWithinBookingWindow(
+    DateTime dateTime, {
+    int maxDaysInFuture = 90,
+  }) {
     final now = DateTime.now();
     final maxDate = now.add(Duration(days: maxDaysInFuture));
-    
+
     return dateTime.isAfter(now) && dateTime.isBefore(maxDate);
   }
 
@@ -464,31 +469,44 @@ class GameHelpers {
 
   static String _getDayName(int weekday) {
     switch (weekday) {
-      case DateTime.monday: return 'Monday';
-      case DateTime.tuesday: return 'Tuesday';
-      case DateTime.wednesday: return 'Wednesday';
-      case DateTime.thursday: return 'Thursday';
-      case DateTime.friday: return 'Friday';
-      case DateTime.saturday: return 'Saturday';
-      case DateTime.sunday: return 'Sunday';
-      default: return '';
+      case DateTime.monday:
+        return 'Monday';
+      case DateTime.tuesday:
+        return 'Tuesday';
+      case DateTime.wednesday:
+        return 'Wednesday';
+      case DateTime.thursday:
+        return 'Thursday';
+      case DateTime.friday:
+        return 'Friday';
+      case DateTime.saturday:
+        return 'Saturday';
+      case DateTime.sunday:
+        return 'Sunday';
+      default:
+        return '';
     }
   }
 
   static String _getCurrencySymbol(String currency) {
     switch (currency.toUpperCase()) {
-      case 'USD': return '\$';
-      case 'EUR': return '€';
-      case 'GBP': return '£';
-      case 'JPY': return '¥';
-      default: return '\$';
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      case 'GBP':
+        return '£';
+      case 'JPY':
+        return '¥';
+      default:
+        return '\$';
     }
   }
 
   static String _formatShareDateTime(DateTime dateTime) {
     final now = DateTime.now();
     final difference = dateTime.difference(now);
-    
+
     if (difference.inDays == 0) {
       return 'Today at ${_formatTime(dateTime)}';
     } else if (difference.inDays == 1) {
@@ -506,15 +524,12 @@ class GameHelpers {
     final period = hour >= 12 ? 'PM' : 'AM';
     final displayHour = hour == 0 ? 12 : (hour > 12 ? hour - 12 : hour);
     final displayMinute = minute.toString().padLeft(2, '0');
-    
+
     return '$displayHour:$displayMinute $period';
   }
 
   static String _formatCalendarDate(DateTime dateTime) {
-    return '${dateTime.toUtc().toIso8601String()
-        .replaceAll(RegExp(r'[-:.]'), '')
-        .replaceAll('T', 'T')
-        .substring(0, 15)}Z';
+    return '${dateTime.toUtc().toIso8601String().replaceAll(RegExp(r'[-:.]'), '').replaceAll('T', 'T').substring(0, 15)}Z';
   }
 }
 
@@ -529,7 +544,9 @@ extension GameCalculationExtensions on DateTime {
   /// Check if this date is tomorrow
   bool get isTomorrow {
     final tomorrow = DateTime.now().add(const Duration(days: 1));
-    return year == tomorrow.year && month == tomorrow.month && day == tomorrow.day;
+    return year == tomorrow.year &&
+        month == tomorrow.month &&
+        day == tomorrow.day;
   }
 
   /// Check if this date is within the current week
@@ -537,8 +554,8 @@ extension GameCalculationExtensions on DateTime {
     final now = DateTime.now();
     final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
     final endOfWeek = startOfWeek.add(const Duration(days: 6));
-    
+
     return isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
-           isBefore(endOfWeek.add(const Duration(days: 1)));
+        isBefore(endOfWeek.add(const Duration(days: 1)));
   }
 }

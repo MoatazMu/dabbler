@@ -18,11 +18,16 @@ class RegisterScreen extends ConsumerWidget {
             return SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight - 16),
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 16,
+                ),
                 child: Column(
                   children: [
                     TextField(
-                      decoration: InputDecoration(labelText: 'Email', errorText: state.error),
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        errorText: state.error,
+                      ),
                       onChanged: controller.updateEmail,
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
@@ -38,14 +43,23 @@ class RegisterScreen extends ConsumerWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: state.isLoading ? null : () async {
-                          await controller.register();
-                          final session = ref.read(registerControllerProvider).session;
-                          if (session != null) {
-                            Navigator.pushReplacementNamed(context, '/confirm-email');
-                          }
-                        },
-                        child: state.isLoading ? const CircularProgressIndicator() : const Text('Register'),
+                        onPressed: state.isLoading
+                            ? null
+                            : () async {
+                                await controller.register();
+                                final session = ref
+                                    .read(registerControllerProvider)
+                                    .session;
+                                if (session != null) {
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    '/confirm-email',
+                                  );
+                                }
+                              },
+                        child: state.isLoading
+                            ? const CircularProgressIndicator()
+                            : const Text('Register'),
                       ),
                     ),
                   ],

@@ -22,9 +22,11 @@ class RouterRefreshNotifier extends ChangeNotifier {
   static final _instance = RouterRefreshNotifier._internal();
   factory RouterRefreshNotifier() => _instance;
   RouterRefreshNotifier._internal();
-  
+
   void notifyAuthStateChanged() {
-    print('🔄 [DEBUG] RouterRefreshNotifier: Notifying router of auth state change');
+    print(
+      '🔄 [DEBUG] RouterRefreshNotifier: Notifying router of auth state change',
+    );
     print('🔄 [DEBUG] RouterRefreshNotifier: Has listeners: $hasListeners');
     notifyListeners();
   }
@@ -38,9 +40,10 @@ final routerRefreshProvider = Provider<RouterRefreshNotifier>((ref) {
 });
 
 // Simple auth state provider that works with AuthService
-final simpleAuthProvider = StateNotifierProvider<SimpleAuthNotifier, SimpleAuthState>((ref) {
-  return SimpleAuthNotifier(ref.read(authServiceProvider));
-});
+final simpleAuthProvider =
+    StateNotifierProvider<SimpleAuthNotifier, SimpleAuthState>((ref) {
+      return SimpleAuthNotifier(ref.read(authServiceProvider));
+    });
 
 // Simple auth state
 class SimpleAuthState {
@@ -88,27 +91,35 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
 
   Future<void> _checkAuthState() async {
     if (_isCheckingAuth) {
-      print('🔐 [DEBUG] SimpleAuthNotifier: _checkAuthState skipped (already running)');
+      print(
+        '🔐 [DEBUG] SimpleAuthNotifier: _checkAuthState skipped (already running)',
+      );
       return;
     }
     _isCheckingAuth = true;
     print('🔐 [DEBUG] SimpleAuthNotifier: _checkAuthState started');
-    print('🔐 [DEBUG] SimpleAuthNotifier: Current state before check - authenticated: ${state.isAuthenticated}');
+    print(
+      '🔐 [DEBUG] SimpleAuthNotifier: Current state before check - authenticated: ${state.isAuthenticated}',
+    );
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
-      print('🔐 [DEBUG] SimpleAuthNotifier: Calling _authService.isAuthenticated()');
+      print(
+        '🔐 [DEBUG] SimpleAuthNotifier: Calling _authService.isAuthenticated()',
+      );
       final isAuthenticated = _authService.isAuthenticated();
       print('🔐 [DEBUG] SimpleAuthNotifier: Auth result: $isAuthenticated');
-      
+
       // Also check if we have a current user for additional verification
       final currentUser = _authService.getCurrentUser();
-      print('🔐 [DEBUG] SimpleAuthNotifier: Current user: ${currentUser?.email ?? 'None'}');
-      
+      print(
+        '🔐 [DEBUG] SimpleAuthNotifier: Current user: ${currentUser?.email ?? 'None'}',
+      );
+
       // Double check - if we have a user but isAuthenticated is false, something's wrong
       final finalAuthState = isAuthenticated && currentUser != null;
       print('🔐 [DEBUG] SimpleAuthNotifier: Final auth state: $finalAuthState');
-      
+
       final previousState = state.isAuthenticated;
       state = state.copyWith(
         isAuthenticated: finalAuthState,
@@ -116,14 +127,20 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
         isGuest: false, // Clear guest mode when checking auth
         error: null,
       );
-      print('🔐 [DEBUG] SimpleAuthNotifier: State updated - was: $previousState, now: $finalAuthState');
-      
+      print(
+        '🔐 [DEBUG] SimpleAuthNotifier: State updated - was: $previousState, now: $finalAuthState',
+      );
+
       // Only notify router if auth state actually changed
       if (previousState != finalAuthState) {
-        print('🔐 [DEBUG] SimpleAuthNotifier: Auth state changed, notifying router...');
+        print(
+          '🔐 [DEBUG] SimpleAuthNotifier: Auth state changed, notifying router...',
+        );
         routerRefreshNotifier.notifyAuthStateChanged();
       } else {
-        print('🔐 [DEBUG] SimpleAuthNotifier: Auth state unchanged, not notifying router');
+        print(
+          '🔐 [DEBUG] SimpleAuthNotifier: Auth state unchanged, not notifying router',
+        );
       }
     } catch (e) {
       print('❌ [DEBUG] SimpleAuthNotifier: Error checking auth state: $e');
@@ -139,7 +156,9 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
   void _setupAuthListener() {
     print('🔐 [DEBUG] SimpleAuthNotifier: Setting up auth listener');
     _authSubscription?.cancel();
-    _authSubscription = supa.Supabase.instance.client.auth.onAuthStateChange.listen((data) async {
+    _authSubscription = supa.Supabase.instance.client.auth.onAuthStateChange.listen((
+      data,
+    ) async {
       final event = data.event;
       print('🔐 [DEBUG] SimpleAuthNotifier: Auth event received -> $event');
 
@@ -156,8 +175,11 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
       await _checkAuthState();
 
       // If the restored session is missing (e.g. app resumed) try a refresh once
-      if (!state.isAuthenticated && event == supa.AuthChangeEvent.initialSession) {
-        print('🔐 [DEBUG] SimpleAuthNotifier: Initial session missing, attempting refresh');
+      if (!state.isAuthenticated &&
+          event == supa.AuthChangeEvent.initialSession) {
+        print(
+          '🔐 [DEBUG] SimpleAuthNotifier: Initial session missing, attempting refresh',
+        );
         await _authService.refreshSession();
         await _checkAuthState();
       }
@@ -180,7 +202,7 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
       error: null,
     );
     print('👤 [DEBUG] SimpleAuthNotifier: Guest mode set successfully');
-    
+
     // Notify router of auth state change
     RouterRefreshNotifier().notifyAuthStateChanged();
   }
@@ -202,7 +224,7 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
     try {
       await _authService.signOut();
       state = const SimpleAuthState();
-      
+
       // Notify router of auth state change
       routerRefreshNotifier.notifyAuthStateChanged();
     } catch (e) {
@@ -218,25 +240,33 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
   // Handle successful login - force a state refresh
   Future<void> handleSuccessfulLogin() async {
     print('🔐 [DEBUG] SimpleAuthNotifier: handleSuccessfulLogin called');
-    print('🔐 [DEBUG] SimpleAuthNotifier: State before login handling - authenticated: ${state.isAuthenticated}');
-    
+    print(
+      '🔐 [DEBUG] SimpleAuthNotifier: State before login handling - authenticated: ${state.isAuthenticated}',
+    );
+
     // Add a small delay to ensure Supabase session is fully established
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     await _checkAuthState();
-    
+
     // If still not authenticated after the check, there might be a session issue
     if (!state.isAuthenticated) {
-      print('⚠️ [DEBUG] SimpleAuthNotifier: Still not authenticated after login, retrying...');
+      print(
+        '⚠️ [DEBUG] SimpleAuthNotifier: Still not authenticated after login, retrying...',
+      );
       await Future.delayed(const Duration(milliseconds: 500));
       await _checkAuthState();
-      
+
       // Final check - if still not authenticated, something is seriously wrong
       if (!state.isAuthenticated) {
-        print('❌ [DEBUG] SimpleAuthNotifier: CRITICAL - Still not authenticated after retry!');
+        print(
+          '❌ [DEBUG] SimpleAuthNotifier: CRITICAL - Still not authenticated after retry!',
+        );
       }
     } else {
-      print('✅ [DEBUG] SimpleAuthNotifier: Login handling successful - now authenticated');
+      print(
+        '✅ [DEBUG] SimpleAuthNotifier: Login handling successful - now authenticated',
+      );
     }
   }
 
@@ -264,15 +294,18 @@ final logoutUseCaseProvider = Provider<LogoutUseCase>((ref) {
 });
 
 // Controller providers
-final authControllerProvider = StateNotifierProvider<AuthController, AuthState>((ref) {
-  final getCurrentUser = ref.read(getCurrentUserUseCaseProvider);
-  return AuthController(getCurrentUser: getCurrentUser);
-});
+final authControllerProvider = StateNotifierProvider<AuthController, AuthState>(
+  (ref) {
+    final getCurrentUser = ref.read(getCurrentUserUseCaseProvider);
+    return AuthController(getCurrentUser: getCurrentUser);
+  },
+);
 
-final registerControllerProvider = StateNotifierProvider<RegisterController, RegisterFormState>((ref) {
-  throw UnimplementedError('RegisterUseCase not implemented');
-  // return RegisterController(registerUseCase);
-});
+final registerControllerProvider =
+    StateNotifierProvider<RegisterController, RegisterFormState>((ref) {
+      throw UnimplementedError('RegisterUseCase not implemented');
+      // return RegisterController(registerUseCase);
+    });
 
 // Convenience providers - now using the working simple auth provider
 final isAuthenticatedProvider = Provider<bool>((ref) {

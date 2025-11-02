@@ -53,10 +53,9 @@ class PreferencesState {
 class PreferencesController extends StateNotifier<PreferencesState> {
   final UpdatePreferencesUseCase? _updatePreferencesUseCase;
 
-  PreferencesController({
-    UpdatePreferencesUseCase? updatePreferencesUseCase,
-  })  : _updatePreferencesUseCase = updatePreferencesUseCase,
-        super(const PreferencesState());
+  PreferencesController({UpdatePreferencesUseCase? updatePreferencesUseCase})
+    : _updatePreferencesUseCase = updatePreferencesUseCase,
+      super(const PreferencesState());
 
   /// Load user preferences
   Future<void> loadPreferences(String userId) async {
@@ -111,18 +110,26 @@ class PreferencesController extends StateNotifier<PreferencesState> {
 
   /// Update game duration preference
   Future<void> updateGameDuration(GameDuration duration) async {
-    await _updateField('preferredDuration', duration.toString().split('.').last);
+    await _updateField(
+      'preferredDuration',
+      duration.toString().split('.').last,
+    );
   }
 
   /// Update team size preference
   Future<void> updateTeamSize(TeamSize teamSize) async {
-    await _updateField('preferredTeamSize', teamSize.toString().split('.').last);
+    await _updateField(
+      'preferredTeamSize',
+      teamSize.toString().split('.').last,
+    );
   }
 
   /// Update travel radius
   Future<void> updateTravelRadius(double radius) async {
     if (radius < 1.0 || radius > 100.0) {
-      state = state.copyWith(errorMessage: 'Travel radius must be between 1-100 miles');
+      state = state.copyWith(
+        errorMessage: 'Travel radius must be between 1-100 miles',
+      );
       return;
     }
     await _updateField('maxTravelRadius', radius);
@@ -130,17 +137,26 @@ class PreferencesController extends StateNotifier<PreferencesState> {
 
   /// Update travel willingness
   Future<void> updateTravelWillingness(TravelWillingness willingness) async {
-    await _updateField('travelWillingness', willingness.toString().split('.').last);
+    await _updateField(
+      'travelWillingness',
+      willingness.toString().split('.').last,
+    );
   }
 
   /// Update age range preference
   Future<void> updateAgeRangePreference(AgeRangePreference preference) async {
-    await _updateField('ageRangePreference', preference.toString().split('.').last);
+    await _updateField(
+      'ageRangePreference',
+      preference.toString().split('.').last,
+    );
   }
 
   /// Update gender mix preference
   Future<void> updateGenderMixPreference(GenderMixPreference preference) async {
-    await _updateField('genderMixPreference', preference.toString().split('.').last);
+    await _updateField(
+      'genderMixPreference',
+      preference.toString().split('.').last,
+    );
   }
 
   /// Toggle competitive preference
@@ -163,18 +179,27 @@ class PreferencesController extends StateNotifier<PreferencesState> {
     final currentPreferences = state.preferences;
     if (currentPreferences == null) return;
 
-    final currentSlots = List<TimeSlot>.from(currentPreferences.weeklyAvailability);
-    
+    final currentSlots = List<TimeSlot>.from(
+      currentPreferences.weeklyAvailability,
+    );
+
     // Check for overlapping time slots
-    final hasOverlap = currentSlots.any((slot) => _timeSlotsOverlap(slot, timeSlot));
-    
+    final hasOverlap = currentSlots.any(
+      (slot) => _timeSlotsOverlap(slot, timeSlot),
+    );
+
     if (hasOverlap) {
-      state = state.copyWith(errorMessage: 'Time slot overlaps with existing availability');
+      state = state.copyWith(
+        errorMessage: 'Time slot overlaps with existing availability',
+      );
       return;
     }
 
     currentSlots.add(timeSlot);
-    await _updateField('weeklyAvailability', currentSlots.map((s) => s.toJson()).toList());
+    await _updateField(
+      'weeklyAvailability',
+      currentSlots.map((s) => s.toJson()).toList(),
+    );
   }
 
   /// Remove time slot from availability
@@ -182,10 +207,15 @@ class PreferencesController extends StateNotifier<PreferencesState> {
     final currentPreferences = state.preferences;
     if (currentPreferences == null) return;
 
-    final currentSlots = List<TimeSlot>.from(currentPreferences.weeklyAvailability);
+    final currentSlots = List<TimeSlot>.from(
+      currentPreferences.weeklyAvailability,
+    );
     currentSlots.removeWhere((slot) => slot == timeSlot);
 
-    await _updateField('weeklyAvailability', currentSlots.map((s) => s.toJson()).toList());
+    await _updateField(
+      'weeklyAvailability',
+      currentSlots.map((s) => s.toJson()).toList(),
+    );
   }
 
   /// Save all pending changes
@@ -197,15 +227,13 @@ class PreferencesController extends StateNotifier<PreferencesState> {
     try {
       final params = UpdatePreferencesParams(
         userId: 'current-user-id', // Would come from auth
-        preferredGameTypes: state.pendingChanges['preferredGameTypes'] as List<String>?,
+        preferredGameTypes:
+            state.pendingChanges['preferredGameTypes'] as List<String>?,
         maxTravelDistance: state.pendingChanges['maxTravelRadius'] as double?,
       );
 
       if (_updatePreferencesUseCase == null) {
-        state = state.copyWith(
-          isSaving: false,
-          lastSyncTime: DateTime.now(),
-        );
+        state = state.copyWith(isSaving: false, lastSyncTime: DateTime.now());
         return true;
       }
 
@@ -221,7 +249,9 @@ class PreferencesController extends StateNotifier<PreferencesState> {
         },
         (updateResult) {
           // Recalculate compatibility score
-          final compatibilityScore = _calculateCompatibilityScore(updateResult.updatedPreferences);
+          final compatibilityScore = _calculateCompatibilityScore(
+            updateResult.updatedPreferences,
+          );
 
           state = state.copyWith(
             isSaving: false,
@@ -250,13 +280,28 @@ class PreferencesController extends StateNotifier<PreferencesState> {
 
     final allChanges = {
       'preferredGameTypes': defaultPreferences.preferredGameTypes,
-      'preferredDuration': defaultPreferences.preferredDuration.toString().split('.').last,
-      'preferredTeamSize': defaultPreferences.preferredTeamSize.toString().split('.').last,
+      'preferredDuration': defaultPreferences.preferredDuration
+          .toString()
+          .split('.')
+          .last,
+      'preferredTeamSize': defaultPreferences.preferredTeamSize
+          .toString()
+          .split('.')
+          .last,
       'maxTravelRadius': defaultPreferences.maxTravelRadius,
-      'travelWillingness': defaultPreferences.travelWillingness.toString().split('.').last,
+      'travelWillingness': defaultPreferences.travelWillingness
+          .toString()
+          .split('.')
+          .last,
       'openToNewPlayers': defaultPreferences.openToNewPlayers,
-      'ageRangePreference': defaultPreferences.ageRangePreference.toString().split('.').last,
-      'genderMixPreference': defaultPreferences.genderMixPreference.toString().split('.').last,
+      'ageRangePreference': defaultPreferences.ageRangePreference
+          .toString()
+          .split('.')
+          .last,
+      'genderMixPreference': defaultPreferences.genderMixPreference
+          .toString()
+          .split('.')
+          .last,
       'preferCompetitive': defaultPreferences.preferCompetitive,
       'preferCasual': defaultPreferences.preferCasual,
     };
@@ -275,7 +320,7 @@ class PreferencesController extends StateNotifier<PreferencesState> {
   List<TimeSlot> getAvailabilityForDay(int dayOfWeek) {
     final preferences = state.preferences;
     if (preferences == null) return [];
-    
+
     return preferences.weeklyAvailability
         .where((slot) => slot.dayOfWeek == dayOfWeek)
         .toList();
@@ -285,8 +330,10 @@ class PreferencesController extends StateNotifier<PreferencesState> {
   bool isAvailableAt(DateTime dateTime) {
     final preferences = state.preferences;
     if (preferences == null) return false;
-    
-    return preferences.weeklyAvailability.any((slot) => slot.isAvailable(dateTime));
+
+    return preferences.weeklyAvailability.any(
+      (slot) => slot.isAvailable(dateTime),
+    );
   }
 
   /// Get total hours of availability per week
@@ -295,12 +342,12 @@ class PreferencesController extends StateNotifier<PreferencesState> {
     if (preferences == null) return 0.0;
 
     double totalHours = 0.0;
-    
+
     for (final slot in preferences.weeklyAvailability) {
       final duration = slot.endHour - slot.startHour;
       totalHours += duration.toDouble();
     }
-    
+
     return totalHours;
   }
 
@@ -316,9 +363,17 @@ class PreferencesController extends StateNotifier<PreferencesState> {
       'travelRadius': '${preferences.maxTravelRadius.toInt()} mi',
       'weeklyAvailability': '${totalWeeklyAvailability.toInt()} hours',
       'openToNewPlayers': preferences.openToNewPlayers ? 'Yes' : 'No',
-      'agePreference': preferences.ageRangePreference.toString().split('.').last,
-      'genderPreference': preferences.genderMixPreference.toString().split('.').last,
-      'competitiveLevel': preferences.preferCompetitive ? 'Competitive' : 'Casual',
+      'agePreference': preferences.ageRangePreference
+          .toString()
+          .split('.')
+          .last,
+      'genderPreference': preferences.genderMixPreference
+          .toString()
+          .split('.')
+          .last,
+      'competitiveLevel': preferences.preferCompetitive
+          ? 'Competitive'
+          : 'Casual',
       'compatibilityScore': state.compatibilityScore.toInt(),
     };
   }
@@ -333,49 +388,67 @@ class PreferencesController extends StateNotifier<PreferencesState> {
     final currentPreferences = state.preferences;
     if (currentPreferences == null) return;
 
-    final updatedPendingChanges = Map<String, dynamic>.from(state.pendingChanges);
+    final updatedPendingChanges = Map<String, dynamic>.from(
+      state.pendingChanges,
+    );
     updatedPendingChanges.addAll(fields);
 
     // Apply changes to current preferences for immediate UI update
     UserPreferences updatedPreferences = currentPreferences;
-    
+
     for (final entry in fields.entries) {
       switch (entry.key) {
         case 'preferredGameTypes':
-          updatedPreferences = updatedPreferences.copyWith(preferredGameTypes: entry.value as List<String>);
+          updatedPreferences = updatedPreferences.copyWith(
+            preferredGameTypes: entry.value as List<String>,
+          );
           break;
         case 'preferredDuration':
           final duration = GameDuration.values.firstWhere(
             (e) => e.toString().split('.').last == entry.value,
             orElse: () => GameDuration.any,
           );
-          updatedPreferences = updatedPreferences.copyWith(preferredDuration: duration);
+          updatedPreferences = updatedPreferences.copyWith(
+            preferredDuration: duration,
+          );
           break;
         case 'preferredTeamSize':
           final teamSize = TeamSize.values.firstWhere(
             (e) => e.toString().split('.').last == entry.value,
             orElse: () => TeamSize.any,
           );
-          updatedPreferences = updatedPreferences.copyWith(preferredTeamSize: teamSize);
+          updatedPreferences = updatedPreferences.copyWith(
+            preferredTeamSize: teamSize,
+          );
           break;
         case 'maxTravelRadius':
-          updatedPreferences = updatedPreferences.copyWith(maxTravelRadius: entry.value as double);
+          updatedPreferences = updatedPreferences.copyWith(
+            maxTravelRadius: entry.value as double,
+          );
           break;
         case 'travelWillingness':
           final willingness = TravelWillingness.values.firstWhere(
             (e) => e.toString().split('.').last == entry.value,
             orElse: () => TravelWillingness.moderate,
           );
-          updatedPreferences = updatedPreferences.copyWith(travelWillingness: willingness);
+          updatedPreferences = updatedPreferences.copyWith(
+            travelWillingness: willingness,
+          );
           break;
         case 'openToNewPlayers':
-          updatedPreferences = updatedPreferences.copyWith(openToNewPlayers: entry.value as bool);
+          updatedPreferences = updatedPreferences.copyWith(
+            openToNewPlayers: entry.value as bool,
+          );
           break;
         case 'preferCompetitive':
-          updatedPreferences = updatedPreferences.copyWith(preferCompetitive: entry.value as bool);
+          updatedPreferences = updatedPreferences.copyWith(
+            preferCompetitive: entry.value as bool,
+          );
           break;
         case 'preferCasual':
-          updatedPreferences = updatedPreferences.copyWith(preferCasual: entry.value as bool);
+          updatedPreferences = updatedPreferences.copyWith(
+            preferCasual: entry.value as bool,
+          );
           break;
       }
     }
@@ -393,34 +466,35 @@ class PreferencesController extends StateNotifier<PreferencesState> {
   /// Calculate compatibility score based on preferences completeness
   double _calculateCompatibilityScore(UserPreferences preferences) {
     double score = 0.0;
-    
+
     // Game types (20%)
     score += (preferences.preferredGameTypes.isNotEmpty ? 20.0 : 0.0);
-    
+
     // Duration and team size preferences (20%)
     if (preferences.preferredDuration != GameDuration.any) score += 10.0;
     if (preferences.preferredTeamSize != TeamSize.any) score += 10.0;
-    
+
     // Travel preferences (15%)
     if (preferences.maxTravelRadius > 0) score += 15.0;
-    
+
     // Availability (25%)
     final weeklyHours = totalWeeklyAvailability;
     if (weeklyHours > 0) {
       score += (weeklyHours * 2.5).clamp(0.0, 25.0); // Max 25 points
     }
-    
+
     // Social preferences (20%)
     if (preferences.ageRangePreference != AgeRangePreference.any) score += 10.0;
-    if (preferences.genderMixPreference != GenderMixPreference.any) score += 10.0;
-    
+    if (preferences.genderMixPreference != GenderMixPreference.any)
+      score += 10.0;
+
     return score.clamp(0.0, 100.0);
   }
 
   /// Check if two time slots overlap
   bool _timeSlotsOverlap(TimeSlot slot1, TimeSlot slot2) {
     if (slot1.dayOfWeek != slot2.dayOfWeek) return false;
-    
+
     return slot1.startHour < slot2.endHour && slot2.startHour < slot1.endHour;
   }
 

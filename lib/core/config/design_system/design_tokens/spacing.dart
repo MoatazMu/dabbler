@@ -28,24 +28,52 @@ class DabblerSpacing {
   static EdgeInsets all64 = const EdgeInsets.all(spacing64);
 
   // EdgeInsets Helpers - Symmetric Horizontal
-  static EdgeInsets horizontal4 = const EdgeInsets.symmetric(horizontal: spacing4);
-  static EdgeInsets horizontal8 = const EdgeInsets.symmetric(horizontal: spacing8);
-  static EdgeInsets horizontal12 = const EdgeInsets.symmetric(horizontal: spacing12);
-  static EdgeInsets horizontal16 = const EdgeInsets.symmetric(horizontal: spacing16);
-  static EdgeInsets horizontal24 = const EdgeInsets.symmetric(horizontal: spacing24);
-  static EdgeInsets horizontal32 = const EdgeInsets.symmetric(horizontal: spacing32);
-  static EdgeInsets horizontal48 = const EdgeInsets.symmetric(horizontal: spacing48);
-  static EdgeInsets horizontal64 = const EdgeInsets.symmetric(horizontal: spacing64);
+  static EdgeInsets horizontal4 = const EdgeInsets.symmetric(
+    horizontal: spacing4,
+  );
+  static EdgeInsets horizontal8 = const EdgeInsets.symmetric(
+    horizontal: spacing8,
+  );
+  static EdgeInsets horizontal12 = const EdgeInsets.symmetric(
+    horizontal: spacing12,
+  );
+  static EdgeInsets horizontal16 = const EdgeInsets.symmetric(
+    horizontal: spacing16,
+  );
+  static EdgeInsets horizontal24 = const EdgeInsets.symmetric(
+    horizontal: spacing24,
+  );
+  static EdgeInsets horizontal32 = const EdgeInsets.symmetric(
+    horizontal: spacing32,
+  );
+  static EdgeInsets horizontal48 = const EdgeInsets.symmetric(
+    horizontal: spacing48,
+  );
+  static EdgeInsets horizontal64 = const EdgeInsets.symmetric(
+    horizontal: spacing64,
+  );
 
   // EdgeInsets Helpers - Symmetric Vertical
   static EdgeInsets vertical4 = const EdgeInsets.symmetric(vertical: spacing4);
   static EdgeInsets vertical8 = const EdgeInsets.symmetric(vertical: spacing8);
-  static EdgeInsets vertical12 = const EdgeInsets.symmetric(vertical: spacing12);
-  static EdgeInsets vertical16 = const EdgeInsets.symmetric(vertical: spacing16);
-  static EdgeInsets vertical24 = const EdgeInsets.symmetric(vertical: spacing24);
-  static EdgeInsets vertical32 = const EdgeInsets.symmetric(vertical: spacing32);
-  static EdgeInsets vertical48 = const EdgeInsets.symmetric(vertical: spacing48);
-  static EdgeInsets vertical64 = const EdgeInsets.symmetric(vertical: spacing64);
+  static EdgeInsets vertical12 = const EdgeInsets.symmetric(
+    vertical: spacing12,
+  );
+  static EdgeInsets vertical16 = const EdgeInsets.symmetric(
+    vertical: spacing16,
+  );
+  static EdgeInsets vertical24 = const EdgeInsets.symmetric(
+    vertical: spacing24,
+  );
+  static EdgeInsets vertical32 = const EdgeInsets.symmetric(
+    vertical: spacing32,
+  );
+  static EdgeInsets vertical48 = const EdgeInsets.symmetric(
+    vertical: spacing48,
+  );
+  static EdgeInsets vertical64 = const EdgeInsets.symmetric(
+    vertical: spacing64,
+  );
 
   // Helper Methods
   static double getResponsiveSpacing(double baseSpacing, BuildContext context) {
@@ -61,9 +89,12 @@ class DabblerSpacing {
     return baseSpacing * multiplier;
   }
 
-  static EdgeInsets getResponsiveInsets(EdgeInsets baseInsets, BuildContext context) {
+  static EdgeInsets getResponsiveInsets(
+    EdgeInsets baseInsets,
+    BuildContext context,
+  ) {
     final double multiplier = _getMultiplierForContext(context);
-    
+
     return EdgeInsets.only(
       left: baseInsets.left * multiplier,
       top: baseInsets.top * multiplier,
@@ -75,13 +106,13 @@ class DabblerSpacing {
   // Private Helper Method
   static double _getMultiplierForContext(BuildContext context) {
     final double width = MediaQuery.of(context).size.width;
-    
+
     if (width >= 992) {
       return _desktopMultiplier;
     } else if (width >= 576) {
       return _tabletMultiplier;
     }
-    
+
     return _mobileMultiplier;
   }
 
@@ -92,12 +123,7 @@ class DabblerSpacing {
     double right = 0,
     double bottom = 0,
   }) {
-    return EdgeInsets.only(
-      left: left,
-      top: top,
-      right: right,
-      bottom: bottom,
-    );
+    return EdgeInsets.only(left: left, top: top, right: right, bottom: bottom);
   }
 
   // Stack Spacing (for use with Positioned widget)

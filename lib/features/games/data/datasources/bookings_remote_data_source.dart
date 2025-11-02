@@ -78,8 +78,5 @@ abstract class BookingsRemoteDataSource {
 
   Future<String> getBookingQRCode(String bookingId);
 
-  Future<BookingModel> extendBooking(
-    String bookingId,
-    int additionalMinutes,
-  );
+  Future<BookingModel> extendBooking(String bookingId, int additionalMinutes);
 }

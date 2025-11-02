@@ -149,7 +149,8 @@ class ActivityLogRepositoryImpl implements ActivityLogRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, List<ActivityLog>>>> getActivitiesByDateRange({
+  Future<Either<Failure, Map<String, List<ActivityLog>>>>
+  getActivitiesByDateRange({
     required String userId,
     required DateTime startDate,
     required DateTime endDate,
@@ -200,7 +201,9 @@ class ActivityLogRepositoryImpl implements ActivityLogRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, int>>> getCategoryStats(String userId) async {
+  Future<Either<Failure, Map<String, int>>> getCategoryStats(
+    String userId,
+  ) async {
     try {
       final stats = await remoteDataSource.getCategoryStats(userId);
       return Right(stats);

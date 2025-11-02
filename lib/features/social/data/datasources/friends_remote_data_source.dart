@@ -12,10 +12,7 @@ abstract class FriendsRemoteDataSource {
   });
 
   /// Send a friend request to another user
-  Future<FriendModel> sendFriendRequest(
-    String toUserId, {
-    String? message,
-  });
+  Future<FriendModel> sendFriendRequest(String toUserId, {String? message});
 
   /// Accept a friend request
   Future<FriendModel> acceptFriendRequest(String requestId);
@@ -30,10 +27,7 @@ abstract class FriendsRemoteDataSource {
   Future<bool> unblockUser(String userId);
 
   /// Get friend suggestions for current user
-  Future<List<FriendModel>> getFriendSuggestions({
-    int? limit,
-    int? offset,
-  });
+  Future<List<FriendModel>> getFriendSuggestions({int? limit, int? offset});
 
   /// Get mutual friends between current user and another user
   Future<List<FriendModel>> getMutualFriends(
@@ -50,22 +44,13 @@ abstract class FriendsRemoteDataSource {
   });
 
   /// Get pending friend requests (received)
-  Future<List<FriendModel>> getPendingRequests({
-    int? limit,
-    int? offset,
-  });
+  Future<List<FriendModel>> getPendingRequests({int? limit, int? offset});
 
   /// Get sent friend requests
-  Future<List<FriendModel>> getSentRequests({
-    int? limit,
-    int? offset,
-  });
+  Future<List<FriendModel>> getSentRequests({int? limit, int? offset});
 
   /// Get blocked users list
-  Future<List<FriendModel>> getBlockedUsers({
-    int? limit,
-    int? offset,
-  });
+  Future<List<FriendModel>> getBlockedUsers({int? limit, int? offset});
 
   /// Cancel a sent friend request
   Future<bool> cancelFriendRequest(String requestId);
@@ -80,16 +65,10 @@ abstract class FriendsRemoteDataSource {
   );
 
   /// Get online friends
-  Future<List<FriendModel>> getOnlineFriends({
-    int? limit,
-    int? offset,
-  });
+  Future<List<FriendModel>> getOnlineFriends({int? limit, int? offset});
 
   /// Update friend request message
-  Future<bool> updateFriendRequestMessage(
-    String requestId,
-    String message,
-  );
+  Future<bool> updateFriendRequestMessage(String requestId, String message);
 
   /// Get friend statistics
   Future<Map<String, int>> getFriendStatistics(String userId);

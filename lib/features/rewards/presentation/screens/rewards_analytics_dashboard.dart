@@ -8,13 +8,15 @@ class RewardsAnalyticsDashboard extends ConsumerStatefulWidget {
   const RewardsAnalyticsDashboard({super.key});
 
   @override
-  ConsumerState<RewardsAnalyticsDashboard> createState() => _RewardsAnalyticsDashboardState();
+  ConsumerState<RewardsAnalyticsDashboard> createState() =>
+      _RewardsAnalyticsDashboardState();
 }
 
-class _RewardsAnalyticsDashboardState extends ConsumerState<RewardsAnalyticsDashboard>
+class _RewardsAnalyticsDashboardState
+    extends ConsumerState<RewardsAnalyticsDashboard>
     with TickerProviderStateMixin {
   late TabController _tabController;
-  
+
   @override
   void initState() {
     super.initState();
@@ -83,7 +85,7 @@ class AchievementCompletionDashboard extends ConsumerWidget {
           children: [
             _buildSectionHeader('Achievement Completion Overview'),
             const SizedBox(height: 16),
-            
+
             // Summary Cards
             Row(
               children: [
@@ -107,7 +109,7 @@ class AchievementCompletionDashboard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Completion Rate by Category
             _buildSectionHeader('Completion Rates by Category'),
             const SizedBox(height: 16),
@@ -118,7 +120,9 @@ class AchievementCompletionDashboard extends ConsumerWidget {
                   alignment: BarChartAlignment.spaceAround,
                   maxY: 100,
                   barGroups: data.categoryCompletionRates.entries.map((entry) {
-                    final index = data.categoryCompletionRates.keys.toList().indexOf(entry.key);
+                    final index = data.categoryCompletionRates.keys
+                        .toList()
+                        .indexOf(entry.key);
                     return BarChartGroupData(
                       x: index,
                       barRods: [
@@ -145,7 +149,8 @@ class AchievementCompletionDashboard extends ConsumerWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          final categories = data.categoryCompletionRates.keys.toList();
+                          final categories = data.categoryCompletionRates.keys
+                              .toList();
                           if (value.toInt() < categories.length) {
                             return Padding(
                               padding: const EdgeInsets.only(top: 8),
@@ -159,8 +164,12 @@ class AchievementCompletionDashboard extends ConsumerWidget {
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   gridData: FlGridData(show: true, horizontalInterval: 20),
                   borderData: FlBorderData(show: false),
@@ -168,7 +177,7 @@ class AchievementCompletionDashboard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Achievement Difficulty Analysis
             _buildSectionHeader('Completion Rate by Difficulty'),
             const SizedBox(height: 16),
@@ -181,7 +190,8 @@ class AchievementCompletionDashboard extends ConsumerWidget {
                   sections: data.difficultyCompletionRates.entries.map((entry) {
                     return PieChartSectionData(
                       value: entry.value * 100,
-                      title: '${entry.key}\n${(entry.value * 100).toStringAsFixed(1)}%',
+                      title:
+                          '${entry.key}\n${(entry.value * 100).toStringAsFixed(1)}%',
                       color: _getDifficultyColor(entry.key),
                       radius: 80,
                       titleStyle: const TextStyle(
@@ -195,35 +205,42 @@ class AchievementCompletionDashboard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Top Performing Achievements
             _buildSectionHeader('Top Performing Achievements'),
             const SizedBox(height: 16),
-            ...data.topAchievements.map((achievement) => Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: _getTierColor(achievement.tier),
-                  child: const Icon(Icons.star, color: Colors.white),
-                ),
-                title: Text(achievement.name),
-                subtitle: Text('${achievement.category} • ${achievement.tier.name}'),
-                trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.green[100],
-                    borderRadius: BorderRadius.circular(12),
+            ...data.topAchievements.map(
+              (achievement) => Card(
+                margin: const EdgeInsets.only(bottom: 8),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: _getTierColor(achievement.tier),
+                    child: const Icon(Icons.star, color: Colors.white),
                   ),
-                  child: Text(
-                    '${(achievement.completionRate * 100).toStringAsFixed(1)}%',
-                    style: TextStyle(
-                      color: Colors.green[800],
-                      fontWeight: FontWeight.bold,
+                  title: Text(achievement.name),
+                  subtitle: Text(
+                    '${achievement.category} • ${achievement.tier.name}',
+                  ),
+                  trailing: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green[100],
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '${(achievement.completionRate * 100).toStringAsFixed(1)}%',
+                      style: TextStyle(
+                        color: Colors.green[800],
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
               ),
-            )),
+            ),
           ],
         ),
       ),
@@ -241,7 +258,12 @@ class AchievementCompletionDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
+  Widget _buildSummaryCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 4,
       child: Padding(
@@ -280,32 +302,48 @@ class AchievementCompletionDashboard extends ConsumerWidget {
 
   Color _getCategoryColor(String category) {
     switch (category) {
-      case 'games': return Colors.blue;
-      case 'social': return Colors.green;
-      case 'exploration': return Colors.orange;
-      case 'progress': return Colors.purple;
-      case 'engagement': return Colors.red;
-      default: return Colors.grey;
+      case 'games':
+        return Colors.blue;
+      case 'social':
+        return Colors.green;
+      case 'exploration':
+        return Colors.orange;
+      case 'progress':
+        return Colors.purple;
+      case 'engagement':
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 
   Color _getDifficultyColor(String difficulty) {
     switch (difficulty) {
-      case 'easy': return Colors.green;
-      case 'medium': return Colors.yellow[600]!;
-      case 'hard': return Colors.orange;
-      case 'expert': return Colors.red;
-      default: return Colors.grey;
+      case 'easy':
+        return Colors.green;
+      case 'medium':
+        return Colors.yellow[600]!;
+      case 'hard':
+        return Colors.orange;
+      case 'expert':
+        return Colors.red;
+      default:
+        return Colors.grey;
     }
   }
 
   Color _getTierColor(BadgeTier tier) {
     switch (tier) {
-      case BadgeTier.bronze: return Colors.brown;
-      case BadgeTier.silver: return Colors.grey;
-      case BadgeTier.gold: return Colors.amber;
-      case BadgeTier.platinum: return Colors.blue[200]!;
-      case BadgeTier.diamond: return Colors.cyan;
+      case BadgeTier.bronze:
+        return Colors.brown;
+      case BadgeTier.silver:
+        return Colors.grey;
+      case BadgeTier.gold:
+        return Colors.amber;
+      case BadgeTier.platinum:
+        return Colors.blue[200]!;
+      case BadgeTier.diamond:
+        return Colors.cyan;
     }
   }
 }
@@ -375,7 +413,7 @@ class UserEngagementDashboard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Engagement Over Time Chart
             _buildSectionHeader('Daily Active Users Trend'),
             const SizedBox(height: 16),
@@ -399,7 +437,15 @@ class UserEngagementDashboard extends ConsumerWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
-                          final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                          final days = [
+                            'Mon',
+                            'Tue',
+                            'Wed',
+                            'Thu',
+                            'Fri',
+                            'Sat',
+                            'Sun',
+                          ];
                           if (value.toInt() < days.length) {
                             return Text(days[value.toInt()]);
                           }
@@ -407,18 +453,28 @@ class UserEngagementDashboard extends ConsumerWidget {
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   borderData: FlBorderData(show: false),
                   minX: 0,
                   maxX: 6,
                   minY: 0,
-                  maxY: data.weeklyEngagement.values.reduce((a, b) => a > b ? a : b) * 1.1,
+                  maxY:
+                      data.weeklyEngagement.values.reduce(
+                        (a, b) => a > b ? a : b,
+                      ) *
+                      1.1,
                   lineBarsData: [
                     LineChartBarData(
                       spots: data.weeklyEngagement.entries.map((entry) {
-                        final index = data.weeklyEngagement.keys.toList().indexOf(entry.key);
+                        final index = data.weeklyEngagement.keys
+                            .toList()
+                            .indexOf(entry.key);
                         return FlSpot(index.toDouble(), entry.value);
                       }).toList(),
                       isCurved: true,
@@ -430,12 +486,13 @@ class UserEngagementDashboard extends ConsumerWidget {
                       ),
                       dotData: FlDotData(
                         show: true,
-                        getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-                          radius: 4,
-                          color: Colors.blue,
-                          strokeWidth: 2,
-                          strokeColor: Colors.white,
-                        ),
+                        getDotPainter: (spot, percent, barData, index) =>
+                            FlDotCirclePainter(
+                              radius: 4,
+                              color: Colors.blue,
+                              strokeWidth: 2,
+                              strokeColor: Colors.white,
+                            ),
                       ),
                     ),
                   ],
@@ -443,7 +500,7 @@ class UserEngagementDashboard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // User Segmentation
             _buildSectionHeader('User Engagement Segments'),
             const SizedBox(height: 16),
@@ -456,24 +513,36 @@ class UserEngagementDashboard extends ConsumerWidget {
                   sections: [
                     PieChartSectionData(
                       value: data.highlyEngagedPercent,
-                      title: 'Highly\nEngaged\n${data.highlyEngagedPercent.toStringAsFixed(1)}%',
+                      title:
+                          'Highly\nEngaged\n${data.highlyEngagedPercent.toStringAsFixed(1)}%',
                       color: Colors.green,
                       radius: 80,
-                      titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      titleStyle: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     PieChartSectionData(
                       value: data.moderatelyEngagedPercent,
-                      title: 'Moderately\nEngaged\n${data.moderatelyEngagedPercent.toStringAsFixed(1)}%',
+                      title:
+                          'Moderately\nEngaged\n${data.moderatelyEngagedPercent.toStringAsFixed(1)}%',
                       color: Colors.orange,
                       radius: 80,
-                      titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      titleStyle: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     PieChartSectionData(
                       value: data.lowEngagementPercent,
-                      title: 'Low\nEngagement\n${data.lowEngagementPercent.toStringAsFixed(1)}%',
+                      title:
+                          'Low\nEngagement\n${data.lowEngagementPercent.toStringAsFixed(1)}%',
                       color: Colors.red,
                       radius: 80,
-                      titleStyle: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      titleStyle: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -623,7 +692,7 @@ class PointsDistributionDashboard extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 24),
-            
+
             // Points Distribution Histogram
             _buildSectionHeader('Points Distribution by User'),
             const SizedBox(height: 16),
@@ -632,9 +701,15 @@ class PointsDistributionDashboard extends ConsumerWidget {
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
-                  maxY: data.distributionBuckets.values.reduce((a, b) => a > b ? a : b) * 1.1,
+                  maxY:
+                      data.distributionBuckets.values.reduce(
+                        (a, b) => a > b ? a : b,
+                      ) *
+                      1.1,
                   barGroups: data.distributionBuckets.entries.map((entry) {
-                    final index = data.distributionBuckets.keys.toList().indexOf(entry.key);
+                    final index = data.distributionBuckets.keys
+                        .toList()
+                        .indexOf(entry.key);
                     return BarChartGroupData(
                       x: index,
                       barRods: [
@@ -676,8 +751,12 @@ class PointsDistributionDashboard extends ConsumerWidget {
                         },
                       ),
                     ),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
                   gridData: FlGridData(show: true),
                   borderData: FlBorderData(show: false),
@@ -685,7 +764,7 @@ class PointsDistributionDashboard extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Points Sources Breakdown
             _buildSectionHeader('Points Sources'),
             const SizedBox(height: 16),
@@ -696,7 +775,8 @@ class PointsDistributionDashboard extends ConsumerWidget {
                   sectionsSpace: 2,
                   centerSpaceRadius: 60,
                   sections: data.pointsSources.entries.map((entry) {
-                    final percentage = (entry.value / data.totalPointsAwarded) * 100;
+                    final percentage =
+                        (entry.value / data.totalPointsAwarded) * 100;
                     return PieChartSectionData(
                       value: entry.value.toDouble(),
                       title: '${entry.key}\n${percentage.toStringAsFixed(1)}%',
@@ -729,7 +809,12 @@ class PointsDistributionDashboard extends ConsumerWidget {
     );
   }
 
-  Widget _buildSummaryCard(String title, String value, IconData icon, Color color) {
+  Widget _buildSummaryCard(
+    String title,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 4,
       child: Padding(
@@ -777,24 +862,37 @@ class PointsDistributionDashboard extends ConsumerWidget {
 
   Color _getDistributionColor(String range) {
     switch (range) {
-      case '0-100': return Colors.red[300]!;
-      case '101-500': return Colors.orange[300]!;
-      case '501-1K': return Colors.yellow[600]!;
-      case '1K-5K': return Colors.green[300]!;
-      case '5K-10K': return Colors.blue[300]!;
-      case '10K+': return Colors.purple[300]!;
-      default: return Colors.grey;
+      case '0-100':
+        return Colors.red[300]!;
+      case '101-500':
+        return Colors.orange[300]!;
+      case '501-1K':
+        return Colors.yellow[600]!;
+      case '1K-5K':
+        return Colors.green[300]!;
+      case '5K-10K':
+        return Colors.blue[300]!;
+      case '10K+':
+        return Colors.purple[300]!;
+      default:
+        return Colors.grey;
     }
   }
 
   Color _getSourceColor(String source) {
     switch (source) {
-      case 'games': return Colors.blue;
-      case 'achievements': return Colors.amber;
-      case 'social': return Colors.green;
-      case 'daily_bonus': return Colors.orange;
-      case 'events': return Colors.purple;
-      default: return Colors.grey;
+      case 'games':
+        return Colors.blue;
+      case 'achievements':
+        return Colors.amber;
+      case 'social':
+        return Colors.green;
+      case 'daily_bonus':
+        return Colors.orange;
+      case 'events':
+        return Colors.purple;
+      default:
+        return Colors.grey;
     }
   }
 }
@@ -802,21 +900,42 @@ class PointsDistributionDashboard extends ConsumerWidget {
 // Additional dashboard widgets would continue here...
 // TierProgressionDashboard, PopularAchievementsDashboard, AbandonmentAnalysisDashboard
 
-final achievementAnalyticsProvider = FutureProvider<AchievementAnalyticsData>((ref) async {
+final achievementAnalyticsProvider = FutureProvider<AchievementAnalyticsData>((
+  ref,
+) async {
   // Mock data that matches the dashboard's AchievementAnalyticsData structure
   return AchievementAnalyticsData(
     totalAchievements: 150,
     averageCompletionRate: 0.75,
-    categoryCompletionRates: {'gaming': 0.80, 'social': 0.65, 'profile': 0.85, 'venue': 0.55},
+    categoryCompletionRates: {
+      'gaming': 0.80,
+      'social': 0.65,
+      'profile': 0.85,
+      'venue': 0.55,
+    },
     difficultyCompletionRates: {'bronze': 0.90, 'silver': 0.70, 'gold': 0.45},
     topAchievements: [
-      AchievementPerformance(id: '1', name: 'First Win', category: 'gaming', tier: BadgeTier.bronze, completionRate: 0.95),
-      AchievementPerformance(id: '2', name: 'Social Butterfly', category: 'social', tier: BadgeTier.silver, completionRate: 0.80),
+      AchievementPerformance(
+        id: '1',
+        name: 'First Win',
+        category: 'gaming',
+        tier: BadgeTier.bronze,
+        completionRate: 0.95,
+      ),
+      AchievementPerformance(
+        id: '2',
+        name: 'Social Butterfly',
+        category: 'social',
+        tier: BadgeTier.silver,
+        completionRate: 0.80,
+      ),
     ],
   );
 });
 
-final engagementAnalyticsProvider = FutureProvider<EngagementAnalyticsData>((ref) async {
+final engagementAnalyticsProvider = FutureProvider<EngagementAnalyticsData>((
+  ref,
+) async {
   // Mock data that matches the dashboard's EngagementAnalyticsData structure
   return EngagementAnalyticsData(
     dailyActiveUsers: 1200,
@@ -827,22 +946,42 @@ final engagementAnalyticsProvider = FutureProvider<EngagementAnalyticsData>((ref
     retentionTrend: 0.72,
     actionsPerUser: 15.3,
     actionGrowth: 0.05,
-    weeklyEngagement: {'Mon': 0.65, 'Tue': 0.70, 'Wed': 0.68, 'Thu': 0.72, 'Fri': 0.75, 'Sat': 0.80, 'Sun': 0.62},
+    weeklyEngagement: {
+      'Mon': 0.65,
+      'Tue': 0.70,
+      'Wed': 0.68,
+      'Thu': 0.72,
+      'Fri': 0.75,
+      'Sat': 0.80,
+      'Sun': 0.62,
+    },
     highlyEngagedPercent: 0.25,
     moderatelyEngagedPercent: 0.45,
     lowEngagementPercent: 0.30,
   );
 });
 
-final pointsAnalyticsProvider = FutureProvider<PointsAnalyticsData>((ref) async {
+final pointsAnalyticsProvider = FutureProvider<PointsAnalyticsData>((
+  ref,
+) async {
   // Mock data that matches the dashboard's PointsAnalyticsData structure
   return PointsAnalyticsData(
     totalPointsAwarded: 750000,
     averagePointsPerUser: 950,
     dailyPointsRate: 1500.0,
     inflationRate: 0.025,
-    distributionBuckets: {'0-100': 180, '101-500': 320, '501-1000': 280, '1000+': 220},
-    pointsSources: {'achievements': 55, 'daily_bonus': 25, 'social': 12, 'challenges': 8},
+    distributionBuckets: {
+      '0-100': 180,
+      '101-500': 320,
+      '501-1000': 280,
+      '1000+': 220,
+    },
+    pointsSources: {
+      'achievements': 55,
+      'daily_bonus': 25,
+      'social': 12,
+      'challenges': 8,
+    },
   );
 });
 
@@ -930,7 +1069,7 @@ class PointsAnalyticsData {
 /// Missing Dashboard Widget Classes
 class TierProgressionDashboard extends StatelessWidget {
   const TierProgressionDashboard({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return const Center(
@@ -941,7 +1080,7 @@ class TierProgressionDashboard extends StatelessWidget {
 
 class PopularAchievementsDashboard extends StatelessWidget {
   const PopularAchievementsDashboard({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return const Center(
@@ -952,7 +1091,7 @@ class PopularAchievementsDashboard extends StatelessWidget {
 
 class AbandonmentAnalysisDashboard extends StatelessWidget {
   const AbandonmentAnalysisDashboard({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return const Center(

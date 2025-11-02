@@ -16,5 +16,6 @@ class FriendEdge with _$FriendEdge {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _FriendEdge;
 
-  factory FriendEdge.fromJson(Map<String, dynamic> json) => _$FriendEdgeFromJson(json);
+  factory FriendEdge.fromJson(Map<String, dynamic> json) =>
+      _$FriendEdgeFromJson(json);
 }

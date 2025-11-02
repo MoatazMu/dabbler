@@ -12,7 +12,8 @@ class NotificationsScreenV2 extends ConsumerStatefulWidget {
   const NotificationsScreenV2({super.key});
 
   @override
-  ConsumerState<NotificationsScreenV2> createState() => _NotificationsScreenV2State();
+  ConsumerState<NotificationsScreenV2> createState() =>
+      _NotificationsScreenV2State();
 }
 
 class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
@@ -52,9 +53,7 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
           actionIcon: LucideIcons.bell,
           onActionPressed: () {},
         ),
-        body: const Center(
-          child: Text('Please sign in to view notifications'),
-        ),
+        body: const Center(child: Text('Please sign in to view notifications')),
       );
     }
 
@@ -113,7 +112,10 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
               },
               child: Container(
                 margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? context.colors.primary
@@ -163,11 +165,7 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
       ),
       child: Row(
         children: [
-          Icon(
-            LucideIcons.bellDot,
-            size: 16,
-            color: context.colors.primary,
-          ),
+          Icon(LucideIcons.bellDot, size: 16, color: context.colors.primary),
           const SizedBox(width: 8),
           Text(
             '${state.unreadCount} unread',
@@ -264,11 +262,16 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
         ),
         child: ListTile(
           contentPadding: const EdgeInsets.all(16),
-          leading: _getNotificationIcon(notification.type, notification.priority),
+          leading: _getNotificationIcon(
+            notification.type,
+            notification.priority,
+          ),
           title: Text(
             notification.title,
             style: context.textTheme.titleMedium?.copyWith(
-              fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+              fontWeight: notification.isRead
+                  ? FontWeight.normal
+                  : FontWeight.bold,
               color: context.colors.onSurface,
             ),
           ),
@@ -307,7 +310,10 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
     );
   }
 
-  Widget _getNotificationIcon(NotificationType type, NotificationPriority priority) {
+  Widget _getNotificationIcon(
+    NotificationType type,
+    NotificationPriority priority,
+  ) {
     IconData icon;
     Color color;
 
@@ -388,7 +394,10 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
     );
   }
 
-  Future<void> _handleNotificationTap(String userId, NotificationItem notification) async {
+  Future<void> _handleNotificationTap(
+    String userId,
+    NotificationItem notification,
+  ) async {
     // Mark as read
     if (!notification.isRead) {
       await ref

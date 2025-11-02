@@ -68,10 +68,7 @@ class ProfileHeader extends ConsumerWidget {
                         decoration: BoxDecoration(
                           color: _isOnline() ? Colors.green : Colors.grey,
                           shape: BoxShape.circle,
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 2,
-                          ),
+                          border: Border.all(color: Colors.white, width: 2),
                         ),
                       ),
                     ),
@@ -84,10 +81,11 @@ class ProfileHeader extends ConsumerWidget {
                   children: [
                     Text(
                       profile.getDisplayName(),
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                     if (profile.displayName.isNotEmpty) ...[
                       const SizedBox(height: 4),
@@ -111,9 +109,10 @@ class ProfileHeader extends ConsumerWidget {
                           Expanded(
                             child: Text(
                               _getLocation(),
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.white.withOpacity(0.8),
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Colors.white.withOpacity(0.8),
+                                  ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -133,9 +132,7 @@ class ProfileHeader extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: Colors.white.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                ),
+                border: Border.all(color: Colors.white.withOpacity(0.2)),
               ),
               child: Text(
                 profile.bio!,
@@ -167,11 +164,7 @@ class ProfileHeader extends ConsumerWidget {
             Icons.sports_esports,
           ),
         ),
-        Container(
-          width: 1,
-          height: 40,
-          color: Colors.white.withOpacity(0.3),
-        ),
+        Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
         Expanded(
           child: _buildStatItem(
             context,
@@ -180,11 +173,7 @@ class ProfileHeader extends ConsumerWidget {
             Icons.star,
           ),
         ),
-        Container(
-          width: 1,
-          height: 40,
-          color: Colors.white.withOpacity(0.3),
-        ),
+        Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
         Expanded(
           child: _buildStatItem(
             context,
@@ -193,11 +182,7 @@ class ProfileHeader extends ConsumerWidget {
             Icons.sports,
           ),
         ),
-        Container(
-          width: 1,
-          height: 40,
-          color: Colors.white.withOpacity(0.3),
-        ),
+        Container(width: 1, height: 40, color: Colors.white.withOpacity(0.3)),
         Expanded(
           child: _buildStatItem(
             context,
@@ -210,7 +195,12 @@ class ProfileHeader extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatItem(BuildContext context, String label, String value, IconData icon) {
+  Widget _buildStatItem(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
     return Column(
       children: [
         Container(
@@ -220,11 +210,7 @@ class ProfileHeader extends ConsumerWidget {
             color: Colors.white.withOpacity(0.2),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 16,
-          ),
+          child: Icon(icon, color: Colors.white, size: 16),
         ),
         const SizedBox(height: 8),
         Text(
@@ -237,9 +223,9 @@ class ProfileHeader extends ConsumerWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.white.withOpacity(0.8),
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.white.withOpacity(0.8)),
         ),
       ],
     );
@@ -373,9 +359,7 @@ class ProfileHeader extends ConsumerWidget {
         content: Text('Friend request sent to ${profile.getDisplayName()}'),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

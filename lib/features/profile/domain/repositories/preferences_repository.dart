@@ -105,7 +105,8 @@ abstract class PreferencesRepository {
   /// Updates complete availability schedule
   /// [schedule] - Map of day names to list of available time slots
   /// Returns updated schedule on success or [Failure] on error
-  Future<Either<Failure, Map<String, List<TimeSlot>>>> updateAvailabilitySchedule(
+  Future<Either<Failure, Map<String, List<TimeSlot>>>>
+  updateAvailabilitySchedule(
     String userId,
     Map<String, List<TimeSlot>> schedule,
   );
@@ -143,10 +144,7 @@ abstract class PreferencesRepository {
   /// Checks if user is available at a specific time
   /// [dateTime] - The date and time to check
   /// Returns [bool] on success or [Failure] on error
-  Future<Either<Failure, bool>> isAvailableAt(
-    String userId,
-    DateTime dateTime,
-  );
+  Future<Either<Failure, bool>> isAvailableAt(String userId, DateTime dateTime);
 
   /// Gets social preferences (age ranges, gender preference, etc.)
   /// Returns social preferences data on success or [Failure] on error
@@ -280,8 +278,5 @@ abstract class PreferencesRepository {
   /// Enables or disables automatic matchmaking
   /// [enabled] - Whether to participate in automatic matchmaking
   /// Returns [void] on success or [Failure] on error
-  Future<Either<Failure, void>> setAutoMatchmaking(
-    String userId,
-    bool enabled,
-  );
+  Future<Either<Failure, void>> setAutoMatchmaking(String userId, bool enabled);
 }

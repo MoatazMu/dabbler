@@ -10,7 +10,10 @@ class AnalyticsService {
     // TODO: forward to underlying provider(s)
   }
 
-  static Future<void> trackScreen(String screenName, [AnalyticsProps? props]) async {
+  static Future<void> trackScreen(
+    String screenName, [
+    AnalyticsProps? props,
+  ]) async {
     // TODO: forward to underlying provider(s)
   }
 

@@ -179,14 +179,10 @@ abstract class PostsRepository {
   });
 
   /// Get post analytics (for post author)
-  Future<Either<Failure, Map<String, dynamic>>> getPostAnalytics(
-    String postId,
-  );
+  Future<Either<Failure, Map<String, dynamic>>> getPostAnalytics(String postId);
 
   /// Upload media for posts
-  Future<Either<Failure, List<String>>> uploadPostMedia(
-    List<String> filePaths,
-  );
+  Future<Either<Failure, List<String>>> uploadPostMedia(List<String> filePaths);
 
   /// Delete comment
   Future<Either<Failure, bool>> deleteComment(String commentId);

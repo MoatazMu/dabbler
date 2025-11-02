@@ -20,7 +20,8 @@ class ProfileCompletionIndicator extends StatefulWidget {
   }) : assert(completionPercentage >= 0 && completionPercentage <= 100);
 
   @override
-  State<ProfileCompletionIndicator> createState() => _ProfileCompletionIndicatorState();
+  State<ProfileCompletionIndicator> createState() =>
+      _ProfileCompletionIndicatorState();
 }
 
 class _ProfileCompletionIndicatorState extends State<ProfileCompletionIndicator>
@@ -35,13 +36,16 @@ class _ProfileCompletionIndicatorState extends State<ProfileCompletionIndicator>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: widget.completionPercentage / 100,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _progressAnimation =
+        Tween<double>(
+          begin: 0.0,
+          end: widget.completionPercentage / 100,
+        ).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeInOut,
+          ),
+        );
 
     // Start animation after a brief delay
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -53,13 +57,16 @@ class _ProfileCompletionIndicatorState extends State<ProfileCompletionIndicator>
   void didUpdateWidget(ProfileCompletionIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.completionPercentage != widget.completionPercentage) {
-      _progressAnimation = Tween<double>(
-        begin: _progressAnimation.value,
-        end: widget.completionPercentage / 100,
-      ).animate(CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ));
+      _progressAnimation =
+          Tween<double>(
+            begin: _progressAnimation.value,
+            end: widget.completionPercentage / 100,
+          ).animate(
+            CurvedAnimation(
+              parent: _animationController,
+              curve: Curves.easeInOut,
+            ),
+          );
       _animationController.forward();
     }
   }
@@ -112,7 +119,8 @@ class _ProfileCompletionIndicatorState extends State<ProfileCompletionIndicator>
                         AnimatedBuilder(
                           animation: _progressAnimation,
                           builder: (context, child) {
-                            final displayPercentage = (_progressAnimation.value * 100).round();
+                            final displayPercentage =
+                                (_progressAnimation.value * 100).round();
                             return Text(
                               '$displayPercentage%',
                               style: theme.textTheme.headlineSmall?.copyWith(
@@ -125,7 +133,8 @@ class _ProfileCompletionIndicatorState extends State<ProfileCompletionIndicator>
                         Text(
                           'Complete',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                            color: theme.textTheme.bodySmall?.color
+                                ?.withOpacity(0.6),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -196,9 +205,9 @@ class _ProfileCompletionIndicatorState extends State<ProfileCompletionIndicator>
       children: [
         Text(
           'Profile Steps',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         ...widget.steps.map((step) => _buildStepItem(context, step, color)),
@@ -206,7 +215,11 @@ class _ProfileCompletionIndicatorState extends State<ProfileCompletionIndicator>
     );
   }
 
-  Widget _buildStepItem(BuildContext context, CompletionStep step, Color color) {
+  Widget _buildStepItem(
+    BuildContext context,
+    CompletionStep step,
+    Color color,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -224,11 +237,7 @@ class _ProfileCompletionIndicatorState extends State<ProfileCompletionIndicator>
               ),
             ),
             child: step.isCompleted
-                ? const Icon(
-                    Icons.check,
-                    color: Colors.white,
-                    size: 14,
-                  )
+                ? const Icon(Icons.check, color: Colors.white, size: 14)
                 : null,
           ),
           const SizedBox(width: 12),
@@ -239,17 +248,23 @@ class _ProfileCompletionIndicatorState extends State<ProfileCompletionIndicator>
                 Text(
                   step.title,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: step.isCompleted ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: step.isCompleted
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                     color: step.isCompleted
                         ? null
-                        : Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                        : Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.color?.withOpacity(0.7),
                   ),
                 ),
                 if (step.description?.isNotEmpty == true)
                   Text(
                     step.description!,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
+                      color: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.color?.withOpacity(0.6),
                     ),
                   ),
               ],
@@ -379,9 +394,7 @@ class CompactProfileCompletionIndicator extends StatelessWidget {
         decoration: BoxDecoration(
           color: primaryColor.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: primaryColor.withOpacity(0.3),
-          ),
+          border: Border.all(color: primaryColor.withOpacity(0.3)),
         ),
         child: Row(
           children: [
@@ -419,8 +432,8 @@ class CompactProfileCompletionIndicator extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    completionPercentage < 100 
-                        ? 'Complete your profile' 
+                    completionPercentage < 100
+                        ? 'Complete your profile'
                         : 'Profile complete!',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
@@ -430,11 +443,7 @@ class CompactProfileCompletionIndicator extends StatelessWidget {
               ),
             ),
             if (completionPercentage < 100)
-              Icon(
-                Icons.arrow_forward_ios,
-                color: primaryColor,
-                size: 16,
-              ),
+              Icon(Icons.arrow_forward_ios, color: primaryColor, size: 16),
           ],
         ),
       ),

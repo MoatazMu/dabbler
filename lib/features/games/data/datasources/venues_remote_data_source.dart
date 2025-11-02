@@ -77,10 +77,7 @@ abstract class VenuesRemoteDataSource {
   });
 
   /// Gets featured/popular venues
-  Future<List<VenueModel>> getFeaturedVenues({
-    int page = 1,
-    int limit = 10,
-  });
+  Future<List<VenueModel>> getFeaturedVenues({int page = 1, int limit = 10});
 
   /// Gets venues by sport type
   Future<List<VenueModel>> getVenuesBySport(
@@ -138,11 +135,7 @@ abstract class VenuesRemoteDataSource {
   });
 
   /// Reports a venue for issues
-  Future<bool> reportVenue(
-    String venueId,
-    String reason,
-    String? description,
-  );
+  Future<bool> reportVenue(String venueId, String reason, String? description);
 
   /// Toggles venue favorite status
   Future<bool> toggleVenueFavorite(String venueId, String userId);

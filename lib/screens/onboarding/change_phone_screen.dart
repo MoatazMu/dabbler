@@ -36,23 +36,24 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final fullPhoneNumber = '$_selectedCountryCode${_phoneController.text.replaceAll(RegExp(r'[^\d]'), '')}';
-      
+      final fullPhoneNumber =
+          '$_selectedCountryCode${_phoneController.text.replaceAll(RegExp(r'[^\d]'), '')}';
+
       final authService = AuthService();
       await authService.signInWithPhone(phone: fullPhoneNumber);
-      
+
       if (mounted) {
         Navigator.pushNamed(
-          context, 
+          context,
           '/otp-verification',
           arguments: {'phoneNumber': fullPhoneNumber},
         );
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     } finally {
       if (mounted) {
@@ -78,7 +79,7 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 32),
-                
+
                 // Header
                 Text(
                   'Update Phone Number',
@@ -87,19 +88,19 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: 8),
-                
+
                 Text(
                   'Enter your new phone number to receive verification code',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: 48),
-                
+
                 // Phone Input
                 Row(
                   children: [
@@ -107,7 +108,9 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
                     Container(
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey[300]!),
-                        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                        borderRadius: BorderRadius.circular(
+                          AppConstants.borderRadius,
+                        ),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
@@ -116,7 +119,9 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
                             return DropdownMenuItem(
                               value: country['code'],
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -136,9 +141,9 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
                         ),
                       ),
                     ),
-                    
+
                     const SizedBox(width: 12),
-                    
+
                     // Phone Number Input
                     Expanded(
                       child: CustomInputField(
@@ -151,23 +156,25 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Update Button
                 AppButton(
                   onPressed: _isLoading ? null : _handleSubmit,
                   label: _isLoading ? 'Saving...' : 'Continue',
                 ),
-                
+
                 const Spacer(),
-                
+
                 // Info Text
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                    borderRadius: BorderRadius.circular(
+                      AppConstants.borderRadius,
+                    ),
                     border: Border.all(color: Colors.blue[200]!),
                   ),
                   child: Row(
@@ -181,15 +188,14 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
                       Expanded(
                         child: Text(
                           'A verification code will be sent to your new phone number to confirm the change.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.blue[700],
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.blue[700]),
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
               ],
             ),

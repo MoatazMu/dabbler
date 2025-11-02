@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MockLocalizationService {
-  static final MockLocalizationService _instance = MockLocalizationService._internal();
+  static final MockLocalizationService _instance =
+      MockLocalizationService._internal();
   factory MockLocalizationService() => _instance;
   MockLocalizationService._internal();
 
@@ -77,4 +78,4 @@ class MockLocalizationService {
   Future<void> resetToDefault() async {
     await setLanguage('en');
   }
-} 
+}

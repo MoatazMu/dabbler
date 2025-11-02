@@ -11,7 +11,8 @@ class ParticipationPaymentStep extends StatefulWidget {
   const ParticipationPaymentStep({super.key, required this.viewModel});
 
   @override
-  State<ParticipationPaymentStep> createState() => _ParticipationPaymentStepState();
+  State<ParticipationPaymentStep> createState() =>
+      _ParticipationPaymentStepState();
 }
 
 class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
@@ -22,7 +23,8 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
   void initState() {
     super.initState();
     _descriptionController.text = widget.viewModel.state.gameDescription ?? '';
-    _waitlistSizeController.text = widget.viewModel.state.maxWaitlistSize?.toString() ?? '5';
+    _waitlistSizeController.text =
+        widget.viewModel.state.maxWaitlistSize?.toString() ?? '5';
   }
 
   @override
@@ -111,7 +113,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
         const SizedBox(height: 16),
         ...PaymentSplit.values.map((split) {
           final isSelected = widget.viewModel.state.paymentSplit == split;
-          
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: _buildPaymentSplitOption(
@@ -134,19 +136,19 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
   }) {
     final splitData = _getPaymentSplitData(split);
     final costPerPlayer = _calculateCostPerPlayer(split);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? context.colors.primary.withValues(alpha: 0.1)
               : context.violetWidgetBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? context.colors.primary
                 : context.colors.outline.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
@@ -157,7 +159,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary.withValues(alpha: 0.1)
                     : context.colors.outline.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
@@ -165,7 +167,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
               child: Icon(
                 splitData['icon'] as IconData,
                 size: 20,
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary
                     : context.colors.onSurfaceVariant,
               ),
@@ -181,7 +183,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
                         splitData['title'] as String,
                         style: context.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: isSelected 
+                          color: isSelected
                               ? context.colors.primary
                               : context.colors.onSurface,
                         ),
@@ -189,9 +191,12 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
                       if (costPerPlayer != null) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: isSelected 
+                            color: isSelected
                                 ? context.colors.primary
                                 : context.colors.outline.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
@@ -199,7 +204,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
                           child: Text(
                             'AED ${costPerPlayer.toStringAsFixed(0)}/player',
                             style: context.textTheme.bodySmall?.copyWith(
-                              color: isSelected 
+                              color: isSelected
                                   ? context.colors.onPrimary
                                   : context.colors.onSurfaceVariant,
                               fontWeight: FontWeight.w600,
@@ -221,11 +226,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
               ),
             ),
             if (isSelected)
-              Icon(
-                LucideIcons.check,
-                size: 20,
-                color: context.colors.primary,
-              ),
+              Icon(LucideIcons.check, size: 20, color: context.colors.primary),
           ],
         ),
       ),
@@ -254,7 +255,8 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
         CustomInputField(
           controller: _descriptionController,
           label: 'Description (optional)',
-          hintText: 'e.g., Friendly ${widget.viewModel.state.selectedSport} match for ${widget.viewModel.state.skillLevel?.toLowerCase()} players...',
+          hintText:
+              'e.g., Friendly ${widget.viewModel.state.selectedSport} match for ${widget.viewModel.state.skillLevel?.toLowerCase()} players...',
           maxLines: 4,
           onChanged: (value) => widget.viewModel.updateGameDescription(value),
         ),
@@ -264,7 +266,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
 
   Widget _buildWaitlistSettings(BuildContext context) {
     final allowWaitlist = widget.viewModel.state.allowWaitlist ?? false;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -276,7 +278,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         // Allow Waitlist Toggle
         Container(
           padding: const EdgeInsets.all(16),
@@ -293,7 +295,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: allowWaitlist 
+                  color: allowWaitlist
                       ? context.colors.primary.withValues(alpha: 0.1)
                       : context.colors.outline.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -301,7 +303,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
                 child: Icon(
                   LucideIcons.users,
                   size: 20,
-                  color: allowWaitlist 
+                  color: allowWaitlist
                       ? context.colors.primary
                       : context.colors.onSurfaceVariant,
                 ),
@@ -336,7 +338,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
             ],
           ),
         ),
-        
+
         // Waitlist Size
         if (allowWaitlist) ...[
           const SizedBox(height: 16),
@@ -415,9 +417,9 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
   double? _calculateCostPerPlayer(PaymentSplit split) {
     final totalCost = widget.viewModel.state.totalCost;
     final maxPlayers = widget.viewModel.state.maxPlayers;
-    
+
     if (totalCost == null || maxPlayers == null) return null;
-    
+
     switch (split) {
       case PaymentSplit.organizer:
         return 0.0;
@@ -429,4 +431,4 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
         return null; // Custom split varies
     }
   }
-} 
+}

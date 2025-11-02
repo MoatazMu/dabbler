@@ -19,10 +19,10 @@ class AddPostScreen extends StatefulWidget {
 class _AddPostScreenState extends State<AddPostScreen> {
   final _textController = TextEditingController();
   final _imagePicker = ImagePicker();
-  
+
   final List<XFile> _selectedImages = [];
   String _selectedLocation = '';
-  
+
   final List<String> _quickLocations = [
     'Dubai Sports City',
     'JLT Tennis Court',
@@ -105,9 +105,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     ),
                     onChanged: (_) => setState(() {}),
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Images Section
                   if (_selectedImages.isNotEmpty) ...[
                     Text(
@@ -121,13 +121,14 @@ class _AddPostScreenState extends State<AddPostScreen> {
                     _buildImageGrid(),
                     const SizedBox(height: 20),
                   ],
-                  
+
                   // Location Section
                   if (_selectedLocation.isNotEmpty) ...[
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: context.colors.surfaceContainerHighest.withOpacity(0.5),
+                        color: context.colors.surfaceContainerHighest
+                            .withOpacity(0.5),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
@@ -153,14 +154,15 @@ class _AddPostScreenState extends State<AddPostScreen> {
                               size: 16,
                               color: context.colors.onSurfaceVariant,
                             ),
-                            onPressed: () => setState(() => _selectedLocation = ''),
+                            onPressed: () =>
+                                setState(() => _selectedLocation = ''),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 20),
                   ],
-                  
+
                   // Quick Location Suggestions
                   if (_selectedLocation.isEmpty) ...[
                     Text(
@@ -176,14 +178,16 @@ class _AddPostScreenState extends State<AddPostScreen> {
                       runSpacing: 8,
                       children: _quickLocations.map((location) {
                         return GestureDetector(
-                          onTap: () => setState(() => _selectedLocation = location),
+                          onTap: () =>
+                              setState(() => _selectedLocation = location),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 8,
                             ),
                             decoration: BoxDecoration(
-                              color: context.colors.surfaceContainerHighest.withOpacity(0.3),
+                              color: context.colors.surfaceContainerHighest
+                                  .withOpacity(0.3),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: context.colors.outline.withOpacity(0.2),
@@ -205,7 +209,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
               ),
             ),
           ),
-          
+
           // Bottom Action Bar
           Container(
             padding: const EdgeInsets.all(16),
@@ -308,11 +312,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              size: 18,
-              color: context.colors.primary,
-            ),
+            Icon(icon, size: 18, color: context.colors.primary),
             const SizedBox(width: 6),
             Text(
               label,
@@ -367,7 +367,10 @@ class _AddPostScreenState extends State<AddPostScreen> {
             const SizedBox(height: 16),
             ..._quickLocations.map((location) {
               return ListTile(
-                leading: Icon(LucideIcons.mapPin, color: context.colors.primary),
+                leading: Icon(
+                  LucideIcons.mapPin,
+                  color: context.colors.primary,
+                ),
                 title: Text(location),
                 onTap: () {
                   setState(() => _selectedLocation = location);
@@ -386,7 +389,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
 
     try {
       final socialService = SocialService();
-      
+
       // Upload images if any
       List<String> mediaUrls = [];
       if (_selectedImages.isNotEmpty) {
@@ -401,7 +404,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
         locationName: _selectedLocation.isNotEmpty ? _selectedLocation : null,
         visibility: PostVisibility.public,
       );
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -414,7 +417,9 @@ class _AddPostScreenState extends State<AddPostScreen> {
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
             margin: const EdgeInsets.all(16),
           ),
         );

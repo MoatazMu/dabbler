@@ -20,7 +20,7 @@ class PostActionsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       children: [
         // Action buttons
@@ -34,32 +34,32 @@ class PostActionsWidget extends StatelessWidget {
               onTap: onLike,
               color: post.isLiked ? Colors.red : null,
             ),
-            
+
             const SizedBox(width: 16),
-            
+
             _buildActionButton(
               theme,
               icon: Icons.comment_outlined,
               label: '${post.commentsCount}',
               onTap: onComment,
             ),
-            
+
             const SizedBox(width: 16),
-            
+
             _buildActionButton(
               theme,
               icon: Icons.share_outlined,
               label: '${post.sharesCount}',
               onTap: onShare,
             ),
-            
+
             const Spacer(),
-            
+
             // Reaction picker
             _buildReactionPicker(theme),
           ],
         ),
-        
+
         // Divider
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -91,17 +91,19 @@ class PostActionsWidget extends StatelessWidget {
             Icon(
               icon,
               size: 20,
-              color: color ?? (isActive 
-                ? theme.colorScheme.primary 
-                : theme.colorScheme.onSurfaceVariant),
+              color:
+                  color ??
+                  (isActive
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(width: 6),
             Text(
               label,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: isActive 
-                  ? theme.colorScheme.primary 
-                  : theme.colorScheme.onSurfaceVariant,
+                color: isActive
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
@@ -125,7 +127,12 @@ class PostActionsWidget extends StatelessWidget {
         _buildReactionMenuItem(theme, ReactionType.wow, '😮', 'Wow'),
         _buildReactionMenuItem(theme, ReactionType.sad, '😢', 'Sad'),
         _buildReactionMenuItem(theme, ReactionType.angry, '😠', 'Angry'),
-        _buildReactionMenuItem(theme, ReactionType.celebrate, '🎉', 'Celebrate'),
+        _buildReactionMenuItem(
+          theme,
+          ReactionType.celebrate,
+          '🎉',
+          'Celebrate',
+        ),
         _buildReactionMenuItem(theme, ReactionType.support, '🤝', 'Support'),
       ],
       child: Container(

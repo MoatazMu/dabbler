@@ -6,10 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../../domain/entities/achievement.dart';
 import '../../../domain/entities/user_progress.dart';
 
-enum AchievementCardMode {
-  grid,
-  list,
-}
+enum AchievementCardMode { grid, list }
 
 class AchievementCard extends StatefulWidget {
   final Achievement achievement;
@@ -44,56 +41,44 @@ class _AchievementCardState extends State<AchievementCard>
   late AnimationController _pulseController;
   late AnimationController _glowController;
   late AnimationController _bounceController;
-  
+
   late Animation<double> _pulseAnimation;
   late Animation<double> _glowAnimation;
   late Animation<double> _bounceAnimation;
-  
+
   bool _isPressed = false;
 
   @override
   void initState() {
     super.initState();
-    
+
     if (widget.enableAnimations) {
       _pulseController = AnimationController(
         duration: const Duration(seconds: 2),
         vsync: this,
       );
-      
+
       _glowController = AnimationController(
         duration: const Duration(milliseconds: 1500),
         vsync: this,
       );
-      
+
       _bounceController = AnimationController(
         duration: const Duration(milliseconds: 200),
         vsync: this,
       );
 
-      _pulseAnimation = Tween<double>(
-        begin: 1.0,
-        end: 1.05,
-      ).animate(CurvedAnimation(
-        parent: _pulseController,
-        curve: Curves.easeInOut,
-      ));
+      _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+        CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+      );
 
-      _glowAnimation = Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: _glowController,
-        curve: Curves.easeInOut,
-      ));
+      _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
+      );
 
-      _bounceAnimation = Tween<double>(
-        begin: 1.0,
-        end: 0.95,
-      ).animate(CurvedAnimation(
-        parent: _bounceController,
-        curve: Curves.easeInOut,
-      ));
+      _bounceAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+        CurvedAnimation(parent: _bounceController, curve: Curves.easeInOut),
+      );
 
       // Start pulse animation for completed achievements
       if (_isCompleted) {
@@ -113,13 +98,13 @@ class _AchievementCardState extends State<AchievementCard>
     super.dispose();
   }
 
-  bool get _isCompleted => 
+  bool get _isCompleted =>
       widget.userProgress?.status == ProgressStatus.completed;
-  
-  bool get _isLocked => 
+
+  bool get _isLocked =>
       widget.userProgress?.status == ProgressStatus.notStarted ||
       widget.userProgress == null;
-  
+
   double get _progress => widget.userProgress?.calculateProgress() ?? 0.0;
 
   @override
@@ -131,13 +116,18 @@ class _AchievementCardState extends State<AchievementCard>
       onTap: widget.onTap,
       onLongPress: () => _handleLongPress(),
       child: AnimatedBuilder(
-        animation: widget.enableAnimations 
-            ? Listenable.merge([_pulseController, _glowController, _bounceController])
+        animation: widget.enableAnimations
+            ? Listenable.merge([
+                _pulseController,
+                _glowController,
+                _bounceController,
+              ])
             : AnimationController(vsync: this),
         builder: (context, child) {
           return Transform.scale(
-            scale: widget.enableAnimations ? 
-                (_isPressed ? _bounceAnimation.value : _pulseAnimation.value) : 1.0,
+            scale: widget.enableAnimations
+                ? (_isPressed ? _bounceAnimation.value : _pulseAnimation.value)
+                : 1.0,
             child: _buildCard(),
           );
         },
@@ -152,19 +142,21 @@ class _AchievementCardState extends State<AchievementCard>
         children: [
           // Main card
           _buildMainCard(),
-          
+
           // Lock overlay for unavailable achievements
           if (_isLocked) _buildLockOverlay(),
-          
+
           // Completion checkmark animation
-          if (_isCompleted && widget.enableAnimations) _buildCompletionCheckmark(),
-          
+          if (_isCompleted && widget.enableAnimations)
+            _buildCompletionCheckmark(),
+
           // Progress indicator
-          if (widget.showProgressIndicator && !_isLocked) _buildProgressIndicator(),
-          
+          if (widget.showProgressIndicator && !_isLocked)
+            _buildProgressIndicator(),
+
           // Points badge
           if (widget.showPointsBadge) _buildPointsBadge(),
-          
+
           // Glow effect for completed achievements
           if (_isCompleted && widget.enableAnimations) _buildGlowEffect(),
         ],
@@ -179,10 +171,7 @@ class _AchievementCardState extends State<AchievementCard>
       decoration: BoxDecoration(
         color: _getBackgroundColor(),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: _getBorderColor(),
-          width: _getBorderWidth(),
-        ),
+        border: Border.all(color: _getBorderColor(), width: _getBorderWidth()),
         boxShadow: [
           BoxShadow(
             color: _getShadowColor(),
@@ -192,8 +181,8 @@ class _AchievementCardState extends State<AchievementCard>
         ],
         gradient: _isCompleted ? _getCompletionGradient() : null,
       ),
-      child: widget.mode == AchievementCardMode.grid 
-          ? _buildGridContent() 
+      child: widget.mode == AchievementCardMode.grid
+          ? _buildGridContent()
           : _buildListContent(),
     );
   }
@@ -207,7 +196,7 @@ class _AchievementCardState extends State<AchievementCard>
           // Achievement icon
           _buildAchievementIcon(),
           const SizedBox(height: 12),
-          
+
           // Achievement name
           Text(
             widget.achievement.name,
@@ -221,20 +210,17 @@ class _AchievementCardState extends State<AchievementCard>
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
-          
+
           // Achievement description
           Text(
             widget.achievement.description,
-            style: TextStyle(
-              fontSize: 11,
-              color: _getSecondaryTextColor(),
-            ),
+            style: TextStyle(fontSize: 11, color: _getSecondaryTextColor()),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 8),
-          
+
           // Tier badge
           _buildTierBadge(),
         ],
@@ -250,7 +236,7 @@ class _AchievementCardState extends State<AchievementCard>
           // Achievement icon
           _buildAchievementIcon(),
           const SizedBox(width: 16),
-          
+
           // Content
           Expanded(
             child: Column(
@@ -277,7 +263,7 @@ class _AchievementCardState extends State<AchievementCard>
                   ],
                 ),
                 const SizedBox(height: 4),
-                
+
                 // Achievement description
                 Text(
                   widget.achievement.description,
@@ -289,7 +275,7 @@ class _AchievementCardState extends State<AchievementCard>
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                
+
                 // Progress text
                 if (widget.userProgress != null)
                   Text(
@@ -310,17 +296,14 @@ class _AchievementCardState extends State<AchievementCard>
 
   Widget _buildAchievementIcon() {
     final iconSize = widget.mode == AchievementCardMode.grid ? 48.0 : 40.0;
-    
+
     return Container(
       width: iconSize,
       height: iconSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: _getIconBackgroundColor(),
-        border: Border.all(
-          color: _getTierColor(),
-          width: 3,
-        ),
+        border: Border.all(color: _getTierColor(), width: 3),
         boxShadow: [
           BoxShadow(
             color: _getTierColor().withOpacity(0.3),
@@ -330,18 +313,14 @@ class _AchievementCardState extends State<AchievementCard>
         ],
       ),
       child: _isLocked
-          ? Icon(
-              Icons.lock,
-              size: iconSize * 0.5,
-              color: Colors.grey[400],
-            )
+          ? Icon(Icons.lock, size: iconSize * 0.5, color: Colors.grey[400])
           : _buildCategoryIcon(iconSize * 0.6),
     );
   }
 
   Widget _buildCategoryIcon(double size) {
     IconData iconData = Icons.star; // Default icon
-    
+
     switch (widget.achievement.category) {
       case AchievementCategory.gaming:
         iconData = Icons.sports_soccer;
@@ -399,7 +378,7 @@ class _AchievementCardState extends State<AchievementCard>
 
   Widget _buildProgressIndicator() {
     if (_isCompleted || _isLocked) return const SizedBox.shrink();
-    
+
     return Positioned(
       bottom: 8,
       left: 8,
@@ -417,10 +396,7 @@ class _AchievementCardState extends State<AchievementCard>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(2),
               gradient: LinearGradient(
-                colors: [
-                  _getTierColor().withOpacity(0.8),
-                  _getTierColor(),
-                ],
+                colors: [_getTierColor().withOpacity(0.8), _getTierColor()],
               ),
             ),
           ),
@@ -449,11 +425,7 @@ class _AchievementCardState extends State<AchievementCard>
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              Icons.stars,
-              size: 12,
-              color: Colors.white,
-            ),
+            Icon(Icons.stars, size: 12, color: Colors.white),
             const SizedBox(width: 2),
             Text(
               '${widget.achievement.points}',
@@ -476,11 +448,7 @@ class _AchievementCardState extends State<AchievementCard>
         borderRadius: BorderRadius.circular(16),
       ),
       child: const Center(
-        child: Icon(
-          Icons.lock,
-          size: 32,
-          color: Colors.white,
-        ),
+        child: Icon(Icons.lock, size: 32, color: Colors.white),
       ),
     );
   }
@@ -506,11 +474,7 @@ class _AchievementCardState extends State<AchievementCard>
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.check,
-              size: 16,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.check, size: 16, color: Colors.white),
           );
         },
       ),
@@ -542,8 +506,8 @@ class _AchievementCardState extends State<AchievementCard>
   }
 
   EdgeInsets _getDefaultPadding() {
-    return widget.mode == AchievementCardMode.grid 
-        ? const EdgeInsets.all(8) 
+    return widget.mode == AchievementCardMode.grid
+        ? const EdgeInsets.all(8)
         : const EdgeInsets.symmetric(horizontal: 8, vertical: 4);
   }
 
@@ -579,9 +543,9 @@ class _AchievementCardState extends State<AchievementCard>
   }
 
   Color _getTierColor() {
-    return Color(int.parse(
-      '0xFF${widget.achievement.getTierColorHex().substring(1)}',
-    ));
+    return Color(
+      int.parse('0xFF${widget.achievement.getTierColorHex().substring(1)}'),
+    );
   }
 
   Color _getTextColor() {
@@ -609,17 +573,14 @@ class _AchievementCardState extends State<AchievementCard>
     return LinearGradient(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
-      colors: [
-        tierColor.withOpacity(0.1),
-        tierColor.withOpacity(0.05),
-      ],
+      colors: [tierColor.withOpacity(0.1), tierColor.withOpacity(0.05)],
     );
   }
 
   String _getProgressText() {
     if (_isCompleted) return 'Completed!';
     if (_isLocked) return 'Locked';
-    
+
     return widget.userProgress?.getProgressDescription() ?? 'Not started';
   }
 
@@ -631,7 +592,7 @@ class _AchievementCardState extends State<AchievementCard>
 
   void _handleTapDown() {
     if (!widget.enableAnimations) return;
-    
+
     setState(() {
       _isPressed = true;
     });
@@ -641,7 +602,7 @@ class _AchievementCardState extends State<AchievementCard>
 
   void _handleTapUp() {
     if (!widget.enableAnimations) return;
-    
+
     setState(() {
       _isPressed = false;
     });
@@ -650,7 +611,7 @@ class _AchievementCardState extends State<AchievementCard>
 
   void _handleLongPress() {
     HapticFeedback.mediumImpact();
-    
+
     if (widget.onLongPress != null) {
       widget.onLongPress!();
     } else {
@@ -663,7 +624,7 @@ class _AchievementCardState extends State<AchievementCard>
     final text = _isCompleted
         ? 'I just unlocked the "${widget.achievement.name}" achievement in Dabbler! 🏆'
         : 'Working on the "${widget.achievement.name}" achievement in Dabbler! ${_progress.toStringAsFixed(0)}% complete 💪';
-    
+
     Share.share(text);
   }
 }

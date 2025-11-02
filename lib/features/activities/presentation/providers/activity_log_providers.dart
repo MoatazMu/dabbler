@@ -7,7 +7,9 @@ import '../../data/datasources/activity_log_remote_data_source.dart';
 import '../../data/repositories/activity_log_repository_impl.dart';
 
 // Data source provider
-final activityLogDataSourceProvider = Provider<ActivityLogRemoteDataSource>((ref) {
+final activityLogDataSourceProvider = Provider<ActivityLogRemoteDataSource>((
+  ref,
+) {
   return ActivityLogRemoteDataSourceImpl(
     supabaseClient: Supabase.instance.client,
   );
@@ -97,14 +99,10 @@ class ActivityLogController extends StateNotifier<ActivityLogState> {
     );
 
     result.fold(
-      (failure) => state = state.copyWith(
-        isLoading: false,
-        error: failure.message,
-      ),
-      (activities) => state = state.copyWith(
-        activities: activities,
-        isLoading: false,
-      ),
+      (failure) =>
+          state = state.copyWith(isLoading: false, error: failure.message),
+      (activities) =>
+          state = state.copyWith(activities: activities, isLoading: false),
     );
   }
 
@@ -208,9 +206,7 @@ class ActivityLogController extends StateNotifier<ActivityLogState> {
       },
       (activity) {
         // Add to local state
-        state = state.copyWith(
-          activities: [activity, ...state.activities],
-        );
+        state = state.copyWith(activities: [activity, ...state.activities]);
         return true;
       },
     );
@@ -226,24 +222,30 @@ class ActivityLogController extends StateNotifier<ActivityLogState> {
 }
 
 // Activity log controller provider
-final activityLogControllerProvider = StateNotifierProvider.family<
-    ActivityLogController, ActivityLogState, String>((ref, userId) {
-  final controller = ActivityLogController(
-    getUserActivities: ref.watch(getUserActivitiesUseCaseProvider),
-    getCategoryStats: ref.watch(getCategoryStatsUseCaseProvider),
-    createActivityLog: ref.watch(createActivityLogUseCaseProvider),
-  );
+final activityLogControllerProvider =
+    StateNotifierProvider.family<
+      ActivityLogController,
+      ActivityLogState,
+      String
+    >((ref, userId) {
+      final controller = ActivityLogController(
+        getUserActivities: ref.watch(getUserActivitiesUseCaseProvider),
+        getCategoryStats: ref.watch(getCategoryStatsUseCaseProvider),
+        createActivityLog: ref.watch(createActivityLogUseCaseProvider),
+      );
 
-  // Load data on initialization
-  controller.loadActivities(userId);
-  controller.loadCategoryStats(userId);
+      // Load data on initialization
+      controller.loadActivities(userId);
+      controller.loadCategoryStats(userId);
 
-  return controller;
-});
+      return controller;
+    });
 
 // Category stats provider
-final categoryStatsProvider =
-    Provider.family<Map<String, int>, String>((ref, userId) {
+final categoryStatsProvider = Provider.family<Map<String, int>, String>((
+  ref,
+  userId,
+) {
   final state = ref.watch(activityLogControllerProvider(userId));
   return state.categoryStats;
 });

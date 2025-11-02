@@ -15,7 +15,7 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
   String _searchQuery = '';
@@ -50,7 +50,8 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
     LicenseInfo(
       name: 'http',
       version: '1.2.0',
-      description: 'Composable, multi-platform, future-based API for HTTP requests',
+      description:
+          'Composable, multi-platform, future-based API for HTTP requests',
       license: 'BSD 3-Clause License',
       copyright: 'Copyright 2014, the Dart project authors',
       url: 'https://pub.dev/packages/http',
@@ -58,7 +59,8 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
     LicenseInfo(
       name: 'shared_preferences',
       version: '2.2.3',
-      description: 'Flutter plugin for reading and writing simple key-value pairs',
+      description:
+          'Flutter plugin for reading and writing simple key-value pairs',
       license: 'BSD 3-Clause License',
       copyright: 'Copyright 2013 The Flutter Authors',
       url: 'https://pub.dev/packages/shared_preferences',
@@ -66,7 +68,8 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
     LicenseInfo(
       name: 'image_picker',
       version: '1.1.2',
-      description: 'Flutter plugin for selecting images from the gallery or camera',
+      description:
+          'Flutter plugin for selecting images from the gallery or camera',
       license: 'BSD 3-Clause License',
       copyright: 'Copyright 2013 The Flutter Authors',
       url: 'https://pub.dev/packages/image_picker',
@@ -93,8 +96,10 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
     if (_searchQuery.isEmpty) return _licenses;
     return _licenses.where((license) {
       return license.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             license.description.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-             license.license.toLowerCase().contains(_searchQuery.toLowerCase());
+          license.description.toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ) ||
+          license.license.toLowerCase().contains(_searchQuery.toLowerCase());
     }).toList();
   }
 
@@ -114,13 +119,13 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -167,9 +172,7 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
             children: [
               _buildHeaderSection(),
               _buildSearchBar(),
-              Expanded(
-                child: _buildLicensesList(),
-              ),
+              Expanded(child: _buildLicensesList()),
             ],
           ),
         ),
@@ -186,11 +189,7 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              Icon(
-                Icons.code,
-                size: 48,
-                color: Colors.green.shade700,
-              ),
+              Icon(Icons.code, size: 48, color: Colors.green.shade700),
               const SizedBox(height: 16),
               Text(
                 'Open Source Licenses',
@@ -202,9 +201,9 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
               const SizedBox(height: 8),
               Text(
                 'This app is built with amazing open source libraries. We thank all contributors for their work.',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 12),
@@ -263,30 +262,26 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
 
   Widget _buildLicensesList() {
     final filteredLicenses = _filteredLicenses;
-    
+
     if (filteredLicenses.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.search_off,
-              size: 64,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.search_off, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 16),
             Text(
               'No licenses found',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
               'Try adjusting your search query',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[500],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
             ),
           ],
         ),
@@ -327,9 +322,14 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: _getLicenseColor(license.license).withValues(alpha: 0.1),
+                      color: _getLicenseColor(
+                        license.license,
+                      ).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -345,9 +345,9 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
               const SizedBox(height: 8),
               Text(
                 license.description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[700],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[700]),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -417,9 +417,8 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
                   Expanded(
                     child: Text(
                       license.name,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
                   IconButton(
@@ -436,9 +435,9 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
               const SizedBox(height: 16),
               Text(
                 'Description',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
@@ -481,10 +480,7 @@ class _LicensesScreenState extends ConsumerState<LicensesScreen>
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
           ),
         ],
       ),

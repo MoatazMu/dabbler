@@ -170,7 +170,8 @@ class EitherUtils {
 
   /// Tries to execute an async function and returns Either based on whether it throws or not
   static Future<Either<Exception, T>> tryCatchAsync<T>(
-      Future<T> Function() fn) async {
+    Future<T> Function() fn,
+  ) async {
     try {
       final result = await fn();
       return Right(result);

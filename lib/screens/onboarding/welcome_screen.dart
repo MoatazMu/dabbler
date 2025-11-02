@@ -6,11 +6,8 @@ import '../../utils/constants/app_constants.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final String displayName;
-  
-  const WelcomeScreen({
-    super.key,
-    required this.displayName,
-  });
+
+  const WelcomeScreen({super.key, required this.displayName});
 
   @override
   State<WelcomeScreen> createState() => _WelcomeScreenState();
@@ -29,26 +26,25 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
-    ));
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
+          ),
+        );
 
     // Start animation
     _animationController.forward();
-    
+
     // Auto-navigate to home after 3 seconds
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted) {
@@ -79,7 +75,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   child: Column(
                     children: [
                       const Spacer(),
-                      
+
                       // Success Icon with pulse animation
                       AnimatedBuilder(
                         animation: _animationController,
@@ -102,9 +98,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           );
                         },
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       // Welcome Message
                       Text(
                         'Welcome to Dabbler!',
@@ -114,9 +110,9 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 12),
-                      
+
                       // Personalized greeting [[memory:3805984]]
                       Text(
                         'Hi ${widget.displayName}! 👋',
@@ -126,19 +122,17 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       Text(
                         'Your account has been created successfully.\nGet ready to discover amazing sports experiences!',
-                        style: DS.body.copyWith(
-                          color: DS.onSurfaceVariant,
-                        ),
+                        style: DS.body.copyWith(color: DS.onSurfaceVariant),
                         textAlign: TextAlign.center,
                       ),
-                      
+
                       const SizedBox(height: 48),
-                      
+
                       // Skip to home button (optional)
                       TextButton(
                         onPressed: () => context.go('/home'),
@@ -150,22 +144,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           ),
                         ),
                       ),
-                      
+
                       const Spacer(),
-                      
+
                       // Progress indicator
                       LinearProgressIndicator(
                         backgroundColor: DS.border.withOpacity(0.3),
                         valueColor: AlwaysStoppedAnimation<Color>(DS.primary),
                       ),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       Text(
                         'Taking you to your home screen...',
-                        style: DS.caption.copyWith(
-                          color: DS.onSurfaceVariant,
-                        ),
+                        style: DS.caption.copyWith(color: DS.onSurfaceVariant),
                       ),
                     ],
                   ),

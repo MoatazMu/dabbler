@@ -116,10 +116,7 @@ class GetRecentActivities {
     required String userId,
     int days = 7,
   }) async {
-    return await repository.getRecentActivities(
-      userId: userId,
-      days: days,
-    );
+    return await repository.getRecentActivities(userId: userId, days: days);
   }
 }
 

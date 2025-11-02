@@ -9,7 +9,8 @@ class ProfileAvatarScreen extends ConsumerStatefulWidget {
   const ProfileAvatarScreen({super.key});
 
   @override
-  ConsumerState<ProfileAvatarScreen> createState() => _ProfileAvatarScreenState();
+  ConsumerState<ProfileAvatarScreen> createState() =>
+      _ProfileAvatarScreenState();
 }
 
 class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
@@ -19,16 +20,16 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
   late Animation<Offset> _slideAnimation;
   late AnimationController _avatarController;
   late Animation<double> _avatarScaleAnimation;
-  
+
   final ImagePicker _imagePicker = ImagePicker();
   bool _isLoading = false;
   bool _isUploading = false;
-  
+
   // Current avatar data
   String? _currentAvatarUrl;
   XFile? _selectedImage;
   Uint8List? _imageBytes;
-  
+
   // Avatar options
   final List<String> _defaultAvatars = [
     'assets/Avatar/male-1.png',
@@ -57,35 +58,30 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _avatarController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic),
-    ));
 
-    _avatarScaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _avatarController,
-      curve: Curves.easeInOut,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic),
+          ),
+        );
+
+    _avatarScaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _avatarController, curve: Curves.easeInOut),
+    );
 
     _animationController.forward();
   }
@@ -97,9 +93,10 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
 
     try {
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       setState(() {
-        _currentAvatarUrl = 'assets/Avatar/default-avatar.png'; // Use default avatar
+        _currentAvatarUrl =
+            'assets/Avatar/default-avatar.png'; // Use default avatar
         _isLoading = false;
       });
     } catch (e) {
@@ -138,10 +135,7 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
               ),
             )
           else if (_selectedImage != null)
-            TextButton(
-              onPressed: _uploadAvatar,
-              child: const Text('Save'),
-            ),
+            TextButton(onPressed: _uploadAvatar, child: const Text('Save')),
         ],
       ),
       body: _isLoading
@@ -178,9 +172,9 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
           children: [
             Text(
               'Current Avatar',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 24),
             ScaleTransition(
@@ -200,15 +194,15 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withValues(alpha: 0.3),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  child: ClipOval(
-                    child: _buildAvatarImage(),
-                  ),
+                  child: ClipOval(child: _buildAvatarImage()),
                 ),
               ),
             ),
@@ -234,7 +228,7 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
         height: 120,
       );
     }
-    
+
     if (_currentAvatarUrl != null) {
       // Check if it's an asset path
       if (_currentAvatarUrl!.startsWith('assets/')) {
@@ -259,7 +253,8 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
             return Center(
               child: CircularProgressIndicator(
                 value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                    ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
                     : null,
               ),
             );
@@ -270,7 +265,7 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
         );
       }
     }
-    
+
     return _buildFallbackAvatar();
   }
 
@@ -299,9 +294,9 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
           children: [
             Text(
               'Upload New Avatar',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Row(
@@ -347,10 +342,7 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
                     Expanded(
                       child: Text(
                         'New image selected. Tap Save to update your avatar.',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.green, fontSize: 14),
                       ),
                     ),
                     TextButton(
@@ -394,17 +386,13 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
         ),
         child: Column(
           children: [
-            Icon(
-              icon,
-              size: 32,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+            Icon(icon, size: 32, color: Theme.of(context).colorScheme.primary),
             const SizedBox(height: 8),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 4),
             Text(
@@ -429,9 +417,9 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
           children: [
             Text(
               'Default Avatars',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -454,16 +442,18 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
               itemBuilder: (context, index) {
                 final avatarPath = _defaultAvatars[index];
                 final isSelected = _currentAvatarUrl == avatarPath;
-                
+
                 return GestureDetector(
                   onTap: () => _selectDefaultAvatar(avatarPath),
                   child: Container(
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected 
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.outline.withValues(alpha: 0.3),
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(
+                                context,
+                              ).colorScheme.outline.withValues(alpha: 0.3),
                         width: isSelected ? 3 : 1,
                       ),
                     ),
@@ -473,7 +463,9 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.1),
                             child: Icon(
                               Icons.person,
                               size: 40,
@@ -519,7 +511,9 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
             const SizedBox(height: 12),
             _buildGuidelineItem('Use a clear, recent photo of yourself'),
             _buildGuidelineItem('Make sure your face is clearly visible'),
-            _buildGuidelineItem('Avoid group photos or images with multiple people'),
+            _buildGuidelineItem(
+              'Avoid group photos or images with multiple people',
+            ),
             _buildGuidelineItem('Keep it appropriate and professional'),
             _buildGuidelineItem('Square images work best (1:1 aspect ratio)'),
             _buildGuidelineItem('Maximum file size: 5MB'),
@@ -569,7 +563,7 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
 
       if (image != null) {
         final bytes = await image.readAsBytes();
-        
+
         setState(() {
           _selectedImage = image;
           _imageBytes = bytes;
@@ -593,7 +587,7 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
       _selectedImage = null;
       _imageBytes = null;
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Avatar updated successfully'),
@@ -611,7 +605,7 @@ class _ProfileAvatarScreenState extends ConsumerState<ProfileAvatarScreen>
 
     try {
       await Future.delayed(const Duration(seconds: 2)); // Simulate upload
-      
+
       setState(() {
         _currentAvatarUrl = null; // Will use the uploaded image
         _selectedImage = null;

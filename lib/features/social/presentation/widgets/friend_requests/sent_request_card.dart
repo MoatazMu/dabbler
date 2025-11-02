@@ -23,7 +23,7 @@ class SentRequestCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Padding(
@@ -41,10 +41,16 @@ class SentRequestCard extends StatelessWidget {
                       : null,
                   child: toUser?.profileImageUrl == null
                       ? Text(
-                          (toUser?.displayName != null && toUser!.displayName.isNotEmpty
-                              ? toUser!.displayName.substring(0, 1).toUpperCase() 
+                          (toUser?.displayName != null &&
+                                  toUser!.displayName.isNotEmpty
+                              ? toUser!.displayName
+                                    .substring(0, 1)
+                                    .toUpperCase()
                               : 'U'),
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
                         )
                       : null,
                 ),
@@ -72,9 +78,9 @@ class SentRequestCard extends StatelessWidget {
                 _buildStatusChip(theme),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Request details
             Row(
               children: [
@@ -92,9 +98,9 @@ class SentRequestCard extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Action buttons
             Row(
               children: [
@@ -134,7 +140,7 @@ class SentRequestCard extends StatelessWidget {
   Widget _buildStatusChip(ThemeData theme) {
     Color chipColor;
     String statusText;
-    
+
     switch (request.status) {
       case FriendRequestStatus.pending:
         chipColor = theme.colorScheme.primary;
@@ -156,7 +162,7 @@ class SentRequestCard extends StatelessWidget {
         chipColor = theme.colorScheme.outline;
         statusText = 'Unknown';
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -177,7 +183,7 @@ class SentRequestCard extends StatelessWidget {
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       if (difference.inHours == 0) {
         return '${difference.inMinutes} minutes ago';

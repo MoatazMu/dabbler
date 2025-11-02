@@ -4,9 +4,9 @@ import 'post.dart';
 
 /// A polymorphic feed item. For now only `post`, but intentionally open for future kinds.
 class FeedItem {
-  final String id;           // underlying entity id (e.g., post id)
-  final String kind;         // 'post' (future: 'game', 'meetup', etc.)
-  final DateTime createdAt;  // ordering key (desc)
+  final String id; // underlying entity id (e.g., post id)
+  final String kind; // 'post' (future: 'game', 'meetup', etc.)
+  final DateTime createdAt; // ordering key (desc)
   final Post? post;
   final Map<String, dynamic>? extra;
 

@@ -21,7 +21,8 @@ class AnalyticsTrackingWidget extends StatefulWidget {
   });
 
   @override
-  State<AnalyticsTrackingWidget> createState() => _AnalyticsTrackingWidgetState();
+  State<AnalyticsTrackingWidget> createState() =>
+      _AnalyticsTrackingWidgetState();
 }
 
 class _AnalyticsTrackingWidgetState extends State<AnalyticsTrackingWidget> {
@@ -35,7 +36,7 @@ class _AnalyticsTrackingWidgetState extends State<AnalyticsTrackingWidget> {
   void initState() {
     super.initState();
     _startTime = DateTime.now();
-    
+
     if (widget.trackScrolling) {
       _scrollController = ScrollController();
       _scrollController!.addListener(_onScroll);
@@ -54,9 +55,10 @@ class _AnalyticsTrackingWidgetState extends State<AnalyticsTrackingWidget> {
     final position = _scrollController?.position.pixels ?? 0.0;
     if (position > _maxScrollPosition) {
       _maxScrollPosition = position;
-      
+
       // Track significant scroll milestones
-      final percentage = (position / (_scrollController?.position.maxScrollExtent ?? 1)) * 100;
+      final percentage =
+          (position / (_scrollController?.position.maxScrollExtent ?? 1)) * 100;
       if (percentage > 0 && percentage % 25 == 0) {
         _analytics.trackFeatureUsed(
           featureName: 'scroll_milestone',
@@ -75,10 +77,7 @@ class _AnalyticsTrackingWidgetState extends State<AnalyticsTrackingWidget> {
       _tapCount++;
       _analytics.trackFeatureUsed(
         featureName: 'screen_tap',
-        context: {
-          'screen': widget.screenName,
-          'tap_count': _tapCount,
-        },
+        context: {'screen': widget.screenName, 'tap_count': _tapCount},
       );
     }
   }
@@ -117,10 +116,7 @@ class _AnalyticsTrackingWidgetState extends State<AnalyticsTrackingWidget> {
     Widget child = widget.child;
 
     if (widget.trackTaps) {
-      child = GestureDetector(
-        onTap: _onTap,
-        child: child,
-      );
+      child = GestureDetector(onTap: _onTap, child: child);
     }
 
     if (widget.trackScrolling && _scrollController != null) {
@@ -159,19 +155,21 @@ class AnalyticsButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ElevatedButton(
-      onPressed: onPressed == null ? null : () {
-        // Track button press
-        AnalyticsService().trackFeatureUsed(
-          featureName: actionName,
-          context: {
-            'category': category ?? 'button',
-            'timestamp': DateTime.now().toIso8601String(),
-            ...?this.context,
-          },
-        );
-        
-        onPressed!();
-      },
+      onPressed: onPressed == null
+          ? null
+          : () {
+              // Track button press
+              AnalyticsService().trackFeatureUsed(
+                featureName: actionName,
+                context: {
+                  'category': category ?? 'button',
+                  'timestamp': DateTime.now().toIso8601String(),
+                  ...?this.context,
+                },
+              );
+
+              onPressed!();
+            },
       child: child,
     );
   }
@@ -213,9 +211,7 @@ class _AnalyticsTextFormFieldState extends State<AnalyticsTextFormField> {
       _focusTime = DateTime.now();
       _analytics.trackFeatureUsed(
         featureName: 'form_field_focused',
-        context: {
-          'field_name': widget.fieldName,
-        },
+        context: {'field_name': widget.fieldName},
       );
     } else if (_focusTime != null) {
       final focusDuration = DateTime.now().difference(_focusTime!);
@@ -303,21 +299,23 @@ class AnalyticsListTile extends StatelessWidget {
       subtitle: subtitle,
       leading: leading,
       trailing: trailing,
-      onTap: onTap == null ? null : () {
-        // Track list item selection
-        AnalyticsService().trackFeatureUsed(
-          featureName: 'list_item_selected',
-          context: {
-            'item_id': itemId,
-            'category': category ?? 'list',
-            'position': position,
-            'timestamp': DateTime.now().toIso8601String(),
-            ...?this.context,
-          },
-        );
-        
-        onTap!();
-      },
+      onTap: onTap == null
+          ? null
+          : () {
+              // Track list item selection
+              AnalyticsService().trackFeatureUsed(
+                featureName: 'list_item_selected',
+                context: {
+                  'item_id': itemId,
+                  'category': category ?? 'list',
+                  'position': position,
+                  'timestamp': DateTime.now().toIso8601String(),
+                  ...?this.context,
+                },
+              );
+
+              onTap!();
+            },
     );
   }
 }
@@ -354,7 +352,7 @@ class _AnalyticsCardState extends State<AnalyticsCard> {
     if (!_hasTrackedView) {
       _hasTrackedView = true;
       _viewStartTime = DateTime.now();
-      
+
       _analytics.trackFeatureUsed(
         featureName: 'card_viewed',
         context: {
@@ -367,7 +365,7 @@ class _AnalyticsCardState extends State<AnalyticsCard> {
   }
 
   void _trackCardTap() {
-    final viewTime = _viewStartTime != null 
+    final viewTime = _viewStartTime != null
         ? DateTime.now().difference(_viewStartTime!)
         : null;
 
@@ -393,10 +391,12 @@ class _AnalyticsCardState extends State<AnalyticsCard> {
       },
       child: Card(
         child: InkWell(
-          onTap: widget.onTap == null ? null : () {
-            _trackCardTap();
-            widget.onTap!();
-          },
+          onTap: widget.onTap == null
+              ? null
+              : () {
+                  _trackCardTap();
+                  widget.onTap!();
+                },
           child: widget.child,
         ),
       ),
@@ -440,7 +440,7 @@ class _VisibilityDetectorState extends State<VisibilityDetector> {
 
 class VisibilityInfo {
   final double visibleFraction;
-  
+
   VisibilityInfo({required this.visibleFraction});
 }
 
@@ -449,11 +449,7 @@ class AnalyticsErrorBoundary extends StatefulWidget {
   final Widget child;
   final String? context;
 
-  const AnalyticsErrorBoundary({
-    super.key,
-    required this.child,
-    this.context,
-  });
+  const AnalyticsErrorBoundary({super.key, required this.child, this.context});
 
   @override
   State<AnalyticsErrorBoundary> createState() => _AnalyticsErrorBoundaryState();
@@ -466,9 +462,7 @@ class _AnalyticsErrorBoundaryState extends State<AnalyticsErrorBoundary> {
   @override
   Widget build(BuildContext context) {
     if (_hasError) {
-      return const Center(
-        child: Text('Something went wrong'),
-      );
+      return const Center(child: Text('Something went wrong'));
     }
 
     return ErrorBoundaryWrapper(
@@ -476,7 +470,7 @@ class _AnalyticsErrorBoundaryState extends State<AnalyticsErrorBoundary> {
         setState(() {
           _hasError = true;
         });
-        
+
         _analytics.trackError(
           errorType: 'widget_error',
           errorMessage: error.toString(),

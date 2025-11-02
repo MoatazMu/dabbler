@@ -22,7 +22,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
   final GlobalKey _timeSlotSelectionKey = GlobalKey();
   final GlobalKey _skillLevelSelectionKey = GlobalKey();
   final GlobalKey _durationSelectionKey = GlobalKey();
-  
+
   // Date and time selection state
   DateTime? _selectedDate;
   String? _selectedTimeSlot;
@@ -30,18 +30,18 @@ class _SportFormatStepState extends State<SportFormatStep> {
   @override
   void initState() {
     super.initState();
-    
+
     // Restore local state from draft if available
     _restoreLocalState();
   }
 
   void _restoreLocalState() {
     final state = widget.viewModel.state;
-    
+
     // Restore date and time slot from saved draft
     _selectedDate = state.selectedDate;
     _selectedTimeSlot = state.selectedTimeSlot;
-    
+
     // Restore any additional local state
     if (state.stepLocalState != null) {
       final localState = state.stepLocalState!;
@@ -60,9 +60,9 @@ class _SportFormatStepState extends State<SportFormatStep> {
       'selectedDate': _selectedDate?.toIso8601String(),
       'selectedTimeSlot': _selectedTimeSlot,
     };
-    
+
     widget.viewModel.updateStepLocalState(localState);
-    
+
     // Also update the main state
     if (_selectedDate != null) {
       widget.viewModel.updateSelectedDate(_selectedDate!);
@@ -103,7 +103,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
 
   void _scrollToRequiredSection() {
     final state = widget.viewModel.state;
-    
+
     // Add longer delay to ensure widgets are fully rendered
     Future.delayed(const Duration(milliseconds: 100), () {
       // Determine next required action based on current state
@@ -127,7 +127,11 @@ class _SportFormatStepState extends State<SportFormatStep> {
   Future<void> _selectCustomDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate ?? DateTime.now().add(const Duration(days: 1)), // Default to tomorrow instead of today
+      initialDate:
+          _selectedDate ??
+          DateTime.now().add(
+            const Duration(days: 1),
+          ), // Default to tomorrow instead of today
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) {
@@ -142,16 +146,16 @@ class _SportFormatStepState extends State<SportFormatStep> {
         );
       },
     );
-    
+
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
         _selectedTimeSlot = null; // Reset time slot when date changes
       });
-      
+
       // Save local state for draft
       _saveLocalState();
-      
+
       // Scroll to next required section after custom date selection with increased delay
       Future.delayed(const Duration(milliseconds: 200), () {
         _scrollToRequiredSection();
@@ -202,7 +206,11 @@ class _SportFormatStepState extends State<SportFormatStep> {
               if (selectedSport != null) ...[
                 Container(
                   key: _formatSectionKey,
-                  child: _buildFormatSelection(context, selectedSport, selectedFormat),
+                  child: _buildFormatSelection(
+                    context,
+                    selectedSport,
+                    selectedFormat,
+                  ),
                 ),
                 const SizedBox(height: 32),
               ],
@@ -211,7 +219,12 @@ class _SportFormatStepState extends State<SportFormatStep> {
               if (selectedSport != null && selectedFormat != null) ...[
                 Container(
                   key: _gameSettingsKey,
-                  child: _buildGameSettings(context, skillLevel, maxPlayers, gameDuration),
+                  child: _buildGameSettings(
+                    context,
+                    skillLevel,
+                    maxPlayers,
+                    gameDuration,
+                  ),
                 ),
               ],
             ],
@@ -241,7 +254,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: SportsConfig.allSports.map((sport) {
                 final isSelected = selectedSport == sport.displayName;
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: _buildSportCard(
@@ -277,12 +290,12 @@ class _SportFormatStepState extends State<SportFormatStep> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? context.colors.primary.withValues(alpha: 0.1)
               : context.violetWidgetBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? context.colors.primary
                 : context.colors.outline.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
@@ -294,7 +307,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary.withValues(alpha: 0.1)
                     : sport.secondaryColor,
                 borderRadius: BorderRadius.circular(10),
@@ -302,9 +315,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               child: Icon(
                 sport.icon,
                 size: 24,
-                color: isSelected 
-                    ? context.colors.primary
-                    : sport.primaryColor,
+                color: isSelected ? context.colors.primary : sport.primaryColor,
               ),
             ),
             const SizedBox(height: 12),
@@ -312,7 +323,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               sport.displayName,
               style: context.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary
                     : context.colors.onSurface,
               ),
@@ -323,9 +334,13 @@ class _SportFormatStepState extends State<SportFormatStep> {
     );
   }
 
-  Widget _buildFormatSelection(BuildContext context, String selectedSport, GameFormat? selectedFormat) {
+  Widget _buildFormatSelection(
+    BuildContext context,
+    String selectedSport,
+    GameFormat? selectedFormat,
+  ) {
     final availableFormats = SportsConfig.getFormatsForSport(selectedSport);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -352,7 +367,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: availableFormats.map((format) {
                 final isSelected = selectedFormat?.name == format.name;
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: _buildFormatChip(
@@ -388,12 +403,12 @@ class _SportFormatStepState extends State<SportFormatStep> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? context.colors.primary.withValues(alpha: 0.1)
               : context.violetWidgetBg,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? context.colors.primary
                 : context.colors.outline.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
@@ -406,7 +421,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               format.name,
               style: context.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary
                     : context.colors.onSurface,
               ),
@@ -415,7 +430,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
             Text(
               format.description,
               style: context.textTheme.bodySmall?.copyWith(
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary.withValues(alpha: 0.8)
                     : context.colors.onSurfaceVariant,
               ),
@@ -424,7 +439,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
               decoration: BoxDecoration(
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary.withValues(alpha: 0.2)
                     : context.colors.outline.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
@@ -432,7 +447,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               child: Text(
                 '${format.totalPlayers} players',
                 style: context.textTheme.bodySmall?.copyWith(
-                  color: isSelected 
+                  color: isSelected
                       ? context.colors.primary
                       : context.colors.onSurfaceVariant,
                   fontSize: 11,
@@ -446,15 +461,17 @@ class _SportFormatStepState extends State<SportFormatStep> {
     );
   }
 
-  Widget _buildGameSettings(BuildContext context, String? skillLevel, int? maxPlayers, int? gameDuration) {
+  Widget _buildGameSettings(
+    BuildContext context,
+    String? skillLevel,
+    int? maxPlayers,
+    int? gameDuration,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Date Selection
-        Container(
-          key: _dateSelectionKey,
-          child: _buildDateSelection(context),
-        ),
+        Container(key: _dateSelectionKey, child: _buildDateSelection(context)),
         const SizedBox(height: 24),
 
         // Time Slot Selection
@@ -471,9 +488,11 @@ class _SportFormatStepState extends State<SportFormatStep> {
           key: _skillLevelSelectionKey,
           child: _buildSkillLevelSelection(context, skillLevel),
         ),
-        
+
         // Duration Selection - moved before player count
-        if (_selectedDate != null && _selectedTimeSlot != null && maxPlayers != null) ...[
+        if (_selectedDate != null &&
+            _selectedTimeSlot != null &&
+            maxPlayers != null) ...[
           const SizedBox(height: 24),
           Container(
             key: _durationSelectionKey,
@@ -495,10 +514,13 @@ class _SportFormatStepState extends State<SportFormatStep> {
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final dayAfter = today.add(const Duration(days: 2));
-    
+
     // Generate next 9 days (excluding today, tomorrow, day after)
-    final nextDays = List.generate(9, (index) => today.add(Duration(days: index + 3)));
-    
+    final nextDays = List.generate(
+      9,
+      (index) => today.add(Duration(days: index + 3)),
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -510,7 +532,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
           ),
         ),
         const SizedBox(height: 12),
-        
+
         // Quick date options
         Align(
           alignment: Alignment.centerLeft,
@@ -525,42 +547,52 @@ class _SportFormatStepState extends State<SportFormatStep> {
                   date: today,
                   label: 'Today',
                   subtitle: _formatDateShort(today),
-                  isSelected: _selectedDate != null && _isSameDay(_selectedDate!, today),
+                  isSelected:
+                      _selectedDate != null &&
+                      _isSameDay(_selectedDate!, today),
                 ),
                 const SizedBox(width: 8),
-                
+
                 // Tomorrow
                 _buildDateChip(
                   context,
                   date: tomorrow,
                   label: 'Tomorrow',
                   subtitle: _formatDateShort(tomorrow),
-                  isSelected: _selectedDate != null && _isSameDay(_selectedDate!, tomorrow),
+                  isSelected:
+                      _selectedDate != null &&
+                      _isSameDay(_selectedDate!, tomorrow),
                 ),
                 const SizedBox(width: 8),
-                
+
                 // Day after tomorrow
                 _buildDateChip(
                   context,
                   date: dayAfter,
                   label: _formatDayName(dayAfter),
                   subtitle: _formatDateShort(dayAfter),
-                  isSelected: _selectedDate != null && _isSameDay(_selectedDate!, dayAfter),
+                  isSelected:
+                      _selectedDate != null &&
+                      _isSameDay(_selectedDate!, dayAfter),
                 ),
                 const SizedBox(width: 8),
-                
+
                 // Next 9 days
-                ...nextDays.map((date) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: _buildDateChip(
-                    context,
-                    date: date,
-                    label: _formatDayName(date),
-                    subtitle: _formatDateShort(date),
-                    isSelected: _selectedDate != null && _isSameDay(_selectedDate!, date),
+                ...nextDays.map(
+                  (date) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _buildDateChip(
+                      context,
+                      date: date,
+                      label: _formatDayName(date),
+                      subtitle: _formatDateShort(date),
+                      isSelected:
+                          _selectedDate != null &&
+                          _isSameDay(_selectedDate!, date),
+                    ),
                   ),
-                )),
-                
+                ),
+
                 // Custom date picker
                 _buildCustomDateChip(context),
               ],
@@ -584,10 +616,10 @@ class _SportFormatStepState extends State<SportFormatStep> {
           _selectedDate = date;
           _selectedTimeSlot = null; // Reset time slot when date changes
         });
-        
+
         // Save local state for draft
         _saveLocalState();
-        
+
         // Scroll to next required section after date selection with increased delay
         Future.delayed(const Duration(milliseconds: 200), () {
           _scrollToRequiredSection();
@@ -597,12 +629,12 @@ class _SportFormatStepState extends State<SportFormatStep> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? context.colors.primary.withValues(alpha: 0.1)
               : context.violetWidgetBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? context.colors.primary
                 : context.colors.outline.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
@@ -615,7 +647,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               label,
               style: context.textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary
                     : context.colors.onSurface,
               ),
@@ -626,7 +658,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               subtitle,
               style: context.textTheme.bodySmall?.copyWith(
                 fontSize: 10,
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary.withValues(alpha: 0.8)
                     : context.colors.onSurfaceVariant,
               ),
@@ -639,20 +671,21 @@ class _SportFormatStepState extends State<SportFormatStep> {
   }
 
   Widget _buildCustomDateChip(BuildContext context) {
-    final isCustomSelected = _selectedDate != null && !_isWithinNext12Days(_selectedDate!);
-    
+    final isCustomSelected =
+        _selectedDate != null && !_isWithinNext12Days(_selectedDate!);
+
     return GestureDetector(
       onTap: _selectCustomDate,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         decoration: BoxDecoration(
-          color: isCustomSelected 
+          color: isCustomSelected
               ? context.colors.primary.withValues(alpha: 0.1)
               : context.violetWidgetBg,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isCustomSelected 
+            color: isCustomSelected
                 ? context.colors.primary
                 : context.colors.outline.withValues(alpha: 0.1),
             width: isCustomSelected ? 2 : 1,
@@ -664,7 +697,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
             Icon(
               LucideIcons.calendar,
               size: 16,
-              color: isCustomSelected 
+              color: isCustomSelected
                   ? context.colors.primary
                   : context.colors.onSurface,
             ),
@@ -674,7 +707,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               style: context.textTheme.bodySmall?.copyWith(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: isCustomSelected 
+                color: isCustomSelected
                     ? context.colors.primary
                     : context.colors.onSurface,
               ),
@@ -698,12 +731,32 @@ class _SportFormatStepState extends State<SportFormatStep> {
 
   Widget _buildTimeSlotSelection(BuildContext context) {
     final timeSlots = [
-      {'id': 'morning', 'label': 'Morning', 'time': '9:00 - 12:00', 'icon': LucideIcons.sunrise},
-      {'id': 'day', 'label': 'Day', 'time': '13:00 - 16:00', 'icon': LucideIcons.sun},
-      {'id': 'evening', 'label': 'Evening', 'time': '17:00 - 20:00', 'icon': LucideIcons.sunset},
-      {'id': 'night', 'label': 'Night', 'time': '21:00 - 00:00', 'icon': LucideIcons.moon},
+      {
+        'id': 'morning',
+        'label': 'Morning',
+        'time': '9:00 - 12:00',
+        'icon': LucideIcons.sunrise,
+      },
+      {
+        'id': 'day',
+        'label': 'Day',
+        'time': '13:00 - 16:00',
+        'icon': LucideIcons.sun,
+      },
+      {
+        'id': 'evening',
+        'label': 'Evening',
+        'time': '17:00 - 20:00',
+        'icon': LucideIcons.sunset,
+      },
+      {
+        'id': 'night',
+        'label': 'Night',
+        'time': '21:00 - 00:00',
+        'icon': LucideIcons.moon,
+      },
     ];
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -715,7 +768,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
           ),
         ),
         const SizedBox(height: 12),
-        
+
         Align(
           alignment: Alignment.centerLeft,
           child: SingleChildScrollView(
@@ -724,7 +777,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: timeSlots.map((slot) {
                 final isSelected = _selectedTimeSlot == slot['id'];
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: GestureDetector(
@@ -732,10 +785,10 @@ class _SportFormatStepState extends State<SportFormatStep> {
                       setState(() {
                         _selectedTimeSlot = slot['id'] as String;
                       });
-                      
+
                       // Save local state for draft
                       _saveLocalState();
-                      
+
                       // Scroll to next required section after time slot selection with increased delay
                       Future.delayed(const Duration(milliseconds: 200), () {
                         _scrollToRequiredSection();
@@ -745,12 +798,12 @@ class _SportFormatStepState extends State<SportFormatStep> {
                       duration: const Duration(milliseconds: 200),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: isSelected 
+                        color: isSelected
                             ? context.colors.primary.withValues(alpha: 0.1)
                             : context.violetWidgetBg,
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: isSelected 
+                          color: isSelected
                               ? context.colors.primary
                               : context.colors.outline.withValues(alpha: 0.1),
                           width: isSelected ? 2 : 1,
@@ -762,7 +815,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
                           Icon(
                             slot['icon'] as IconData,
                             size: 24,
-                            color: isSelected 
+                            color: isSelected
                                 ? context.colors.primary
                                 : context.colors.onSurface,
                           ),
@@ -771,7 +824,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
                             slot['label'] as String,
                             style: context.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.w600,
-                              color: isSelected 
+                              color: isSelected
                                   ? context.colors.primary
                                   : context.colors.onSurface,
                             ),
@@ -780,8 +833,10 @@ class _SportFormatStepState extends State<SportFormatStep> {
                           Text(
                             slot['time'] as String,
                             style: context.textTheme.bodySmall?.copyWith(
-                              color: isSelected 
-                                  ? context.colors.primary.withValues(alpha: 0.8)
+                              color: isSelected
+                                  ? context.colors.primary.withValues(
+                                      alpha: 0.8,
+                                    )
                                   : context.colors.onSurfaceVariant,
                             ),
                           ),
@@ -800,8 +855,20 @@ class _SportFormatStepState extends State<SportFormatStep> {
 
   // Helper methods for date formatting
   String _formatDateShort(DateTime date) {
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     return '${date.day} ${months[date.month - 1]}';
   }
 
@@ -812,20 +879,26 @@ class _SportFormatStepState extends State<SportFormatStep> {
 
   bool _isSameDay(DateTime date1, DateTime date2) {
     return date1.year == date2.year &&
-           date1.month == date2.month &&
-           date1.day == date2.day;
+        date1.month == date2.month &&
+        date1.day == date2.day;
   }
 
   bool _isWithinNext12Days(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final difference = date.difference(today).inDays;
-    return difference >= 0 && difference <= 11; // Today + next 11 days = 12 days total
+    return difference >= 0 &&
+        difference <= 11; // Today + next 11 days = 12 days total
   }
 
   Widget _buildSkillLevelSelection(BuildContext context, String? skillLevel) {
-    final skillLevels = ['Beginner', 'Intermediate', 'Advanced', 'Professional'];
-    
+    final skillLevels = [
+      'Beginner',
+      'Intermediate',
+      'Advanced',
+      'Professional',
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -845,7 +918,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
               mainAxisAlignment: MainAxisAlignment.start,
               children: skillLevels.map((level) {
                 final isSelected = skillLevel == level;
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: GestureDetector(
@@ -858,14 +931,17 @@ class _SportFormatStepState extends State<SportFormatStep> {
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected 
+                        color: isSelected
                             ? context.colors.primary.withValues(alpha: 0.1)
                             : context.violetWidgetBg,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected 
+                          color: isSelected
                               ? context.colors.primary
                               : context.colors.outline.withValues(alpha: 0.1),
                           width: isSelected ? 2 : 1,
@@ -875,7 +951,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
                         level,
                         style: context.textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: isSelected 
+                          color: isSelected
                               ? context.colors.primary
                               : context.colors.onSurface,
                         ),
@@ -906,7 +982,9 @@ class _SportFormatStepState extends State<SportFormatStep> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: context.colors.surfaceContainerHighest.withValues(alpha: 0.3),
+            color: context.colors.surfaceContainerHighest.withValues(
+              alpha: 0.3,
+            ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: context.colors.outline.withValues(alpha: 0.1),
@@ -915,11 +993,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
           ),
           child: Row(
             children: [
-              Icon(
-                LucideIcons.users,
-                size: 20,
-                color: context.colors.primary,
-              ),
+              Icon(LucideIcons.users, size: 20, color: context.colors.primary),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -948,7 +1022,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
 
   Widget _buildDurationSelection(BuildContext context, int? gameDuration) {
     final durations = [60, 90, 120, 150, 180]; // Duration options in minutes
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -971,7 +1045,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
                 final hours = duration ~/ 60;
                 final minutes = duration % 60;
                 String durationText;
-                
+
                 if (hours > 0 && minutes > 0) {
                   durationText = '${hours}h ${minutes}m';
                 } else if (hours > 0) {
@@ -979,7 +1053,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
                 } else {
                   durationText = '${minutes}m';
                 }
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: GestureDetector(
@@ -992,14 +1066,17 @@ class _SportFormatStepState extends State<SportFormatStep> {
                     },
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: isSelected 
+                        color: isSelected
                             ? context.colors.primary.withValues(alpha: 0.1)
                             : context.violetWidgetBg,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: isSelected 
+                          color: isSelected
                               ? context.colors.primary
                               : context.colors.outline.withValues(alpha: 0.1),
                           width: isSelected ? 2 : 1,
@@ -1009,7 +1086,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
                         durationText,
                         style: context.textTheme.bodySmall?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: isSelected 
+                          color: isSelected
                               ? context.colors.primary
                               : context.colors.onSurface,
                         ),
@@ -1024,4 +1101,4 @@ class _SportFormatStepState extends State<SportFormatStep> {
       ],
     );
   }
-} 
+}

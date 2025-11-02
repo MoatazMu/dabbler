@@ -38,46 +38,55 @@ final rewardsRepositoryProvider = Provider<RewardsRepository>((ref) {
 // =============================================================================
 
 /// Provides the rewards controller with current user context
-final rewardsControllerProvider = StateNotifierProvider<RewardsController, RewardsState>((ref) {
-  final repository = ref.watch(rewardsRepositoryProvider);
-  final userId = ref.watch(currentUserIdProvider);
-  return RewardsController(repository: repository, userId: userId);
-});
+final rewardsControllerProvider =
+    StateNotifierProvider<RewardsController, RewardsState>((ref) {
+      final repository = ref.watch(rewardsRepositoryProvider);
+      final userId = ref.watch(currentUserIdProvider);
+      return RewardsController(repository: repository, userId: userId);
+    });
 
 /// Provides the achievements controller with current user context
-final achievementsControllerProvider = StateNotifierProvider<AchievementsController, AchievementsState>((ref) {
-  final repository = ref.watch(rewardsRepositoryProvider);
-  final userId = ref.watch(currentUserIdProvider);
-  return AchievementsController(repository: repository, userId: userId);
-});
+final achievementsControllerProvider =
+    StateNotifierProvider<AchievementsController, AchievementsState>((ref) {
+      final repository = ref.watch(rewardsRepositoryProvider);
+      final userId = ref.watch(currentUserIdProvider);
+      return AchievementsController(repository: repository, userId: userId);
+    });
 
 /// Provides the tier controller with current user context
-final tierControllerProvider = StateNotifierProvider<TierController, TierState>((ref) {
-  final repository = ref.watch(rewardsRepositoryProvider);
-  final userId = ref.watch(currentUserIdProvider);
-  return TierController(repository: repository, userId: userId);
-});
+final tierControllerProvider = StateNotifierProvider<TierController, TierState>(
+  (ref) {
+    final repository = ref.watch(rewardsRepositoryProvider);
+    final userId = ref.watch(currentUserIdProvider);
+    return TierController(repository: repository, userId: userId);
+  },
+);
 
 /// Provides the badge controller with current user context
-final badgeControllerProvider = StateNotifierProvider<BadgeController, BadgeState>((ref) {
-  final repository = ref.watch(rewardsRepositoryProvider);
-  final userId = ref.watch(currentUserIdProvider);
-  return BadgeController(repository, userId);
-});
+final badgeControllerProvider =
+    StateNotifierProvider<BadgeController, BadgeState>((ref) {
+      final repository = ref.watch(rewardsRepositoryProvider);
+      final userId = ref.watch(currentUserIdProvider);
+      return BadgeController(repository, userId);
+    });
 
 /// Provides the leaderboard controller with current user context
-final leaderboardControllerProvider = StateNotifierProvider<LeaderboardController, LeaderboardState>((ref) {
-  final repository = ref.watch(rewardsRepositoryProvider);
-  final userId = ref.watch(currentUserIdProvider);
-  return LeaderboardController(repository, userId);
-});
+final leaderboardControllerProvider =
+    StateNotifierProvider<LeaderboardController, LeaderboardState>((ref) {
+      final repository = ref.watch(rewardsRepositoryProvider);
+      final userId = ref.watch(currentUserIdProvider);
+      return LeaderboardController(repository, userId);
+    });
 
 /// Provides the progress tracking controller with current user context
-final progressTrackingControllerProvider = StateNotifierProvider<ProgressTrackingController, ProgressTrackingState>((ref) {
-  final repository = ref.watch(rewardsRepositoryProvider);
-  final userId = ref.watch(currentUserIdProvider);
-  return ProgressTrackingController(repository, userId);
-});
+final progressTrackingControllerProvider =
+    StateNotifierProvider<ProgressTrackingController, ProgressTrackingState>((
+      ref,
+    ) {
+      final repository = ref.watch(rewardsRepositoryProvider);
+      final userId = ref.watch(currentUserIdProvider);
+      return ProgressTrackingController(repository, userId);
+    });
 
 // =============================================================================
 // COMPUTED STATE PROVIDERS
@@ -137,7 +146,9 @@ final recentTransactionsProvider = Provider<List<PointTransaction>>((ref) {
 // =============================================================================
 
 /// Provides filtered achievements based on current filter settings
-final filteredAchievementsProvider = Provider<List<AchievementWithProgress>>((ref) {
+final filteredAchievementsProvider = Provider<List<AchievementWithProgress>>((
+  ref,
+) {
   final achievementsState = ref.watch(achievementsControllerProvider);
   return achievementsState.filteredAchievements;
 });
@@ -149,7 +160,9 @@ final filteredBadgesProvider = Provider<List<Badge>>((ref) {
 });
 
 /// Provides filtered leaderboard entries based on current filter settings
-final filteredLeaderboardEntriesProvider = Provider<List<LeaderboardEntry>>((ref) {
+final filteredLeaderboardEntriesProvider = Provider<List<LeaderboardEntry>>((
+  ref,
+) {
   final leaderboardState = ref.watch(leaderboardControllerProvider);
   return leaderboardState.filteredEntries;
 });
@@ -188,26 +201,60 @@ final progressAnalyticsProvider = Provider<Map<String, dynamic>>((ref) {
 
 /// Provides loading state for any rewards-related operation
 final rewardsLoadingProvider = Provider<bool>((ref) {
-  final rewardsLoading = ref.watch(rewardsControllerProvider.select((state) => state.isLoading));
-  final achievementsLoading = ref.watch(achievementsControllerProvider.select((state) => state.isLoading));
-  final tierLoading = ref.watch(tierControllerProvider.select((state) => state.isLoading));
-  final badgeLoading = ref.watch(badgeControllerProvider.select((state) => state.isLoading));
-  final leaderboardLoading = ref.watch(leaderboardControllerProvider.select((state) => state.isLoading));
-  final progressLoading = ref.watch(progressTrackingControllerProvider.select((state) => state.isLoading));
-  
-  return rewardsLoading || achievementsLoading || tierLoading || badgeLoading || leaderboardLoading || progressLoading;
+  final rewardsLoading = ref.watch(
+    rewardsControllerProvider.select((state) => state.isLoading),
+  );
+  final achievementsLoading = ref.watch(
+    achievementsControllerProvider.select((state) => state.isLoading),
+  );
+  final tierLoading = ref.watch(
+    tierControllerProvider.select((state) => state.isLoading),
+  );
+  final badgeLoading = ref.watch(
+    badgeControllerProvider.select((state) => state.isLoading),
+  );
+  final leaderboardLoading = ref.watch(
+    leaderboardControllerProvider.select((state) => state.isLoading),
+  );
+  final progressLoading = ref.watch(
+    progressTrackingControllerProvider.select((state) => state.isLoading),
+  );
+
+  return rewardsLoading ||
+      achievementsLoading ||
+      tierLoading ||
+      badgeLoading ||
+      leaderboardLoading ||
+      progressLoading;
 });
 
 /// Provides any error state across all rewards controllers
 final rewardsErrorProvider = Provider<String?>((ref) {
-  final rewardsError = ref.watch(rewardsControllerProvider.select((state) => state.error));
-  final achievementsError = ref.watch(achievementsControllerProvider.select((state) => state.error));
-  final tierError = ref.watch(tierControllerProvider.select((state) => state.error));
-  final badgeError = ref.watch(badgeControllerProvider.select((state) => state.error));
-  final leaderboardError = ref.watch(leaderboardControllerProvider.select((state) => state.error));
-  final progressError = ref.watch(progressTrackingControllerProvider.select((state) => state.error));
-  
-  return rewardsError ?? achievementsError ?? tierError ?? badgeError ?? leaderboardError ?? progressError;
+  final rewardsError = ref.watch(
+    rewardsControllerProvider.select((state) => state.error),
+  );
+  final achievementsError = ref.watch(
+    achievementsControllerProvider.select((state) => state.error),
+  );
+  final tierError = ref.watch(
+    tierControllerProvider.select((state) => state.error),
+  );
+  final badgeError = ref.watch(
+    badgeControllerProvider.select((state) => state.error),
+  );
+  final leaderboardError = ref.watch(
+    leaderboardControllerProvider.select((state) => state.error),
+  );
+  final progressError = ref.watch(
+    progressTrackingControllerProvider.select((state) => state.error),
+  );
+
+  return rewardsError ??
+      achievementsError ??
+      tierError ??
+      badgeError ??
+      leaderboardError ??
+      progressError;
 });
 
 // =============================================================================
@@ -215,11 +262,12 @@ final rewardsErrorProvider = Provider<String?>((ref) {
 // =============================================================================
 
 /// Provides search functionality across achievements
-final achievementSearchProvider = Provider.family<List<AchievementWithProgress>, String>((ref, query) {
-  final controller = ref.read(achievementsControllerProvider.notifier);
-  controller.setSearchQuery(query);
-  return ref.watch(filteredAchievementsProvider);
-});
+final achievementSearchProvider =
+    Provider.family<List<AchievementWithProgress>, String>((ref, query) {
+      final controller = ref.read(achievementsControllerProvider.notifier);
+      controller.setSearchQuery(query);
+      return ref.watch(filteredAchievementsProvider);
+    });
 
 /// Provides search functionality across badges
 final badgeSearchProvider = Provider.family<List<Badge>, String>((ref, query) {
@@ -229,22 +277,30 @@ final badgeSearchProvider = Provider.family<List<Badge>, String>((ref, query) {
 });
 
 /// Provides leaderboard entries for specific type and timeframe
-final specificLeaderboardProvider = FutureProvider.family<List<LeaderboardEntry>, Map<String, dynamic>>((ref, params) async {
-  final type = params['type'] as LeaderboardType;
-  final timeframe = params['timeframe'] as TimeFrame;
-  final controller = ref.read(leaderboardControllerProvider.notifier);
-  
-  await controller.changeLeaderboardType(type);
-  await controller.changeTimeFrame(timeframe);
-  return ref.read(filteredLeaderboardEntriesProvider);
-});
+final specificLeaderboardProvider =
+    FutureProvider.family<List<LeaderboardEntry>, Map<String, dynamic>>((
+      ref,
+      params,
+    ) async {
+      final type = params['type'] as LeaderboardType;
+      final timeframe = params['timeframe'] as TimeFrame;
+      final controller = ref.read(leaderboardControllerProvider.notifier);
+
+      await controller.changeLeaderboardType(type);
+      await controller.changeTimeFrame(timeframe);
+      return ref.read(filteredLeaderboardEntriesProvider);
+    });
 
 /// Provides achievements by category
-final achievementsByCategoryProvider = Provider.family<List<AchievementWithProgress>, AchievementCategory>((ref, category) {
-  final controller = ref.read(achievementsControllerProvider.notifier);
-  controller.setCategory(category);
-  return ref.watch(filteredAchievementsProvider);
-});
+final achievementsByCategoryProvider =
+    Provider.family<List<AchievementWithProgress>, AchievementCategory>((
+      ref,
+      category,
+    ) {
+      final controller = ref.read(achievementsControllerProvider.notifier);
+      controller.setCategory(category);
+      return ref.watch(filteredAchievementsProvider);
+    });
 
 /// Provides progress insights and recommendations
 final progressInsightsProvider = Provider<Map<String, dynamic>>((ref) {
@@ -313,18 +369,27 @@ final userRewardsProfileProvider = Provider<Map<String, dynamic>>((ref) {
     'current_tier': tier?.level.name ?? 'Bronze',
     'tier_level': tier?.level.level ?? 1,
     'leaderboard_rank': rank,
-    'showcased_badges': showcasedBadges.map((b) => {
-      'id': b.id,
-      'name': b.name,
-      'rarity': b.getRarityLabel(),
-      'tier': b.tier.name,
-    }).toList(),
-    'recent_activity': recentTransactions.take(5).map((t) => {
-      'type': t.type.name,
-      'amount': t.finalPoints,
-      'description': t.description,
-      'created_at': t.createdAt,
-    }).toList(),
+    'showcased_badges': showcasedBadges
+        .map(
+          (b) => {
+            'id': b.id,
+            'name': b.name,
+            'rarity': b.getRarityLabel(),
+            'tier': b.tier.name,
+          },
+        )
+        .toList(),
+    'recent_activity': recentTransactions
+        .take(5)
+        .map(
+          (t) => {
+            'type': t.type.name,
+            'amount': t.finalPoints,
+            'description': t.description,
+            'created_at': t.createdAt,
+          },
+        )
+        .toList(),
   };
 });
 
@@ -339,23 +404,29 @@ final motivationProvider = Provider<Map<String, dynamic>>((ref) {
 
   // Add insights from progress tracking
   if (progressInsights['insights'] is List) {
-    motivationMessages.addAll((progressInsights['insights'] as List).cast<String>());
+    motivationMessages.addAll(
+      (progressInsights['insights'] as List).cast<String>(),
+    );
   }
   if (progressInsights['recommendations'] is List) {
-    recommendations.addAll((progressInsights['recommendations'] as List).cast<String>());
+    recommendations.addAll(
+      (progressInsights['recommendations'] as List).cast<String>(),
+    );
   }
 
   // Add insights from competitive analysis
   if (competitiveInsights['insights'] is List) {
-    motivationMessages.addAll((competitiveInsights['insights'] as List).cast<String>());
+    motivationMessages.addAll(
+      (competitiveInsights['insights'] as List).cast<String>(),
+    );
   }
 
   return {
     'motivation_messages': motivationMessages,
     'recommendations': recommendations,
     'recent_milestones_count': recentMilestones.length,
-    'overall_message': motivationMessages.isNotEmpty 
-        ? motivationMessages.first 
+    'overall_message': motivationMessages.isNotEmpty
+        ? motivationMessages.first
         : 'Keep making progress on your achievements!',
   };
 });
@@ -377,7 +448,10 @@ final refreshAllRewardsProvider = Provider<Future<void>>((ref) async {
 });
 
 /// Provider to trigger refresh of specific controller data
-final refreshSpecificProvider = Provider.family<Future<void>, String>((ref, controllerType) async {
+final refreshSpecificProvider = Provider.family<Future<void>, String>((
+  ref,
+  controllerType,
+) async {
   switch (controllerType.toLowerCase()) {
     case 'rewards':
       await ref.read(rewardsControllerProvider.notifier).refresh();

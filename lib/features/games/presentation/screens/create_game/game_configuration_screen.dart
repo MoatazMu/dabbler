@@ -11,14 +11,15 @@ class GameConfigurationScreen extends StatefulWidget {
   });
 
   @override
-  State<GameConfigurationScreen> createState() => _GameConfigurationScreenState();
+  State<GameConfigurationScreen> createState() =>
+      _GameConfigurationScreenState();
 }
 
 class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
   late TextEditingController _titleController;
   late TextEditingController _descriptionController;
   late TextEditingController _priceController;
-  
+
   int _minPlayers = 2;
   int _maxPlayers = 10;
   String _skillLevel = 'Mixed';
@@ -28,7 +29,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
 
   final List<String> _skillLevels = [
     'Beginner',
-    'Intermediate', 
+    'Intermediate',
     'Advanced',
     'Mixed',
   ];
@@ -36,15 +37,19 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize with existing data
     final data = widget.gameData;
-    _titleController = TextEditingController(text: data['title'] ?? _generateTitle());
-    _descriptionController = TextEditingController(text: data['description'] ?? '');
-    _priceController = TextEditingController(
-      text: data['pricePerPlayer']?.toString() ?? '0.0'
+    _titleController = TextEditingController(
+      text: data['title'] ?? _generateTitle(),
     );
-    
+    _descriptionController = TextEditingController(
+      text: data['description'] ?? '',
+    );
+    _priceController = TextEditingController(
+      text: data['pricePerPlayer']?.toString() ?? '0.0',
+    );
+
     _minPlayers = data['minPlayers'] ?? 2;
     _maxPlayers = data['maxPlayers'] ?? 10;
     _skillLevel = data['skillLevel'] ?? 'Mixed';
@@ -65,7 +70,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
     final sport = widget.gameData['sport'] ?? 'Game';
     final date = widget.gameData['date'];
     final venue = widget.gameData['venue'];
-    
+
     if (date != null) {
       final dayOfWeek = _getDayOfWeek(date);
       if (venue != null) {
@@ -74,7 +79,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
         return '$dayOfWeek $sport Game';
       }
     }
-    
+
     return '$sport Game';
   }
 
@@ -93,21 +98,15 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
           children: [
             const Text(
               'Game Details',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Set up your game details to attract the right players.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
-            
+
             _buildGameTitle(),
             const SizedBox(height: 16),
             _buildGameDescription(),
@@ -140,10 +139,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 const SizedBox(width: 8),
                 const Text(
                   'Game Title',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 TextButton(
@@ -156,7 +152,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
               ],
             ),
             const SizedBox(height: 12),
-            
+
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
@@ -167,15 +163,12 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
               maxLength: 60,
               onChanged: (_) => _updateConfiguration(),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             Text(
               'A good title helps players find and join your game',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
           ],
         ),
@@ -196,19 +189,17 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Description (Optional)',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            
+
             TextField(
               controller: _descriptionController,
               decoration: const InputDecoration(
-                hintText: 'Add details about your game, rules, or what to bring...',
+                hintText:
+                    'Add details about your game, rules, or what to bring...',
                 border: OutlineInputBorder(),
                 counterText: '',
               ),
@@ -216,9 +207,9 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
               maxLines: 4,
               onChanged: (_) => _updateConfiguration(),
             ),
-            
+
             const SizedBox(height: 8),
-            
+
             Wrap(
               spacing: 8,
               children: [
@@ -239,8 +230,8 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
       onPressed: () {
         final currentText = _descriptionController.text;
         if (!currentText.contains(text)) {
-          _descriptionController.text = currentText.isEmpty 
-              ? text 
+          _descriptionController.text = currentText.isEmpty
+              ? text
               : '$currentText\n• $text';
           _updateConfiguration();
         }
@@ -261,15 +252,12 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Number of Players',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            
+
             Row(
               children: [
                 Expanded(
@@ -278,7 +266,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                     children: [
                       const Text('Minimum Players'),
                       const SizedBox(height: 8),
-                      
+
                       Container(
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey[300]!),
@@ -287,15 +275,17 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                         child: Row(
                           children: [
                             IconButton(
-                              onPressed: _minPlayers > 1 ? () {
-                                setState(() {
-                                  _minPlayers--;
-                                  if (_maxPlayers < _minPlayers) {
-                                    _maxPlayers = _minPlayers;
-                                  }
-                                });
-                                _updateConfiguration();
-                              } : null,
+                              onPressed: _minPlayers > 1
+                                  ? () {
+                                      setState(() {
+                                        _minPlayers--;
+                                        if (_maxPlayers < _minPlayers) {
+                                          _maxPlayers = _minPlayers;
+                                        }
+                                      });
+                                      _updateConfiguration();
+                                    }
+                                  : null,
                               icon: const Icon(Icons.remove),
                             ),
                             Expanded(
@@ -330,7 +320,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                     children: [
                       const Text('Maximum Players'),
                       const SizedBox(height: 8),
-                      
+
                       Container(
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.grey[300]!),
@@ -339,12 +329,14 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                         child: Row(
                           children: [
                             IconButton(
-                              onPressed: _maxPlayers > _minPlayers ? () {
-                                setState(() {
-                                  _maxPlayers--;
-                                });
-                                _updateConfiguration();
-                              } : null,
+                              onPressed: _maxPlayers > _minPlayers
+                                  ? () {
+                                      setState(() {
+                                        _maxPlayers--;
+                                      });
+                                      _updateConfiguration();
+                                    }
+                                  : null,
                               icon: const Icon(Icons.remove),
                             ),
                             Expanded(
@@ -371,9 +363,9 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -387,10 +379,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                   Expanded(
                     child: Text(
                       'Game needs at least $_minPlayers players to start',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.blue[600],
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.blue[600]),
                     ),
                   ),
                 ],
@@ -415,42 +404,40 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Skill Level Requirement',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            
+
             Text(
               'Set the expected skill level for your game',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
-            
+
             Wrap(
               spacing: 8,
-              children: _skillLevels.map((level) => ChoiceChip(
-                label: Text(level),
-                selected: _skillLevel == level,
-                onSelected: (selected) {
-                  if (selected) {
-                    setState(() {
-                      _skillLevel = level;
-                    });
-                    _updateConfiguration();
-                  }
-                },
-              )).toList(),
+              children: _skillLevels
+                  .map(
+                    (level) => ChoiceChip(
+                      label: Text(level),
+                      selected: _skillLevel == level,
+                      onSelected: (selected) {
+                        if (selected) {
+                          setState(() {
+                            _skillLevel = level;
+                          });
+                          _updateConfiguration();
+                        }
+                      },
+                    ),
+                  )
+                  .toList(),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -462,10 +449,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 children: [
                   Text(
                     _getSkillLevelDescription(_skillLevel),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.orange[700],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.orange[700]),
                   ),
                 ],
               ),
@@ -504,24 +488,18 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Pricing',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            
+
             Text(
               'Set the cost per player (leave as 0 for free games)',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             ),
             const SizedBox(height: 16),
-            
+
             Row(
               children: [
                 const Text(
@@ -532,7 +510,9 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 Expanded(
                   child: TextField(
                     controller: _priceController,
-                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                     decoration: const InputDecoration(
                       hintText: '0.00',
                       border: OutlineInputBorder(),
@@ -546,9 +526,9 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             Wrap(
               spacing: 8,
               children: [
@@ -559,7 +539,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 _buildPriceChip('\$20', 20.0),
               ],
             ),
-            
+
             if (_pricePerPlayer > 0) ...[
               const SizedBox(height: 12),
               Container(
@@ -573,7 +553,11 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                   children: [
                     Row(
                       children: [
-                        Icon(Icons.calculate, color: Colors.green[600], size: 16),
+                        Icon(
+                          Icons.calculate,
+                          color: Colors.green[600],
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
                         Text(
                           'Total for $_maxPlayers players: \$${(_pricePerPlayer * _maxPlayers).toStringAsFixed(2)}',
@@ -624,15 +608,12 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 SizedBox(width: 8),
                 Text(
                   'Game Settings',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            
+
             SwitchListTile(
               title: const Text('Public Game'),
               subtitle: const Text('Anyone can find and join this game'),
@@ -645,7 +626,7 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
               },
               contentPadding: EdgeInsets.zero,
             ),
-            
+
             SwitchListTile(
               title: const Text('Allow Waitlist'),
               subtitle: const Text('Let extra players join a waiting list'),
@@ -677,15 +658,12 @@ class _GameConfigurationScreenState extends State<GameConfigurationScreen> {
                 const SizedBox(width: 8),
                 const Text(
                   'Tips for Attractive Listings',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            
+
             const Text('✓ Use a clear, descriptive title'),
             const SizedBox(height: 4),
             const Text('✓ Set realistic player limits'),

@@ -23,7 +23,9 @@ abstract class ModerationRepository {
   });
 
   /// Insert a ticket row. Caller provides the map with correct columns.
-  Future<Result<Map<String, dynamic>>> createTicket(Map<String, dynamic> values);
+  Future<Result<Map<String, dynamic>>> createTicket(
+    Map<String, dynamic> values,
+  );
 
   /// Patch a ticket by id (string or uuid in text form).
   Future<Result<Map<String, dynamic>>> updateTicket(
@@ -41,7 +43,9 @@ abstract class ModerationRepository {
     Map<String, dynamic>? where,
   });
 
-  Future<Result<Map<String, dynamic>>> recordAction(Map<String, dynamic> values);
+  Future<Result<Map<String, dynamic>>> recordAction(
+    Map<String, dynamic> values,
+  );
 
   // ----- Ban terms (admin) -----
   Future<Result<List<Map<String, dynamic>>>> listBanTerms({
@@ -51,7 +55,9 @@ abstract class ModerationRepository {
   });
 
   /// Upsert by unique constraint (caller supplies keys present in DB).
-  Future<Result<Map<String, dynamic>>> upsertBanTerm(Map<String, dynamic> values);
+  Future<Result<Map<String, dynamic>>> upsertBanTerm(
+    Map<String, dynamic> values,
+  );
 
   Future<Result<int>> deleteBanTerm(String id);
 }

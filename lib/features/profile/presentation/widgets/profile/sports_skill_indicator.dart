@@ -24,15 +24,13 @@ class SportsSkillIndicator extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final color = primaryColor ?? theme.primaryColor;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: theme.dividerColor.withOpacity(0.2),
-        ),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -53,11 +51,7 @@ class SportsSkillIndicator extends StatelessWidget {
                   color: color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(
-                  _getSportIcon(sportName),
-                  color: color,
-                  size: 24,
-                ),
+                child: Icon(_getSportIcon(sportName), color: color, size: 24),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -74,7 +68,9 @@ class SportsSkillIndicator extends StatelessWidget {
                       Text(
                         skillLabel,
                         style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                          color: theme.textTheme.bodySmall?.color?.withOpacity(
+                            0.7,
+                          ),
                         ),
                       ),
                   ],
@@ -83,7 +79,7 @@ class SportsSkillIndicator extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Skill level indicator
           if (isInteractive)
             _buildInteractiveSkillLevel(context, color)
@@ -102,7 +98,9 @@ class SportsSkillIndicator extends StatelessWidget {
           'Skill Level',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+            color: Theme.of(
+              context,
+            ).textTheme.bodySmall?.color?.withOpacity(0.7),
           ),
         ),
         const SizedBox(height: 8),
@@ -130,13 +128,17 @@ class SportsSkillIndicator extends StatelessWidget {
             Text(
               'Beginner',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.5),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withOpacity(0.5),
               ),
             ),
             Text(
               'Expert',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.5),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withOpacity(0.5),
               ),
             ),
           ],
@@ -153,7 +155,9 @@ class SportsSkillIndicator extends StatelessWidget {
           'Skill Level',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.w600,
-            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.7),
+            color: Theme.of(
+              context,
+            ).textTheme.bodySmall?.color?.withOpacity(0.7),
           ),
         ),
         const SizedBox(height: 8),
@@ -171,13 +175,15 @@ class SportsSkillIndicator extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: isActive ? color : color.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(6),
-                    boxShadow: isActive ? [
-                      BoxShadow(
-                        color: color.withOpacity(0.3),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ] : null,
+                    boxShadow: isActive
+                        ? [
+                            BoxShadow(
+                              color: color.withOpacity(0.3),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ]
+                        : null,
                   ),
                 ),
               ),
@@ -191,13 +197,17 @@ class SportsSkillIndicator extends StatelessWidget {
             Text(
               'Beginner',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.5),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withOpacity(0.5),
               ),
             ),
             Text(
               'Expert',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.5),
+                color: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.color?.withOpacity(0.5),
               ),
             ),
           ],
@@ -296,7 +306,8 @@ class SportsSkillGrid extends StatelessWidget {
           skillLevel: skill.level,
           skillLabel: SportsSkillIndicator.getSkillLevelLabel(skill.level),
           isInteractive: isEditable,
-          onSkillChanged: (level) => onSkillChanged?.call(skill.sportName, level),
+          onSkillChanged: (level) =>
+              onSkillChanged?.call(skill.sportName, level),
         );
       },
     );
@@ -308,9 +319,5 @@ class SportSkill {
   final int level;
   final Color? color;
 
-  const SportSkill({
-    required this.sportName,
-    required this.level,
-    this.color,
-  });
+  const SportSkill({required this.sportName, required this.level, this.color});
 }

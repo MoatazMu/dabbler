@@ -14,5 +14,6 @@ class FriendshipStatus with _$FriendshipStatus {
     @JsonKey(name: 'sort_order') required int sortOrder,
   }) = _FriendshipStatus;
 
-  factory FriendshipStatus.fromJson(Map<String, dynamic> json) => _$FriendshipStatusFromJson(json);
+  factory FriendshipStatus.fromJson(Map<String, dynamic> json) =>
+      _$FriendshipStatusFromJson(json);
 }

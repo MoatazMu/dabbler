@@ -20,7 +20,7 @@ class LoadingSpinner extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primaryColor = color ?? theme.colorScheme.primary;
-    
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -50,7 +50,7 @@ class LoadingSpinner extends StatelessWidget {
             ),
             const SizedBox(height: 32),
           ],
-          
+
           // Elegant loading indicator
           Container(
             width: size,
@@ -71,7 +71,7 @@ class LoadingSpinner extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(primaryColor),
             ),
           ),
-          
+
           if (message != null) ...[
             const SizedBox(height: 24),
             Container(
@@ -102,5 +102,3 @@ class LoadingSpinner extends StatelessWidget {
     );
   }
 }
-
-

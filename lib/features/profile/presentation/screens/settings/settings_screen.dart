@@ -17,7 +17,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   final String _appVersion = '1.0.0';
@@ -137,7 +137,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -146,13 +146,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -201,9 +201,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           'Settings',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         centerTitle: false,
         titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
@@ -252,34 +252,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
   List<Widget> _buildFilteredSections(BuildContext context) {
     final filteredSections = _getFilteredSections();
-    
+
     return filteredSections.map((section) {
-      return SliverToBoxAdapter(
-        child: _buildSection(context, section),
-      );
+      return SliverToBoxAdapter(child: _buildSection(context, section));
     }).toList();
   }
 
   List<SettingsSection> _getFilteredSections() {
     if (_searchQuery.isEmpty) return _allSections;
-    
-    return _allSections.map((section) {
-      final filteredItems = section.items.where((item) {
-        return item.title.toLowerCase().contains(_searchQuery) ||
-               item.subtitle.toLowerCase().contains(_searchQuery) ||
-               item.searchTerms.any((term) => term.contains(_searchQuery));
-      }).toList();
-      
-      return SettingsSection(
-        title: section.title,
-        items: filteredItems,
-      );
-    }).where((section) => section.items.isNotEmpty).toList();
+
+    return _allSections
+        .map((section) {
+          final filteredItems = section.items.where((item) {
+            return item.title.toLowerCase().contains(_searchQuery) ||
+                item.subtitle.toLowerCase().contains(_searchQuery) ||
+                item.searchTerms.any((term) => term.contains(_searchQuery));
+          }).toList();
+
+          return SettingsSection(title: section.title, items: filteredItems);
+        })
+        .where((section) => section.items.isNotEmpty)
+        .toList();
   }
 
   Widget _buildSection(BuildContext context, SettingsSection section) {
     if (section.items.isEmpty) return const SizedBox.shrink();
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Column(
@@ -305,7 +303,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                 final index = entry.key;
                 final item = entry.value;
                 final isLast = index == section.items.length - 1;
-                
+
                 return _buildSettingsItem(context, item, isLast);
               }).toList(),
             ),
@@ -315,7 +313,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     );
   }
 
-  Widget _buildSettingsItem(BuildContext context, SettingsItem item, bool isLast) {
+  Widget _buildSettingsItem(
+    BuildContext context,
+    SettingsItem item,
+    bool isLast,
+  ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -329,10 +331,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           decoration: BoxDecoration(
             border: !isLast
                 ? Border(
-                    bottom: BorderSide(
-                      color: Colors.grey[200]!,
-                      width: 0.5,
-                    ),
+                    bottom: BorderSide(color: Colors.grey[200]!, width: 0.5),
                   )
                 : null,
           ),
@@ -365,18 +364,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                     const SizedBox(height: 2),
                     Text(
                       item.subtitle,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                     ),
                   ],
                 ),
               ),
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
-              ),
+              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
             ],
           ),
         ),
@@ -389,9 +384,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Card(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
@@ -421,17 +414,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                       children: [
                         Text(
                           'Sign Out',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.red,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.red,
+                              ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           'Sign out of your account',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.grey[600],
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: Colors.grey[600]),
                         ),
                       ],
                     ),
@@ -466,9 +459,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             const SizedBox(height: 4),
             Text(
               'Version $_appVersion',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
             ),
             const SizedBox(height: 8),
             Text(
@@ -494,7 +487,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Sign Out'),
-        content: const Text('Are you sure you want to sign out of your account?'),
+        content: const Text(
+          'Are you sure you want to sign out of your account?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -505,9 +500,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               Navigator.of(context).pop();
               await _signOut();
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Sign Out'),
           ),
         ],
@@ -521,9 +514,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+        builder: (context) => const Center(child: CircularProgressIndicator()),
       );
 
       // Prefer SimpleAuthNotifier (independent of unimplemented AuthRepository).
@@ -558,10 +549,7 @@ class SettingsSection {
   final String title;
   final List<SettingsItem> items;
 
-  SettingsSection({
-    required this.title,
-    required this.items,
-  });
+  SettingsSection({required this.title, required this.items});
 }
 
 class SettingsItem {

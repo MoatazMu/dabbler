@@ -58,38 +58,47 @@ class FriendsState {
       searchQuery: searchQuery ?? this.searchQuery,
       lastSeenTimes: lastSeenTimes ?? this.lastSeenTimes,
       activeFilter: activeFilter ?? this.activeFilter,
-      requestProcessingStates: requestProcessingStates ?? this.requestProcessingStates,
+      requestProcessingStates:
+          requestProcessingStates ?? this.requestProcessingStates,
     );
   }
 
   // Computed getters
-  List<UserModel> get allFriends => friendsByStatus.values.expand((list) => list).toList();
-  
-  List<UserModel> get onlineFriends => allFriends.where((friend) => onlineUsers.contains(friend.id)).toList();
-  
+  List<UserModel> get allFriends =>
+      friendsByStatus.values.expand((list) => list).toList();
+
+  List<UserModel> get onlineFriends =>
+      allFriends.where((friend) => onlineUsers.contains(friend.id)).toList();
+
   List<UserModel> get filteredFriends {
     final friends = allFriends;
-    
+
     // Apply search filter
-    var filtered = searchQuery.isEmpty 
-        ? friends 
+    var filtered = searchQuery.isEmpty
+        ? friends
         : friends.where((friend) {
             final name = friend.fullName.toLowerCase();
             return name.contains(searchQuery.toLowerCase());
           }).toList();
-    
+
     // Apply status filter
     switch (activeFilter) {
       case FriendFilter.all:
         return filtered;
       case FriendFilter.online:
-        return filtered.where((friend) => onlineUsers.contains(friend.id)).toList();
+        return filtered
+            .where((friend) => onlineUsers.contains(friend.id))
+            .toList();
       case FriendFilter.offline:
-        return filtered.where((friend) => !onlineUsers.contains(friend.id)).toList();
+        return filtered
+            .where((friend) => !onlineUsers.contains(friend.id))
+            .toList();
       case FriendFilter.recent:
         filtered.sort((a, b) {
-          final aTime = lastSeenTimes[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
-          final bTime = lastSeenTimes[b.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final aTime =
+              lastSeenTimes[a.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
+          final bTime =
+              lastSeenTimes[b.id] ?? DateTime.fromMillisecondsSinceEpoch(0);
           return bTime.compareTo(aTime);
         });
         return filtered.take(20).toList();
@@ -97,7 +106,7 @@ class FriendsState {
         return friendsByStatus[FriendStatus.close] ?? [];
     }
   }
-  
+
   int get totalFriendsCount => allFriends.length;
   int get onlineFriendsCount => onlineFriends.length;
   int get incomingRequestsCount => incomingRequests.length;
@@ -106,34 +115,26 @@ class FriendsState {
 
 /// Friend status categories
 enum FriendStatus {
-  close,     // Close friends
-  regular,   // Regular friends
-  work,      // Work/Professional friends
-  sports,    // Sports buddies
+  close, // Close friends
+  regular, // Regular friends
+  work, // Work/Professional friends
+  sports, // Sports buddies
 }
 
 /// Filter options for friends list
-enum FriendFilter {
-  all,
-  online,
-  offline,
-  recent,
-  close,
-}
+enum FriendFilter { all, online, offline, recent, close }
 
 /// Controller for managing friends and friend requests
 class FriendsController extends StateNotifier<FriendsState> {
   final AddFriendUseCase _addFriendUseCase;
   final BlockUserUseCase _blockUserUseCase;
-  
+
   StreamSubscription? _onlineStatusSubscription;
   StreamSubscription? _friendRequestSubscription;
   Timer? _presenceUpdateTimer;
 
-  FriendsController(
-    this._addFriendUseCase,
-    this._blockUserUseCase,
-  ) : super(const FriendsState()) {
+  FriendsController(this._addFriendUseCase, this._blockUserUseCase)
+    : super(const FriendsState()) {
     _setupOnlineStatusTracking();
     _setupFriendRequestUpdates();
     _startPresenceUpdates();
@@ -154,7 +155,7 @@ class FriendsController extends StateNotifier<FriendsState> {
     try {
       // Load friends by status
       final friendsByStatus = <FriendStatus, List<UserModel>>{};
-      
+
       for (final status in FriendStatus.values) {
         final friends = await _fetchFriendsByStatus(status);
         friendsByStatus[status] = friends;
@@ -163,7 +164,7 @@ class FriendsController extends StateNotifier<FriendsState> {
       // Load friend requests
       final incomingRequests = await _fetchIncomingRequests();
       final outgoingRequests = await _fetchOutgoingRequests();
-      
+
       // Load blocked users
       final blockedUsers = await _fetchBlockedUsers();
 
@@ -177,12 +178,8 @@ class FriendsController extends StateNotifier<FriendsState> {
 
       // Load online status for friends
       await _updateOnlineStatus();
-
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -191,10 +188,7 @@ class FriendsController extends StateNotifier<FriendsState> {
     if (state.requestProcessingStates[userId] == true) return;
 
     state = state.copyWith(
-      requestProcessingStates: {
-        ...state.requestProcessingStates,
-        userId: true,
-      },
+      requestProcessingStates: {...state.requestProcessingStates, userId: true},
     );
 
     try {
@@ -204,7 +198,7 @@ class FriendsController extends StateNotifier<FriendsState> {
       );
 
       final result = await _addFriendUseCase(params);
-      
+
       result.fold(
         (failure) {
           state = state.copyWith(
@@ -263,7 +257,7 @@ class FriendsController extends StateNotifier<FriendsState> {
       );
 
       final result = await _acceptRequest(requestId);
-      
+
       if (result) {
         // Remove from incoming requests
         final updatedIncoming = state.incomingRequests
@@ -273,11 +267,14 @@ class FriendsController extends StateNotifier<FriendsState> {
         // Add to friends (default to regular status)
         final newFriend = await _fetchUserById(request.fromUserId);
         if (newFriend != null) {
-          final regularFriends = state.friendsByStatus[FriendStatus.regular] ?? [];
-          final updatedFriendsByStatus = Map<FriendStatus, List<UserModel>>.from(
-            state.friendsByStatus,
-          );
-          updatedFriendsByStatus[FriendStatus.regular] = [...regularFriends, newFriend];
+          final regularFriends =
+              state.friendsByStatus[FriendStatus.regular] ?? [];
+          final updatedFriendsByStatus =
+              Map<FriendStatus, List<UserModel>>.from(state.friendsByStatus);
+          updatedFriendsByStatus[FriendStatus.regular] = [
+            ...regularFriends,
+            newFriend,
+          ];
 
           state = state.copyWith(
             incomingRequests: updatedIncoming,
@@ -316,16 +313,14 @@ class FriendsController extends StateNotifier<FriendsState> {
 
     try {
       final result = await _declineRequest(requestId);
-      
+
       if (result) {
         // Remove from incoming requests
         final updatedIncoming = state.incomingRequests
             .where((req) => req.id != requestId)
             .toList();
 
-        state = state.copyWith(
-          incomingRequests: updatedIncoming,
-        );
+        state = state.copyWith(incomingRequests: updatedIncoming);
       }
 
       state = state.copyWith(
@@ -350,10 +345,7 @@ class FriendsController extends StateNotifier<FriendsState> {
     if (state.requestProcessingStates[userId] == true) return;
 
     state = state.copyWith(
-      requestProcessingStates: {
-        ...state.requestProcessingStates,
-        userId: true,
-      },
+      requestProcessingStates: {...state.requestProcessingStates, userId: true},
     );
 
     try {
@@ -363,7 +355,7 @@ class FriendsController extends StateNotifier<FriendsState> {
       );
 
       final result = await _blockUserUseCase(params);
-      
+
       result.fold(
         (failure) {
           state = state.copyWith(
@@ -429,24 +421,19 @@ class FriendsController extends StateNotifier<FriendsState> {
     if (state.requestProcessingStates[userId] == true) return;
 
     state = state.copyWith(
-      requestProcessingStates: {
-        ...state.requestProcessingStates,
-        userId: true,
-      },
+      requestProcessingStates: {...state.requestProcessingStates, userId: true},
     );
 
     try {
       final result = await _unblockUser(userId);
-      
+
       if (result) {
         // Remove from blocked users
         final updatedBlocked = state.blockedUsers
             .where((user) => user.id != userId)
             .toList();
 
-        state = state.copyWith(
-          blockedUsers: updatedBlocked,
-        );
+        state = state.copyWith(blockedUsers: updatedBlocked);
       }
 
       state = state.copyWith(
@@ -467,12 +454,15 @@ class FriendsController extends StateNotifier<FriendsState> {
   }
 
   /// Update friend status (close, regular, etc.)
-  Future<void> updateFriendStatus(String friendId, FriendStatus newStatus) async {
+  Future<void> updateFriendStatus(
+    String friendId,
+    FriendStatus newStatus,
+  ) async {
     try {
       // Find and move friend between status lists
       UserModel? friend;
       FriendStatus? oldStatus;
-      
+
       for (final entry in state.friendsByStatus.entries) {
         final foundFriend = entry.value.firstWhere(
           (f) => f.id == friendId,
@@ -482,7 +472,7 @@ class FriendsController extends StateNotifier<FriendsState> {
             updatedAt: DateTime.now(),
           ),
         );
-        
+
         if (foundFriend.id.isNotEmpty) {
           friend = foundFriend;
           oldStatus = entry.key;
@@ -494,12 +484,12 @@ class FriendsController extends StateNotifier<FriendsState> {
         final updatedFriendsByStatus = Map<FriendStatus, List<UserModel>>.from(
           state.friendsByStatus,
         );
-        
+
         // Remove from old status
         updatedFriendsByStatus[oldStatus] = updatedFriendsByStatus[oldStatus]!
             .where((f) => f.id != friendId)
             .toList();
-        
+
         // Add to new status
         updatedFriendsByStatus[newStatus] = [
           ...updatedFriendsByStatus[newStatus] ?? [],
@@ -535,7 +525,7 @@ class FriendsController extends StateNotifier<FriendsState> {
   void _handleOnlineStatusUpdate(Map<String, bool> statusUpdates) {
     final onlineUsers = Set<String>.from(state.onlineUsers);
     final lastSeenTimes = Map<String, DateTime>.from(state.lastSeenTimes);
-    
+
     statusUpdates.forEach((userId, isOnline) {
       if (isOnline) {
         onlineUsers.add(userId);
@@ -564,41 +554,50 @@ class FriendsController extends StateNotifier<FriendsState> {
   Future<List<UserModel>> _fetchFriendsByStatus(FriendStatus status) async {
     // Mock implementation - replace with actual repository call
     await Future.delayed(const Duration(milliseconds: 100));
-    
-    return List.generate(5, (index) => UserModel(
-      id: '${status.name}_friend_$index',
-      firstName: '${status.name.toUpperCase()} Friend $index',
-      email: '${status.name}_friend_$index@example.com',
-      profileImageUrl: 'https://example.com/avatar_$index.jpg',
-      createdAt: DateTime.now().subtract(Duration(days: index)),
-      updatedAt: DateTime.now().subtract(Duration(days: index)),
-    ));
+
+    return List.generate(
+      5,
+      (index) => UserModel(
+        id: '${status.name}_friend_$index',
+        firstName: '${status.name.toUpperCase()} Friend $index',
+        email: '${status.name}_friend_$index@example.com',
+        profileImageUrl: 'https://example.com/avatar_$index.jpg',
+        createdAt: DateTime.now().subtract(Duration(days: index)),
+        updatedAt: DateTime.now().subtract(Duration(days: index)),
+      ),
+    );
   }
 
   Future<List<FriendRequestModel>> _fetchIncomingRequests() async {
     // Mock implementation
     await Future.delayed(const Duration(milliseconds: 100));
-    
-    return List.generate(3, (index) => FriendRequestModel(
-      id: 'incoming_request_$index',
-      fromUserId: 'user_$index',
-      toUserId: 'current_user',
-      status: FriendRequestStatus.pending,
-      createdAt: DateTime.now().subtract(Duration(hours: index)),
-    ));
+
+    return List.generate(
+      3,
+      (index) => FriendRequestModel(
+        id: 'incoming_request_$index',
+        fromUserId: 'user_$index',
+        toUserId: 'current_user',
+        status: FriendRequestStatus.pending,
+        createdAt: DateTime.now().subtract(Duration(hours: index)),
+      ),
+    );
   }
 
   Future<List<FriendRequestModel>> _fetchOutgoingRequests() async {
     // Mock implementation
     await Future.delayed(const Duration(milliseconds: 100));
-    
-    return List.generate(2, (index) => FriendRequestModel(
-      id: 'outgoing_request_$index',
-      fromUserId: 'current_user',
-      toUserId: 'target_user_$index',
-      status: FriendRequestStatus.pending,
-      createdAt: DateTime.now().subtract(Duration(hours: index)),
-    ));
+
+    return List.generate(
+      2,
+      (index) => FriendRequestModel(
+        id: 'outgoing_request_$index',
+        fromUserId: 'current_user',
+        toUserId: 'target_user_$index',
+        status: FriendRequestStatus.pending,
+        createdAt: DateTime.now().subtract(Duration(hours: index)),
+      ),
+    );
   }
 
   Future<List<UserModel>> _fetchBlockedUsers() async {
@@ -610,7 +609,7 @@ class FriendsController extends StateNotifier<FriendsState> {
   Future<UserModel?> _fetchUserById(String userId) async {
     // Mock implementation
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     return UserModel(
       id: userId,
       firstName: 'User $userId',
@@ -639,7 +638,10 @@ class FriendsController extends StateNotifier<FriendsState> {
     return true;
   }
 
-  Future<void> _updateFriendStatusOnServer(String friendId, FriendStatus status) async {
+  Future<void> _updateFriendStatusOnServer(
+    String friendId,
+    FriendStatus status,
+  ) async {
     // Mock implementation
     await Future.delayed(const Duration(milliseconds: 300));
   }
@@ -657,19 +659,20 @@ class FriendsController extends StateNotifier<FriendsState> {
 
   void _setupOnlineStatusTracking() {
     // Setup WebSocket or real-time connection for online status
-    _onlineStatusSubscription = Stream.periodic(
-      const Duration(seconds: 30),
-      (index) => <String, bool>{},
-    ).listen((statusUpdates) {
-      _updateOnlineStatus();
-    });
+    _onlineStatusSubscription =
+        Stream.periodic(
+          const Duration(seconds: 30),
+          (index) => <String, bool>{},
+        ).listen((statusUpdates) {
+          _updateOnlineStatus();
+        });
   }
 
   void _setupFriendRequestUpdates() {
     // Setup real-time friend request notifications
-    _friendRequestSubscription = Stream.periodic(
-      const Duration(minutes: 1),
-    ).listen((_) async {
+    _friendRequestSubscription = Stream.periodic(const Duration(minutes: 1)).listen((
+      _,
+    ) async {
       // Check for new friend requests and handle any that are not yet in state
       try {
         final latestIncoming = await _fetchIncomingRequests();

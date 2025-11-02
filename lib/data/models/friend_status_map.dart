@@ -12,5 +12,6 @@ class FriendStatusMap with _$FriendStatusMap {
     @JsonKey(name: 'sort_order') required int sortOrder,
   }) = _FriendStatusMap;
 
-  factory FriendStatusMap.fromJson(Map<String, dynamic> json) => _$FriendStatusMapFromJson(json);
+  factory FriendStatusMap.fromJson(Map<String, dynamic> json) =>
+      _$FriendStatusMapFromJson(json);
 }

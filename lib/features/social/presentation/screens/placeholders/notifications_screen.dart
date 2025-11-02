@@ -9,7 +9,8 @@ class NotificationsScreen extends StatefulWidget {
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> with TickerProviderStateMixin {
+class _NotificationsScreenState extends State<NotificationsScreen>
+    with TickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -30,11 +31,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
       appBar: AppBar(
         title: const Text('Notifications'),
         actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.settings),
-            onPressed: () {
-            },
-          ),
+          IconButton(icon: const Icon(LucideIcons.settings), onPressed: () {}),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -50,10 +47,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
         children: [
           // All Notifications
           _buildNotificationsList(showAll: true),
-          
+
           // Social Notifications
           _buildNotificationsList(showAll: false, filterType: 'social'),
-          
+
           // Game Notifications
           _buildNotificationsList(showAll: false, filterType: 'games'),
         ],
@@ -63,24 +60,17 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
 
   Widget _buildNotificationsList({bool showAll = true, String? filterType}) {
     final notifications = _getNotifications(showAll, filterType);
-    
+
     if (notifications.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              LucideIcons.bell,
-              size: 64,
-              color: Colors.grey,
-            ),
+            Icon(LucideIcons.bell, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
               'No notifications',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
           ],
         ),
@@ -92,12 +82,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
       itemBuilder: (context, index) {
         final notification = notifications[index];
         final isUnread = notification['isUnread'] as bool;
-        
+
         return Container(
           color: isUnread ? Colors.blue.withOpacity(0.05) : null,
           child: ListTile(
             leading: CircleAvatar(
-              backgroundColor: _getNotificationColor(notification['type'] as String),
+              backgroundColor: _getNotificationColor(
+                notification['type'] as String,
+              ),
               child: Icon(
                 _getNotificationIcon(notification['type'] as String),
                 color: Colors.white,
@@ -122,13 +114,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
                 const SizedBox(height: 4),
                 Text(
                   notification['time'] as String,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                 ),
               ],
             ),
-            trailing: isUnread 
+            trailing: isUnread
                 ? Container(
                     width: 8,
                     height: 8,
@@ -149,7 +141,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> with TickerPr
     );
   }
 
-  List<Map<String, dynamic>> _getNotifications(bool showAll, String? filterType) {
+  List<Map<String, dynamic>> _getNotifications(
+    bool showAll,
+    String? filterType,
+  ) {
     final allNotifications = [
       {
         'id': '1',

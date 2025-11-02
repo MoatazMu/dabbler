@@ -4,10 +4,7 @@ import 'package:flutter/material.dart';
 class EngagementMetricsWidget extends StatelessWidget {
   final EngagementMetrics metrics;
 
-  const EngagementMetricsWidget({
-    super.key,
-    required this.metrics,
-  });
+  const EngagementMetricsWidget({super.key, required this.metrics});
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +60,7 @@ class EngagementMetricsWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Engagement Breakdown
           Text(
             'Engagement Breakdown',
@@ -92,7 +89,8 @@ class EngagementMetricsWidget extends StatelessWidget {
                     label: 'Comments',
                     value: metrics.totalComments,
                     percentage: metrics.totalEngagement > 0
-                        ? (metrics.totalComments / metrics.totalEngagement) * 100
+                        ? (metrics.totalComments / metrics.totalEngagement) *
+                              100
                         : 0,
                     color: Colors.blue,
                   ),
@@ -111,7 +109,7 @@ class EngagementMetricsWidget extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Growth Metrics
           Text(
             'Growth Metrics',
@@ -125,20 +123,14 @@ class EngagementMetricsWidget extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _GrowthRow(
-                    label: 'Posts Growth',
-                    value: metrics.postsGrowth,
-                  ),
+                  _GrowthRow(label: 'Posts Growth', value: metrics.postsGrowth),
                   const Divider(),
                   _GrowthRow(
                     label: 'Engagement Growth',
                     value: metrics.engagementGrowth,
                   ),
                   const Divider(),
-                  _GrowthRow(
-                    label: 'User Growth',
-                    value: metrics.userGrowth,
-                  ),
+                  _GrowthRow(label: 'User Growth', value: metrics.userGrowth),
                 ],
               ),
             ),
@@ -182,10 +174,7 @@ class _MetricCard extends StatelessWidget {
               children: [
                 Icon(icon, color: color, size: 20),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: theme.textTheme.labelMedium,
-                ),
+                Text(title, style: theme.textTheme.labelMedium),
               ],
             ),
             const SizedBox(height: 8),
@@ -226,12 +215,7 @@ class _EngagementRow extends StatelessWidget {
       children: [
         Icon(icon, color: color, size: 20),
         const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            label,
-            style: theme.textTheme.bodyMedium,
-          ),
-        ),
+        Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
         Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
@@ -243,9 +227,7 @@ class _EngagementRow extends StatelessWidget {
             ),
             Text(
               '${percentage.toStringAsFixed(1)}%',
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: color,
-              ),
+              style: theme.textTheme.labelSmall?.copyWith(color: color),
             ),
           ],
         ),
@@ -258,10 +240,7 @@ class _GrowthRow extends StatelessWidget {
   final String label;
   final double value;
 
-  const _GrowthRow({
-    required this.label,
-    required this.value,
-  });
+  const _GrowthRow({required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -276,12 +255,7 @@ class _GrowthRow extends StatelessWidget {
           size: 20,
         ),
         const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            label,
-            style: theme.textTheme.bodyMedium,
-          ),
-        ),
+        Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
         Text(
           '${isPositive ? '+' : ''}${value.toStringAsFixed(1)}%',
           style: theme.textTheme.titleMedium?.copyWith(

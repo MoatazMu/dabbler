@@ -9,8 +9,10 @@ import '../../domain/entities/friend_request.dart';
 class FriendRequestsState {
   final List<FriendRequestModel> incomingRequests;
   final List<FriendRequestModel> outgoingRequests;
-  final Map<String, core.UserModel> requestUsers; // Cache user info for requests
-  final Map<String, List<core.UserModel>> mutualFriends; // Mutual friends for each request
+  final Map<String, core.UserModel>
+  requestUsers; // Cache user info for requests
+  final Map<String, List<core.UserModel>>
+  mutualFriends; // Mutual friends for each request
   final bool isLoading;
   final String? error;
   final Set<String> processingRequests; // Requests being processed
@@ -36,8 +38,8 @@ class FriendRequestsState {
   FriendRequestsState copyWith({
     List<FriendRequestModel>? incomingRequests,
     List<FriendRequestModel>? outgoingRequests,
-  Map<String, core.UserModel>? requestUsers,
-  Map<String, List<core.UserModel>>? mutualFriends,
+    Map<String, core.UserModel>? requestUsers,
+    Map<String, List<core.UserModel>>? mutualFriends,
     bool? isLoading,
     String? error,
     Set<String>? processingRequests,
@@ -49,13 +51,14 @@ class FriendRequestsState {
     return FriendRequestsState(
       incomingRequests: incomingRequests ?? this.incomingRequests,
       outgoingRequests: outgoingRequests ?? this.outgoingRequests,
-  requestUsers: requestUsers ?? this.requestUsers,
-  mutualFriends: mutualFriends ?? this.mutualFriends,
+      requestUsers: requestUsers ?? this.requestUsers,
+      mutualFriends: mutualFriends ?? this.mutualFriends,
       isLoading: isLoading ?? this.isLoading,
       error: error,
       processingRequests: processingRequests ?? this.processingRequests,
       previewInfo: previewInfo ?? this.previewInfo,
-      hasUnreadNotifications: hasUnreadNotifications ?? this.hasUnreadNotifications,
+      hasUnreadNotifications:
+          hasUnreadNotifications ?? this.hasUnreadNotifications,
       notificationCount: notificationCount ?? this.notificationCount,
       activeFilter: activeFilter ?? this.activeFilter,
     );
@@ -65,20 +68,23 @@ class FriendRequestsState {
   int get incomingRequestsCount => incomingRequests.length;
   int get outgoingRequestsCount => outgoingRequests.length;
   int get totalRequestsCount => incomingRequestsCount + outgoingRequestsCount;
-  
+
   List<FriendRequestModel> get filteredIncomingRequests {
     switch (activeFilter) {
       case FriendRequestFilter.all:
         return incomingRequests;
       case FriendRequestFilter.recent:
         final cutoff = DateTime.now().subtract(const Duration(days: 7));
-        return incomingRequests.where((req) => req.createdAt.isAfter(cutoff)).toList();
+        return incomingRequests
+            .where((req) => req.createdAt.isAfter(cutoff))
+            .toList();
       case FriendRequestFilter.mutual:
-        return incomingRequests.where((req) => 
-            mutualFriends[req.fromUserId]?.isNotEmpty ?? false).toList();
+        return incomingRequests
+            .where((req) => mutualFriends[req.fromUserId]?.isNotEmpty ?? false)
+            .toList();
     }
   }
-  
+
   bool get hasPendingRequests => incomingRequestsCount > 0;
   bool get hasProcessingRequests => processingRequests.isNotEmpty;
 }
@@ -110,11 +116,12 @@ enum FriendRequestFilter {
 /// Controller for managing friend requests
 class FriendRequestsController extends StateNotifier<FriendRequestsState> {
   final AddFriendUseCase _addFriendUseCase;
-  
+
   StreamSubscription? _requestUpdatesSubscription;
   Timer? _refreshTimer;
 
-  FriendRequestsController(this._addFriendUseCase) : super(const FriendRequestsState()) {
+  FriendRequestsController(this._addFriendUseCase)
+    : super(const FriendRequestsState()) {
     _setupRealtimeUpdates();
     _startPeriodicRefresh();
   }
@@ -150,13 +157,17 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
       // Load mutual friends for incoming requests
       final mutualFriends = <String, List<core.UserModel>>{};
       for (final request in incomingRequests) {
-        mutualFriends[request.fromUserId] = await _fetchMutualFriends(request.fromUserId);
+        mutualFriends[request.fromUserId] = await _fetchMutualFriends(
+          request.fromUserId,
+        );
       }
 
       // Load preview info for incoming requests
       final previewInfo = <String, RequestPreviewInfo>{};
       for (final request in incomingRequests) {
-        previewInfo[request.fromUserId] = await _generatePreviewInfo(request.fromUserId);
+        previewInfo[request.fromUserId] = await _generatePreviewInfo(
+          request.fromUserId,
+        );
       }
 
       state = state.copyWith(
@@ -169,12 +180,8 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
         hasUnreadNotifications: incomingRequests.isNotEmpty,
         notificationCount: incomingRequests.length,
       );
-
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -198,12 +205,14 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
       );
 
       final result = await _addFriendUseCase(params);
-      
+
       result.fold(
         (failure) {
           state = state.copyWith(
             error: failure.message,
-            processingRequests: state.processingRequests.difference({requestId}),
+            processingRequests: state.processingRequests.difference({
+              requestId,
+            }),
           );
         },
         (success) {
@@ -217,7 +226,9 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
 
           state = state.copyWith(
             incomingRequests: updatedIncoming,
-            processingRequests: state.processingRequests.difference({requestId}),
+            processingRequests: state.processingRequests.difference({
+              requestId,
+            }),
             notificationCount: newCount,
             hasUnreadNotifications: newCount > 0,
           );
@@ -241,7 +252,7 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
 
     try {
       final success = await _declineFriendRequest(requestId);
-      
+
       if (success) {
         // Remove from incoming requests
         final updatedIncoming = state.incomingRequests
@@ -279,7 +290,7 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
 
     try {
       final success = await _cancelFriendRequest(requestId);
-      
+
       if (success) {
         // Remove from outgoing requests
         final updatedOutgoing = state.outgoingRequests
@@ -309,12 +320,12 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
     state = state.copyWith(processingRequests: processingIds);
 
     final results = <String, bool>{};
-    
+
     // Process requests in parallel (with some limit to avoid overwhelming the server)
     const batchSize = 3;
     for (int i = 0; i < requestIds.length; i += batchSize) {
       final batch = requestIds.skip(i).take(batchSize).toList();
-      
+
       final batchResults = await Future.wait(
         batch.map((requestId) => _acceptSingleRequest(requestId)),
       );
@@ -334,17 +345,22 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
         .where((req) => !successfulIds.contains(req.id))
         .toList();
 
-    final newCount = Math.max(0, state.notificationCount - successfulIds.length);
+    final newCount = Math.max(
+      0,
+      state.notificationCount - successfulIds.length,
+    );
 
     state = state.copyWith(
       incomingRequests: updatedIncoming,
-      processingRequests: state.processingRequests.difference(requestIds.toSet()),
+      processingRequests: state.processingRequests.difference(
+        requestIds.toSet(),
+      ),
       notificationCount: newCount,
       hasUnreadNotifications: newCount > 0,
     );
   }
 
-  /// Decline multiple friend requests  
+  /// Decline multiple friend requests
   Future<void> declineMultipleRequests(List<String> requestIds) async {
     if (requestIds.isEmpty) return;
 
@@ -353,12 +369,12 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
     state = state.copyWith(processingRequests: processingIds);
 
     final results = <String, bool>{};
-    
+
     // Process requests in parallel (with batch limit)
     const batchSize = 5;
     for (int i = 0; i < requestIds.length; i += batchSize) {
       final batch = requestIds.skip(i).take(batchSize).toList();
-      
+
       final batchResults = await Future.wait(
         batch.map((requestId) => _declineFriendRequest(requestId)),
       );
@@ -378,11 +394,16 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
         .where((req) => !successfulIds.contains(req.id))
         .toList();
 
-    final newCount = Math.max(0, state.notificationCount - successfulIds.length);
+    final newCount = Math.max(
+      0,
+      state.notificationCount - successfulIds.length,
+    );
 
     state = state.copyWith(
       incomingRequests: updatedIncoming,
-      processingRequests: state.processingRequests.difference(requestIds.toSet()),
+      processingRequests: state.processingRequests.difference(
+        requestIds.toSet(),
+      ),
       notificationCount: newCount,
       hasUnreadNotifications: newCount > 0,
     );
@@ -390,10 +411,7 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
 
   /// Mark notifications as read
   void markNotificationsAsRead() {
-    state = state.copyWith(
-      hasUnreadNotifications: false,
-      notificationCount: 0,
-    );
+    state = state.copyWith(hasUnreadNotifications: false, notificationCount: 0);
   }
 
   /// Update filter
@@ -428,7 +446,7 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
 
     // Add to incoming requests
     final updatedIncoming = [request, ...state.incomingRequests];
-    
+
     state = state.copyWith(
       incomingRequests: updatedIncoming,
       notificationCount: state.notificationCount + 1,
@@ -439,35 +457,38 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
     _loadRequestInfo(request);
   }
 
-
-
   /// Load additional info for a request
   Future<void> _loadRequestInfo(FriendRequestModel request) async {
     try {
       // Load user info
       final userInfo = await _fetchUserInfo(request.fromUserId);
       if (userInfo != null) {
-        final updatedRequestUsers = Map<String, core.UserModel>.from(state.requestUsers);
+        final updatedRequestUsers = Map<String, core.UserModel>.from(
+          state.requestUsers,
+        );
         updatedRequestUsers[request.fromUserId] = userInfo;
-        
+
         state = state.copyWith(requestUsers: updatedRequestUsers);
       }
 
       // Load mutual friends
       final mutualFriendsList = await _fetchMutualFriends(request.fromUserId);
-      final updatedMutualFriends = Map<String, List<core.UserModel>>.from(state.mutualFriends);
+      final updatedMutualFriends = Map<String, List<core.UserModel>>.from(
+        state.mutualFriends,
+      );
       updatedMutualFriends[request.fromUserId] = mutualFriendsList;
 
       // Load preview info
       final preview = await _generatePreviewInfo(request.fromUserId);
-      final updatedPreviewInfo = Map<String, RequestPreviewInfo>.from(state.previewInfo);
+      final updatedPreviewInfo = Map<String, RequestPreviewInfo>.from(
+        state.previewInfo,
+      );
       updatedPreviewInfo[request.fromUserId] = preview;
 
       state = state.copyWith(
         mutualFriends: updatedMutualFriends,
         previewInfo: updatedPreviewInfo,
       );
-
     } catch (e) {
       // Silently fail - this is additional info loading
     }
@@ -476,39 +497,48 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
   // Private helper methods (mock implementations)
   Future<List<FriendRequestModel>> _fetchIncomingRequests() async {
     await Future.delayed(const Duration(milliseconds: 300));
-    
-    return List.generate(3, (index) => FriendRequestModel(
-      id: 'incoming_request_$index',
-      fromUserId: 'sender_user_$index',
-      toUserId: 'current_user',
-      status: FriendRequestStatus.pending,
-      createdAt: DateTime.now().subtract(Duration(hours: index)),
-      message: index % 2 == 0 ? 'Hi! I\'d like to connect with you.' : null,
-    ));
+
+    return List.generate(
+      3,
+      (index) => FriendRequestModel(
+        id: 'incoming_request_$index',
+        fromUserId: 'sender_user_$index',
+        toUserId: 'current_user',
+        status: FriendRequestStatus.pending,
+        createdAt: DateTime.now().subtract(Duration(hours: index)),
+        message: index % 2 == 0 ? 'Hi! I\'d like to connect with you.' : null,
+      ),
+    );
   }
 
   Future<List<FriendRequestModel>> _fetchOutgoingRequests() async {
     await Future.delayed(const Duration(milliseconds: 300));
-    
-    return List.generate(2, (index) => FriendRequestModel(
-      id: 'outgoing_request_$index',
-      fromUserId: 'current_user',
-      toUserId: 'recipient_user_$index',
-      status: FriendRequestStatus.pending,
-      createdAt: DateTime.now().subtract(Duration(hours: index)),
-    ));
+
+    return List.generate(
+      2,
+      (index) => FriendRequestModel(
+        id: 'outgoing_request_$index',
+        fromUserId: 'current_user',
+        toUserId: 'recipient_user_$index',
+        status: FriendRequestStatus.pending,
+        createdAt: DateTime.now().subtract(Duration(hours: index)),
+      ),
+    );
   }
 
-  Future<Map<String, core.UserModel>> _fetchUsersInfo(List<String> userIds) async {
+  Future<Map<String, core.UserModel>> _fetchUsersInfo(
+    List<String> userIds,
+  ) async {
     await Future.delayed(const Duration(milliseconds: 200));
-    
+
     final users = <String, core.UserModel>{};
     for (final userId in userIds) {
       users[userId] = core.UserModel(
         id: userId,
         firstName: 'User $userId',
         email: 'user_${userId.split('_').last}@example.com',
-        profileImageUrl: 'https://example.com/avatar_${userId.split('_').last}.jpg',
+        profileImageUrl:
+            'https://example.com/avatar_${userId.split('_').last}.jpg',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
@@ -518,12 +548,13 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
 
   Future<core.UserModel?> _fetchUserInfo(String userId) async {
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     return core.UserModel(
       id: userId,
       firstName: 'User $userId',
       email: 'user_${userId.split('_').last}@example.com',
-      profileImageUrl: 'https://example.com/avatar_${userId.split('_').last}.jpg',
+      profileImageUrl:
+          'https://example.com/avatar_${userId.split('_').last}.jpg',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
@@ -531,24 +562,30 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
 
   Future<List<core.UserModel>> _fetchMutualFriends(String userId) async {
     await Future.delayed(const Duration(milliseconds: 150));
-    
+
     final mutualCount = DateTime.now().millisecondsSinceEpoch % 5;
-    return List.generate(mutualCount, (index) => core.UserModel(
-      id: 'mutual_friend_${userId}_$index',
-      firstName: 'Mutual Friend $index',
-      email: 'mutual_friend_$index@example.com',
-      profileImageUrl: 'https://example.com/mutual_avatar_$index.jpg',
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    ));
+    return List.generate(
+      mutualCount,
+      (index) => core.UserModel(
+        id: 'mutual_friend_${userId}_$index',
+        firstName: 'Mutual Friend $index',
+        email: 'mutual_friend_$index@example.com',
+        profileImageUrl: 'https://example.com/mutual_avatar_$index.jpg',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   Future<RequestPreviewInfo> _generatePreviewInfo(String userId) async {
     await Future.delayed(const Duration(milliseconds: 100));
-    
+
     return RequestPreviewInfo(
       mutualFriendsCount: DateTime.now().millisecondsSinceEpoch % 10,
-      commonSports: ['Football', 'Basketball'].take(DateTime.now().millisecondsSinceEpoch % 3).toList(),
+      commonSports: [
+        'Football',
+        'Basketball',
+      ].take(DateTime.now().millisecondsSinceEpoch % 3).toList(),
       compatibilityScore: (DateTime.now().millisecondsSinceEpoch % 100) / 100.0,
       isFromSameLocation: DateTime.now().millisecondsSinceEpoch % 2 == 0,
     );

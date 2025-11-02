@@ -24,7 +24,9 @@ class SvgNetworkOrAssetAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bg = backgroundColor ?? Theme.of(context).colorScheme.primary.withOpacity(0.1);
+    final bg =
+        backgroundColor ??
+        Theme.of(context).colorScheme.primary.withOpacity(0.1);
     final fg = fallbackColor ?? Theme.of(context).colorScheme.primary;
 
     Widget child;
@@ -37,7 +39,8 @@ class SvgNetworkOrAssetAvatar extends StatelessWidget {
           width: radius * 2,
           height: radius * 2,
           fit: BoxFit.cover,
-          placeholderBuilder: (_) => Icon(fallbackIcon, size: radius, color: fg),
+          placeholderBuilder: (_) =>
+              Icon(fallbackIcon, size: radius, color: fg),
         );
       } else {
         child = SvgPicture.asset(
@@ -45,7 +48,8 @@ class SvgNetworkOrAssetAvatar extends StatelessWidget {
           width: radius * 2,
           height: radius * 2,
           fit: BoxFit.cover,
-          placeholderBuilder: (_) => Icon(fallbackIcon, size: radius, color: fg),
+          placeholderBuilder: (_) =>
+              Icon(fallbackIcon, size: radius, color: fg),
         );
       }
     } else {
@@ -55,7 +59,8 @@ class SvgNetworkOrAssetAvatar extends StatelessWidget {
           width: radius * 2,
           height: radius * 2,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Icon(fallbackIcon, size: radius, color: fg),
+          errorBuilder: (_, __, ___) =>
+              Icon(fallbackIcon, size: radius, color: fg),
         );
       } else {
         child = Image.asset(
@@ -63,7 +68,8 @@ class SvgNetworkOrAssetAvatar extends StatelessWidget {
           width: radius * 2,
           height: radius * 2,
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Icon(fallbackIcon, size: radius, color: fg),
+          errorBuilder: (_, __, ___) =>
+              Icon(fallbackIcon, size: radius, color: fg),
         );
       }
     }

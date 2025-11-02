@@ -14,7 +14,7 @@ class FeedFilterChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       height: 50,
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -25,7 +25,7 @@ class FeedFilterChips extends StatelessWidget {
         itemBuilder: (context, index) {
           final filter = _filters[index];
           final isSelected = currentFilter == filter.value;
-          
+
           return Container(
             margin: const EdgeInsets.only(right: 8),
             child: FilterChip(
@@ -39,13 +39,13 @@ class FeedFilterChips extends StatelessWidget {
               backgroundColor: theme.colorScheme.surfaceContainerHighest,
               selectedColor: theme.colorScheme.primaryContainer,
               labelStyle: TextStyle(
-                color: isSelected 
+                color: isSelected
                     ? theme.colorScheme.onPrimaryContainer
                     : theme.colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
               side: BorderSide(
-                color: isSelected 
+                color: isSelected
                     ? theme.colorScheme.primary
                     : theme.colorScheme.outline,
                 width: isSelected ? 2 : 1,

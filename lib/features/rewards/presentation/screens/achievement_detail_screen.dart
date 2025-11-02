@@ -19,7 +19,8 @@ class AchievementDetailScreen extends StatefulWidget {
   });
 
   @override
-  State<AchievementDetailScreen> createState() => _AchievementDetailScreenState();
+  State<AchievementDetailScreen> createState() =>
+      _AchievementDetailScreenState();
 }
 
 class _AchievementDetailScreenState extends State<AchievementDetailScreen>
@@ -28,7 +29,7 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
   late AnimationController _contentAnimationController;
   late Animation<double> _headerAnimation;
   late Animation<double> _contentAnimation;
-  
+
   final ScrollController _scrollController = ScrollController();
   bool _showAppBarTitle = false;
 
@@ -48,7 +49,7 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _headerAnimation = CurvedAnimation(
       parent: _headerAnimationController,
       curve: Curves.easeOutCubic,
@@ -57,7 +58,7 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
       parent: _contentAnimationController,
       curve: Curves.easeOutCubic,
     );
-    
+
     // Start animations
     _headerAnimationController.forward();
     Future.delayed(const Duration(milliseconds: 200), () {
@@ -122,44 +123,31 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
         duration: const Duration(milliseconds: 200),
         child: Text(
           widget.achievement.name,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
         ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.share),
-          onPressed: _shareAchievement,
-        ),
-        IconButton(
-          icon: const Icon(Icons.favorite_border),
-          onPressed: () {
-          },
-        ),
+        IconButton(icon: const Icon(Icons.share), onPressed: _shareAchievement),
+        IconButton(icon: const Icon(Icons.favorite_border), onPressed: () {}),
       ],
     );
   }
 
   Widget _buildHeroSection() {
     final isCompleted = widget.userProgress.status == ProgressStatus.completed;
-    final isHidden = widget.achievement.type == AchievementType.hidden && 
-                    !isCompleted;
-    
+    final isHidden =
+        widget.achievement.type == AchievementType.hidden && !isCompleted;
+
     return AnimatedBuilder(
       animation: _headerAnimation,
       builder: (context, child) {
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            gradient: _getTierGradient(),
-          ),
+          decoration: BoxDecoration(gradient: _getTierGradient()),
           child: Column(
             children: [
               const SizedBox(height: 40), // Account for status bar
-              
               // Achievement Icon/Badge
               Transform.scale(
                 scale: _headerAnimation.value,
@@ -194,9 +182,9 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
                         ),
                 ),
               ),
-              
+
               const SizedBox(height: 24),
-              
+
               // Title
               FadeTransition(
                 opacity: _headerAnimation,
@@ -210,9 +198,9 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
                   textAlign: TextAlign.center,
                 ),
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Subtitle/Category
               SlideTransition(
                 position: Tween<Offset>(
@@ -228,45 +216,46 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Completion Status
               if (isCompleted)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.check_circle,
-                        color: Colors.white,
-                        size: 18,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Completed ${_formatDate(widget.userProgress.completedAt!)}',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                    ],
-                  ),
-                ).animate()
-                  .scale(
-                    begin: const Offset(0.8, 0.8),
-                    duration: 300.ms,
-                    delay: 400.ms,
-                  )
-                  .fadeIn(delay: 400.ms),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.check_circle,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Completed ${_formatDate(widget.userProgress.completedAt!)}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    .animate()
+                    .scale(
+                      begin: const Offset(0.8, 0.8),
+                      duration: 300.ms,
+                      delay: 400.ms,
+                    )
+                    .fadeIn(delay: 400.ms),
             ],
           ),
         );
@@ -276,221 +265,225 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
 
   Widget _buildProgressSection() {
     final isCompleted = widget.userProgress.status == ProgressStatus.completed;
-    final isHidden = widget.achievement.type == AchievementType.hidden && 
-                    !isCompleted;
-    
+    final isHidden =
+        widget.achievement.type == AchievementType.hidden && !isCompleted;
+
     if (isHidden) return const SizedBox.shrink();
-    
+
     return AnimatedBuilder(
       animation: _contentAnimation,
       builder: (context, child) {
         return Container(
-          margin: const EdgeInsets.all(24),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.trending_up,
-                    color: Theme.of(context).primaryColor,
-                    size: 20,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Progress',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ),
-                  const Spacer(),
-                  Text(
-                    '${widget.userProgress.calculateProgress().round()}%',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Theme.of(context).primaryColor,
-                    ),
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
                   ),
                 ],
               ),
-              
-              const SizedBox(height: 24),
-              
-              // Progress Visualization
-              Center(
-                child: ProgressVisualization(
-                  achievement: widget.achievement,
-                  userProgress: widget.userProgress,
-                  size: ProgressSize.large,
-                  animated: true,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.trending_up,
+                        color: Theme.of(context).primaryColor,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Progress',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                      const Spacer(),
+                      Text(
+                        '${widget.userProgress.calculateProgress().round()}%',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Progress Visualization
+                  Center(
+                    child: ProgressVisualization(
+                      achievement: widget.achievement,
+                      userProgress: widget.userProgress,
+                      size: ProgressSize.large,
+                      animated: true,
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Progress Details
+                  if (widget.achievement.type == AchievementType.cumulative)
+                    _buildCumulativeProgress(),
+
+                  if (widget.achievement.type == AchievementType.streak)
+                    _buildStreakProgress(),
+
+                  if (widget.achievement.type == AchievementType.conditional)
+                    _buildConditionalProgress(),
+                ],
               ),
-              
-              const SizedBox(height: 16),
-              
-              // Progress Details
-              if (widget.achievement.type == AchievementType.cumulative)
-                _buildCumulativeProgress(),
-              
-              if (widget.achievement.type == AchievementType.streak)
-                _buildStreakProgress(),
-              
-              if (widget.achievement.type == AchievementType.conditional)
-                _buildConditionalProgress(),
-            ],
-          ),
-        ).animate()
-          .fadeIn(
-            duration: 400.ms,
-            delay: Duration(milliseconds: (100 * _contentAnimation.value).round()),
-          )
-          .slideY(
-            begin: 0.3,
-            end: 0,
-            duration: 400.ms,
-            delay: Duration(milliseconds: (100 * _contentAnimation.value).round()),
-          );
+            )
+            .animate()
+            .fadeIn(
+              duration: 400.ms,
+              delay: Duration(
+                milliseconds: (100 * _contentAnimation.value).round(),
+              ),
+            )
+            .slideY(
+              begin: 0.3,
+              end: 0,
+              duration: 400.ms,
+              delay: Duration(
+                milliseconds: (100 * _contentAnimation.value).round(),
+              ),
+            );
       },
     );
   }
 
   Widget _buildDescriptionSection() {
     final isCompleted = widget.userProgress.status == ProgressStatus.completed;
-    final isHidden = widget.achievement.type == AchievementType.hidden && 
-                    !isCompleted;
-    
+    final isHidden =
+        widget.achievement.type == AchievementType.hidden && !isCompleted;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.grey[50],
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Icon(
-                Icons.description,
-                color: Colors.black87,
-                size: 20,
+              Row(
+                children: [
+                  const Icon(
+                    Icons.description,
+                    color: Colors.black87,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 8),
+                  const Text(
+                    'Description',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              const Text(
-                'Description',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+
+              const SizedBox(height: 16),
+
+              Text(
+                isHidden
+                    ? 'This achievement is hidden. Complete the requirements to reveal its details.'
+                    : widget.achievement.description,
+                style: const TextStyle(
+                  fontSize: 16,
+                  height: 1.6,
                   color: Colors.black87,
                 ),
               ),
             ],
           ),
-          
-          const SizedBox(height: 16),
-          
-          Text(
-            isHidden 
-                ? 'This achievement is hidden. Complete the requirements to reveal its details.'
-                : widget.achievement.description,
-            style: const TextStyle(
-              fontSize: 16,
-              height: 1.6,
-              color: Colors.black87,
-            ),
-          ),
-        ],
-      ),
-    ).animate()
-      .fadeIn(duration: 400.ms, delay: 200.ms)
-      .slideY(begin: 0.3, end: 0, duration: 400.ms, delay: 200.ms);
+        )
+        .animate()
+        .fadeIn(duration: 400.ms, delay: 200.ms)
+        .slideY(begin: 0.3, end: 0, duration: 400.ms, delay: 200.ms);
   }
 
   Widget _buildRequirementsSection() {
-    final isHidden = widget.achievement.type == AchievementType.hidden && 
-                    widget.userProgress.status != ProgressStatus.completed;
-    
+    final isHidden =
+        widget.achievement.type == AchievementType.hidden &&
+        widget.userProgress.status != ProgressStatus.completed;
+
     if (isHidden) return const SizedBox.shrink();
-    
+
     return Container(
-      margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(
-                Icons.checklist,
-                color: Colors.black87,
-                size: 20,
-              ),
-              SizedBox(width: 8),
-              Text(
-                'Requirements',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey[200]!),
           ),
-          
-          const SizedBox(height: 16),
-          
-          // Use description as requirements for now
-          Row(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                margin: const EdgeInsets.only(top: 6),
-                width: 6,
-                height: 6,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  widget.achievement.description,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    height: 1.5,
-                    color: Colors.black87,
+              const Row(
+                children: [
+                  Icon(Icons.checklist, color: Colors.black87, size: 20),
+                  SizedBox(width: 8),
+                  Text(
+                    'Requirements',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
-                ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Use description as requirements for now
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(top: 6),
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      widget.achievement.description,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        height: 1.5,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-    ).animate()
-      .fadeIn(duration: 400.ms, delay: 300.ms)
-      .slideY(begin: 0.3, end: 0, duration: 400.ms, delay: 300.ms);
+        )
+        .animate()
+        .fadeIn(duration: 400.ms, delay: 300.ms)
+        .slideY(begin: 0.3, end: 0, duration: 400.ms, delay: 300.ms);
   }
 
   Widget _buildTipsSection() {
@@ -500,205 +493,198 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
 
   Widget _buildRewardsSection() {
     return Container(
-      margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Colors.amber[50]!,
-            Colors.orange[50]!,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.amber[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+          margin: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.amber[50]!, Colors.orange[50]!],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.amber[200]!),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(
-                Icons.emoji_events,
-                color: Colors.amber[700],
-                size: 20,
+              Row(
+                children: [
+                  Icon(Icons.emoji_events, color: Colors.amber[700], size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Rewards',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.amber[700],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 8),
-              Text(
-                'Rewards',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.amber[700],
-                ),
+
+              const SizedBox(height: 20),
+
+              Row(
+                children: [
+                  // Points
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(Icons.stars, color: Colors.amber[600], size: 32),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${widget.achievement.points}',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber[700],
+                            ),
+                          ),
+                          Text(
+                            'Points',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 16),
+
+                  // Badge Tier
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            _getTierIcon(),
+                            color: _getTierColor(),
+                            size: 32,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _getTierName(),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: _getTierColor(),
+                            ),
+                          ),
+                          Text(
+                            'Badge',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-          
-          const SizedBox(height: 20),
-          
-          Row(
-            children: [
-              // Points
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        Icons.stars,
-                        color: Colors.amber[600],
-                        size: 32,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${widget.achievement.points}',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.amber[700],
-                        ),
-                      ),
-                      Text(
-                        'Points',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              
-              const SizedBox(width: 16),
-              
-              // Badge Tier
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(
-                        _getTierIcon(),
-                        color: _getTierColor(),
-                        size: 32,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _getTierName(),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: _getTierColor(),
-                        ),
-                      ),
-                      Text(
-                        'Badge',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ).animate()
-      .fadeIn(duration: 400.ms, delay: 500.ms)
-      .slideY(begin: 0.3, end: 0, duration: 400.ms, delay: 500.ms);
+        )
+        .animate()
+        .fadeIn(duration: 400.ms, delay: 500.ms)
+        .slideY(begin: 0.3, end: 0, duration: 400.ms, delay: 500.ms);
   }
 
   Widget _buildActionButtons() {
     final isCompleted = widget.userProgress.status == ProgressStatus.completed;
-    
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
-        children: [
-          // Primary action button
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton.icon(
-              onPressed: isCompleted ? null : _startTracking,
-              icon: Icon(isCompleted ? Icons.check_circle : Icons.play_arrow),
-              label: Text(
-                isCompleted 
-                    ? 'Achievement Completed!' 
-                    : 'Start Tracking Progress',
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isCompleted 
-                    ? Colors.green 
-                    : Theme.of(context).primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(28),
-                ),
-                elevation: isCompleted ? 0 : 2,
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 16),
-          
-          // Secondary actions
-          Row(
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
             children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _shareAchievement,
-                  icon: const Icon(Icons.share),
-                  label: const Text('Share'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+              // Primary action button
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton.icon(
+                  onPressed: isCompleted ? null : _startTracking,
+                  icon: Icon(
+                    isCompleted ? Icons.check_circle : Icons.play_arrow,
+                  ),
+                  label: Text(
+                    isCompleted
+                        ? 'Achievement Completed!'
+                        : 'Start Tracking Progress',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                     ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isCompleted
+                        ? Colors.green
+                        : Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                    elevation: isCompleted ? 0 : 2,
                   ),
                 ),
               ),
-              
-              const SizedBox(width: 16),
-              
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _copyToClipboard,
-                  icon: const Icon(Icons.copy),
-                  label: const Text('Copy Link'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+
+              const SizedBox(height: 16),
+
+              // Secondary actions
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _shareAchievement,
+                      icon: const Icon(Icons.share),
+                      label: const Text('Share'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+
+                  const SizedBox(width: 16),
+
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _copyToClipboard,
+                      icon: const Icon(Icons.copy),
+                      label: const Text('Copy Link'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-    ).animate()
-      .fadeIn(duration: 400.ms, delay: 600.ms)
-      .slideY(begin: 0.3, end: 0, duration: 400.ms, delay: 600.ms);
+        )
+        .animate()
+        .fadeIn(duration: 400.ms, delay: 600.ms)
+        .slideY(begin: 0.3, end: 0, duration: 400.ms, delay: 600.ms);
   }
 
   Widget _buildCumulativeProgress() {
@@ -845,7 +831,7 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       return 'today';
     } else if (difference.inDays == 1) {
@@ -862,15 +848,17 @@ class _AchievementDetailScreenState extends State<AchievementDetailScreen>
     final text = isCompleted
         ? 'I just earned the "${widget.achievement.name}" achievement in Dabbler! 🎉'
         : 'Check out this achievement in Dabbler: "${widget.achievement.name}"';
-    
+
     Share.share(text);
   }
 
   void _copyToClipboard() {
-    Clipboard.setData(ClipboardData(
-      text: 'Check out this achievement: ${widget.achievement.name}',
-    ));
-    
+    Clipboard.setData(
+      ClipboardData(
+        text: 'Check out this achievement: ${widget.achievement.name}',
+      ),
+    );
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Achievement link copied to clipboard!'),

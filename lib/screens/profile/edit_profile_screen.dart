@@ -14,21 +14,33 @@ class EditProfileScreen extends ConsumerStatefulWidget {
 
 class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controllers for database fields only
   final _displayNameController = TextEditingController();
   final _emailController = TextEditingController();
   final _phoneController = TextEditingController();
-  
+
   // State variables for database fields only
   String? _selectedGender;
   List<String> _selectedSports = [];
-  
+
   // Available options
   final List<String> _sportsOptions = [
-    'Football', 'Basketball', 'Tennis', 'Swimming', 'Running',
-    'Cycling', 'Golf', 'Volleyball', 'Baseball', 'Soccer',
-    'Cricket', 'Badminton', 'Table Tennis', 'Boxing', 'Martial Arts'
+    'Football',
+    'Basketball',
+    'Tennis',
+    'Swimming',
+    'Running',
+    'Cycling',
+    'Golf',
+    'Volleyball',
+    'Baseball',
+    'Soccer',
+    'Cricket',
+    'Badminton',
+    'Table Tennis',
+    'Boxing',
+    'Martial Arts',
   ];
 
   bool _isLoading = false;
@@ -51,13 +63,15 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   Future<void> _loadUserData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final user = _authService.getCurrentUser();
       if (user?.id == null) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User not found. Please log in again.')),
+            const SnackBar(
+              content: Text('User not found. Please log in again.'),
+            ),
           );
         }
         return;
@@ -86,10 +100,10 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
         if (_phoneController.text.isEmpty) {
           _phoneController.text = (response['phone'] as String?) ?? '';
         }
-        
+
         // Set gender
         _selectedGender = (response['gender'] as String?)?.toLowerCase();
-        
+
         // Set sports
         if (response['sports'] != null) {
           final sports = response['sports'];
@@ -100,9 +114,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading profile: $e')));
       }
     } finally {
       if (mounted) {
@@ -118,8 +132,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
     try {
       await _authService.updateUserProfile(
-        displayName: _displayNameController.text.trim().isEmpty ? null : _displayNameController.text.trim(),
-        phone: _phoneController.text.trim().isEmpty ? null : _phoneController.text.trim(),
+        displayName: _displayNameController.text.trim().isEmpty
+            ? null
+            : _displayNameController.text.trim(),
+        phone: _phoneController.text.trim().isEmpty
+            ? null
+            : _phoneController.text.trim(),
         gender: _selectedGender,
         sports: _selectedSports.isNotEmpty ? _selectedSports : null,
       );
@@ -132,9 +150,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating profile: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
       }
     } finally {
       if (mounted) {
@@ -147,9 +165,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: CustomAppBar(
-        actionIcon: Iconsax.user_edit_copy,
-      ),
+      appBar: CustomAppBar(actionIcon: Iconsax.user_edit_copy),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Form(
@@ -184,10 +200,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           children: [
             const Text(
               'Personal Details',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             TextFormField(
@@ -242,18 +255,12 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           children: [
             const Text(
               'Sports Preferences',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             const Text(
               'Sports You Play',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 8),
             Wrap(
@@ -292,10 +299,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
           children: [
             const Text(
               'Contact Information',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             TextFormField(

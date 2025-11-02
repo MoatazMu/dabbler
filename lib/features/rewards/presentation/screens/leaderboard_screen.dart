@@ -45,7 +45,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     TimeFrame.thisMonth,
     TimeFrame.allTime,
   ];
-  
+
   int _selectedTimeRangeIndex = 3; // Default to All-time
   bool _showFilters = false;
   final bool _showUserRankOnly = false;
@@ -55,7 +55,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     super.initState();
     _setupAnimations();
     _setupScrollListener();
-    
+
     // Initialize leaderboard data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeLeaderboard();
@@ -72,7 +72,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
       vsync: this,
     );
     _tabController = TabController(length: 4, vsync: this);
-    
+
     _tabController.addListener(() {
       if (!_tabController.indexIsChanging) {
         _onTabChanged(_tabController.index);
@@ -101,7 +101,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   @override
   Widget build(BuildContext context) {
     final leaderboardState = ref.watch(leaderboardControllerProvider);
-    
+
     return Scaffold(
       backgroundColor: context.colors.surface,
       body: CustomScrollView(
@@ -126,10 +126,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
       elevation: 0,
       surfaceTintColor: context.colors.surface,
       leading: IconButton(
-        icon: Icon(
-          LucideIcons.arrowLeft,
-          color: context.colors.onSurface,
-        ),
+        icon: Icon(LucideIcons.arrowLeft, color: context.colors.onSurface),
         onPressed: () => Navigator.of(context).pop(),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -194,7 +191,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                           ],
                         ),
                       ),
-                      
+
                       // Leaderboard stats
                       Container(
                         padding: const EdgeInsets.all(16),
@@ -202,7 +199,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                           color: context.colors.surfaceContainerHigh,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: context.colors.outline.withValues(alpha: 0.1),
+                            color: context.colors.outline.withValues(
+                              alpha: 0.1,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -342,16 +341,19 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           final index = entry.key;
           final timeRange = entry.value;
           final isSelected = index == _selectedTimeRangeIndex;
-          
+
           return Expanded(
             child: GestureDetector(
               onTap: () => _onTimeRangeChanged(index, timeRange),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? context.colors.primary 
+                  color: isSelected
+                      ? context.colors.primary
                       : context.colors.surface.withOpacity(0.8),
                   borderRadius: BorderRadius.circular(8),
                 ),
@@ -360,8 +362,8 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                   textAlign: TextAlign.center,
                   style: context.textTheme.labelSmall?.copyWith(
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    color: isSelected 
-                        ? context.colors.onPrimary 
+                    color: isSelected
+                        ? context.colors.onPrimary
                         : context.colors.onSurfaceVariant,
                   ),
                 ),
@@ -370,9 +372,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           );
         }).toList(),
       ),
-    ).animate()
-      .fadeIn(duration: 300.ms)
-      .slideY(begin: -0.3, end: 0);
+    ).animate().fadeIn(duration: 300.ms).slideY(begin: -0.3, end: 0);
   }
 
   Widget _buildTabBar() {
@@ -396,8 +396,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           ),
           labelColor: context.colors.onPrimary,
           unselectedLabelColor: context.colors.onSurfaceVariant,
-          labelStyle: context.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold),
-          unselectedLabelStyle: context.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w500),
+          labelStyle: context.textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+          unselectedLabelStyle: context.textTheme.labelMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
           indicatorPadding: const EdgeInsets.all(4),
           dividerColor: Colors.transparent,
           tabs: const [
@@ -417,9 +421,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
         child: LeaderboardFilters(
           onFiltersChanged: _onFiltersChanged,
           onClose: () => setState(() => _showFilters = false),
-        ).animate()
-          .fadeIn(duration: 300.ms)
-          .slideY(begin: -0.5, end: 0),
+        ).animate().fadeIn(duration: 300.ms).slideY(begin: -0.5, end: 0),
       );
     }
 
@@ -429,9 +431,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(
-                color: context.colors.primary,
-              ),
+              CircularProgressIndicator(color: context.colors.primary),
               const SizedBox(height: 16),
               Text(
                 'Loading leaderboard...',
@@ -451,7 +451,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(LucideIcons.alertTriangle, size: 64, color: context.colors.error),
+              Icon(
+                LucideIcons.alertTriangle,
+                size: 64,
+                color: context.colors.error,
+              ),
               const SizedBox(height: 16),
               Text(
                 'Failed to load leaderboard',
@@ -484,7 +488,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(LucideIcons.trophy, size: 64, color: context.colors.onSurfaceVariant),
+              Icon(
+                LucideIcons.trophy,
+                size: 64,
+                color: context.colors.onSurfaceVariant,
+              ),
               const SizedBox(height: 16),
               Text(
                 'No leaderboard data',
@@ -508,10 +516,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
       delegate: SliverChildListDelegate([
         // Podium for top 3
         if (state.entries.length >= 3) _buildPodiumSection(state),
-        
+
         // Leaderboard list
         _buildLeaderboardList(state),
-        
+
         // Load more indicator
         if (state.hasMorePages)
           Container(
@@ -528,7 +536,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                           side: BorderSide(
-                            color: context.colors.outline.withValues(alpha: 0.2),
+                            color: context.colors.outline.withValues(
+                              alpha: 0.2,
+                            ),
                           ),
                         ),
                       ),
@@ -536,7 +546,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                     ),
             ),
           ),
-        
+
         // Bottom spacing
         const SizedBox(height: 100),
       ]),
@@ -545,53 +555,54 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
 
   Widget _buildPodiumSection(LeaderboardState state) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: context.colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: context.colors.outline.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          Row(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: context.colors.surfaceContainerLowest,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: context.colors.outline.withValues(alpha: 0.1),
+              width: 1,
+            ),
+          ),
+          child: Column(
             children: [
-              Icon(LucideIcons.crown, color: const Color(0xFFF59E0B)),
-              const SizedBox(width: 8),
-              Text(
-                'Top Performers',
-                style: context.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: context.colors.onSurface,
-                ),
+              Row(
+                children: [
+                  Icon(LucideIcons.crown, color: const Color(0xFFF59E0B)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Top Performers',
+                    style: context.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: context.colors.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              PodiumWidget(
+                entries: state.entries.take(3).toList(),
+                animationController: _podiumAnimationController,
+                onEntryTapped: _onLeaderboardEntryTapped,
+                showConfetti: true,
+                showCrowns: true,
               ),
             ],
           ),
-          
-          const SizedBox(height: 20),
-          
-          PodiumWidget(
-            entries: state.entries.take(3).toList(),
-            animationController: _podiumAnimationController,
-            onEntryTapped: _onLeaderboardEntryTapped,
-            showConfetti: true,
-            showCrowns: true,
-          ),
-        ],
-      ),
-    ).animate()
-      .fadeIn(duration: 600.ms, delay: 200.ms)
-      .slideY(begin: 0.3, end: 0);
+        )
+        .animate()
+        .fadeIn(duration: 600.ms, delay: 200.ms)
+        .slideY(begin: 0.3, end: 0);
   }
 
   Widget _buildLeaderboardList(LeaderboardState state) {
     final nonPodiumEntries = state.entries.skip(3).toList();
-    
+
     if (nonPodiumEntries.isEmpty) return Container();
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
@@ -609,22 +620,21 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               ),
             ),
           ],
-          
+
           // User's rank highlight if not in top visible entries
-          if (state.userEntry != null && 
-              state.userEntry!.currentRank > 10 && 
+          if (state.userEntry != null &&
+              state.userEntry!.currentRank > 10 &&
               !_showUserRankOnly)
             _buildUserRankHighlight(state.userEntry!),
-          
+
           // Nearby ranks section
-          if (state.userEntry != null && 
-              state.userEntry!.currentRank > 3)
+          if (state.userEntry != null && state.userEntry!.currentRank > 3)
             _buildNearbyRanks(state),
-          
+
           // Main leaderboard list
           ...nonPodiumEntries.asMap().entries.map((entry) {
             final leaderboardEntry = entry.value;
-            
+
             return LeaderboardItem(
               user: _convertEntryToUser(leaderboardEntry),
               onTap: () => _onLeaderboardEntryTapped(leaderboardEntry),
@@ -652,11 +662,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
         children: [
           Row(
             children: [
-              Icon(
-                LucideIcons.mapPin,
-                color: context.colors.primary,
-                size: 20,
-              ),
+              Icon(LucideIcons.mapPin, color: context.colors.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Your Current Rank',
@@ -667,18 +673,16 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           LeaderboardItem(
             user: _convertEntryToUser(userEntry),
             onTap: () => _onLeaderboardEntryTapped(userEntry),
           ),
         ],
       ),
-    ).animate()
-      .fadeIn(duration: 400.ms)
-      .slideX(begin: 0.3, end: 0);
+    ).animate().fadeIn(duration: 400.ms).slideX(begin: 0.3, end: 0);
   }
 
   Widget _buildNearbyRanks(LeaderboardState state) {
@@ -690,9 +694,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
       decoration: BoxDecoration(
         color: Colors.orange.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Colors.orange.withOpacity(0.3),
-        ),
+        border: Border.all(color: Colors.orange.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -711,15 +713,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           Text(
             'Loading nearby players...',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -739,9 +738,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             elevation: 2,
             child: const Icon(LucideIcons.mapPin),
           ),
-        
+
         const SizedBox(height: 16),
-        
+
         FloatingActionButton.extended(
           heroTag: "refresh",
           onPressed: _refreshLeaderboard,
@@ -789,7 +788,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   void _initializeLeaderboard() {
     final controller = ref.read(leaderboardControllerProvider.notifier);
     controller.loadLeaderboard();
-    
+
     // Start podium animation after data loads
     _podiumAnimationController.forward();
     _listAnimationController.forward();
@@ -797,8 +796,10 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
 
   void _onTabChanged(int index) {
     final leaderboardType = _getLeaderboardTypeFromTab(index);
-    ref.read(leaderboardControllerProvider.notifier).changeLeaderboardType(leaderboardType);
-    
+    ref
+        .read(leaderboardControllerProvider.notifier)
+        .changeLeaderboardType(leaderboardType);
+
     // Reset animations
     _podiumAnimationController.reset();
     _listAnimationController.reset();
@@ -810,7 +811,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     setState(() {
       _selectedTimeRangeIndex = index;
     });
-    
+
     ref.read(leaderboardControllerProvider.notifier).changeTimeFrame(timeFrame);
   }
 
@@ -853,13 +854,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
   Future<void> _refreshLeaderboard() async {
     HapticFeedback.mediumImpact();
     _refreshIndicatorKey.currentState?.show();
-    
+
     await ref.read(leaderboardControllerProvider.notifier).loadLeaderboard();
-    
+
     // Reset animations
     _podiumAnimationController.reset();
     _listAnimationController.reset();
-    
+
     // Restart animations after a delay
     Future.delayed(const Duration(milliseconds: 500), () {
       _podiumAnimationController.forward();
@@ -871,13 +872,13 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
     final state = ref.read(leaderboardControllerProvider);
     final timeRange = _getTimeRangeLabel(_timeRanges[_selectedTimeRangeIndex]);
     final tabTitle = _getSelectedTabTitle().replaceAll('\n', ' ');
-    
+
     String shareText = 'Check out the $tabTitle ($timeRange) in Dabbler!';
-    
+
     if (state.userRank != null) {
       shareText += ' I\'m currently ranked #${state.userRank}!';
     }
-    
+
     Share.share(shareText);
   }
 
@@ -901,7 +902,9 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             prefixIcon: Icon(Icons.search),
           ),
           onChanged: (query) {
-            ref.read(leaderboardControllerProvider.notifier).updateSearchQuery(query);
+            ref
+                .read(leaderboardControllerProvider.notifier)
+                .updateSearchQuery(query);
           },
         ),
         actions: [
@@ -922,15 +925,16 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
       final itemHeight = 80.0; // Approximate height of each list item
       final podiumHeight = state.entries.length >= 3 ? 300.0 : 0.0;
       final headerHeight = 200.0;
-      
-      final scrollPosition = headerHeight + podiumHeight + (userRankIndex * itemHeight);
-      
+
+      final scrollPosition =
+          headerHeight + podiumHeight + (userRankIndex * itemHeight);
+
       _scrollController.animateTo(
         scrollPosition.clamp(0, _scrollController.position.maxScrollExtent),
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
-      
+
       HapticFeedback.lightImpact();
     }
   }

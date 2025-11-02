@@ -8,7 +8,7 @@ class DabblerTypography {
 
   // Base Font Sizes (Following 8pt Grid)
   static const double _baseFontSize = 16.0;
-  
+
   // Font Scale Ratios for Different Screen Sizes
   static const double _mobileScale = 1.0;
   static const double _tabletScale = 1.1;
@@ -123,7 +123,8 @@ class DabblerTypography {
   );
 
   // Helper Methods
-  static TextStyle getResponsiveStyle(TextStyle baseStyle, {
+  static TextStyle getResponsiveStyle(
+    TextStyle baseStyle, {
     required BuildContext context,
   }) {
     final double width = MediaQuery.of(context).size.width;

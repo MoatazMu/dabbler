@@ -11,20 +11,22 @@ final venuesRepositoryProvider = Provider<VenuesRepository>((ref) {
   return VenuesRepositoryImpl(svc);
 });
 
-final activeVenuesProvider = FutureProvider.family<
-    Result<List<Venue>>, ({String? city, String? district, String? q})>((
-  ref,
-  params,
-) async {
-  return ref.watch(venuesRepositoryProvider).listVenues(
-        activeOnly: true,
-        city: params.city,
-        district: params.district,
-        q: params.q,
-      );
-});
+final activeVenuesProvider =
+    FutureProvider.family<
+      Result<List<Venue>>,
+      ({String? city, String? district, String? q})
+    >((ref, params) async {
+      return ref
+          .watch(venuesRepositoryProvider)
+          .listVenues(
+            activeOnly: true,
+            city: params.city,
+            district: params.district,
+            q: params.q,
+          );
+    });
 
 final spacesByVenueStreamProvider =
     StreamProvider.family<Result<List<VenueSpace>>, String>((ref, venueId) {
-  return ref.watch(venuesRepositoryProvider).watchSpacesByVenue(venueId);
-});
+      return ref.watch(venuesRepositoryProvider).watchSpacesByVenue(venueId);
+    });

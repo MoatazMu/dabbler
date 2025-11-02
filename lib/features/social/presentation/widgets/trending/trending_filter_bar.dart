@@ -15,12 +15,7 @@ enum TrendingCategory {
 }
 
 /// Enum for trending time ranges
-enum TrendingTimeRange {
-  today,
-  thisWeek,
-  thisMonth,
-  allTime,
-}
+enum TrendingTimeRange { today, thisWeek, thisMonth, allTime }
 
 /// Filter bar widget for trending posts
 class TrendingFilterBar extends StatelessWidget {
@@ -40,7 +35,7 @@ class TrendingFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -48,10 +43,7 @@ class TrendingFilterBar extends StatelessWidget {
           // Category filter
           Row(
             children: [
-              Text(
-                'Category:',
-                style: theme.textTheme.labelMedium,
-              ),
+              Text('Category:', style: theme.textTheme.labelMedium),
               const SizedBox(width: 8),
               Expanded(
                 child: SingleChildScrollView(
@@ -77,10 +69,7 @@ class TrendingFilterBar extends StatelessWidget {
           // Time range filter
           Row(
             children: [
-              Text(
-                'Time Range:',
-                style: theme.textTheme.labelMedium,
-              ),
+              Text('Time Range:', style: theme.textTheme.labelMedium),
               const SizedBox(width: 8),
               Expanded(
                 child: SingleChildScrollView(
@@ -93,7 +82,8 @@ class TrendingFilterBar extends StatelessWidget {
                         child: FilterChip(
                           label: Text(_getTimeRangeName(timeRange)),
                           selected: isSelected,
-                          onSelected: (_) => onTimeRangeChanged?.call(timeRange),
+                          onSelected: (_) =>
+                              onTimeRangeChanged?.call(timeRange),
                         ),
                       );
                     }).toList(),

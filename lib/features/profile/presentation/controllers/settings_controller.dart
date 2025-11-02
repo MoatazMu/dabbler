@@ -52,7 +52,7 @@ class SettingsState {
 /// Controller for user settings management with category organization
 class SettingsController extends StateNotifier<SettingsState> {
   final ChangeSettingsUseCase? _changeSettingsUseCase;
-  
+
   static const _categories = {
     'display': 'Display & Theme',
     'game_defaults': 'Game Defaults',
@@ -62,10 +62,9 @@ class SettingsController extends StateNotifier<SettingsState> {
     'performance': 'Performance',
   };
 
-  SettingsController({
-    ChangeSettingsUseCase? changeSettingsUseCase,
-  })  : _changeSettingsUseCase = changeSettingsUseCase,
-        super(const SettingsState()) {
+  SettingsController({ChangeSettingsUseCase? changeSettingsUseCase})
+    : _changeSettingsUseCase = changeSettingsUseCase,
+      super(const SettingsState()) {
     _initializeCategories();
   }
 
@@ -120,7 +119,7 @@ class SettingsController extends StateNotifier<SettingsState> {
   void toggleCategory(String category) {
     final updatedExpanded = Map<String, bool>.from(state.categoryExpanded);
     updatedExpanded[category] = !(updatedExpanded[category] ?? false);
-    
+
     state = state.copyWith(categoryExpanded: updatedExpanded);
   }
 
@@ -157,7 +156,7 @@ class SettingsController extends StateNotifier<SettingsState> {
     await _updateField('distanceUnit', unit.toString().split('.').last);
   }
 
-  /// Update temperature unit  
+  /// Update temperature unit
   Future<void> updateTemperatureUnit(TemperatureUnit unit) async {
     await _updateField('temperatureUnit', unit.toString().split('.').last);
   }
@@ -176,20 +175,23 @@ class SettingsController extends StateNotifier<SettingsState> {
     try {
       final params = ChangeSettingsParams(
         userId: 'current-user-id', // Would come from auth
-        themeMode: state.pendingChanges['themeMode'] != null 
-            ? ThemeMode.values.firstWhere((e) => e.toString().split('.').last == state.pendingChanges['themeMode'])
+        themeMode: state.pendingChanges['themeMode'] != null
+            ? ThemeMode.values.firstWhere(
+                (e) =>
+                    e.toString().split('.').last ==
+                    state.pendingChanges['themeMode'],
+              )
             : null,
         language: state.pendingChanges['language'] as String?,
-        enablePushNotifications: state.pendingChanges['enablePushNotifications'] as bool?,
-        gameInviteNotifications: state.pendingChanges['gameInviteNotifications'] as bool?,
+        enablePushNotifications:
+            state.pendingChanges['enablePushNotifications'] as bool?,
+        gameInviteNotifications:
+            state.pendingChanges['gameInviteNotifications'] as bool?,
         enableDataSaver: state.pendingChanges['enableDataSaver'] as bool?,
       );
 
       if (_changeSettingsUseCase == null) {
-        state = state.copyWith(
-          isSaving: false,
-          lastSyncTime: DateTime.now(),
-        );
+        state = state.copyWith(isSaving: false, lastSyncTime: DateTime.now());
         return true;
       }
 
@@ -259,7 +261,9 @@ class SettingsController extends StateNotifier<SettingsState> {
           subtitle: 'Choose your preferred theme',
           value: settings.themeMode,
           type: SettingType.selection,
-          options: ThemeMode.values.map((t) => t.toString().split('.').last).toList(),
+          options: ThemeMode.values
+              .map((t) => t.toString().split('.').last)
+              .toList(),
         ),
         SettingItem(
           key: 'enableAnimations',
@@ -306,7 +310,9 @@ class SettingsController extends StateNotifier<SettingsState> {
           subtitle: 'Miles or kilometers',
           value: settings.distanceUnit,
           type: SettingType.selection,
-          options: DistanceUnit.values.map((u) => u.toString().split('.').last).toList(),
+          options: DistanceUnit.values
+              .map((u) => u.toString().split('.').last)
+              .toList(),
         ),
         SettingItem(
           key: 'temperatureUnit',
@@ -314,7 +320,9 @@ class SettingsController extends StateNotifier<SettingsState> {
           subtitle: 'Fahrenheit or Celsius',
           value: settings.temperatureUnit,
           type: SettingType.selection,
-          options: TemperatureUnit.values.map((u) => u.toString().split('.').last).toList(),
+          options: TemperatureUnit.values
+              .map((u) => u.toString().split('.').last)
+              .toList(),
         ),
       ],
       'performance': [
@@ -340,7 +348,8 @@ class SettingsController extends StateNotifier<SettingsState> {
   String getCategoryName(String category) => _categories[category] ?? category;
 
   /// Check if category is expanded
-  bool isCategoryExpanded(String category) => state.categoryExpanded[category] ?? false;
+  bool isCategoryExpanded(String category) =>
+      state.categoryExpanded[category] ?? false;
 
   /// Get setting change count
   int get pendingChangeCount => state.pendingChanges.length;
@@ -350,12 +359,14 @@ class SettingsController extends StateNotifier<SettingsState> {
     final currentSettings = state.settings;
     if (currentSettings == null) return;
 
-    final updatedPendingChanges = Map<String, dynamic>.from(state.pendingChanges);
+    final updatedPendingChanges = Map<String, dynamic>.from(
+      state.pendingChanges,
+    );
     updatedPendingChanges[field] = value;
 
     // Apply change immediately for UI update
     UserSettings updatedSettings = currentSettings;
-    
+
     switch (field) {
       case 'themeMode':
         final theme = ThemeMode.values.firstWhere(
@@ -365,22 +376,32 @@ class SettingsController extends StateNotifier<SettingsState> {
         updatedSettings = updatedSettings.copyWith(themeMode: theme);
         break;
       case 'enableAnimations':
-        updatedSettings = updatedSettings.copyWith(enableAnimations: value as bool);
+        updatedSettings = updatedSettings.copyWith(
+          enableAnimations: value as bool,
+        );
         break;
       case 'enablePushNotifications':
-        updatedSettings = updatedSettings.copyWith(enablePushNotifications: value as bool);
+        updatedSettings = updatedSettings.copyWith(
+          enablePushNotifications: value as bool,
+        );
         break;
       case 'gameInviteNotifications':
-        updatedSettings = updatedSettings.copyWith(gameInviteNotifications: value as bool);
+        updatedSettings = updatedSettings.copyWith(
+          gameInviteNotifications: value as bool,
+        );
         break;
       case 'vibrationEnabled':
-        updatedSettings = updatedSettings.copyWith(vibrationEnabled: value as bool);
+        updatedSettings = updatedSettings.copyWith(
+          vibrationEnabled: value as bool,
+        );
         break;
       case 'language':
         updatedSettings = updatedSettings.copyWith(language: value as String);
         break;
       case 'enableDataSaver':
-        updatedSettings = updatedSettings.copyWith(enableDataSaver: value as bool);
+        updatedSettings = updatedSettings.copyWith(
+          enableDataSaver: value as bool,
+        );
         break;
       // Add other fields as needed
     }
@@ -435,9 +456,4 @@ class SettingItem {
 }
 
 /// Types of settings for UI rendering
-enum SettingType {
-  boolean,
-  selection,
-  text,
-  number,
-}
+enum SettingType { boolean, selection, text, number }

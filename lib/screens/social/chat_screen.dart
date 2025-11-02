@@ -10,11 +10,7 @@ class ChatScreen extends ConsumerStatefulWidget {
   final String userName;
   final String? conversationId;
 
-  const ChatScreen({
-    super.key,
-    required this.userName,
-    this.conversationId,
-  });
+  const ChatScreen({super.key, required this.userName, this.conversationId});
 
   @override
   ConsumerState<ChatScreen> createState() => _ChatScreenState();
@@ -49,7 +45,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     try {
       // For now, add some sample messages
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       setState(() {
         _messages.clear();
         _messages.addAll([
@@ -98,7 +94,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
     _messageController.clear();
     _scrollToBottom();
-
   }
 
   void _scrollToBottom() {
@@ -117,21 +112,14 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            AvatarWidget(
-              imageUrl: null,
-              name: widget.userName,
-              size: 32,
-            ),
+            AvatarWidget(imageUrl: null, name: widget.userName, size: 32),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    widget.userName,
-                    style: context.textTheme.titleMedium,
-                  ),
+                  Text(widget.userName, style: context.textTheme.titleMedium),
                   Text(
                     'Online',
                     style: context.textTheme.bodySmall?.copyWith(
@@ -172,9 +160,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       ),
       body: Column(
         children: [
-          Expanded(
-            child: _buildMessagesList(),
-          ),
+          Expanded(child: _buildMessagesList()),
           _buildMessageComposer(),
         ],
       ),
@@ -191,11 +177,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 48,
-              color: context.colors.error,
-            ),
+            Icon(Icons.error_outline, size: 48, color: context.colors.error),
             const SizedBox(height: 16),
             Text(
               _error!,
@@ -250,8 +232,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       itemCount: _messages.length,
       itemBuilder: (context, index) {
         final message = _messages[index];
-        final previousMessage = index < _messages.length - 1 ? _messages[index + 1] : null;
-        final isConsecutive = previousMessage != null &&
+        final previousMessage = index < _messages.length - 1
+            ? _messages[index + 1]
+            : null;
+        final isConsecutive =
+            previousMessage != null &&
             previousMessage.senderId == message.senderId &&
             message.sentAt.difference(previousMessage.sentAt).inMinutes < 5;
 
@@ -261,14 +246,10 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           showAvatar: !isConsecutive,
           showTimestamp: true,
           showReadReceipts: true,
-          onTap: () {
-          },
-          onLongPress: () {
-          },
-          onReply: () {
-          },
-          onReact: () {
-          },
+          onTap: () {},
+          onLongPress: () {},
+          onReply: () {},
+          onReact: () {},
         );
       },
     );
@@ -280,9 +261,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       decoration: BoxDecoration(
         color: context.colors.surface,
         border: Border(
-          top: BorderSide(
-            color: context.colors.outline.withOpacity(0.2),
-          ),
+          top: BorderSide(color: context.colors.outline.withOpacity(0.2)),
         ),
       ),
       child: Row(

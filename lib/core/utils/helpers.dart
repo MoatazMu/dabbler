@@ -21,7 +21,10 @@ class AppHelpers {
   }
 
   /// Format a date and time to a readable string
-  static String formatDateTime(DateTime dateTime, {String format = 'MMM dd, yyyy HH:mm'}) {
+  static String formatDateTime(
+    DateTime dateTime, {
+    String format = 'MMM dd, yyyy HH:mm',
+  }) {
     return DateFormat(format).format(dateTime);
   }
 
@@ -65,7 +68,7 @@ class AppHelpers {
   /// Get initials from a name
   static String getInitials(String name) {
     if (name.isEmpty) return '';
-    
+
     final words = name.trim().split(' ');
     if (words.length == 1) {
       return words[0][0].toUpperCase();
@@ -82,14 +85,15 @@ class AppHelpers {
 
   /// Generate a random string
   static String generateRandomString(int length) {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const chars =
+        'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = DateTime.now().millisecondsSinceEpoch;
     final buffer = StringBuffer();
-    
+
     for (int i = 0; i < length; i++) {
       buffer.write(chars[random % chars.length]);
     }
-    
+
     return buffer.toString();
   }
 
@@ -114,22 +118,22 @@ class AppHelpers {
   static String getFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024 * 1024 * 1024)
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
   /// Show a snackbar
-  static void showSnackBar(BuildContext context, String message, {
+  static void showSnackBar(
+    BuildContext context,
+    String message, {
     Duration duration = const Duration(seconds: 3),
     Color? backgroundColor,
     Color? textColor,
   }) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: textColor),
-        ),
+        content: Text(message, style: TextStyle(color: textColor)),
         duration: duration,
         backgroundColor: backgroundColor,
       ),
@@ -302,18 +306,24 @@ class AppHelpers {
   }
 
   /// Calculate distance between two coordinates
-  static double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
+  static double calculateDistance(
+    double lat1,
+    double lon1,
+    double lat2,
+    double lon2,
+  ) {
     const double earthRadius = 6371; // Earth's radius in kilometers
-    
+
     final dLat = _degreesToRadians(lat2 - lat1);
     final dLon = _degreesToRadians(lon2 - lon1);
     final lat1Rad = _degreesToRadians(lat1);
     final lat2Rad = _degreesToRadians(lat2);
-    
-    final a = pow(sin(dLat / 2), 2) +
+
+    final a =
+        pow(sin(dLat / 2), 2) +
         cos(lat1Rad) * cos(lat2Rad) * pow(sin(dLon / 2), 2);
     final c = 2 * asin(sqrt(a));
-    
+
     return earthRadius * c;
   }
 

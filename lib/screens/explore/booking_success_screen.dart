@@ -29,7 +29,7 @@ class BookingSuccessScreen extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
-              
+
               // Success Icon
               Container(
                 width: 120,
@@ -38,15 +38,11 @@ class BookingSuccessScreen extends StatelessWidget {
                   color: DS.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  LucideIcons.check,
-                  size: 60,
-                  color: DS.primary,
-                ),
+                child: Icon(LucideIcons.check, size: 60, color: DS.primary),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Success Message
               Text(
                 'Booking Confirmed!',
@@ -56,26 +52,28 @@ class BookingSuccessScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 12),
-              
+
               Text(
                 'Your slot has been successfully booked',
-                style: DS.body.copyWith(
-                  color: DS.onSurfaceVariant,
-                ),
+                style: DS.body.copyWith(color: DS.onSurfaceVariant),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Booking Details Card
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   color: DS.surface,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1)),
+                  border: Border.all(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.outline.withValues(alpha: 0.1),
+                  ),
                 ),
                 child: Column(
                   children: [
@@ -120,9 +118,9 @@ class BookingSuccessScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                    
+
                     const SizedBox(height: 20),
-                    
+
                     // Booking Details
                     _buildDetailRow('Booking ID', bookingId),
                     _buildDetailRow('Date', _formatDate(selectedDate)),
@@ -131,9 +129,9 @@ class BookingSuccessScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               // Action Buttons
               Column(
                 children: [
@@ -151,9 +149,9 @@ class BookingSuccessScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // Create Game Button
                   SizedBox(
                     width: double.infinity,
@@ -170,9 +168,9 @@ class BookingSuccessScreen extends StatelessWidget {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   // View Bookings Button
                   SizedBox(
                     width: double.infinity,
@@ -187,9 +185,9 @@ class BookingSuccessScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              
+
               const Spacer(),
-              
+
               // Done Button
               SizedBox(
                 width: double.infinity,
@@ -218,12 +216,7 @@ class BookingSuccessScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: DS.body.copyWith(
-              color: DS.onSurfaceVariant,
-            ),
-          ),
+          Text(label, style: DS.body.copyWith(color: DS.onSurfaceVariant)),
           Text(
             value,
             style: DS.body.copyWith(
@@ -238,11 +231,21 @@ class BookingSuccessScreen extends StatelessWidget {
 
   String _formatDate(DateTime date) {
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+
     return '${days[date.weekday - 1]}, ${date.day} ${months[date.month - 1]}';
   }
 
@@ -252,9 +255,7 @@ class BookingSuccessScreen extends StatelessWidget {
         content: const Text('Added to calendar'),
         backgroundColor: DS.primary,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

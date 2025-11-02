@@ -133,13 +133,13 @@ class AuthFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.unauthorized,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.unauthorized,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class UnauthenticatedFailure extends AuthFailure {
@@ -150,12 +150,12 @@ class UnauthenticatedFailure extends AuthFailure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class ForbiddenFailure extends Failure {
@@ -166,13 +166,13 @@ class ForbiddenFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.forbidden,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.forbidden,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class NotFoundFailure extends Failure {
@@ -183,13 +183,13 @@ class NotFoundFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.notFound,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.notFound,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class ValidationFailure extends Failure {
@@ -203,13 +203,13 @@ class ValidationFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.validation,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.validation,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 
   @override
   List<Object?> get props => [...super.props, fieldErrors];
@@ -226,13 +226,13 @@ class NetworkFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.network,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.network,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 
   @override
   List<Object?> get props => [...super.props, status];
@@ -247,13 +247,13 @@ class TimeoutFailure extends NetworkFailure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          message: message,
-          status: status,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         message: message,
+         status: status,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class ServerFailure extends Failure {
@@ -264,13 +264,13 @@ class ServerFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.server,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.server,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class DataFailure extends Failure {
@@ -281,13 +281,13 @@ class DataFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.unknown,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.unknown,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class CacheFailure extends Failure {
@@ -298,13 +298,13 @@ class CacheFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.unknown,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.unknown,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class DatabaseFailure extends Failure {
@@ -315,13 +315,13 @@ class DatabaseFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.server,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.server,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class PermissionFailure extends Failure {
@@ -332,13 +332,13 @@ class PermissionFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.forbidden,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.forbidden,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class BusinessLogicFailure extends Failure {
@@ -349,13 +349,13 @@ class BusinessLogicFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.validation,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.validation,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class ConflictFailure extends Failure {
@@ -366,13 +366,13 @@ class ConflictFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.conflict,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.conflict,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class FileUploadFailure extends Failure {
@@ -383,13 +383,13 @@ class FileUploadFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.server,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.server,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class FileDownloadFailure extends Failure {
@@ -400,13 +400,13 @@ class FileDownloadFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.server,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.server,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class FileNotFoundFailure extends Failure {
@@ -417,13 +417,13 @@ class FileNotFoundFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.notFound,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.notFound,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class UnexpectedFailure extends Failure {
@@ -434,13 +434,13 @@ class UnexpectedFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.unknown,
-          message: message,
-          cause: cause,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.unknown,
+         message: message,
+         cause: cause,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 }
 
 class UnknownFailure extends Failure {
@@ -453,13 +453,13 @@ class UnknownFailure extends Failure {
     String? code,
     Map<String, dynamic>? details,
   }) : super(
-          category: FailureCode.unknown,
-          message: message,
-          cause: error,
-          stackTrace: stackTrace,
-          code: code,
-          details: details,
-        );
+         category: FailureCode.unknown,
+         message: message,
+         cause: error,
+         stackTrace: stackTrace,
+         code: code,
+         details: details,
+       );
 
   @override
   List<Object?> get props => [...super.props, error];
@@ -473,13 +473,13 @@ class SupabaseFailure extends Failure {
     Object? cause,
     StackTrace? stackTrace,
   }) : super(
-          category: FailureCode.server,
-          message: message,
-          code: code,
-          details: details,
-          cause: cause,
-          stackTrace: stackTrace,
-        );
+         category: FailureCode.server,
+         message: message,
+         code: code,
+         details: details,
+         cause: cause,
+         stackTrace: stackTrace,
+       );
 }
 
 class SupabaseAuthFailure extends SupabaseFailure {
@@ -490,12 +490,12 @@ class SupabaseAuthFailure extends SupabaseFailure {
     Object? cause,
     StackTrace? stackTrace,
   }) : super(
-          message: message,
-          code: code,
-          details: details,
-          cause: cause,
-          stackTrace: stackTrace,
-        );
+         message: message,
+         code: code,
+         details: details,
+         cause: cause,
+         stackTrace: stackTrace,
+       );
 }
 
 class SupabaseAuthorizationFailure extends SupabaseFailure {
@@ -506,12 +506,12 @@ class SupabaseAuthorizationFailure extends SupabaseFailure {
     Object? cause,
     StackTrace? stackTrace,
   }) : super(
-          message: message,
-          code: code,
-          details: details,
-          cause: cause,
-          stackTrace: stackTrace,
-        );
+         message: message,
+         code: code,
+         details: details,
+         cause: cause,
+         stackTrace: stackTrace,
+       );
 }
 
 class SupabaseNotFoundFailure extends SupabaseFailure {
@@ -522,12 +522,12 @@ class SupabaseNotFoundFailure extends SupabaseFailure {
     Object? cause,
     StackTrace? stackTrace,
   }) : super(
-          message: message,
-          code: code,
-          details: details,
-          cause: cause,
-          stackTrace: stackTrace,
-        );
+         message: message,
+         code: code,
+         details: details,
+         cause: cause,
+         stackTrace: stackTrace,
+       );
 }
 
 class SupabaseConflictFailure extends SupabaseFailure {
@@ -538,12 +538,12 @@ class SupabaseConflictFailure extends SupabaseFailure {
     Object? cause,
     StackTrace? stackTrace,
   }) : super(
-          message: message,
-          code: code,
-          details: details,
-          cause: cause,
-          stackTrace: stackTrace,
-        );
+         message: message,
+         code: code,
+         details: details,
+         cause: cause,
+         stackTrace: stackTrace,
+       );
 }
 
 class SupabaseValidationFailure extends SupabaseFailure {
@@ -554,10 +554,10 @@ class SupabaseValidationFailure extends SupabaseFailure {
     Object? cause,
     StackTrace? stackTrace,
   }) : super(
-          message: message,
-          code: code,
-          details: details,
-          cause: cause,
-          stackTrace: stackTrace,
-        );
+         message: message,
+         code: code,
+         details: details,
+         cause: cause,
+         stackTrace: stackTrace,
+       );
 }

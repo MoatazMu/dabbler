@@ -1,4 +1,3 @@
-
 import 'package:dabbler/core/fp/result.dart';
 import '../models/vibe.dart';
 
@@ -11,12 +10,8 @@ abstract class VibesRepository {
   Future<Result<Map<String, int>>> countsForPost(String postId);
 
   /// Set/replace the author's vibe for a post (RLS allows only author/admin).
-  Future<Result<void>> setVibe({
-    required String postId,
-    required String vibe,
-  });
+  Future<Result<void>> setVibe({required String postId, required String vibe});
 
   /// Clear vibe for a post (author/admin only).
   Future<Result<void>> clearVibe(String postId);
 }
-

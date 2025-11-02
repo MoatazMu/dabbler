@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../models/game_creation_model.dart';
+import 'package:dabbler/data/models/core/game_creation_model.dart';
 
-enum SportType {
-  football,
-  cricket,
-  padel,
-}
+enum SportType { football, cricket, padel }
 
 class Sport {
   final SportType type;
@@ -68,9 +64,11 @@ class SportsConfig {
     );
   }
 
-  static List<String> get sportNames => allSports.map((sport) => sport.displayName).toList();
+  static List<String> get sportNames =>
+      allSports.map((sport) => sport.displayName).toList();
 
-  static List<String> get sportNamesLowercase => allSports.map((sport) => sport.name).toList();
+  static List<String> get sportNamesLowercase =>
+      allSports.map((sport) => sport.name).toList();
 
   static IconData getSportIcon(String sportName) {
     return getSportByName(sportName).icon;
@@ -166,4 +164,4 @@ class SportsConfig {
         return null;
     }
   }
-} 
+}

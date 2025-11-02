@@ -8,7 +8,7 @@ import '../../widgets/custom_app_bar.dart';
 import '../../core/services/auth_service.dart';
 
 /// Professional Transactions History Screen
-/// 
+///
 /// Features:
 /// - Transaction history with filters
 /// - Search functionality
@@ -23,12 +23,12 @@ class TransactionsScreen extends ConsumerStatefulWidget {
   ConsumerState<TransactionsScreen> createState() => _TransactionsScreenState();
 }
 
-class _TransactionsScreenState extends ConsumerState<TransactionsScreen> 
+class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final AuthService _authService = AuthService();
   final TextEditingController _searchController = TextEditingController();
-  
+
   String _selectedFilter = 'All';
   String _selectedPeriod = 'All Time';
 
@@ -127,9 +127,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                 _buildHeader(context),
                 _buildSearchBar(context),
                 _buildFilters(context),
-                Expanded(
-                  child: _buildTransactionsList(context),
-                ),
+                Expanded(child: _buildTransactionsList(context)),
               ],
             ),
     );
@@ -184,13 +182,31 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
   Widget _buildSummaryCards(BuildContext context) {
     final total = _transactions
         .where((t) => t['status'] == 'completed')
-        .fold<double>(0, (sum, t) => sum + (t['type'] == 'refund' ? -(t['amount'] as double) : (t['amount'] as double)));
-    
+        .fold<double>(
+          0,
+          (sum, t) =>
+              sum +
+              (t['type'] == 'refund'
+                  ? -(t['amount'] as double)
+                  : (t['amount'] as double)),
+        );
+
     final thisMonth = _transactions
-        .where((t) => 
-            t['status'] == 'completed' && 
-            (t['date'] as DateTime).isAfter(DateTime.now().subtract(const Duration(days: 30))))
-        .fold<double>(0, (sum, t) => sum + (t['type'] == 'refund' ? -(t['amount'] as double) : (t['amount'] as double)));
+        .where(
+          (t) =>
+              t['status'] == 'completed' &&
+              (t['date'] as DateTime).isAfter(
+                DateTime.now().subtract(const Duration(days: 30)),
+              ),
+        )
+        .fold<double>(
+          0,
+          (sum, t) =>
+              sum +
+              (t['type'] == 'refund'
+                  ? -(t['amount'] as double)
+                  : (t['amount'] as double)),
+        );
 
     return Container(
       height: 120,
@@ -233,9 +249,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.2),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -304,17 +318,24 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
           fillColor: context.colors.surface,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: context.colors.outline.withValues(alpha: 0.1)),
+            borderSide: BorderSide(
+              color: context.colors.outline.withValues(alpha: 0.1),
+            ),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: context.colors.outline.withValues(alpha: 0.1)),
+            borderSide: BorderSide(
+              color: context.colors.outline.withValues(alpha: 0.1),
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: context.colors.primary, width: 2),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 12,
+          ),
         ),
         onChanged: (value) => setState(() {}),
       ),
@@ -323,7 +344,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
 
   Widget _buildFilters(BuildContext context) {
     final filters = ['All', 'Completed', 'Pending', 'Failed', 'Refunds'];
-    final periods = ['All Time', 'Today', 'This Week', 'This Month', 'This Year'];
+    final periods = [
+      'All Time',
+      'Today',
+      'This Week',
+      'This Month',
+      'This Year',
+    ];
 
     return Column(
       children: [
@@ -338,38 +365,37 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
             itemBuilder: (context, index) {
               final filter = filters[index];
               final isSelected = _selectedFilter == filter;
-              
+
               return GestureDetector(
                 onTap: () => setState(() => _selectedFilter = filter),
                 child: Container(
                   margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected 
-                        ? context.colors.primary 
+                    color: isSelected
+                        ? context.colors.primary
                         : context.colors.surface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isSelected 
-                          ? context.colors.primary 
+                      color: isSelected
+                          ? context.colors.primary
                           : context.colors.outline.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Row(
                     children: [
                       if (isSelected) ...[
-                        Icon(
-                          LucideIcons.check,
-                          size: 16,
-                          color: Colors.white,
-                        ),
+                        Icon(LucideIcons.check, size: 16, color: Colors.white),
                         const SizedBox(width: 4),
                       ],
                       Text(
                         filter,
                         style: context.textTheme.bodyMedium?.copyWith(
-                          color: isSelected 
-                              ? Colors.white 
+                          color: isSelected
+                              ? Colors.white
                               : context.colors.onSurface,
                           fontWeight: FontWeight.w600,
                         ),
@@ -392,30 +418,35 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
             itemBuilder: (context, index) {
               final period = periods[index];
               final isSelected = _selectedPeriod == period;
-              
+
               return GestureDetector(
                 onTap: () => setState(() => _selectedPeriod = period),
                 child: Container(
                   margin: const EdgeInsets.only(right: 8),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSelected 
-                        ? context.colors.primary.withValues(alpha: 0.1) 
+                    color: isSelected
+                        ? context.colors.primary.withValues(alpha: 0.1)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isSelected 
-                          ? context.colors.primary 
+                      color: isSelected
+                          ? context.colors.primary
                           : context.colors.outline.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Text(
                     period,
                     style: context.textTheme.bodySmall?.copyWith(
-                      color: isSelected 
-                          ? context.colors.primary 
+                      color: isSelected
+                          ? context.colors.primary
                           : context.colors.onSurfaceVariant,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
                     ),
                   ),
                 ),
@@ -473,10 +504,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     );
   }
 
-  Widget _buildTransactionCard(BuildContext context, Map<String, dynamic> transaction) {
+  Widget _buildTransactionCard(
+    BuildContext context,
+    Map<String, dynamic> transaction,
+  ) {
     final isRefund = transaction['type'] == 'refund';
     final status = transaction['status'] as String;
-    
+
     return GestureDetector(
       onTap: () => _showTransactionDetails(context, transaction),
       child: Container(
@@ -495,7 +529,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: _getTypeColor(transaction['type']).withValues(alpha: 0.1),
+                color: _getTypeColor(
+                  transaction['type'],
+                ).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -672,10 +708,14 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     // Apply search filter
     if (_searchController.text.isNotEmpty) {
       final query = _searchController.text.toLowerCase();
-      filtered = filtered.where((t) =>
-          t['title'].toString().toLowerCase().contains(query) ||
-          t['recipient'].toString().toLowerCase().contains(query) ||
-          t['id'].toString().toLowerCase().contains(query)).toList();
+      filtered = filtered
+          .where(
+            (t) =>
+                t['title'].toString().toLowerCase().contains(query) ||
+                t['recipient'].toString().toLowerCase().contains(query) ||
+                t['id'].toString().toLowerCase().contains(query),
+          )
+          .toList();
     }
 
     // Apply status filter
@@ -709,7 +749,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     }
 
     // Sort by date (most recent first)
-    filtered.sort((a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime));
+    filtered.sort(
+      (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime),
+    );
 
     return filtered;
   }
@@ -779,7 +821,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.colors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 12,
+                ),
               ),
               child: const Text('Sign In'),
             ),
@@ -789,7 +834,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     );
   }
 
-  void _showTransactionDetails(BuildContext context, Map<String, dynamic> transaction) {
+  void _showTransactionDetails(
+    BuildContext context,
+    Map<String, dynamic> transaction,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -841,7 +889,7 @@ class TransactionDetailsSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          
+
           // Content
           Padding(
             padding: const EdgeInsets.all(24),
@@ -854,7 +902,9 @@ class TransactionDetailsSheet extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: _getTypeColor(transaction['type']).withValues(alpha: 0.1),
+                        color: _getTypeColor(
+                          transaction['type'],
+                        ).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(
@@ -885,9 +935,9 @@ class TransactionDetailsSheet extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Amount
                 Container(
                   padding: const EdgeInsets.all(20),
@@ -911,31 +961,46 @@ class TransactionDetailsSheet extends StatelessWidget {
                         '${isRefund ? '+' : '-'}${transaction['currency']} ${transaction['amount'].toStringAsFixed(2)}',
                         style: context.textTheme.displaySmall?.copyWith(
                           fontWeight: FontWeight.w700,
-                          color: isRefund ? Colors.green : context.colors.primary,
+                          color: isRefund
+                              ? Colors.green
+                              : context.colors.primary,
                         ),
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Details
-                _buildDetailRow(context, 'Status', _buildStatusChip(context, transaction['status'])),
-                _buildDetailRow(context, 'Date', DateFormat('MMM d, yyyy • h:mm a').format(transaction['date'])),
-                _buildDetailRow(context, 'Payment Method', transaction['paymentMethod']),
+                _buildDetailRow(
+                  context,
+                  'Status',
+                  _buildStatusChip(context, transaction['status']),
+                ),
+                _buildDetailRow(
+                  context,
+                  'Date',
+                  DateFormat(
+                    'MMM d, yyyy • h:mm a',
+                  ).format(transaction['date']),
+                ),
+                _buildDetailRow(
+                  context,
+                  'Payment Method',
+                  transaction['paymentMethod'],
+                ),
                 _buildDetailRow(context, 'Recipient', transaction['recipient']),
                 _buildDetailRow(context, 'Category', transaction['category']),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Actions
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () {
-                        },
+                        onPressed: () {},
                         icon: const Icon(LucideIcons.download, size: 18),
                         label: const Text('Download Receipt'),
                         style: OutlinedButton.styleFrom(
@@ -946,8 +1011,7 @@ class TransactionDetailsSheet extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton.icon(
-                        onPressed: () {
-                        },
+                        onPressed: () {},
                         icon: const Icon(LucideIcons.messageCircle, size: 18),
                         label: const Text('Get Help'),
                         style: ElevatedButton.styleFrom(

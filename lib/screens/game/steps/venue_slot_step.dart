@@ -30,7 +30,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
       children: [
         // Search and Filters
         _buildSearchAndFilters(context),
-        
+
         // Venue List
         Expanded(
           child: widget.viewModel.state.isLoading
@@ -91,8 +91,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
               filled: true,
               fillColor: context.violetWidgetBg,
             ),
-            onChanged: (value) {
-            },
+            onChanged: (value) {},
           ),
           const SizedBox(height: 16),
 
@@ -157,14 +156,17 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
               onTap: () => _toggleFilter(name.toLowerCase()),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: isSelected 
+                  color: isSelected
                       ? context.colors.primary
                       : context.violetWidgetBg,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected 
+                    color: isSelected
                         ? context.colors.primary
                         : context.colors.outline.withValues(alpha: 0.1),
                     width: 1,
@@ -176,7 +178,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                     Icon(
                       icon,
                       size: 16,
-                      color: isSelected 
+                      color: isSelected
                           ? context.colors.onPrimary
                           : context.colors.onSurfaceVariant,
                     ),
@@ -185,7 +187,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                       name,
                       style: context.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w600,
-                        color: isSelected 
+                        color: isSelected
                             ? context.colors.onPrimary
                             : context.colors.onSurface,
                       ),
@@ -202,7 +204,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
 
   Widget _buildVenueList(BuildContext context) {
     final venues = widget.viewModel.availableVenues;
-    
+
     if (venues.isEmpty) {
       return _buildEmptyState(context);
     }
@@ -219,7 +221,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
       itemBuilder: (context, index) {
         final venueName = groupedVenues.keys.elementAt(index);
         final venueSlots = groupedVenues[venueName]!;
-        
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: _buildVenueCard(context, venueName, venueSlots),
@@ -228,9 +230,13 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
     );
   }
 
-  Widget _buildVenueCard(BuildContext context, String venueName, List<VenueSlot> slots) {
+  Widget _buildVenueCard(
+    BuildContext context,
+    String venueName,
+    List<VenueSlot> slots,
+  ) {
     final venue = slots.first; // Get venue info from first slot
-    
+
     return Container(
       decoration: BoxDecoration(
         color: context.violetWidgetBg,
@@ -295,11 +301,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(
-                            LucideIcons.star,
-                            size: 14,
-                            color: Colors.amber,
-                          ),
+                          Icon(LucideIcons.star, size: 14, color: Colors.amber),
                           const SizedBox(width: 4),
                           Text(
                             venue.rating.toStringAsFixed(1),
@@ -343,7 +345,9 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                 Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: slots.map((slot) => _buildTimeSlotChip(context, slot)).toList(),
+                  children: slots
+                      .map((slot) => _buildTimeSlotChip(context, slot))
+                      .toList(),
                 ),
               ],
             ),
@@ -373,7 +377,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
       runSpacing: 8,
       children: availableAmenities.map((amenity) {
         final icon = amenityIcons[amenity] ?? LucideIcons.check;
-        
+
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
@@ -383,11 +387,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: 12,
-                color: context.colors.primary,
-              ),
+              Icon(icon, size: 12, color: context.colors.primary),
               const SizedBox(width: 4),
               Text(
                 amenity.capitalize(),
@@ -408,19 +408,17 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
     final isSelected = widget.viewModel.state.selectedVenueSlot == slot;
     final startTime = TimeOfDay.fromDateTime(slot.timeSlot.startTime);
     final endTime = TimeOfDay.fromDateTime(slot.timeSlot.endTime);
-    
+
     return GestureDetector(
       onTap: () => widget.viewModel.selectVenueSlot(slot),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? context.colors.primary
-              : context.colors.surface,
+          color: isSelected ? context.colors.primary : context.colors.surface,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? context.colors.primary
                 : context.colors.outline.withValues(alpha: 0.1),
             width: isSelected ? 2 : 1,
@@ -433,7 +431,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
               '${startTime.format(context)} - ${endTime.format(context)}',
               style: context.textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: isSelected 
+                color: isSelected
                     ? context.colors.onPrimary
                     : context.colors.onSurface,
               ),
@@ -442,7 +440,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
             Text(
               'AED ${slot.timeSlot.price.toStringAsFixed(0)}',
               style: context.textTheme.bodySmall?.copyWith(
-                color: isSelected 
+                color: isSelected
                     ? context.colors.onPrimary.withValues(alpha: 0.8)
                     : context.colors.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
@@ -525,4 +523,4 @@ extension StringExtension on String {
   String capitalize() {
     return "${this[0].toUpperCase()}${substring(1)}";
   }
-} 
+}

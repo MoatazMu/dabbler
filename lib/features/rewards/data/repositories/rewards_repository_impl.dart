@@ -14,7 +14,6 @@ import '../../domain/repositories/rewards_repository.dart';
 /// Simple implementation of RewardsRepository with placeholder methods
 /// This will be expanded with actual data sources later
 class RewardsRepositoryImpl implements RewardsRepository {
-  
   @override
   Future<Either<Failure, List<Achievement>>> getAchievements({
     AchievementCategory? category,
@@ -30,7 +29,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
   }
 
   @override
-  Future<Either<Failure, Achievement>> getAchievementById(String achievementId) async {
+  Future<Either<Failure, Achievement>> getAchievementById(
+    String achievementId,
+  ) async {
     try {
       throw UnimplementedError('Not implemented');
     } catch (e) {
@@ -97,11 +98,13 @@ class RewardsRepositoryImpl implements RewardsRepository {
         final points = 1500 - (index * 57);
         return LeaderboardEntry(
           id: 'entry_$rank',
-          userId: rank == 8 ? 'current_user_id' : 'user_$rank', // place current user mid-pack
+          userId: rank == 8
+              ? 'current_user_id'
+              : 'user_$rank', // place current user mid-pack
           username: rank == 8 ? 'You' : 'Player $rank',
           avatarUrl: null,
           currentRank: rank,
-            previousRank: rank + (rank % 3 == 0 ? 1 : 0),
+          previousRank: rank + (rank % 3 == 0 ? 1 : 0),
           totalPoints: points.toDouble(),
           periodPoints: (points / 2).toDouble(),
           tier: TierLevel.fromPoints(points.toDouble()),
@@ -211,7 +214,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getAchievementStats(String userId) async {
+  Future<Either<Failure, Map<String, dynamic>>> getAchievementStats(
+    String userId,
+  ) async {
     try {
       return const Right({});
     } catch (e) {
@@ -259,7 +264,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
     try {
       return const Right([]);
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to get trending achievements'));
+      return Left(
+        ServerFailure(message: 'Failed to get trending achievements'),
+      );
     }
   }
 
@@ -271,7 +278,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
     try {
       return const Right([]);
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to get recommended achievements'));
+      return Left(
+        ServerFailure(message: 'Failed to get recommended achievements'),
+      );
     }
   }
 
@@ -284,7 +293,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
     try {
       return const Right([]);
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to get near completion achievements'));
+      return Left(
+        ServerFailure(message: 'Failed to get near completion achievements'),
+      );
     }
   }
 
@@ -345,20 +356,24 @@ class RewardsRepositoryImpl implements RewardsRepository {
   }
 
   @override
-  Stream<Either<Failure, UserProgress>> subscribeToProgressUpdates(String userId) async* {
+  Stream<Either<Failure, UserProgress>> subscribeToProgressUpdates(
+    String userId,
+  ) async* {
     try {
-      yield Right(UserProgress(
-        id: 'placeholder',
-        userId: 'placeholder',
-        achievementId: 'placeholder',
-        currentProgress: const {'value': 0},
-        requiredProgress: const {'value': 100},
-        status: ProgressStatus.notStarted,
-        startedAt: DateTime.now(),
-        completedAt: null,
-        updatedAt: DateTime.now(),
-        metadata: const {},
-      ));
+      yield Right(
+        UserProgress(
+          id: 'placeholder',
+          userId: 'placeholder',
+          achievementId: 'placeholder',
+          currentProgress: const {'value': 0},
+          requiredProgress: const {'value': 100},
+          status: ProgressStatus.notStarted,
+          startedAt: DateTime.now(),
+          completedAt: null,
+          updatedAt: DateTime.now(),
+          metadata: const {},
+        ),
+      );
     } catch (e) {
       yield Left(ServerFailure(message: 'Progress updates stream error'));
     }
@@ -451,7 +466,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>?>> getUserStats(String userId) async {
+  Future<Either<Failure, Map<String, dynamic>?>> getUserStats(
+    String userId,
+  ) async {
     try {
       return const Right({
         'totalPoints': 0,
@@ -466,16 +483,23 @@ class RewardsRepositoryImpl implements RewardsRepository {
   }
 
   @override
-  Future<Either<Failure, List<Badge>>> getBadgesForAchievement(String achievementId) async {
+  Future<Either<Failure, List<Badge>>> getBadgesForAchievement(
+    String achievementId,
+  ) async {
     try {
       return const Right([]);
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to get badges for achievement'));
+      return Left(
+        ServerFailure(message: 'Failed to get badges for achievement'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, void>> awardBadge(String userId, String badgeId) async {
+  Future<Either<Failure, void>> awardBadge(
+    String userId,
+    String badgeId,
+  ) async {
     try {
       return const Right(null);
     } catch (e) {
@@ -484,7 +508,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
   }
 
   @override
-  Future<Either<Failure, void>> updateUserProgress(UserProgress progress) async {
+  Future<Either<Failure, void>> updateUserProgress(
+    UserProgress progress,
+  ) async {
     try {
       return const Right(null);
     } catch (e) {
@@ -505,7 +531,10 @@ class RewardsRepositoryImpl implements RewardsRepository {
   }
 
   @override
-  Future<Either<Failure, void>> upgradeTier(String userId, UserTier newTier) async {
+  Future<Either<Failure, void>> upgradeTier(
+    String userId,
+    UserTier newTier,
+  ) async {
     try {
       return const Right(null);
     } catch (e) {
@@ -538,7 +567,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getTierUpgradeHistory(String userId) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> getTierUpgradeHistory(
+    String userId,
+  ) async {
     try {
       return const Right([]);
     } catch (e) {
@@ -547,7 +578,10 @@ class RewardsRepositoryImpl implements RewardsRepository {
   }
 
   @override
-  Future<Either<Failure, void>> updateUserTier(String userId, UserTier tier) async {
+  Future<Either<Failure, void>> updateUserTier(
+    String userId,
+    UserTier tier,
+  ) async {
     try {
       return const Right(null);
     } catch (e) {
@@ -563,7 +597,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
     try {
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to save tier upgrade history'));
+      return Left(
+        ServerFailure(message: 'Failed to save tier upgrade history'),
+      );
     }
   }
 
@@ -590,7 +626,9 @@ class RewardsRepositoryImpl implements RewardsRepository {
     try {
       return const Right(null);
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to update daily goal progress'));
+      return Left(
+        ServerFailure(message: 'Failed to update daily goal progress'),
+      );
     }
   }
 

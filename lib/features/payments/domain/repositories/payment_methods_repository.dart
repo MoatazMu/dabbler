@@ -8,17 +8,26 @@ abstract class PaymentMethodsRepository {
   Future<Either<Failure, List<PaymentMethod>>> getPaymentMethods(String userId);
 
   /// Get the default payment method for a user
-  Future<Either<Failure, PaymentMethod?>> getDefaultPaymentMethod(String userId);
+  Future<Either<Failure, PaymentMethod?>> getDefaultPaymentMethod(
+    String userId,
+  );
 
   /// Add a new payment method
-  Future<Either<Failure, PaymentMethod>> addPaymentMethod(PaymentMethod paymentMethod);
+  Future<Either<Failure, PaymentMethod>> addPaymentMethod(
+    PaymentMethod paymentMethod,
+  );
 
   /// Update an existing payment method
-  Future<Either<Failure, PaymentMethod>> updatePaymentMethod(PaymentMethod paymentMethod);
+  Future<Either<Failure, PaymentMethod>> updatePaymentMethod(
+    PaymentMethod paymentMethod,
+  );
 
   /// Delete a payment method
   Future<Either<Failure, void>> deletePaymentMethod(String paymentMethodId);
 
   /// Set a payment method as default
-  Future<Either<Failure, void>> setDefaultPaymentMethod(String userId, String paymentMethodId);
+  Future<Either<Failure, void>> setDefaultPaymentMethod(
+    String userId,
+    String paymentMethodId,
+  );
 }

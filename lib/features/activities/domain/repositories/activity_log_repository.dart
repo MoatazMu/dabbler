@@ -60,7 +60,8 @@ abstract class ActivityLogRepository {
   Future<Either<Failure, bool>> deleteActivity(String activityId);
 
   /// Get activities by date range
-  Future<Either<Failure, Map<String, List<ActivityLog>>>> getActivitiesByDateRange({
+  Future<Either<Failure, Map<String, List<ActivityLog>>>>
+  getActivitiesByDateRange({
     required String userId,
     required DateTime startDate,
     required DateTime endDate,

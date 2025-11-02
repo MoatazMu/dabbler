@@ -28,7 +28,9 @@ class MediaGrid extends StatelessWidget {
         return _MediaGridItem(
           media: mediaItem,
           onTap: onMediaTap != null ? () => onMediaTap!(mediaItem) : null,
-          onLongPress: onMediaLongPress != null ? () => onMediaLongPress!(mediaItem) : null,
+          onLongPress: onMediaLongPress != null
+              ? () => onMediaLongPress!(mediaItem)
+              : null,
         );
       },
     );
@@ -40,16 +42,12 @@ class _MediaGridItem extends StatelessWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
-  const _MediaGridItem({
-    required this.media,
-    this.onTap,
-    this.onLongPress,
-  });
+  const _MediaGridItem({required this.media, this.onTap, this.onLongPress});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
@@ -110,7 +108,7 @@ class _MediaGridItem extends StatelessWidget {
                     size: 32,
                   ),
                 ),
-              
+
               // Tap overlay
               Material(
                 color: Colors.transparent,

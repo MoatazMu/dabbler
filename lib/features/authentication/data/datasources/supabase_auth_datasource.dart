@@ -11,26 +11,44 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
   SupabaseAuthDataSource(this.client);
 
   @override
-  Future<AuthResponseModel> signInWithEmail({required String email, required String password}) async {
+  Future<AuthResponseModel> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
     try {
-      print('🔐 [DEBUG] SupabaseAuthDataSource: Attempting sign in for: $email');
-      final response = await client.auth.signInWithPassword(email: email, password: password);
-      
-      print('🔐 [DEBUG] SupabaseAuthDataSource: Sign in response - user: ${response.user != null}, session: ${response.session != null}');
-      
+      print(
+        '🔐 [DEBUG] SupabaseAuthDataSource: Attempting sign in for: $email',
+      );
+      final response = await client.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      print(
+        '🔐 [DEBUG] SupabaseAuthDataSource: Sign in response - user: ${response.user != null}, session: ${response.session != null}',
+      );
+
       // Accept successful session even if user payload is not populated
       if (response.session != null) {
-        print('✅ [DEBUG] SupabaseAuthDataSource: Valid session found, converting to model');
+        print(
+          '✅ [DEBUG] SupabaseAuthDataSource: Valid session found, converting to model',
+        );
         return _convertSessionToModel(response.session!);
       }
       if (response.user == null) {
-        print('❌ [DEBUG] SupabaseAuthDataSource: No user in response, throwing InvalidCredentialsException');
+        print(
+          '❌ [DEBUG] SupabaseAuthDataSource: No user in response, throwing InvalidCredentialsException',
+        );
         throw InvalidCredentialsException();
       }
-      print('✅ [DEBUG] SupabaseAuthDataSource: Converting full auth response to model');
+      print(
+        '✅ [DEBUG] SupabaseAuthDataSource: Converting full auth response to model',
+      );
       return _convertAuthResponseToModel(response);
     } on supabase.AuthException catch (e) {
-      print('❌ [DEBUG] SupabaseAuthDataSource: Supabase auth exception: ${e.message}');
+      print(
+        '❌ [DEBUG] SupabaseAuthDataSource: Supabase auth exception: ${e.message}',
+      );
       if (e.message.contains('Invalid login credentials')) {
         throw InvalidCredentialsException();
       } else if (e.message.contains('Email not confirmed')) {
@@ -39,7 +57,9 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
         throw AuthException(e.message);
       }
     } catch (e) {
-      print('❌ [DEBUG] SupabaseAuthDataSource: General exception during signInWithEmail: $e');
+      print(
+        '❌ [DEBUG] SupabaseAuthDataSource: General exception during signInWithEmail: $e',
+      );
       throw NetworkException(e.toString());
     }
   }
@@ -63,9 +83,15 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
   }
 
   @override
-  Future<AuthResponseModel> signUp({required String email, required String password}) async {
+  Future<AuthResponseModel> signUp({
+    required String email,
+    required String password,
+  }) async {
     try {
-      final response = await client.auth.signUp(email: email, password: password);
+      final response = await client.auth.signUp(
+        email: email,
+        password: password,
+      );
       if (response.user == null) throw EmailAlreadyExistsException();
       return _convertAuthResponseToModel(response);
     } on supabase.AuthException catch (e) {
@@ -80,7 +106,6 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
       throw NetworkException(e.toString());
     }
   }
-
 
   @override
   Future<void> signOut() async {
@@ -124,7 +149,9 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
   @override
   Future<void> updatePassword({required String newPassword}) async {
     try {
-      await client.auth.updateUser(supabase.UserAttributes(password: newPassword));
+      await client.auth.updateUser(
+        supabase.UserAttributes(password: newPassword),
+      );
     } on supabase.AuthException catch (e) {
       if (e.message.contains('Weak password')) {
         throw WeakPasswordException();
@@ -137,9 +164,16 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
   }
 
   @override
-  Future<AuthResponseModel> verifyOTP({required String phone, required String token}) async {
+  Future<AuthResponseModel> verifyOTP({
+    required String phone,
+    required String token,
+  }) async {
     try {
-      final response = await client.auth.verifyOTP(phone: phone, token: token, type: supabase.OtpType.sms);
+      final response = await client.auth.verifyOTP(
+        phone: phone,
+        token: token,
+        type: supabase.OtpType.sms,
+      );
       return _convertAuthResponseToModel(response);
     } on supabase.AuthException catch (e) {
       throw AuthException(e.message);
@@ -149,10 +183,16 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
   }
 
   /// Convert Supabase AuthResponse to AuthResponseModel
-  AuthResponseModel _convertAuthResponseToModel(supabase.AuthResponse response) {
+  AuthResponseModel _convertAuthResponseToModel(
+    supabase.AuthResponse response,
+  ) {
     return AuthResponseModel(
-      user: response.user != null ? UserModel.fromSupabaseUser(response.user!) : null,
-      session: response.session != null ? _convertSessionToAuthSession(response.session!) : null,
+      user: response.user != null
+          ? UserModel.fromSupabaseUser(response.user!)
+          : null,
+      session: response.session != null
+          ? _convertSessionToAuthSession(response.session!)
+          : null,
       error: null,
       metadata: null,
     );
@@ -161,7 +201,7 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
   /// Convert Supabase Session to AuthResponseModel
   AuthResponseModel _convertSessionToModel(supabase.Session session) {
     return AuthResponseModel(
-  user: UserModel.fromSupabaseUser(session.user),
+      user: UserModel.fromSupabaseUser(session.user),
       session: _convertSessionToAuthSession(session),
       error: null,
       metadata: null,
@@ -171,10 +211,12 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
   /// Convert Supabase Session to AuthSession
   AuthSession _convertSessionToAuthSession(supabase.Session session) {
     return AuthSession(
-  accessToken: session.accessToken,
-  refreshToken: session.refreshToken ?? '',
-  expiresAt: DateTime.fromMillisecondsSinceEpoch((session.expiresAt ?? 0) * 1000),
-  user: UserModel.fromSupabaseUser(session.user),
+      accessToken: session.accessToken,
+      refreshToken: session.refreshToken ?? '',
+      expiresAt: DateTime.fromMillisecondsSinceEpoch(
+        (session.expiresAt ?? 0) * 1000,
+      ),
+      user: UserModel.fromSupabaseUser(session.user),
     );
   }
 }

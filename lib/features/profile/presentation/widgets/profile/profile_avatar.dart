@@ -78,36 +78,32 @@ class _ProfileAvatarState extends State<ProfileAvatar>
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: (widget.hasError
-                              ? Colors.red
-                              : Theme.of(context).primaryColor)
-                          .withOpacity(0.3),
+                      color:
+                          (widget.hasError
+                                  ? Colors.red
+                                  : Theme.of(context).primaryColor)
+                              .withOpacity(0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                child: ClipOval(
-                  child: _buildAvatarContent(context),
-                ),
+                child: ClipOval(child: _buildAvatarContent(context)),
               ),
             ),
-            
+
             // Upload progress indicator
-            if (widget.showUploadProgress)
-              _buildUploadProgress(context),
-            
+            if (widget.showUploadProgress) _buildUploadProgress(context),
+
             // Error indicator
-            if (widget.hasError)
-              _buildErrorIndicator(context),
-            
+            if (widget.hasError) _buildErrorIndicator(context),
+
             // Edit overlay for own profile
             if (widget.isOwnProfile && widget.showEditOverlay)
               _buildEditOverlay(context),
-            
+
             // Loading indicator
-            if (_isLoading)
-              _buildLoadingIndicator(context),
+            if (_isLoading) _buildLoadingIndicator(context),
           ],
         ),
       ),
@@ -133,9 +129,13 @@ class _ProfileAvatarState extends State<ProfileAvatar>
     }
   }
 
-  Widget _buildPlaceholder(BuildContext context, {bool showLoading = false, bool isError = false}) {
+  Widget _buildPlaceholder(
+    BuildContext context, {
+    bool showLoading = false,
+    bool isError = false,
+  }) {
     setState(() => _isLoading = false);
-    
+
     return Container(
       width: widget.size,
       height: widget.size,
@@ -149,15 +149,11 @@ class _ProfileAvatarState extends State<ProfileAvatar>
         ),
       ),
       child: showLoading
-          ? const Center(
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
+          ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
           : Icon(
               isError ? Icons.error_outline : Icons.person,
               size: widget.size * 0.4,
-              color: isError
-                  ? Colors.red[600]
-                  : Colors.grey[600],
+              color: isError ? Colors.red[600] : Colors.grey[600],
             ),
     );
   }
@@ -210,11 +206,7 @@ class _ProfileAvatarState extends State<ProfileAvatar>
           color: Colors.red,
           shape: BoxShape.circle,
         ),
-        child: Icon(
-          Icons.error,
-          color: Colors.white,
-          size: widget.size * 0.12,
-        ),
+        child: Icon(Icons.error, color: Colors.white, size: widget.size * 0.12),
       ),
     );
   }
@@ -231,10 +223,7 @@ class _ProfileAvatarState extends State<ProfileAvatar>
           decoration: BoxDecoration(
             color: Theme.of(context).primaryColor,
             shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white,
-              width: 2,
-            ),
+            border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
@@ -301,10 +290,7 @@ extension ProfileAvatarVariants on ProfileAvatar {
                 decoration: BoxDecoration(
                   color: Colors.green,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white,
-                    width: 2,
-                  ),
+                  border: Border.all(color: Colors.white, width: 2),
                 ),
               ),
             ),
@@ -351,10 +337,7 @@ extension ProfileAvatarVariants on ProfileAvatar {
               decoration: BoxDecoration(
                 color: badgeColor,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: Colors.white,
-                  width: 1,
-                ),
+                border: Border.all(color: Colors.white, width: 1),
               ),
               child: Text(
                 badge,

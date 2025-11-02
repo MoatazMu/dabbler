@@ -22,7 +22,7 @@ class NoUpcomingGamesWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -42,9 +42,9 @@ class NoUpcomingGamesWidget extends StatelessWidget {
                 color: theme.colorScheme.primary,
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Title
             Text(
               'No upcoming games',
@@ -54,9 +54,9 @@ class NoUpcomingGamesWidget extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Message
             Text(
               'You don\'t have any games scheduled. Start playing by creating your own game or joining one nearby!',
@@ -65,9 +65,9 @@ class NoUpcomingGamesWidget extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Primary action - Create game
             SizedBox(
               width: double.infinity,
@@ -77,9 +77,9 @@ class NoUpcomingGamesWidget extends StatelessWidget {
                 label: const Text('Create Your First Game'),
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Secondary action - Browse games
             SizedBox(
               width: double.infinity,
@@ -89,9 +89,9 @@ class NoUpcomingGamesWidget extends StatelessWidget {
                 label: const Text('Browse Games to Join'),
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Additional navigation options if available
             if (hasJoinedGames || hasPastGames) ...[
               Text(
@@ -101,9 +101,9 @@ class NoUpcomingGamesWidget extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               Row(
                 children: [
                   if (hasJoinedGames) ...[
@@ -115,10 +115,9 @@ class NoUpcomingGamesWidget extends StatelessWidget {
                       ),
                     ),
                   ],
-                  
-                  if (hasJoinedGames && hasPastGames) 
-                    const SizedBox(width: 8),
-                  
+
+                  if (hasJoinedGames && hasPastGames) const SizedBox(width: 8),
+
                   if (hasPastGames) ...[
                     Expanded(
                       child: TextButton.icon(
@@ -131,14 +130,16 @@ class NoUpcomingGamesWidget extends StatelessWidget {
                 ],
               ),
             ],
-            
+
             const SizedBox(height: 24),
-            
+
             // Help text with tips
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                color: theme.colorScheme.surfaceContainerHighest.withOpacity(
+                  0.5,
+                ),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -160,9 +161,9 @@ class NoUpcomingGamesWidget extends StatelessWidget {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 8),
-                  
+
                   Text(
                     '• Create games in advance to give players time to join\n'
                     '• Set up recurring games for regular play sessions\n'
@@ -197,7 +198,7 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32.0),
@@ -224,9 +225,9 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Welcome title
             Text(
               'Welcome to Dabbler!',
@@ -236,9 +237,9 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Welcome message
             Text(
               'Ready to get in the game? Create your first game or join one nearby to start connecting with other players!',
@@ -247,9 +248,9 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Primary CTA - Create game
             SizedBox(
               width: double.infinity,
@@ -259,9 +260,9 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
                 label: const Text('Create Your First Game'),
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Secondary CTA - Browse games
             SizedBox(
               width: double.infinity,
@@ -271,23 +272,25 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
                 label: const Text('Explore Games Near You'),
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Tutorial link
             TextButton.icon(
               onPressed: onViewTutorial,
               icon: const Icon(Icons.help_outline_rounded),
               label: const Text('How does it work?'),
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Feature highlights
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+                color: theme.colorScheme.surfaceContainerHighest.withOpacity(
+                  0.5,
+                ),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -299,27 +302,27 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
                       color: theme.colorScheme.onSurface,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   _buildFeatureItem(
                     context,
                     Icons.event_rounded,
                     'Create Games',
                     'Organize pickup games at your favorite venues',
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   _buildFeatureItem(
                     context,
                     Icons.group_add_rounded,
                     'Join Players',
                     'Find and connect with players in your area',
                   ),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   _buildFeatureItem(
                     context,
                     Icons.location_on_rounded,
@@ -342,7 +345,7 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
     String description,
   ) {
     final theme = Theme.of(context);
-    
+
     return Row(
       children: [
         Container(
@@ -351,15 +354,11 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
             color: theme.colorScheme.primary.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: Icon(
-            icon,
-            size: 20,
-            color: theme.colorScheme.primary,
-          ),
+          child: Icon(icon, size: 20, color: theme.colorScheme.primary),
         ),
-        
+
         const SizedBox(width: 12),
-        
+
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

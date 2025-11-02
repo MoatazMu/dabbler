@@ -56,14 +56,19 @@ class AppConstants {
   static const double defaultAspectRatio = 16 / 9;
   static const int maxImageSizeBytes = 5 * 1024 * 1024; // 5MB
   static const double maxImageDimension = 1920.0;
-  static const List<String> supportedImageFormats = ['jpg', 'jpeg', 'png', 'gif'];
+  static const List<String> supportedImageFormats = [
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+  ];
 
   // Input Validation
   static const int minPasswordLength = 8;
   static const int maxPasswordLength = 32;
   static const int minUsernameLength = 3;
   static const int maxUsernameLength = 20;
-  
+
   // File Size Limits (in bytes)
   static const int maxProfileImageSize = 5 * 1024 * 1024; // 5MB
   static const int maxUploadFileSize = 10 * 1024 * 1024; // 10MB
@@ -75,9 +80,12 @@ class AppConstants {
   static const int minSearchLength = 2;
 
   // Error Messages
-  static const String defaultErrorMessage = 'Something went wrong. Please try again.';
-  static const String networkErrorMessage = 'Please check your internet connection.';
-  static const String sessionExpiredMessage = 'Your session has expired. Please login again.';
+  static const String defaultErrorMessage =
+      'Something went wrong. Please try again.';
+  static const String networkErrorMessage =
+      'Please check your internet connection.';
+  static const String sessionExpiredMessage =
+      'Your session has expired. Please login again.';
 
   // Date Formats
   static const String defaultDateFormat = 'dd MMM yyyy';
@@ -88,9 +96,7 @@ class AppConstants {
   static final RegExp emailRegex = RegExp(
     r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
   );
-  static final RegExp phoneRegex = RegExp(
-    r'^\+?[0-9]{10,}$',
-  );
+  static final RegExp phoneRegex = RegExp(r'^\+?[0-9]{10,}$');
   static final RegExp urlRegex = RegExp(
     r'^https?:\/\/([\w\d-]+\.)*[\w-]+\.[a-z]+',
   );

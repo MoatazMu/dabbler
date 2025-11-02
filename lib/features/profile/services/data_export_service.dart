@@ -15,8 +15,10 @@ import 'package:path/path.dart' as path;
 // Temporary stub implementations for missing dependencies
 class Logger {
   static void info(String message) => print('[INFO] $message');
-  static void error(String message, [dynamic error]) => print('[ERROR] $message: $error');
-  static void warning(String message, [dynamic error]) => print('[WARNING] $message: $error');
+  static void error(String message, [dynamic error]) =>
+      print('[ERROR] $message: $error');
+  static void warning(String message, [dynamic error]) =>
+      print('[WARNING] $message: $error');
   static void debug(String message) => print('[DEBUG] $message');
 }
 
@@ -24,7 +26,7 @@ class DataExportException implements Exception {
   final String message;
   final String? errorCode;
   const DataExportException(this.message, {this.errorCode});
-  
+
   @override
   String toString() => 'DataExportException: $message';
 }
@@ -48,7 +50,7 @@ class DataExportService {
   static const Duration _maxExportTime = Duration(hours: 24);
 
   DataExportService({SupabaseClient? supabase})
-      : _supabase = supabase ?? Supabase.instance.client;
+    : _supabase = supabase ?? Supabase.instance.client;
 
   /// Request a new comprehensive data export for GDPR compliance
   Future<DataExportRequest> requestGDPRDataExport({
@@ -64,7 +66,9 @@ class DataExportService {
       // Check for existing pending exports
       final pendingExports = await _getPendingExports(userId);
       if (pendingExports.isNotEmpty) {
-        throw DataExportException('A data export is already in progress. Please wait for it to complete.');
+        throw DataExportException(
+          'A data export is already in progress. Please wait for it to complete.',
+        );
       }
 
       final request = DataExportRequest(
@@ -87,7 +91,6 @@ class DataExportService {
 
       Logger.info('$_logTag: GDPR export request created: ${request.id}');
       return request;
-
     } catch (e) {
       Logger.error('$_logTag: Error requesting GDPR data export', e);
       throw DataExportException('Failed to request data export: $e');
@@ -98,10 +101,10 @@ class DataExportService {
   Future<List<DataExportRequest>> getUserExportHistory(String userId) async {
     try {
       final requests = await _getStoredExportRequests(userId);
-      
+
       // Clean up expired requests
       await _cleanupExpiredExports(requests);
-      
+
       return requests;
     } catch (e) {
       Logger.error('$_logTag: Error getting export history', e);
@@ -127,7 +130,7 @@ class DataExportService {
   Future<File> downloadExportedData(String requestId, String userId) async {
     try {
       final request = await _getExportRequest(requestId);
-      
+
       if (request == null) {
         throw DataExportException('Export request not found');
       }
@@ -168,31 +171,35 @@ class DataExportService {
   /// Process GDPR data export asynchronously
   void _processGDPRExportAsync(DataExportRequest request) async {
     try {
-      Logger.info('$_logTag: Starting async GDPR export process: ${request.id}');
-      
+      Logger.info(
+        '$_logTag: Starting async GDPR export process: ${request.id}',
+      );
+
       await _updateExportStatus(request.id, DataExportStatus.processing);
 
       // Set timeout for export process
       final completer = Completer<void>();
       final timer = Timer(_maxExportTime, () {
         if (!completer.isCompleted) {
-          completer.completeError('Export timeout - process took longer than 24 hours');
+          completer.completeError(
+            'Export timeout - process took longer than 24 hours',
+          );
         }
       });
 
       try {
         // Gather all user data comprehensively
         final exportData = await _gatherComprehensiveUserData(request.userId);
-        
+
         // Generate export file with enhanced features
         final exportFile = await _generateGDPRExportFile(exportData, request);
-        
+
         // Update request with file path
         await _updateExportRequest(request.id, filePath: exportFile.path);
-        
+
         // Mark as completed
         await _updateExportStatus(request.id, DataExportStatus.completed);
-        
+
         // Send notification if requested
         if (request.sendEmailNotification) {
           await _sendGDPRCompletionEmail(request);
@@ -206,12 +213,17 @@ class DataExportService {
           completer.complete();
         }
 
-        Logger.info('$_logTag: GDPR export completed successfully: ${request.id}');
-
+        Logger.info(
+          '$_logTag: GDPR export completed successfully: ${request.id}',
+        );
       } catch (e) {
         timer.cancel();
-        await _updateExportStatus(request.id, DataExportStatus.failed, error: e.toString());
-        
+        await _updateExportStatus(
+          request.id,
+          DataExportStatus.failed,
+          error: e.toString(),
+        );
+
         if (request.sendEmailNotification) {
           await _sendGDPRErrorEmail(request, e.toString());
         }
@@ -219,10 +231,9 @@ class DataExportService {
         if (!completer.isCompleted) {
           completer.completeError(e);
         }
-        
+
         Logger.error('$_logTag: GDPR export failed: ${request.id}', e);
       }
-
     } catch (e) {
       Logger.error('$_logTag: Error in async GDPR export process', e);
     }
@@ -240,48 +251,47 @@ class DataExportService {
     try {
       // Core Profile Information
       exportData.profile = await _getEnhancedProfileData(userId);
-      
+
       // User Preferences and Settings
       exportData.preferences = await _getEnhancedPreferencesData(userId);
-      
+
       // Sports Profiles and Statistics
       exportData.sportsProfiles = await _getEnhancedSportsProfileData(userId);
       exportData.statistics = await _getEnhancedStatisticsData(userId);
-      
+
       // Complete Game History
       exportData.gameHistory = await _getEnhancedGameHistoryData(userId);
-      
+
       // Privacy Settings and Consents
       exportData.privacySettings = await _getPrivacySettingsData(userId);
       exportData.consents = await _getConsentHistory(userId);
-      
+
       // Account Activity and Audit Logs (last 2 years)
       exportData.auditLogs = await _getAuditLogsData(userId);
       exportData.loginHistory = await _getLoginHistory(userId);
-      
+
       // Social Connections and Interactions
       exportData.connections = await _getConnectionsData(userId);
       exportData.messages = await _getMessagesData(userId);
       exportData.notifications = await _getNotificationsData(userId);
-      
+
       // Content and Media (metadata only)
       exportData.media = await _getMediaMetadata(userId);
-      
+
       // Location Data (if collected)
       exportData.locationData = await _getLocationData(userId);
-      
+
       // Device and Technical Data
       exportData.deviceInfo = await _getDeviceInformation(userId);
-      
+
       // Payment and Subscription Data
       exportData.paymentData = await _getPaymentData(userId);
-      
+
       // Third-party Integrations
       exportData.integrations = await _getThirdPartyData(userId);
 
       Logger.info('$_logTag: Comprehensive user data gathering completed');
       return exportData;
-
     } catch (e) {
       Logger.error('$_logTag: Error gathering comprehensive user data', e);
       rethrow;
@@ -290,13 +300,13 @@ class DataExportService {
 
   /// Generate GDPR-compliant export file
   Future<File> _generateGDPRExportFile(
-    UserExportData data, 
-    DataExportRequest request
+    UserExportData data,
+    DataExportRequest request,
   ) async {
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final fileName = 'dabbler_gdpr_export_${request.userId}_$timestamp';
-      
+
       switch (request.format) {
         case DataExportFormat.json:
           return await _generateGDPRJsonExport(data, fileName);
@@ -312,11 +322,14 @@ class DataExportService {
   }
 
   /// Generate comprehensive JSON export
-  Future<File> _generateGDPRJsonExport(UserExportData data, String fileName) async {
+  Future<File> _generateGDPRJsonExport(
+    UserExportData data,
+    String fileName,
+  ) async {
     try {
       final exportDir = await _getSecureExportDirectory();
       final filePath = path.join(exportDir.path, '$fileName.json');
-      
+
       final jsonData = {
         'export_info': {
           'format': 'json',
@@ -348,35 +361,48 @@ class DataExportService {
   }
 
   /// Generate comprehensive CSV export
-  Future<File> _generateGDPRCsvExport(UserExportData data, String fileName) async {
+  Future<File> _generateGDPRCsvExport(
+    UserExportData data,
+    String fileName,
+  ) async {
     try {
       final exportDir = await _getSecureExportDirectory();
       final filePath = path.join(exportDir.path, '$fileName.csv');
       final file = File(filePath);
-      
+
       // For now, create a basic CSV representation
       final csvContent = StringBuffer();
       csvContent.writeln('Data Type,Field,Value,Collected At');
-      
+
       // Add basic profile data
       if (data.profile != null) {
         final profile = data.profile!;
-        csvContent.writeln('Profile,Name,"${profile['display_name'] ?? ''}",'
-            '"${profile['created_at'] ?? ''}"');
-        csvContent.writeln('Profile,Email,"${profile['email'] ?? ''}",'
-            '"${profile['created_at'] ?? ''}"');
+        csvContent.writeln(
+          'Profile,Name,"${profile['display_name'] ?? ''}",'
+          '"${profile['created_at'] ?? ''}"',
+        );
+        csvContent.writeln(
+          'Profile,Email,"${profile['email'] ?? ''}",'
+          '"${profile['created_at'] ?? ''}"',
+        );
       }
-      
-      // Add counts for other data types  
-      csvContent.writeln('Statistics,Total Game History Count,'
-          '"${data.gameHistory?.length ?? 0}",N/A');
-      csvContent.writeln('Statistics,Total Messages Count,'
-          '"${data.messages?.length ?? 0}",N/A');
-      csvContent.writeln('Statistics,Total Notifications Count,'
-          '"${data.notifications?.length ?? 0}",N/A');
-      
+
+      // Add counts for other data types
+      csvContent.writeln(
+        'Statistics,Total Game History Count,'
+        '"${data.gameHistory?.length ?? 0}",N/A',
+      );
+      csvContent.writeln(
+        'Statistics,Total Messages Count,'
+        '"${data.messages?.length ?? 0}",N/A',
+      );
+      csvContent.writeln(
+        'Statistics,Total Notifications Count,'
+        '"${data.notifications?.length ?? 0}",N/A',
+      );
+
       await file.writeAsString(csvContent.toString());
-      
+
       Logger.info('$_logTag: GDPR CSV export generated: $filePath');
       return file;
     } catch (e) {
@@ -386,51 +412,94 @@ class DataExportService {
   }
 
   /// Generate comprehensive ZIP export with multiple files
-  Future<File> _generateGDPRZipExport(UserExportData data, String fileName) async {
+  Future<File> _generateGDPRZipExport(
+    UserExportData data,
+    String fileName,
+  ) async {
     try {
       final exportDir = await _getSecureExportDirectory();
       final zipPath = path.join(exportDir.path, '$fileName.zip');
-      
+
       final archive = Archive();
-      
+
       // Add main data file
       final jsonData = JsonEncoder.withIndent('  ').convert(data.toJson());
-      archive.addFile(ArchiveFile('data/user_data.json', jsonData.length, jsonData.codeUnits));
-      
+      archive.addFile(
+        ArchiveFile('data/user_data.json', jsonData.length, jsonData.codeUnits),
+      );
+
       // Add CSV files for major data types
       if (data.profile != null) {
         final profileCsv = _generateProfileCsv(data.profile!);
-        archive.addFile(ArchiveFile('data/profile.csv', profileCsv.length, profileCsv.codeUnits));
+        archive.addFile(
+          ArchiveFile(
+            'data/profile.csv',
+            profileCsv.length,
+            profileCsv.codeUnits,
+          ),
+        );
       }
-      
+
       if (data.gameHistory?.isNotEmpty == true) {
         final gamesCsv = _generateGameHistoryCsv(data.gameHistory!);
-        archive.addFile(ArchiveFile('data/game_history.csv', gamesCsv.length, gamesCsv.codeUnits));
+        archive.addFile(
+          ArchiveFile(
+            'data/game_history.csv',
+            gamesCsv.length,
+            gamesCsv.codeUnits,
+          ),
+        );
       }
 
       if (data.messages?.isNotEmpty == true) {
         final messagesCsv = _generateMessagesCsv(data.messages!);
-        archive.addFile(ArchiveFile('data/messages.csv', messagesCsv.length, messagesCsv.codeUnits));
+        archive.addFile(
+          ArchiveFile(
+            'data/messages.csv',
+            messagesCsv.length,
+            messagesCsv.codeUnits,
+          ),
+        );
       }
-      
+
       // Add documentation files
       final readme = _generateGDPRReadmeContent(data);
-      archive.addFile(ArchiveFile('README.txt', readme.length, readme.codeUnits));
-      
+      archive.addFile(
+        ArchiveFile('README.txt', readme.length, readme.codeUnits),
+      );
+
       final dataStructure = _generateGDPRDataStructureDoc(data);
-      archive.addFile(ArchiveFile('documentation/data_structure.md', dataStructure.length, dataStructure.codeUnits));
-      
+      archive.addFile(
+        ArchiveFile(
+          'documentation/data_structure.md',
+          dataStructure.length,
+          dataStructure.codeUnits,
+        ),
+      );
+
       final privacyPolicy = _generatePrivacyPolicyReference();
-      archive.addFile(ArchiveFile('documentation/privacy_policy.md', privacyPolicy.length, privacyPolicy.codeUnits));
-      
+      archive.addFile(
+        ArchiveFile(
+          'documentation/privacy_policy.md',
+          privacyPolicy.length,
+          privacyPolicy.codeUnits,
+        ),
+      );
+
       final rightsInfo = _generateGDPRRightsDocument();
-      archive.addFile(ArchiveFile('documentation/your_gdpr_rights.md', rightsInfo.length, rightsInfo.codeUnits));
+      archive.addFile(
+        ArchiveFile(
+          'documentation/your_gdpr_rights.md',
+          rightsInfo.length,
+          rightsInfo.codeUnits,
+        ),
+      );
 
       // Write ZIP file
       final zipData = ZipEncoder().encode(archive);
       final file = File(zipPath);
       await file.writeAsBytes(zipData);
-      
+
       Logger.info('$_logTag: GDPR ZIP export generated: $zipPath');
       return file;
     } catch (e) {
@@ -447,7 +516,7 @@ class DataExportService {
           .select('*')
           .eq('id', userId)
           .single();
-      
+
       return {
         ...response,
         'data_source': 'profiles_table',
@@ -461,7 +530,9 @@ class DataExportService {
     }
   }
 
-  Future<Map<String, dynamic>?> _getEnhancedPreferencesData(String userId) async {
+  Future<Map<String, dynamic>?> _getEnhancedPreferencesData(
+    String userId,
+  ) async {
     try {
       final settingsResponse = await _supabase
           .from('user_settings')
@@ -472,7 +543,7 @@ class DataExportService {
           .from('user_preferences')
           .select()
           .eq('user_id', userId);
-      
+
       return {
         'settings': settingsResponse,
         'preferences': preferencesResponse,
@@ -487,26 +558,34 @@ class DataExportService {
     }
   }
 
-  Future<List<Map<String, dynamic>>?> _getEnhancedSportsProfileData(String userId) async {
+  Future<List<Map<String, dynamic>>?> _getEnhancedSportsProfileData(
+    String userId,
+  ) async {
     try {
       final response = await _supabase
           .from('sports_profiles')
           .select('*, sport_statistics(*)')
           .eq('user_id', userId);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'sports_profiles table',
-        'purpose': 'Sports skill assessment and matching',
-        'legal_basis': 'User consent and contract performance',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'sports_profiles table',
+              'purpose': 'Sports skill assessment and matching',
+              'legal_basis': 'User consent and contract performance',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch sports profile data', e);
       return null;
     }
   }
 
-  Future<Map<String, dynamic>?> _getEnhancedStatisticsData(String userId) async {
+  Future<Map<String, dynamic>?> _getEnhancedStatisticsData(
+    String userId,
+  ) async {
     try {
       final gameStats = await _supabase
           .from('user_game_statistics')
@@ -517,7 +596,7 @@ class DataExportService {
           .from('performance_metrics')
           .select()
           .eq('user_id', userId);
-      
+
       return {
         'game_statistics': gameStats,
         'performance_metrics': performanceMetrics,
@@ -532,7 +611,9 @@ class DataExportService {
     }
   }
 
-  Future<List<Map<String, dynamic>>?> _getEnhancedGameHistoryData(String userId) async {
+  Future<List<Map<String, dynamic>>?> _getEnhancedGameHistoryData(
+    String userId,
+  ) async {
     try {
       final response = await _supabase
           .from('games')
@@ -543,13 +624,17 @@ class DataExportService {
           ''')
           .eq('game_participants.user_id', userId)
           .order('created_at', ascending: false);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'games, game_participants, messages tables',
-        'purpose': 'Game history and social interaction tracking',
-        'legal_basis': 'Contract performance and legitimate interest',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'games, game_participants, messages tables',
+              'purpose': 'Game history and social interaction tracking',
+              'legal_basis': 'Contract performance and legitimate interest',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch game history data', e);
       return null;
@@ -563,7 +648,7 @@ class DataExportService {
           .select()
           .eq('user_id', userId)
           .single();
-      
+
       return {
         ...response,
         'data_source': 'privacy_settings table',
@@ -584,13 +669,17 @@ class DataExportService {
           .select()
           .eq('user_id', userId)
           .order('created_at', ascending: false);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'consent_records table',
-        'purpose': 'Legal compliance and consent tracking',
-        'legal_basis': 'Legal obligation (GDPR Article 7)',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'consent_records table',
+              'purpose': 'Legal compliance and consent tracking',
+              'legal_basis': 'Legal obligation (GDPR Article 7)',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch consent history', e);
       return null;
@@ -607,14 +696,18 @@ class DataExportService {
           .gte('created_at', twoYearsAgo.toIso8601String())
           .order('created_at', ascending: false)
           .limit(5000);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'audit_logs table',
-        'purpose': 'Security monitoring and compliance',
-        'legal_basis': 'Legitimate interest (security)',
-        'retention_period': '2 years',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'audit_logs table',
+              'purpose': 'Security monitoring and compliance',
+              'legal_basis': 'Legitimate interest (security)',
+              'retention_period': '2 years',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch audit logs', e);
       return null;
@@ -626,19 +719,25 @@ class DataExportService {
       final sixMonthsAgo = DateTime.now().subtract(Duration(days: 180));
       final response = await _supabase
           .from('login_history')
-          .select('login_at, ip_address, user_agent, device_info, location_info')
+          .select(
+            'login_at, ip_address, user_agent, device_info, location_info',
+          )
           .eq('user_id', userId)
           .gte('login_at', sixMonthsAgo.toIso8601String())
           .order('login_at', ascending: false)
           .limit(1000);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'login_history table',
-        'purpose': 'Security monitoring and fraud prevention',
-        'legal_basis': 'Legitimate interest (security)',
-        'retention_period': '6 months',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'login_history table',
+              'purpose': 'Security monitoring and fraud prevention',
+              'legal_basis': 'Legitimate interest (security)',
+              'retention_period': '6 months',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch login history', e);
       return null;
@@ -656,16 +755,24 @@ class DataExportService {
           .from('blocked_users')
           .select('*, profiles!blocked_user_id(name)')
           .eq('blocker_id', userId);
-      
+
       return [
-        ...friendships.map((item) => {...item, 'connection_type': 'friendship'}),
-        ...blockedUsers.map((item) => {...item, 'connection_type': 'blocked'}),
-      ].map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'friendships, blocked_users tables',
-        'purpose': 'Social connection management',
-        'legal_basis': 'User consent and contract performance',
-      }).toList();
+            ...friendships.map(
+              (item) => {...item, 'connection_type': 'friendship'},
+            ),
+            ...blockedUsers.map(
+              (item) => {...item, 'connection_type': 'blocked'},
+            ),
+          ]
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'friendships, blocked_users tables',
+              'purpose': 'Social connection management',
+              'legal_basis': 'User consent and contract performance',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch connections data', e);
       return null;
@@ -687,24 +794,32 @@ class DataExportService {
           .eq('recipient_id', userId)
           .order('sent_at', ascending: false)
           .limit(10000);
-      
+
       return [
-        ...sentMessages.map((item) => {...item, 'message_type': 'sent'}),
-        ...receivedMessages.map((item) => {...item, 'message_type': 'received'}),
-      ].map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'messages table',
-        'purpose': 'Communication facilitation',
-        'legal_basis': 'Contract performance',
-        'note': 'Message content may be pseudonymized for privacy',
-      }).toList();
+            ...sentMessages.map((item) => {...item, 'message_type': 'sent'}),
+            ...receivedMessages.map(
+              (item) => {...item, 'message_type': 'received'},
+            ),
+          ]
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'messages table',
+              'purpose': 'Communication facilitation',
+              'legal_basis': 'Contract performance',
+              'note': 'Message content may be pseudonymized for privacy',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch messages data', e);
       return null;
     }
   }
 
-  Future<List<Map<String, dynamic>>?> _getNotificationsData(String userId) async {
+  Future<List<Map<String, dynamic>>?> _getNotificationsData(
+    String userId,
+  ) async {
     try {
       final response = await _supabase
           .from('notifications')
@@ -712,13 +827,17 @@ class DataExportService {
           .eq('user_id', userId)
           .order('created_at', ascending: false)
           .limit(1000);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'notifications table',
-        'purpose': 'User engagement and communication',
-        'legal_basis': 'User consent and contract performance',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'notifications table',
+              'purpose': 'User engagement and communication',
+              'legal_basis': 'User consent and contract performance',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch notifications data', e);
       return null;
@@ -729,16 +848,23 @@ class DataExportService {
     try {
       final response = await _supabase
           .from('user_media')
-          .select('file_name, file_type, file_size, uploaded_at, media_category')
+          .select(
+            'file_name, file_type, file_size, uploaded_at, media_category',
+          )
           .eq('user_id', userId);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'user_media table',
-        'purpose': 'Profile and content management',
-        'legal_basis': 'User consent',
-        'note': 'Only metadata included - actual files not exported for security',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'user_media table',
+              'purpose': 'Profile and content management',
+              'legal_basis': 'User consent',
+              'note':
+                  'Only metadata included - actual files not exported for security',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch media metadata', e);
       return null;
@@ -753,33 +879,44 @@ class DataExportService {
           .eq('user_id', userId)
           .order('recorded_at', ascending: false)
           .limit(1000);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'location_data table',
-        'purpose': 'Location-based game matching and services',
-        'legal_basis': 'User consent',
-        'note': 'Only approximate locations stored - precise coordinates not retained',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'location_data table',
+              'purpose': 'Location-based game matching and services',
+              'legal_basis': 'User consent',
+              'note':
+                  'Only approximate locations stored - precise coordinates not retained',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch location data', e);
       return null;
     }
   }
 
-  Future<List<Map<String, dynamic>>?> _getDeviceInformation(String userId) async {
+  Future<List<Map<String, dynamic>>?> _getDeviceInformation(
+    String userId,
+  ) async {
     try {
       final response = await _supabase
           .from('device_info')
           .select('device_type, os_version, app_version, last_seen_at')
           .eq('user_id', userId);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'device_info table',
-        'purpose': 'App functionality and technical support',
-        'legal_basis': 'Legitimate interest (technical support)',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'device_info table',
+              'purpose': 'App functionality and technical support',
+              'legal_basis': 'Legitimate interest (technical support)',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch device information', e);
       return null;
@@ -790,15 +927,18 @@ class DataExportService {
     try {
       final response = await _supabase
           .from('payment_records')
-          .select('transaction_id, amount, currency, status, created_at, subscription_type')
+          .select(
+            'transaction_id, amount, currency, status, created_at, subscription_type',
+          )
           .eq('user_id', userId);
-      
+
       return {
         'transactions': response,
         'data_source': 'payment_records table',
         'purpose': 'Billing and subscription management',
         'legal_basis': 'Contract performance and legal obligation',
-        'note': 'Sensitive payment details (card numbers) are not stored or exported',
+        'note':
+            'Sensitive payment details (card numbers) are not stored or exported',
         'retention_period': '7 years for tax compliance',
       };
     } catch (e) {
@@ -813,14 +953,19 @@ class DataExportService {
           .from('third_party_connections')
           .select('provider, connected_at, permissions_granted, last_sync')
           .eq('user_id', userId);
-      
-      return response.map<Map<String, dynamic>>((item) => {
-        ...item,
-        'data_source': 'third_party_connections table',
-        'purpose': 'Social media integration and enhanced features',
-        'legal_basis': 'User consent',
-        'note': 'Third-party data is not stored - only connection metadata',
-      }).toList();
+
+      return response
+          .map<Map<String, dynamic>>(
+            (item) => {
+              ...item,
+              'data_source': 'third_party_connections table',
+              'purpose': 'Social media integration and enhanced features',
+              'legal_basis': 'User consent',
+              'note':
+                  'Third-party data is not stored - only connection metadata',
+            },
+          )
+          .toList();
     } catch (e) {
       Logger.warning('Could not fetch third-party data', e);
       return null;
@@ -831,7 +976,7 @@ class DataExportService {
   String _generateProfileCsv(Map<String, dynamic> profile) {
     final rows = <List<String>>[];
     rows.add(['Field', 'Value', 'Purpose', 'Legal Basis']);
-    
+
     profile.forEach((key, value) {
       if (key != 'data_source' && key != 'purpose' && key != 'legal_basis') {
         rows.add([
@@ -842,17 +987,25 @@ class DataExportService {
         ]);
       }
     });
-    
+
     return 'CSV export requires csv package dependency';
     // return const ListToCsvConverter().convert(rows);
   }
 
   String _generateGameHistoryCsv(List<Map<String, dynamic>> gameHistory) {
     if (gameHistory.isEmpty) return '';
-    
+
     final rows = <List<String>>[];
-    rows.add(['Game ID', 'Sport', 'Date', 'Status', 'Location', 'Participants', 'Your Role']);
-    
+    rows.add([
+      'Game ID',
+      'Sport',
+      'Date',
+      'Status',
+      'Location',
+      'Participants',
+      'Your Role',
+    ]);
+
     for (final game in gameHistory) {
       rows.add([
         game['id']?.toString() ?? '',
@@ -864,17 +1017,17 @@ class DataExportService {
         game['your_status']?.toString() ?? '',
       ]);
     }
-    
+
     return 'CSV export requires csv package dependency';
     // return const ListToCsvConverter().convert(rows);
   }
 
   String _generateMessagesCsv(List<Map<String, dynamic>> messages) {
     if (messages.isEmpty) return '';
-    
+
     final rows = <List<String>>[];
     rows.add(['Date', 'Type', 'Game ID', 'Content Length', 'Purpose']);
-    
+
     for (final message in messages) {
       rows.add([
         message['sent_at']?.toString() ?? '',
@@ -884,7 +1037,7 @@ class DataExportService {
         message['purpose']?.toString() ?? '',
       ]);
     }
-    
+
     return 'CSV export requires csv package dependency';
     // return const ListToCsvConverter().convert(rows);
   }
@@ -892,35 +1045,49 @@ class DataExportService {
   // GDPR documentation generators
   Map<String, String> _generateDataExplanations() {
     return {
-      'profile': 'Basic account information including name, email, and profile settings',
+      'profile':
+          'Basic account information including name, email, and profile settings',
       'preferences': 'Your application preferences and settings',
-      'sports_profiles': 'Information about sports you play and your skill levels',
+      'sports_profiles':
+          'Information about sports you play and your skill levels',
       'statistics': 'Your gameplay statistics and performance metrics',
       'game_history': 'Record of games you have participated in',
       'privacy_settings': 'Your privacy preferences and consent records',
-      'audit_logs': 'Log of account activities for security purposes (last 2 years)',
+      'audit_logs':
+          'Log of account activities for security purposes (last 2 years)',
       'connections': 'Your friends, blocked users, and social connections',
       'messages': 'Messages you have sent and received through the platform',
       'notifications': 'System notifications sent to you',
-      'media': 'Metadata about files you have uploaded (actual files not included)',
-      'location_data': 'Approximate location data used for game matching (if consented)',
+      'media':
+          'Metadata about files you have uploaded (actual files not included)',
+      'location_data':
+          'Approximate location data used for game matching (if consented)',
       'device_info': 'Information about devices you use to access the app',
-      'payment_data': 'Billing and subscription information (sensitive data excluded)',
+      'payment_data':
+          'Billing and subscription information (sensitive data excluded)',
       'integrations': 'Third-party service connections and permissions',
     };
   }
 
   Map<String, String> _generateGDPRRights() {
     return {
-      'right_to_access': 'You have received this data export as part of your right to access your personal data',
-      'right_to_rectification': 'You can correct inaccurate data through the app settings or by contacting support',
-      'right_to_erasure': 'You can request deletion of your account and all associated data',
-      'right_to_restrict_processing': 'You can request to limit how we process your data',
-      'right_to_data_portability': 'This export enables you to transfer your data to another service',
+      'right_to_access':
+          'You have received this data export as part of your right to access your personal data',
+      'right_to_rectification':
+          'You can correct inaccurate data through the app settings or by contacting support',
+      'right_to_erasure':
+          'You can request deletion of your account and all associated data',
+      'right_to_restrict_processing':
+          'You can request to limit how we process your data',
+      'right_to_data_portability':
+          'This export enables you to transfer your data to another service',
       'right_to_object': 'You can object to certain types of data processing',
-      'right_to_withdraw_consent': 'You can withdraw consent for data processing at any time',
-      'right_to_complain': 'You can file a complaint with your local data protection authority',
-      'contact_info': 'For any data protection questions, contact privacy@dabbler.app',
+      'right_to_withdraw_consent':
+          'You can withdraw consent for data processing at any time',
+      'right_to_complain':
+          'You can file a complaint with your local data protection authority',
+      'contact_info':
+          'For any data protection questions, contact privacy@dabbler.app',
     };
   }
 
@@ -1357,7 +1524,9 @@ Last Updated: ${DateTime.now().toIso8601String()}
     }
   }
 
-  Future<List<DataExportRequest>> _getStoredExportRequests(String userId) async {
+  Future<List<DataExportRequest>> _getStoredExportRequests(
+    String userId,
+  ) async {
     try {
       final response = await _supabase
           .from('data_export_requests')
@@ -1388,7 +1557,11 @@ Last Updated: ${DateTime.now().toIso8601String()}
     }
   }
 
-  Future<void> _updateExportStatus(String requestId, DataExportStatus status, {String? error}) async {
+  Future<void> _updateExportStatus(
+    String requestId,
+    DataExportStatus status, {
+    String? error,
+  }) async {
     try {
       final updateData = {
         'status': status.toString().split('.').last,
@@ -1407,14 +1580,17 @@ Last Updated: ${DateTime.now().toIso8601String()}
           .from('data_export_requests')
           .update(updateData)
           .eq('id', requestId);
-      
+
       Logger.info('$_logTag: Export status updated: $requestId -> $status');
     } catch (e) {
       Logger.warning('$_logTag: Could not update export status', e);
     }
   }
 
-  Future<void> _updateExportRequest(String requestId, {String? filePath}) async {
+  Future<void> _updateExportRequest(
+    String requestId, {
+    String? filePath,
+  }) async {
     try {
       final updateData = <String, dynamic>{
         'updated_at': DateTime.now().toIso8601String(),
@@ -1428,7 +1604,7 @@ Last Updated: ${DateTime.now().toIso8601String()}
           .from('data_export_requests')
           .update(updateData)
           .eq('id', requestId);
-      
+
       Logger.info('$_logTag: Export request updated: $requestId');
     } catch (e) {
       Logger.warning('$_logTag: Could not update export request', e);
@@ -1438,9 +1614,10 @@ Last Updated: ${DateTime.now().toIso8601String()}
   Future<void> _trackDownload(String requestId) async {
     try {
       // Increment download count
-      await _supabase.rpc('increment_download_count', params: {
-        'request_id': requestId,
-      });
+      await _supabase.rpc(
+        'increment_download_count',
+        params: {'request_id': requestId},
+      );
 
       // Log download event
       await _supabase.from('export_download_logs').insert({
@@ -1462,14 +1639,18 @@ Last Updated: ${DateTime.now().toIso8601String()}
           final file = File(request.filePath!);
           if (await file.exists()) {
             await file.delete();
-            Logger.info('$_logTag: Deleted expired export file: ${request.filePath}');
+            Logger.info(
+              '$_logTag: Deleted expired export file: ${request.filePath}',
+            );
           }
 
           // Update database to mark as expired
           await _updateExportStatus(request.id, DataExportStatus.expired);
-
         } catch (e) {
-          Logger.warning('$_logTag: Error cleaning up expired export: ${request.id}', e);
+          Logger.warning(
+            '$_logTag: Error cleaning up expired export: ${request.id}',
+            e,
+          );
         }
       }
     }
@@ -1496,8 +1677,10 @@ Last Updated: ${DateTime.now().toIso8601String()}
   // Email notification methods
   Future<void> _sendGDPRCompletionEmail(DataExportRequest request) async {
     try {
-      Logger.info('$_logTag: Sending GDPR completion email to: ${request.userEmail}');
-      
+      Logger.info(
+        '$_logTag: Sending GDPR completion email to: ${request.userEmail}',
+      );
+
       // Placeholder for email sending
       // await EmailService.sendTemplate(
       //   to: request.userEmail,
@@ -1509,18 +1692,27 @@ Last Updated: ${DateTime.now().toIso8601String()}
       //   },
       // );
 
-      debugPrint('GDPR Export Complete Email would be sent to: ${request.userEmail}');
+      debugPrint(
+        'GDPR Export Complete Email would be sent to: ${request.userEmail}',
+      );
     } catch (e) {
       Logger.error('$_logTag: Error sending completion email', e);
     }
   }
 
-  Future<void> _sendGDPRErrorEmail(DataExportRequest request, String error) async {
+  Future<void> _sendGDPRErrorEmail(
+    DataExportRequest request,
+    String error,
+  ) async {
     try {
-      Logger.info('$_logTag: Sending GDPR error email to: ${request.userEmail}');
-      
+      Logger.info(
+        '$_logTag: Sending GDPR error email to: ${request.userEmail}',
+      );
+
       // Placeholder for error email sending
-      debugPrint('GDPR Export Error Email would be sent to: ${request.userEmail}');
+      debugPrint(
+        'GDPR Export Error Email would be sent to: ${request.userEmail}',
+      );
       debugPrint('Error: $error');
     } catch (e) {
       Logger.error('$_logTag: Error sending error email', e);
@@ -1536,8 +1728,9 @@ Last Updated: ${DateTime.now().toIso8601String()}
       // Use old gathering method for compatibility
       final userData = await _gatherAllUserData(userId);
       final jsonData = json.encode(userData);
-      
-      final fileName = 'user_data_export_${userId}_${DateTime.now().millisecondsSinceEpoch}.json';
+
+      final fileName =
+          'user_data_export_${userId}_${DateTime.now().millisecondsSinceEpoch}.json';
       final file = await _createExportFile(fileName, jsonData);
 
       return DataExportResult(
@@ -1554,7 +1747,7 @@ Last Updated: ${DateTime.now().toIso8601String()}
     }
   }
 
-  /// Legacy method for backward compatibility  
+  /// Legacy method for backward compatibility
   @Deprecated('Use requestGDPRDataExport instead')
   Future<DataExportResult> exportUserDataAsCsv(String userId) async {
     try {
@@ -1562,8 +1755,9 @@ Last Updated: ${DateTime.now().toIso8601String()}
 
       final userData = await _gatherAllUserData(userId);
       final csvData = await _convertToCSV(userData);
-      
-      final fileName = 'user_data_export_${userId}_${DateTime.now().millisecondsSinceEpoch}.csv';
+
+      final fileName =
+          'user_data_export_${userId}_${DateTime.now().millisecondsSinceEpoch}.csv';
       final file = await _createExportFile(fileName, csvData);
 
       return DataExportResult(
@@ -1642,12 +1836,20 @@ Last Updated: ${DateTime.now().toIso8601String()}
     // return const ListToCsvConverter().convert(csvRows);
   }
 
-  void _addRecordToCSV(List<List<String>> csvRows, String tableName, Map<String, dynamic> record, String recordIndex) {
+  void _addRecordToCSV(
+    List<List<String>> csvRows,
+    String tableName,
+    Map<String, dynamic> record,
+    String recordIndex,
+  ) {
     for (final field in record.entries) {
       final fieldName = field.key;
       final value = field.value;
       final valueType = value.runtimeType.toString();
-      final updatedAt = record['updated_at']?.toString() ?? record['created_at']?.toString() ?? '';
+      final updatedAt =
+          record['updated_at']?.toString() ??
+          record['created_at']?.toString() ??
+          '';
 
       csvRows.add([
         tableName,
@@ -1716,7 +1918,7 @@ class DataExportRequest {
   bool get isPending => status == DataExportStatus.pending;
   bool get isProcessing => status == DataExportStatus.processing;
   bool get hasFailed => status == DataExportStatus.failed;
-  
+
   Duration get timeUntilExpiry => expiresAt.difference(DateTime.now());
   Duration get timeSinceRequest => DateTime.now().difference(requestedAt);
 
@@ -1733,7 +1935,9 @@ class DataExportRequest {
       customMessage: json['custom_message'],
       filePath: json['file_path'],
       errorMessage: json['error_message'],
-      completedAt: json['completed_at'] != null ? DateTime.parse(json['completed_at']) : null,
+      completedAt: json['completed_at'] != null
+          ? DateTime.parse(json['completed_at'])
+          : null,
       downloadCount: json['download_count'] ?? 0,
     );
   }
@@ -1758,11 +1962,7 @@ class DataExportRequest {
 }
 
 /// GDPR data export formats
-enum DataExportFormat {
-  json,
-  csv,
-  zip,
-}
+enum DataExportFormat { json, csv, zip }
 
 /// Data export status enumeration
 enum DataExportStatus {
@@ -1778,38 +1978,35 @@ enum DataExportStatus {
 class UserExportData {
   final String userId;
   final DateTime exportedAt;
-  
+
   // Core user data
   Map<String, dynamic>? profile;
   Map<String, dynamic>? preferences;
   List<Map<String, dynamic>>? sportsProfiles;
   Map<String, dynamic>? statistics;
   List<Map<String, dynamic>>? gameHistory;
-  
+
   // Privacy and compliance data
   Map<String, dynamic>? privacySettings;
   List<Map<String, dynamic>>? consents;
   List<Map<String, dynamic>>? auditLogs;
   List<Map<String, dynamic>>? loginHistory;
-  
+
   // Social and communication data
   List<Map<String, dynamic>>? connections;
   List<Map<String, dynamic>>? messages;
   List<Map<String, dynamic>>? notifications;
-  
+
   // Technical and system data
   List<Map<String, dynamic>>? media;
   List<Map<String, dynamic>>? locationData;
   List<Map<String, dynamic>>? deviceInfo;
-  
+
   // Financial and business data
   Map<String, dynamic>? paymentData;
   List<Map<String, dynamic>>? integrations;
 
-  UserExportData({
-    required this.userId,
-    required this.exportedAt,
-  });
+  UserExportData({required this.userId, required this.exportedAt});
 
   Map<String, dynamic> toJson() {
     return {
@@ -1864,12 +2061,9 @@ class UserExportData {
 }
 
 /// Legacy export formats for backward compatibility
-enum ExportFormat {
-  json,
-  csv,
-}
+enum ExportFormat { json, csv }
 
-/// Legacy result of data export operation  
+/// Legacy result of data export operation
 class DataExportResult {
   final String filePath;
   final String fileName;

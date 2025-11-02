@@ -14,9 +14,10 @@ class PlayerInvitationStep extends StatefulWidget {
   State<PlayerInvitationStep> createState() => _PlayerInvitationStepState();
 }
 
-class _PlayerInvitationStepState extends State<PlayerInvitationStep> with TickerProviderStateMixin {
+class _PlayerInvitationStepState extends State<PlayerInvitationStep>
+    with TickerProviderStateMixin {
   final TextEditingController _messageController = TextEditingController();
-  
+
   bool _isLoadingContacts = false;
   List<InvitePlayer> _selectedPlayers = [];
   List<InvitePlayer> _contacts = [];
@@ -26,7 +27,8 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
   @override
   void initState() {
     super.initState();
-    _messageController.text = widget.viewModel.state.invitationMessage ?? _getSimpleDefaultMessage();
+    _messageController.text =
+        widget.viewModel.state.invitationMessage ?? _getSimpleDefaultMessage();
     _loadMockData();
     _restoreSelectedPlayers();
   }
@@ -39,18 +41,72 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
 
   void _loadMockData() {
     _contacts = [
-      InvitePlayer(id: 'c1', name: 'John Smith', email: 'john@example.com', phone: '+1234567890', source: PlayerSource.contact),
-      InvitePlayer(id: 'c2', name: 'Sarah Johnson', email: 'sarah@example.com', phone: '+1234567891', source: PlayerSource.contact),
-      InvitePlayer(id: 'c3', name: 'Mike Davis', email: 'mike@example.com', phone: '+1234567892', source: PlayerSource.contact),
-      InvitePlayer(id: 'c4', name: 'Emily Brown', email: 'emily@example.com', phone: '+1234567893', source: PlayerSource.contact),
-      InvitePlayer(id: 'c5', name: 'David Wilson', email: 'david@example.com', phone: '+1234567894', source: PlayerSource.contact),
+      InvitePlayer(
+        id: 'c1',
+        name: 'John Smith',
+        email: 'john@example.com',
+        phone: '+1234567890',
+        source: PlayerSource.contact,
+      ),
+      InvitePlayer(
+        id: 'c2',
+        name: 'Sarah Johnson',
+        email: 'sarah@example.com',
+        phone: '+1234567891',
+        source: PlayerSource.contact,
+      ),
+      InvitePlayer(
+        id: 'c3',
+        name: 'Mike Davis',
+        email: 'mike@example.com',
+        phone: '+1234567892',
+        source: PlayerSource.contact,
+      ),
+      InvitePlayer(
+        id: 'c4',
+        name: 'Emily Brown',
+        email: 'emily@example.com',
+        phone: '+1234567893',
+        source: PlayerSource.contact,
+      ),
+      InvitePlayer(
+        id: 'c5',
+        name: 'David Wilson',
+        email: 'david@example.com',
+        phone: '+1234567894',
+        source: PlayerSource.contact,
+      ),
     ];
 
     _recentTeammates = [
-      InvitePlayer(id: 't1', name: 'Alex Rodriguez', email: 'alex@example.com', source: PlayerSource.teammate, lastPlayedDate: '2 days ago'),
-      InvitePlayer(id: 't2', name: 'Lisa Chen', email: 'lisa@example.com', source: PlayerSource.teammate, lastPlayedDate: '1 week ago'),
-      InvitePlayer(id: 't3', name: 'Ryan Murphy', email: 'ryan@example.com', source: PlayerSource.teammate, lastPlayedDate: '2 weeks ago'),
-      InvitePlayer(id: 't4', name: 'Jessica Taylor', email: 'jessica@example.com', source: PlayerSource.teammate, lastPlayedDate: '3 weeks ago'),
+      InvitePlayer(
+        id: 't1',
+        name: 'Alex Rodriguez',
+        email: 'alex@example.com',
+        source: PlayerSource.teammate,
+        lastPlayedDate: '2 days ago',
+      ),
+      InvitePlayer(
+        id: 't2',
+        name: 'Lisa Chen',
+        email: 'lisa@example.com',
+        source: PlayerSource.teammate,
+        lastPlayedDate: '1 week ago',
+      ),
+      InvitePlayer(
+        id: 't3',
+        name: 'Ryan Murphy',
+        email: 'ryan@example.com',
+        source: PlayerSource.teammate,
+        lastPlayedDate: '2 weeks ago',
+      ),
+      InvitePlayer(
+        id: 't4',
+        name: 'Jessica Taylor',
+        email: 'jessica@example.com',
+        source: PlayerSource.teammate,
+        lastPlayedDate: '3 weeks ago',
+      ),
     ];
   }
 
@@ -68,11 +124,32 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
 
     await Future.delayed(const Duration(milliseconds: 500));
 
-    final results = [
-      InvitePlayer(id: 's1', name: 'Tom Anderson', email: 'tom@example.com', source: PlayerSource.search),
-      InvitePlayer(id: 's2', name: 'Maria Garcia', email: 'maria@example.com', source: PlayerSource.search),
-      InvitePlayer(id: 's3', name: 'James Wilson', email: 'james@example.com', source: PlayerSource.search),
-    ].where((player) => player.name.toLowerCase().contains(query.toLowerCase())).toList();
+    final results =
+        [
+              InvitePlayer(
+                id: 's1',
+                name: 'Tom Anderson',
+                email: 'tom@example.com',
+                source: PlayerSource.search,
+              ),
+              InvitePlayer(
+                id: 's2',
+                name: 'Maria Garcia',
+                email: 'maria@example.com',
+                source: PlayerSource.search,
+              ),
+              InvitePlayer(
+                id: 's3',
+                name: 'James Wilson',
+                email: 'james@example.com',
+                source: PlayerSource.search,
+              ),
+            ]
+            .where(
+              (player) =>
+                  player.name.toLowerCase().contains(query.toLowerCase()),
+            )
+            .toList();
 
     if (mounted) {
       setState(() {
@@ -91,12 +168,10 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
         _selectedPlayers.add(player);
       }
     });
-    
+
     final playerIds = _selectedPlayers.map((p) => p.id).toList();
     widget.viewModel.updateSelectedPlayers(playerIds);
   }
-
-  
 
   String _getSimpleDefaultMessage() {
     final sport = widget.viewModel.state.selectedSport ?? 'game';
@@ -132,8 +207,10 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
           const SizedBox(height: 24),
 
           // Invite Players Button (only show if Private or Hybrid)
-          if (widget.viewModel.state.participationMode == ParticipationMode.private || 
-              widget.viewModel.state.participationMode == ParticipationMode.hybrid) ...[
+          if (widget.viewModel.state.participationMode ==
+                  ParticipationMode.private ||
+              widget.viewModel.state.participationMode ==
+                  ParticipationMode.hybrid) ...[
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -143,8 +220,12 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
                   backgroundColor: context.colors.primary,
                   foregroundColor: context.colors.onPrimary,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  textStyle: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  textStyle: context.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
                 onPressed: () {
                   showModalBottomSheet(
@@ -152,7 +233,9 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
                     isScrollControlled: true,
                     backgroundColor: context.colors.surface,
                     shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
                     ),
                     builder: (context) => Padding(
                       padding: EdgeInsets.only(
@@ -199,11 +282,15 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
             Wrap(
               spacing: 8,
               runSpacing: 8,
-              children: _selectedPlayers.map((player) => Chip(
-                label: Text(player.displayName.split(' ').first),
-                avatar: _buildPlayerAvatar(context, player, size: 20),
-                onDeleted: () => _togglePlayerSelection(player),
-              )).toList(),
+              children: _selectedPlayers
+                  .map(
+                    (player) => Chip(
+                      label: Text(player.displayName.split(' ').first),
+                      avatar: _buildPlayerAvatar(context, player, size: 20),
+                      onDeleted: () => _togglePlayerSelection(player),
+                    ),
+                  )
+                  .toList(),
             ),
           ],
 
@@ -214,8 +301,6 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
       ),
     );
   }
-
-
 
   Widget _buildParticipationMode(BuildContext context) {
     return Column(
@@ -231,7 +316,7 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
         const SizedBox(height: 16),
         ...ParticipationMode.values.map((mode) {
           final isSelected = widget.viewModel.state.participationMode == mode;
-          
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: _buildParticipationOption(
@@ -253,19 +338,19 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
     required VoidCallback onTap,
   }) {
     final modeData = _getParticipationModeData(mode);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected 
+          color: isSelected
               ? context.colors.primary.withOpacity(0.1)
               : context.violetWidgetBg,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected 
+            color: isSelected
                 ? context.colors.primary
                 : context.colors.outline.withOpacity(0.1),
             width: isSelected ? 2 : 1,
@@ -276,7 +361,7 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary.withOpacity(0.1)
                     : context.colors.outline.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
@@ -284,7 +369,7 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
               child: Icon(
                 modeData['icon'] as IconData,
                 size: 20,
-                color: isSelected 
+                color: isSelected
                     ? context.colors.primary
                     : context.colors.onSurfaceVariant,
               ),
@@ -298,7 +383,7 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
                     modeData['title'] as String,
                     style: context.textTheme.bodyLarge?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isSelected 
+                      color: isSelected
                           ? context.colors.primary
                           : context.colors.onSurface,
                     ),
@@ -314,11 +399,7 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
               ),
             ),
             if (isSelected)
-              Icon(
-                LucideIcons.check,
-                size: 20,
-                color: context.colors.primary,
-              ),
+              Icon(LucideIcons.check, size: 20, color: context.colors.primary),
           ],
         ),
       ),
@@ -352,12 +433,17 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
     final savedPlayerIds = widget.viewModel.state.selectedPlayers ?? [];
     if (savedPlayerIds.isNotEmpty) {
       final allPlayers = [..._contacts, ..._recentTeammates, ..._searchResults];
-      _selectedPlayers = allPlayers.where((player) => savedPlayerIds.contains(player.id)).toList();
+      _selectedPlayers = allPlayers
+          .where((player) => savedPlayerIds.contains(player.id))
+          .toList();
     }
   }
 
-
-  Widget _buildPlayerAvatar(BuildContext context, InvitePlayer player, {double size = 40}) {
+  Widget _buildPlayerAvatar(
+    BuildContext context,
+    InvitePlayer player, {
+    double size = 40,
+  }) {
     return Container(
       width: size,
       height: size,
@@ -376,15 +462,25 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
                 width: size,
                 height: size,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(context, player, size),
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildAvatarFallback(context, player, size),
               ),
             )
           : _buildAvatarFallback(context, player, size),
     );
   }
 
-  Widget _buildAvatarFallback(BuildContext context, InvitePlayer player, double size) {
-    final initials = player.name.split(' ').map((n) => n.isNotEmpty ? n[0] : '').take(2).join('').toUpperCase();
+  Widget _buildAvatarFallback(
+    BuildContext context,
+    InvitePlayer player,
+    double size,
+  ) {
+    final initials = player.name
+        .split(' ')
+        .map((n) => n.isNotEmpty ? n[0] : '')
+        .take(2)
+        .join('')
+        .toUpperCase();
     return Center(
       child: Text(
         initials,
@@ -423,7 +519,9 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
             hintText: 'Enter your invitation message...',
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(color: context.colors.outline.withOpacity(0.1)),
+              borderSide: BorderSide(
+                color: context.colors.outline.withOpacity(0.1),
+              ),
             ),
             filled: true,
             fillColor: context.violetWidgetBg,
@@ -434,4 +532,4 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep> with Ticker
       ],
     );
   }
-} 
+}

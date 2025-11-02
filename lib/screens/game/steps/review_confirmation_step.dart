@@ -22,7 +22,8 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
   @override
   void initState() {
     super.initState();
-    _gameTitleController.text = widget.viewModel.state.gameTitle ?? _generateGameTitle();
+    _gameTitleController.text =
+        widget.viewModel.state.gameTitle ?? _generateGameTitle();
   }
 
   @override
@@ -68,9 +69,11 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
           const SizedBox(height: 24),
 
           // Invitations Summary
-          if (widget.viewModel.state.participationMode != ParticipationMode.public)
+          if (widget.viewModel.state.participationMode !=
+              ParticipationMode.public)
             _buildInvitationsSummary(context),
-          if (widget.viewModel.state.participationMode != ParticipationMode.public)
+          if (widget.viewModel.state.participationMode !=
+              ParticipationMode.public)
             const SizedBox(height: 24),
 
           // Settings
@@ -110,7 +113,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
           onChanged: (value) => widget.viewModel.updateGameTitle(value),
         ),
         const SizedBox(height: 12),
-        
+
         // Quick suggestions
         Text(
           'Suggestions:',
@@ -123,31 +126,36 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
         Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: _getGameTitleSuggestions().map((suggestion) => 
-            GestureDetector(
-              onTap: () {
-                _gameTitleController.text = suggestion;
-                widget.viewModel.updateGameTitle(suggestion);
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: context.violetWidgetBg,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: context.colors.outline.withValues(alpha: 0.1),
-                    width: 1,
+          children: _getGameTitleSuggestions()
+              .map(
+                (suggestion) => GestureDetector(
+                  onTap: () {
+                    _gameTitleController.text = suggestion;
+                    widget.viewModel.updateGameTitle(suggestion);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.violetWidgetBg,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: context.colors.outline.withValues(alpha: 0.1),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      suggestion,
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.colors.onSurface,
+                      ),
+                    ),
                   ),
                 ),
-                child: Text(
-                  suggestion,
-                  style: context.textTheme.bodySmall?.copyWith(
-                    color: context.colors.onSurface,
-                  ),
-                ),
-              ),
-            ),
-          ).toList(),
+              )
+              .toList(),
         ),
       ],
     );
@@ -155,7 +163,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
 
   Widget _buildGameSummary(BuildContext context) {
     final state = widget.viewModel.state;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -167,7 +175,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -198,7 +206,9 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
                 context,
                 icon: LucideIcons.clock,
                 label: 'Date & Time',
-                value: _formatDateTime(state.selectedVenueSlot?.timeSlot.startTime),
+                value: _formatDateTime(
+                  state.selectedVenueSlot?.timeSlot.startTime,
+                ),
               ),
               const SizedBox(height: 16),
               _buildSummaryRow(
@@ -238,11 +248,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
   }) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: context.colors.primary,
-        ),
+        Icon(icon, size: 16, color: context.colors.primary),
         const SizedBox(width: 12),
         Expanded(
           flex: 2,
@@ -274,7 +280,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
     final totalCost = state.totalCost ?? 0.0;
     final paymentSplit = state.paymentSplit;
     final maxPlayers = state.maxPlayers ?? 1;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -286,7 +292,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -326,7 +332,11 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getPaymentSplitDescription(paymentSplit, maxPlayers, totalCost),
+                        _getPaymentSplitDescription(
+                          paymentSplit,
+                          maxPlayers,
+                          totalCost,
+                        ),
                         style: context.textTheme.bodySmall?.copyWith(
                           color: context.colors.onSurface,
                           fontWeight: FontWeight.w600,
@@ -380,12 +390,14 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
 
   Widget _buildInvitationsSummary(BuildContext context) {
     final state = widget.viewModel.state;
-    final invitedPlayers = (state.invitedPlayerIds?.length ?? 0) + (state.invitedPlayerEmails?.length ?? 0);
-    
+    final invitedPlayers =
+        (state.invitedPlayerIds?.length ?? 0) +
+        (state.invitedPlayerEmails?.length ?? 0);
+
     if (invitedPlayers == 0) {
       return const SizedBox.shrink();
     }
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -397,7 +409,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -463,7 +475,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
           ),
         ),
         const SizedBox(height: 16),
-        
+
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
@@ -479,7 +491,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: _enableReminders 
+                  color: _enableReminders
                       ? context.colors.primary.withValues(alpha: 0.1)
                       : context.colors.outline.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
@@ -487,7 +499,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
                 child: Icon(
                   LucideIcons.bell,
                   size: 20,
-                  color: _enableReminders 
+                  color: _enableReminders
                       ? context.colors.primary
                       : context.colors.onSurfaceVariant,
                 ),
@@ -593,7 +605,8 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
                           ),
                         ),
                         TextSpan(
-                          text: '. I understand that I may be charged cancellation fees for late cancellations.',
+                          text:
+                              '. I understand that I may be charged cancellation fees for late cancellations.',
                           style: context.textTheme.bodySmall?.copyWith(
                             color: context.colors.onSurface,
                           ),
@@ -630,7 +643,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
     final sport = widget.viewModel.state.selectedSport ?? 'Game';
     final skillLevel = widget.viewModel.state.skillLevel ?? 'Intermediate';
     final format = widget.viewModel.state.selectedFormat?.name ?? 'Match';
-    
+
     return [
       '$skillLevel $sport $format',
       'Fun $sport Session',
@@ -681,23 +694,37 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
 
   String _formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return 'Not selected';
-    
+
     final day = dateTime.day;
     final month = _getMonthName(dateTime.month);
     final time = TimeOfDay.fromDateTime(dateTime).format(context);
-    
+
     return '$day $month, $time';
   }
 
   String _getMonthName(int month) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return months[month - 1];
   }
 
-  String _getPaymentSplitDescription(PaymentSplit split, int maxPlayers, double totalCost) {
+  String _getPaymentSplitDescription(
+    PaymentSplit split,
+    int maxPlayers,
+    double totalCost,
+  ) {
     switch (split) {
       case PaymentSplit.organizer:
         return 'You pay: AED ${totalCost.toStringAsFixed(0)} • Players play for free';
@@ -724,4 +751,4 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
         return 'Custom payment amounts set';
     }
   }
-} 
+}

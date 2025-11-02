@@ -21,7 +21,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
     with TickerProviderStateMixin {
   late TabController _tabController;
   late TextEditingController _searchController;
-  
+
   // Filter state
   String? _selectedSport;
   String? _selectedRegion;
@@ -32,7 +32,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
   bool _showFriendsOnly = false;
   String _sortBy = 'rank';
   bool _isAscending = true;
-  
+
   // Available options
   final List<String> _sports = [
     'All Sports',
@@ -108,7 +108,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _searchController = TextEditingController();
-    
+
     // Initialize from existing filters if provided
     if (widget.initialFilters != null) {
       _initializeFromFilters(widget.initialFilters!);
@@ -169,19 +169,14 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           const Text(
             'Filter & Sort',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           Row(
             children: [
@@ -189,10 +184,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
                 onPressed: _resetFilters,
                 child: Text(
                   'Reset',
-                  style: TextStyle(
-                    color: Colors.grey[600],
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
                 ),
               ),
               const SizedBox(width: 8),
@@ -210,9 +202,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
   Widget _buildTabBar() {
     return Container(
       decoration: BoxDecoration(
-        border: Border(
-          bottom: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(bottom: BorderSide(color: Colors.grey[200]!)),
       ),
       child: TabBar(
         controller: _tabController,
@@ -237,7 +227,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
           // Search
           _buildSearchField(),
           const SizedBox(height: 24),
-          
+
           // Sport Selection
           _buildDropdownFilter(
             title: 'Sport',
@@ -247,7 +237,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
             icon: Icons.sports_basketball,
           ),
           const SizedBox(height: 16),
-          
+
           // Region Selection
           _buildDropdownFilter(
             title: 'Region',
@@ -257,7 +247,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
             icon: Icons.public,
           ),
           const SizedBox(height: 16),
-          
+
           // Time Range
           _buildDropdownFilter(
             title: 'Time Period',
@@ -267,7 +257,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
             icon: Icons.schedule,
           ),
           const SizedBox(height: 24),
-          
+
           // Quick toggles
           _buildToggleOptions(),
         ],
@@ -290,7 +280,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
             icon: Icons.people,
           ),
           const SizedBox(height: 16),
-          
+
           // Tier Level
           _buildDropdownFilter(
             title: 'Tier Level',
@@ -300,11 +290,11 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
             icon: Icons.workspace_premium,
           ),
           const SizedBox(height: 24),
-          
+
           // Activity filters
           _buildSectionHeader('Activity Filters'),
           const SizedBox(height: 12),
-          
+
           SwitchListTile(
             title: const Text('Online Players Only'),
             subtitle: const Text('Show only currently active players'),
@@ -312,7 +302,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
             onChanged: (value) => setState(() => _showOnlineOnly = value),
             activeThumbColor: Theme.of(context).primaryColor,
           ),
-          
+
           SwitchListTile(
             title: const Text('Friends Only'),
             subtitle: const Text('Show only friends on leaderboard'),
@@ -334,17 +324,19 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
           // Sort options
           _buildSectionHeader('Sort Options'),
           const SizedBox(height: 16),
-          
-          ..._sortOptions.entries.map((entry) => RadioListTile<String>(
-                title: Text(entry.value),
-                value: entry.key,
-                groupValue: _sortBy,
-                onChanged: (value) => setState(() => _sortBy = value!),
-                activeColor: Theme.of(context).primaryColor,
-              )),
-          
+
+          ..._sortOptions.entries.map(
+            (entry) => RadioListTile<String>(
+              title: Text(entry.value),
+              value: entry.key,
+              groupValue: _sortBy,
+              onChanged: (value) => setState(() => _sortBy = value!),
+              activeColor: Theme.of(context).primaryColor,
+            ),
+          ),
+
           const SizedBox(height: 16),
-          
+
           // Sort direction
           SwitchListTile(
             title: const Text('Sort Direction'),
@@ -353,27 +345,27 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
             onChanged: (value) => setState(() => _isAscending = value),
             activeThumbColor: Theme.of(context).primaryColor,
           ),
-          
+
           const SizedBox(height: 32),
-          
+
           // Export options
           _buildSectionHeader('Export Options'),
           const SizedBox(height: 16),
-          
+
           _buildExportButton(
             'Export to CSV',
             Icons.table_chart,
             () => _exportData('csv'),
           ),
           const SizedBox(height: 12),
-          
+
           _buildExportButton(
             'Share Screenshot',
             Icons.share,
             () => _exportData('screenshot'),
           ),
           const SizedBox(height: 12),
-          
+
           _buildExportButton(
             'Copy to Clipboard',
             Icons.content_copy,
@@ -400,9 +392,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
                 icon: const Icon(Icons.clear),
               )
             : null,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Theme.of(context).primaryColor),
@@ -428,10 +418,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
             const SizedBox(width: 8),
             Text(
               title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ],
         ),
@@ -439,21 +426,28 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
         DropdownButtonFormField<String>(
           initialValue: value,
           decoration: InputDecoration(
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 12,
               vertical: 8,
             ),
           ),
           hint: Text('Select $title'),
-          items: items.map((item) => DropdownMenuItem(
-                value: item == 'All Sports' || item == 'Global' || 
-                       item == 'All Ages' || item == 'All Tiers' ||
-                       item == 'All Time' ? null : item,
-                child: Text(item),
-              )).toList(),
+          items: items
+              .map(
+                (item) => DropdownMenuItem(
+                  value:
+                      item == 'All Sports' ||
+                          item == 'Global' ||
+                          item == 'All Ages' ||
+                          item == 'All Tiers' ||
+                          item == 'All Time'
+                      ? null
+                      : item,
+                  child: Text(item),
+                ),
+              )
+              .toList(),
           onChanged: onChanged,
         ),
       ],
@@ -466,7 +460,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
       children: [
         _buildSectionHeader('Quick Filters'),
         const SizedBox(height: 12),
-        
+
         Wrap(
           spacing: 8,
           runSpacing: 8,
@@ -511,19 +505,14 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
       onSelected: onSelected,
       selectedColor: color,
       checkmarkColor: Colors.white,
-      labelStyle: TextStyle(
-        color: selected ? Colors.white : Colors.black87,
-      ),
+      labelStyle: TextStyle(color: selected ? Colors.white : Colors.black87),
     );
   }
 
   Widget _buildSectionHeader(String title) {
     return Text(
       title,
-      style: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
+      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
     );
   }
 
@@ -550,11 +539,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
                 ),
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
           ],
         ),
       ),
@@ -565,9 +550,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border(
-          top: BorderSide(color: Colors.grey[200]!),
-        ),
+        border: Border(top: BorderSide(color: Colors.grey[200]!)),
       ),
       child: Row(
         children: [
@@ -618,7 +601,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
 
   void _applyFilters() {
     HapticFeedback.lightImpact();
-    
+
     final filters = <String, dynamic>{
       'search': _searchController.text.trim(),
       'sport': _selectedSport,
@@ -637,7 +620,7 @@ class _LeaderboardFiltersState extends State<LeaderboardFilters>
 
   void _exportData(String format) {
     HapticFeedback.lightImpact();
-    
+
     String message;
     switch (format) {
       case 'csv':

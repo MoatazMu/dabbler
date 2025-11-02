@@ -23,7 +23,7 @@ class PostsDataSourceException implements Exception {
 /// Content validation exception
 class ContentValidationException extends PostsDataSourceException {
   final List<String> errors;
-  
+
   const ContentValidationException({
     required super.message,
     required this.errors,
@@ -251,16 +251,10 @@ abstract class PostsDataSource {
   });
 
   /// Bookmark a post
-  Future<bool> bookmarkPost({
-    required String postId,
-    required String userId,
-  });
+  Future<bool> bookmarkPost({required String postId, required String userId});
 
   /// Remove bookmark from post
-  Future<bool> removeBookmark({
-    required String postId,
-    required String userId,
-  });
+  Future<bool> removeBookmark({required String postId, required String userId});
 
   /// Get bookmarked posts
   Future<List<PostModel>> getBookmarkedPosts({
@@ -384,15 +378,9 @@ abstract class PostsDataSource {
   });
 
   /// Pin/unpin post (for user's profile)
-  Future<bool> pinPost({
-    required String postId,
-    required String userId,
-  });
+  Future<bool> pinPost({required String postId, required String userId});
 
-  Future<bool> unpinPost({
-    required String postId,
-    required String userId,
-  });
+  Future<bool> unpinPost({required String postId, required String userId});
 
   /// Get pinned posts for user
   Future<List<PostModel>> getPinnedPosts({
@@ -401,15 +389,9 @@ abstract class PostsDataSource {
   });
 
   /// Archive/unarchive post
-  Future<bool> archivePost({
-    required String postId,
-    required String userId,
-  });
+  Future<bool> archivePost({required String postId, required String userId});
 
-  Future<bool> unarchivePost({
-    required String postId,
-    required String userId,
-  });
+  Future<bool> unarchivePost({required String postId, required String userId});
 
   /// Get archived posts
   Future<List<PostModel>> getArchivedPosts({

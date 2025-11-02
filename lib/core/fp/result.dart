@@ -18,16 +18,23 @@ abstract class Result<T, E> {
     throw StateError('Tried to read error from Ok');
   }
 
-  R fold<R>(R Function(E err) onErr, R Function(T val) onOk) =>
-      this is Ok<T, E> ? onOk((this as Ok<T, E>).value) : onErr((this as Err<T, E>).error);
+  R fold<R>(R Function(E err) onErr, R Function(T val) onOk) => this is Ok<T, E>
+      ? onOk((this as Ok<T, E>).value)
+      : onErr((this as Err<T, E>).error);
 
-  Result<R, E> map<R>(R Function(T val) f) =>
-      this is Ok<T, E> ? Ok<R, E>(f((this as Ok<T, E>).value)) : Err<R, E>((this as Err<T, E>).error);
+  Result<R, E> map<R>(R Function(T val) f) => this is Ok<T, E>
+      ? Ok<R, E>(f((this as Ok<T, E>).value))
+      : Err<R, E>((this as Err<T, E>).error);
 
   Future<Result<R, E>> then<R>(FutureOr<R> Function(T val) f) async =>
-      this is Ok<T, E> ? Ok<R, E>(await f((this as Ok<T, E>).value)) : Err<R, E>((this as Err<T, E>).error);
+      this is Ok<T, E>
+      ? Ok<R, E>(await f((this as Ok<T, E>).value))
+      : Err<R, E>((this as Err<T, E>).error);
 
-  static Future<Result<T, E>> guard<T, E>(Future<T> Function() body, E Function(Object error) mapError) async {
+  static Future<Result<T, E>> guard<T, E>(
+    Future<T> Function() body,
+    E Function(Object error) mapError,
+  ) async {
     try {
       return Ok<T, E>(await body());
     } catch (e) {
@@ -50,4 +57,5 @@ class Err<T, E> extends Result<T, E> {
 class Unit {
   const Unit();
 }
+
 const unit = Unit();

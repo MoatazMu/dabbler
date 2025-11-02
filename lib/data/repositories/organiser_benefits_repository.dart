@@ -46,4 +46,3 @@ abstract class OrganiserBenefitsRepository {
   /// Delete a benefit (RLS-protected).
   Future<Result<void>> delete(String id);
 }
-

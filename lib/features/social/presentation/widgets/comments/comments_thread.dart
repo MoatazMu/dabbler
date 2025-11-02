@@ -22,9 +22,11 @@ class CommentsThread extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isOwnComment = comment.authorId == 'current_user_id'; // Replace with actual current user ID
+    final isOwnComment =
+        comment.authorId ==
+        'current_user_id'; // Replace with actual current user ID
     final isPostAuthor = comment.authorId == postAuthorId;
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -36,9 +38,9 @@ class CommentsThread extends StatelessWidget {
             radius: 16,
             fallbackIcon: Icons.person,
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           // Comment content
           Expanded(
             child: Column(
@@ -53,11 +55,14 @@ class CommentsThread extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    
+
                     if (isPostAuthor)
                       Container(
                         margin: const EdgeInsets.only(left: 8),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: theme.colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(8),
@@ -70,9 +75,9 @@ class CommentsThread extends StatelessWidget {
                           ),
                         ),
                       ),
-                    
+
                     const Spacer(),
-                    
+
                     Text(
                       _formatTime(comment.createdAt),
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -81,42 +86,42 @@ class CommentsThread extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 4),
-                
+
                 // Comment text
                 Text(
                   comment.content,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    height: 1.3,
-                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(height: 1.3),
                 ),
-                
+
                 const SizedBox(height: 8),
-                
+
                 // Comment actions
                 Row(
                   children: [
                     _buildActionButton(
                       theme,
-                      icon: comment.isLiked ? Icons.favorite : Icons.favorite_border,
+                      icon: comment.isLiked
+                          ? Icons.favorite
+                          : Icons.favorite_border,
                       label: '${comment.likesCount}',
                       isActive: comment.isLiked,
                       onTap: () => onLike?.call(comment.id),
                       color: comment.isLiked ? Colors.red : null,
                     ),
-                    
+
                     const SizedBox(width: 16),
-                    
+
                     _buildActionButton(
                       theme,
                       icon: Icons.reply,
                       label: 'Reply',
                       onTap: () => onReply?.call(comment.id),
                     ),
-                    
+
                     const Spacer(),
-                    
+
                     // More options menu
                     PopupMenuButton<String>(
                       icon: Icon(
@@ -135,7 +140,9 @@ class CommentsThread extends StatelessWidget {
                               ),
                               title: Text(
                                 'Delete',
-                                style: TextStyle(color: theme.colorScheme.error),
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                ),
                               ),
                               contentPadding: EdgeInsets.zero,
                               onTap: () {
@@ -161,7 +168,7 @@ class CommentsThread extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 // Replies
                 if (comment.replies != null && comment.replies!.isNotEmpty)
                   Padding(
@@ -195,17 +202,19 @@ class CommentsThread extends StatelessWidget {
             Icon(
               icon,
               size: 16,
-              color: color ?? (isActive 
-                ? theme.colorScheme.primary 
-                : theme.colorScheme.onSurfaceVariant),
+              color:
+                  color ??
+                  (isActive
+                      ? theme.colorScheme.primary
+                      : theme.colorScheme.onSurfaceVariant),
             ),
             const SizedBox(width: 4),
             Text(
               label,
               style: theme.textTheme.bodySmall?.copyWith(
-                color: isActive 
-                  ? theme.colorScheme.primary 
-                  : theme.colorScheme.onSurfaceVariant,
+                color: isActive
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurfaceVariant,
                 fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
               ),
             ),
@@ -224,14 +233,18 @@ class CommentsThread extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
-        children: comment.replies!.map<Widget>((reply) => _buildReply(theme, reply)).toList(),
+        children: comment.replies!
+            .map<Widget>((reply) => _buildReply(theme, reply))
+            .toList(),
       ),
     );
   }
 
   Widget _buildReply(ThemeData theme, dynamic reply) {
-    final isOwnReply = reply.authorId == 'current_user_id'; // Replace with actual current user ID
-    
+    final isOwnReply =
+        reply.authorId ==
+        'current_user_id'; // Replace with actual current user ID
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
@@ -242,9 +255,9 @@ class CommentsThread extends StatelessWidget {
             radius: 12,
             fallbackIcon: Icons.person,
           ),
-          
+
           const SizedBox(width: 8),
-          
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,40 +280,40 @@ class CommentsThread extends StatelessWidget {
                     ),
                   ],
                 ),
-                
+
                 const SizedBox(height: 2),
-                
+
                 Text(
                   reply.content,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    height: 1.3,
-                  ),
+                  style: theme.textTheme.bodySmall?.copyWith(height: 1.3),
                 ),
-                
+
                 const SizedBox(height: 4),
-                
+
                 Row(
                   children: [
                     _buildActionButton(
                       theme,
-                      icon: reply.isLiked ? Icons.favorite : Icons.favorite_border,
+                      icon: reply.isLiked
+                          ? Icons.favorite
+                          : Icons.favorite_border,
                       label: '${reply.likesCount}',
                       isActive: reply.isLiked,
                       onTap: () => onLike?.call(reply.id),
                       color: reply.isLiked ? Colors.red : null,
                     ),
-                    
+
                     const SizedBox(width: 12),
-                    
+
                     _buildActionButton(
                       theme,
                       icon: Icons.reply,
                       label: 'Reply',
                       onTap: () => onReply?.call(reply.id),
                     ),
-                    
+
                     const Spacer(),
-                    
+
                     if (isOwnReply)
                       PopupMenuButton<String>(
                         icon: Icon(
@@ -318,7 +331,9 @@ class CommentsThread extends StatelessWidget {
                               ),
                               title: Text(
                                 'Delete',
-                                style: TextStyle(color: theme.colorScheme.error),
+                                style: TextStyle(
+                                  color: theme.colorScheme.error,
+                                ),
                               ),
                               contentPadding: EdgeInsets.zero,
                               onTap: () {
@@ -342,7 +357,7 @@ class CommentsThread extends StatelessWidget {
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inDays > 7) {
       return '${time.day}/${time.month}/${time.year}';
     } else if (difference.inDays > 0) {

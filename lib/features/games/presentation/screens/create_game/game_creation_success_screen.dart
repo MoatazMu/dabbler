@@ -16,7 +16,8 @@ class GameCreationSuccessScreen extends StatefulWidget {
   });
 
   @override
-  State<GameCreationSuccessScreen> createState() => _GameCreationSuccessScreenState();
+  State<GameCreationSuccessScreen> createState() =>
+      _GameCreationSuccessScreenState();
 }
 
 class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
@@ -24,7 +25,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
   late AnimationController _fadeController;
   late AnimationController _scaleController;
   late AnimationController _slideController;
-  
+
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<Offset> _slideAnimation;
@@ -32,56 +33,46 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
     );
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOut,
-    ));
-    
-    _scaleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.elasticOut,
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.5),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
-    
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+
+    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.easeOutCubic),
+        );
+
     _startAnimations();
   }
 
   void _startAnimations() async {
     await Future.delayed(const Duration(milliseconds: 200));
     _scaleController.forward();
-    
+
     await Future.delayed(const Duration(milliseconds: 300));
     _fadeController.forward();
-    
+
     await Future.delayed(const Duration(milliseconds: 200));
     _slideController.forward();
   }
@@ -109,7 +100,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
                     children: [
                       _buildSuccessAnimation(),
                       const SizedBox(height: 32),
-                      
+
                       FadeTransition(
                         opacity: _fadeAnimation,
                         child: Column(
@@ -124,7 +115,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 16),
-                            
+
                             Text(
                               'Your "${widget.gameData['title']}" game is now live and ready for players to join!',
                               style: TextStyle(
@@ -136,9 +127,9 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
                           ],
                         ),
                       ),
-                      
+
                       const SizedBox(height: 32),
-                      
+
                       SlideTransition(
                         position: _slideAnimation,
                         child: FadeTransition(
@@ -146,9 +137,9 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
                           child: _buildGameSummaryCard(),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       SlideTransition(
                         position: _slideAnimation,
                         child: FadeTransition(
@@ -160,7 +151,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
                   ),
                 ),
               ),
-              
+
               SlideTransition(
                 position: _slideAnimation,
                 child: FadeTransition(
@@ -184,16 +175,9 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.green[50],
-          border: Border.all(
-            color: Colors.green[300]!,
-            width: 3,
-          ),
+          border: Border.all(color: Colors.green[300]!, width: 3),
         ),
-        child: Icon(
-          Icons.check_circle,
-          size: 60,
-          color: Colors.green[600],
-        ),
+        child: Icon(Icons.check_circle, size: 60, color: Colors.green[600]),
       ),
     );
   }
@@ -227,7 +211,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
                   ),
                 ),
                 const SizedBox(width: 12),
-                
+
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,34 +226,31 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
                       const SizedBox(height: 4),
                       Text(
                         sport,
-                        style: TextStyle(
-                          color: Colors.grey[600],
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.grey[600], fontSize: 14),
                       ),
                     ],
                   ),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-            
+
             _buildInfoRow(Icons.calendar_today, _formatDate(date)),
             const SizedBox(height: 8),
             _buildInfoRow(Icons.access_time, time ?? 'Time not set'),
             const SizedBox(height: 8),
             _buildInfoRow(Icons.people, '$maxPlayers max players'),
-            
+
             if (venue != null) ...[
               const SizedBox(height: 8),
               _buildInfoRow(Icons.location_on, venue['name'] ?? 'Venue'),
             ],
-            
+
             const SizedBox(height: 16),
-            
+
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
@@ -309,22 +290,16 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
           children: [
             const Text(
               'Spread the Word!',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
-            
+
             Text(
               'Share your game to get more players to join',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey[600], fontSize: 14),
             ),
             const SizedBox(height: 16),
-            
+
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -381,13 +356,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
             child: Icon(icon, color: color, size: 24),
           ),
           const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[700],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[700])),
         ],
       ),
     );
@@ -410,15 +379,12 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
             ),
             child: const Text(
               'View My Game',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ),
         const SizedBox(height: 12),
-        
+
         Row(
           children: [
             Expanded(
@@ -432,10 +398,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
                 ),
                 child: const Text(
                   'Create Another',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -451,10 +414,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
                 ),
                 child: const Text(
                   'Go Home',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
             ),
@@ -472,10 +432,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
         Expanded(
           child: Text(
             text,
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontSize: 14,
-            ),
+            style: TextStyle(color: Colors.grey[700], fontSize: 14),
           ),
         ),
       ],
@@ -484,12 +441,12 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Date not set';
-    
+
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final gameDate = DateTime(date.year, date.month, date.day);
-    
+
     if (gameDate == today) {
       return 'Today, ${_formatDateString(date)}';
     } else if (gameDate == tomorrow) {
@@ -501,18 +458,28 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
 
   String _formatDateString(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     const weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    
+
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
   }
 
   void _copyGameLink() {
     final gameId = widget.gameData['bookingId'] ?? 'GAME123';
     final link = 'https://dabbler.app/games/$gameId';
-    
+
     Clipboard.setData(ClipboardData(text: link)).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -530,9 +497,10 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
     final time = widget.gameData['time'] ?? 'Time TBD';
     final gameId = widget.gameData['bookingId'] ?? 'GAME123';
     final link = 'https://dabbler.app/games/$gameId';
-    
-    final message = 'Hey! I created a $title on $date at $time. Want to join? $link';
-    
+
+    final message =
+        'Hey! I created a $title on $date at $time. Want to join? $link';
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Would open text app with: $message'),
@@ -543,8 +511,9 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
 
   void _shareViaEmail() {
     final sport = widget.gameData['sport'] ?? 'Game';
-    final subject = 'Join my $sport game: ${widget.gameData['title'] ?? 'Game'}';
-    
+    final subject =
+        'Join my $sport game: ${widget.gameData['title'] ?? 'Game'}';
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Would open email app with subject: $subject'),
@@ -559,9 +528,9 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
     final time = widget.gameData['time'] ?? 'Time TBD';
     final gameId = widget.gameData['bookingId'] ?? 'GAME123';
     final link = 'https://dabbler.app/games/$gameId';
-    
+
     final message = 'Join my $title on $date at $time! $link';
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Would open share sheet with: $message'),

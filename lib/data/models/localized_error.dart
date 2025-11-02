@@ -24,24 +24,24 @@ class LocalizedError {
       v == null ? null : DateTime.tryParse(v.toString());
 
   factory LocalizedError.fromMap(Map<String, dynamic> m) => LocalizedError(
-        code: (m['code'] ?? m['key'] ?? '').toString(),
-        locale: (m['locale'] ?? m['lang'] ?? 'en').toString(),
-        message: (m['message'] ?? m['text'] ?? m['value'] ?? '').toString(),
-        title: m['title']?.toString(),
-        hint: m['hint']?.toString(),
-        severity: (m['severity'] ?? m['level'])?.toString(),
-        updatedAt: _dt(m['updated_at']),
-      );
+    code: (m['code'] ?? m['key'] ?? '').toString(),
+    locale: (m['locale'] ?? m['lang'] ?? 'en').toString(),
+    message: (m['message'] ?? m['text'] ?? m['value'] ?? '').toString(),
+    title: m['title']?.toString(),
+    hint: m['hint']?.toString(),
+    severity: (m['severity'] ?? m['level'])?.toString(),
+    updatedAt: _dt(m['updated_at']),
+  );
 
   Map<String, dynamic> toMap() => {
-        'code': code,
-        'locale': locale,
-        'message': message,
-        'title': title,
-        'hint': hint,
-        'severity': severity,
-        'updated_at': updatedAt?.toIso8601String(),
-      };
+    'code': code,
+    'locale': locale,
+    'message': message,
+    'title': title,
+    'hint': hint,
+    'severity': severity,
+    'updated_at': updatedAt?.toIso8601String(),
+  };
 
   /// `{name}` style interpolation.
   String format([Map<String, String> vars = const {}]) {
@@ -52,4 +52,3 @@ class LocalizedError {
     return out;
   }
 }
-

@@ -59,8 +59,8 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
 
   SportsProfileController({
     ManageSportsProfileUseCase? manageSportsProfileUseCase,
-  })  : _manageSportsProfileUseCase = manageSportsProfileUseCase,
-        super(const SportsProfileState());
+  }) : _manageSportsProfileUseCase = manageSportsProfileUseCase,
+       super(const SportsProfileState());
 
   /// Load sports profiles
   Future<void> loadSportsProfiles(String userId) async {
@@ -127,7 +127,9 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
     bool isPrimarySport = false,
   }) async {
     if (state.profiles.any((profile) => profile.sportId == sportId)) {
-      state = state.copyWith(errorMessage: 'Profile for this sport already exists');
+      state = state.copyWith(
+        errorMessage: 'Profile for this sport already exists',
+      );
       return;
     }
 
@@ -159,10 +161,7 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
         final updatedProfiles = List<SportProfile>.from(state.profiles);
         updatedProfiles.add(newProfile);
 
-        state = state.copyWith(
-          isSaving: false,
-          profiles: updatedProfiles,
-        );
+        state = state.copyWith(isSaving: false, profiles: updatedProfiles);
         return;
       }
 
@@ -188,7 +187,9 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
           final updatedProfiles = List<SportProfile>.from(state.profiles);
           updatedProfiles.add(newProfile);
 
-          final updatedAchievements = Map<String, List<String>>.from(state.achievements);
+          final updatedAchievements = Map<String, List<String>>.from(
+            state.achievements,
+          );
           updatedAchievements[sportId] = [];
 
           state = state.copyWith(
@@ -210,22 +211,33 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
 
   /// Update skill level
   Future<void> updateSkillLevel(String sportId, SkillLevel skillLevel) async {
-    await _updateProfileField(sportId, 'skillLevel', skillLevel.toString().split('.').last);
+    await _updateProfileField(
+      sportId,
+      'skillLevel',
+      skillLevel.toString().split('.').last,
+    );
   }
 
   /// Update years playing
   Future<void> updateYearsPlaying(String sportId, int years) async {
     if (years < 0 || years > 50) {
-      state = state.copyWith(errorMessage: 'Years playing must be between 0 and 50');
+      state = state.copyWith(
+        errorMessage: 'Years playing must be between 0 and 50',
+      );
       return;
     }
     await _updateProfileField(sportId, 'yearsPlaying', years);
   }
 
   /// Update preferred positions
-  Future<void> updatePreferredPositions(String sportId, List<String> positions) async {
+  Future<void> updatePreferredPositions(
+    String sportId,
+    List<String> positions,
+  ) async {
     if (positions.length > 3) {
-      state = state.copyWith(errorMessage: 'You can select up to 3 preferred positions');
+      state = state.copyWith(
+        errorMessage: 'You can select up to 3 preferred positions',
+      );
       return;
     }
     await _updateProfileField(sportId, 'preferredPositions', positions);
@@ -254,16 +266,20 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
 
   /// Add achievement
   Future<void> addAchievement(String sportId, String achievement) async {
-    final currentAchievements = List<String>.from(state.achievements[sportId] ?? []);
-    
+    final currentAchievements = List<String>.from(
+      state.achievements[sportId] ?? [],
+    );
+
     if (currentAchievements.contains(achievement)) {
       state = state.copyWith(errorMessage: 'Achievement already exists');
       return;
     }
 
     currentAchievements.add(achievement);
-    
-    final updatedAchievements = Map<String, List<String>>.from(state.achievements);
+
+    final updatedAchievements = Map<String, List<String>>.from(
+      state.achievements,
+    );
     updatedAchievements[sportId] = currentAchievements;
 
     // Also update the profile
@@ -283,10 +299,14 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
 
   /// Remove achievement
   Future<void> removeAchievement(String sportId, String achievement) async {
-    final currentAchievements = List<String>.from(state.achievements[sportId] ?? []);
+    final currentAchievements = List<String>.from(
+      state.achievements[sportId] ?? [],
+    );
     currentAchievements.remove(achievement);
 
-    final updatedAchievements = Map<String, List<String>>.from(state.achievements);
+    final updatedAchievements = Map<String, List<String>>.from(
+      state.achievements,
+    );
     updatedAchievements[sportId] = currentAchievements;
 
     // Also update the profile
@@ -306,7 +326,9 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
 
   /// Delete sports profile
   Future<void> deleteSportsProfile(String sportId) async {
-    final profileExists = state.profiles.any((profile) => profile.sportId == sportId);
+    final profileExists = state.profiles.any(
+      (profile) => profile.sportId == sportId,
+    );
     if (!profileExists) {
       state = state.copyWith(errorMessage: 'Profile not found');
       return;
@@ -322,13 +344,19 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
       );
 
       if (_manageSportsProfileUseCase == null) {
-        final updatedProfiles = state.profiles.where((p) => p.sportId != sportId).toList();
-        final updatedAchievements = Map<String, List<String>>.from(state.achievements);
+        final updatedProfiles = state.profiles
+            .where((p) => p.sportId != sportId)
+            .toList();
+        final updatedAchievements = Map<String, List<String>>.from(
+          state.achievements,
+        );
         updatedAchievements.remove(sportId);
 
         String? newActiveProfileId = state.activeProfileId;
         if (state.activeProfileId == sportId) {
-          newActiveProfileId = updatedProfiles.isNotEmpty ? updatedProfiles.first.sportId : null;
+          newActiveProfileId = updatedProfiles.isNotEmpty
+              ? updatedProfiles.first.sportId
+              : null;
         }
 
         state = state.copyWith(
@@ -350,14 +378,20 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
           );
         },
         (updateResult) {
-          final updatedProfiles = state.profiles.where((p) => p.sportId != sportId).toList();
-          final updatedAchievements = Map<String, List<String>>.from(state.achievements);
+          final updatedProfiles = state.profiles
+              .where((p) => p.sportId != sportId)
+              .toList();
+          final updatedAchievements = Map<String, List<String>>.from(
+            state.achievements,
+          );
           updatedAchievements.remove(sportId);
 
           // If deleted profile was active, set new active profile
           String? newActiveProfileId = state.activeProfileId;
           if (state.activeProfileId == sportId) {
-            newActiveProfileId = updatedProfiles.isNotEmpty ? updatedProfiles.first.sportId : null;
+            newActiveProfileId = updatedProfiles.isNotEmpty
+                ? updatedProfiles.first.sportId
+                : null;
           }
 
           state = state.copyWith(
@@ -411,7 +445,7 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
   /// Get sports profile summary
   Map<String, dynamic> get profilesSummary {
     final profiles = state.profiles;
-    
+
     if (profiles.isEmpty) {
       return {
         'totalProfiles': 0,
@@ -422,26 +456,48 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
       };
     }
 
-    final totalGames = profiles.fold<int>(0, (sum, profile) => sum + profile.gamesPlayed);
-    final skillLevels = [SkillLevel.beginner, SkillLevel.intermediate, SkillLevel.advanced, SkillLevel.expert];
+    final totalGames = profiles.fold<int>(
+      0,
+      (sum, profile) => sum + profile.gamesPlayed,
+    );
+    final skillLevels = [
+      SkillLevel.beginner,
+      SkillLevel.intermediate,
+      SkillLevel.advanced,
+      SkillLevel.expert,
+    ];
     final averageSkillIndex = profiles.isNotEmpty
-        ? profiles.map((p) => skillLevels.indexOf(p.skillLevel)).reduce((a, b) => a + b) ~/ profiles.length
+        ? profiles
+                  .map((p) => skillLevels.indexOf(p.skillLevel))
+                  .reduce((a, b) => a + b) ~/
+              profiles.length
         : 0;
-    
-    final totalAchievements = profiles.fold<int>(0, (sum, profile) => sum + profile.achievements.length);
+
+    final totalAchievements = profiles.fold<int>(
+      0,
+      (sum, profile) => sum + profile.achievements.length,
+    );
     final primarySport = primaryProfile?.sportName ?? 'None';
 
     return {
       'totalProfiles': profiles.length,
       'totalGames': totalGames,
-      'averageSkillLevel': skillLevels[averageSkillIndex.clamp(0, skillLevels.length - 1)].toString().split('.').last,
+      'averageSkillLevel':
+          skillLevels[averageSkillIndex.clamp(0, skillLevels.length - 1)]
+              .toString()
+              .split('.')
+              .last,
       'totalAchievements': totalAchievements,
       'primarySport': primarySport,
     };
   }
 
   /// Update a single profile field
-  Future<void> _updateProfileField(String sportId, String field, dynamic value) async {
+  Future<void> _updateProfileField(
+    String sportId,
+    String field,
+    dynamic value,
+  ) async {
     final updatedProfiles = state.profiles.map((profile) {
       if (profile.sportId == sportId) {
         switch (field) {
@@ -464,7 +520,9 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
       return profile;
     }).toList();
 
-    final updatedPendingChanges = Map<String, dynamic>.from(state.pendingChanges);
+    final updatedPendingChanges = Map<String, dynamic>.from(
+      state.pendingChanges,
+    );
     updatedPendingChanges['${sportId}_$field'] = value;
 
     state = state.copyWith(

@@ -11,7 +11,7 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -26,9 +26,9 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
                   child: const Text('Skip'),
                 ),
               ),
-              
+
               const Spacer(),
-              
+
               // Icon and title
               Container(
                 width: 120,
@@ -43,9 +43,9 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
                   color: theme.primaryColor,
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               Text(
                 'Welcome to Social',
                 style: theme.textTheme.headlineMedium?.copyWith(
@@ -54,9 +54,9 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               Text(
                 'Connect with fellow players, share your game experiences, and build your sports community.',
                 style: theme.textTheme.bodyLarge?.copyWith(
@@ -65,28 +65,29 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               // Features preview
               _buildFeaturesList(context),
-              
+
               const Spacer(),
-              
+
               // Continue button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () => context.push(RoutePaths.socialOnboardingFriends),
+                  onPressed: () =>
+                      context.push(RoutePaths.socialOnboardingFriends),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: const Text('Get Started'),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Progress indicator
               _buildProgressIndicator(context, 0, 4),
             ],
@@ -116,50 +117,57 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
     ];
 
     return Column(
-      children: features.map((feature) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Theme.of(context).primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                feature.icon,
-                size: 24,
-                color: Theme.of(context).primaryColor,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      children: features
+          .map(
+            (feature) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
                 children: [
-                  Text(
-                    feature.title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).primaryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      feature.icon,
+                      size: 24,
+                      color: Theme.of(context).primaryColor,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    feature.description,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey,
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          feature.title,
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          feature.description,
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.copyWith(color: Colors.grey),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
-      )).toList(),
+          )
+          .toList(),
     );
   }
 
-  Widget _buildProgressIndicator(BuildContext context, int currentStep, int totalSteps) {
+  Widget _buildProgressIndicator(
+    BuildContext context,
+    int currentStep,
+    int totalSteps,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(totalSteps, (index) {
@@ -169,7 +177,7 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
           width: 8,
           height: 8,
           decoration: BoxDecoration(
-            color: isActive 
+            color: isActive
                 ? Theme.of(context).primaryColor
                 : Theme.of(context).primaryColor.withOpacity(0.3),
             shape: BoxShape.circle,

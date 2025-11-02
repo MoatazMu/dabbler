@@ -22,7 +22,7 @@ class Game with _$Game {
     @JsonKey(name: 'min_skill') int? minSkill,
     @JsonKey(name: 'max_skill') int? maxSkill,
     @JsonKey(name: 'rules', defaultValue: <String, dynamic>{})
-        required Map<String, dynamic> rules,
+    required Map<String, dynamic> rules,
     @JsonKey(name: 'is_cancelled') required bool isCancelled,
     @JsonKey(name: 'cancelled_at') DateTime? cancelledAt,
     @JsonKey(name: 'cancelled_reason') String? cancelledReason,

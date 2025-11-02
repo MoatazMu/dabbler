@@ -15,7 +15,7 @@ class SharedActivitiesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -30,15 +30,12 @@ class SharedActivitiesSection extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              TextButton(
-                onPressed: onViewAll,
-                child: const Text('View All'),
-              ),
+              TextButton(onPressed: onViewAll, child: const Text('View All')),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           if (activities.isEmpty)
             Center(
               child: Padding(
@@ -172,10 +169,10 @@ class SharedActivitiesSection extends StatelessWidget {
 
   String _formatDate(DateTime? date) {
     if (date == null) return 'Date not specified';
-    
+
     final now = DateTime.now();
     final difference = now.difference(date);
-    
+
     if (difference.inDays == 0) {
       return 'Today';
     } else if (difference.inDays == 1) {

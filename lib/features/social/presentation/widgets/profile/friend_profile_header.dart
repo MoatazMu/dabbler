@@ -15,7 +15,7 @@ class FriendProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -31,25 +31,25 @@ class FriendProfileHeader extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            
+
             // Profile Avatar
             CircleAvatar(
               radius: 50,
               backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-              backgroundImage: friend.avatarUrl != null 
-                ? NetworkImage(friend.avatarUrl) 
-                : null,
+              backgroundImage: friend.avatarUrl != null
+                  ? NetworkImage(friend.avatarUrl)
+                  : null,
               child: friend.avatarUrl == null
-                ? Icon(
-                    Icons.person,
-                    size: 50,
-                    color: theme.colorScheme.primary,
-                  )
-                : null,
+                  ? Icon(
+                      Icons.person,
+                      size: 50,
+                      color: theme.colorScheme.primary,
+                    )
+                  : null,
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Name and Username
             Text(
               friend.name ?? 'Unknown User',
@@ -57,7 +57,7 @@ class FriendProfileHeader extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            
+
             if (friend.username != null) ...[
               const SizedBox(height: 4),
               Text(
@@ -67,19 +67,16 @@ class FriendProfileHeader extends StatelessWidget {
                 ),
               ),
             ],
-            
+
             const SizedBox(height: 16),
-            
+
             // Friendship Status
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: _getStatusColor(theme).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: _getStatusColor(theme),
-                  width: 1,
-                ),
+                border: Border.all(color: _getStatusColor(theme), width: 1),
               ),
               child: Text(
                 friendshipStatus,
@@ -89,19 +86,27 @@ class FriendProfileHeader extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Quick Stats
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildStatItem(theme, 'Friends', friend.friendsCount?.toString() ?? '0'),
-                _buildStatItem(theme, 'Activities', friend.activitiesCount?.toString() ?? '0'),
+                _buildStatItem(
+                  theme,
+                  'Friends',
+                  friend.friendsCount?.toString() ?? '0',
+                ),
+                _buildStatItem(
+                  theme,
+                  'Activities',
+                  friend.activitiesCount?.toString() ?? '0',
+                ),
                 _buildStatItem(theme, 'Level', friend.level?.toString() ?? '1'),
               ],
             ),
-            
+
             const SizedBox(height: 20),
           ],
         ),
@@ -131,7 +136,7 @@ class FriendProfileHeader extends StatelessWidget {
 
   Color _getStatusColor(ThemeData theme) {
     if (isBlocked) return theme.colorScheme.error;
-    
+
     switch (friendshipStatus.toLowerCase()) {
       case 'friends':
         return theme.colorScheme.primary;

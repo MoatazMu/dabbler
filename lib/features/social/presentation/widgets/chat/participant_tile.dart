@@ -23,7 +23,7 @@ class ParticipantTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return ListTile(
       leading: CircleAvatar(
         backgroundImage: participant.avatarUrl != null
@@ -50,7 +50,7 @@ class ParticipantTile extends StatelessWidget {
 
   Widget _buildActionButtons(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -70,10 +70,7 @@ class ParticipantTile extends StatelessWidget {
           ),
         if (onRemove != null)
           IconButton(
-            icon: Icon(
-              Icons.person_remove,
-              color: theme.colorScheme.error,
-            ),
+            icon: Icon(Icons.person_remove, color: theme.colorScheme.error),
             onPressed: onRemove,
             tooltip: 'Remove Participant',
             iconSize: 20,

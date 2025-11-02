@@ -65,7 +65,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
   late AnimationController _replyAnimationController;
   late Animation<double> _recordingPulseAnimation;
   late Animation<double> _replySlideAnimation;
-  
+
   bool _showSendButton = false;
   bool _showMentionSuggestions = false;
   List<String> _filteredMentions = [];
@@ -77,7 +77,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
     super.initState();
     _controller = widget.controller ?? TextEditingController();
     _focusNode = widget.focusNode ?? FocusNode();
-    
+
     _setupAnimations();
     _setupListeners();
   }
@@ -87,27 +87,22 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _replyAnimationController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
-    _recordingPulseAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.2,
-    ).animate(CurvedAnimation(
-      parent: _recordingAnimationController,
-      curve: Curves.easeInOut,
-    ));
+    _recordingPulseAnimation = Tween<double>(begin: 0.8, end: 1.2).animate(
+      CurvedAnimation(
+        parent: _recordingAnimationController,
+        curve: Curves.easeInOut,
+      ),
+    );
 
-    _replySlideAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _replyAnimationController,
-      curve: Curves.easeOut,
-    ));
+    _replySlideAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _replyAnimationController, curve: Curves.easeOut),
+    );
 
     // Show reply animation if there's a reply message
     if (widget.replyToMessage != null) {
@@ -123,11 +118,12 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
   @override
   void didUpdateWidget(ChatInputWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Handle reply animation
     if (widget.replyToMessage != null && oldWidget.replyToMessage == null) {
       _replyAnimationController.forward();
-    } else if (widget.replyToMessage == null && oldWidget.replyToMessage != null) {
+    } else if (widget.replyToMessage == null &&
+        oldWidget.replyToMessage != null) {
       _replyAnimationController.reverse();
     }
 
@@ -152,7 +148,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
   void _onTextChanged() {
     final text = _controller.text;
     final oldShowSendButton = _showSendButton;
-    
+
     setState(() {
       _showSendButton = text.trim().isNotEmpty;
     });
@@ -184,7 +180,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
     // Find the last '@' before cursor
     final beforeCursor = text.substring(0, cursorPosition);
     final atIndex = beforeCursor.lastIndexOf('@');
-    
+
     if (atIndex == -1) {
       _hideMentionSuggestions();
       return;
@@ -229,12 +225,12 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
       _mentionStartIndex + _currentMention.length + 1,
       '@$mention ',
     );
-    
+
     _controller.text = newText;
     _controller.selection = TextSelection.fromPosition(
       TextPosition(offset: _mentionStartIndex + mention.length + 2),
     );
-    
+
     _hideMentionSuggestions();
     widget.onMention?.call(mention);
   }
@@ -266,7 +262,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       children: [
         if (_showMentionSuggestions) _buildMentionSuggestions(),
@@ -277,15 +273,10 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
           decoration: BoxDecoration(
             color: theme.scaffoldBackgroundColor,
             border: Border(
-              top: BorderSide(
-                color: theme.dividerColor,
-                width: 0.5,
-              ),
+              top: BorderSide(color: theme.dividerColor, width: 0.5),
             ),
           ),
-          child: SafeArea(
-            child: _buildInputRow(),
-          ),
+          child: SafeArea(child: _buildInputRow()),
         ),
       ],
     );
@@ -297,10 +288,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         border: Border(
-          bottom: BorderSide(
-            color: Theme.of(context).dividerColor,
-            width: 0.5,
-          ),
+          bottom: BorderSide(color: Theme.of(context).dividerColor, width: 0.5),
         ),
       ),
       child: ListView.builder(
@@ -310,9 +298,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
           final mention = _filteredMentions[index];
           return ListTile(
             dense: true,
-            leading: CustomAvatar(
-              radius: 16,
-            ),
+            leading: CustomAvatar(radius: 16),
             title: Text(
               mention,
               style: AppTextStyles.bodyMedium.copyWith(
@@ -340,19 +326,12 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
             decoration: BoxDecoration(
               color: AppColors.surfaceVariant.withOpacity(0.5),
               border: Border(
-                left: BorderSide(
-                  color: AppColors.primary,
-                  width: 4,
-                ),
+                left: BorderSide(color: AppColors.primary, width: 4),
               ),
             ),
             child: Row(
               children: [
-                Icon(
-                  Icons.reply,
-                  size: 16,
-                  color: AppColors.primary,
-                ),
+                Icon(Icons.reply, size: 16, color: AppColors.primary),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Column(
@@ -401,11 +380,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
         children: [
           Row(
             children: [
-              Icon(
-                Icons.cloud_upload,
-                size: 16,
-                color: AppColors.primary,
-              ),
+              Icon(Icons.cloud_upload, size: 16, color: AppColors.primary),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
@@ -463,11 +438,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: widget.onAttachmentTap ?? _showAttachmentOptions,
-          child: Icon(
-            Icons.add,
-            color: AppColors.textSecondary,
-            size: 24,
-          ),
+          child: Icon(Icons.add, color: AppColors.textSecondary, size: 24),
         ),
       ),
     );
@@ -475,14 +446,12 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
 
   Widget _buildTextField() {
     return Container(
-      constraints: BoxConstraints(
-        maxHeight: widget.maxHeight,
-      ),
+      constraints: BoxConstraints(maxHeight: widget.maxHeight),
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: _focusNode.hasFocus 
+          color: _focusNode.hasFocus
               ? AppColors.primary.withOpacity(0.3)
               : Theme.of(context).dividerColor,
         ),
@@ -553,11 +522,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: _handleSend,
-          child: const Icon(
-            Icons.send,
-            color: Colors.white,
-            size: 20,
-          ),
+          child: const Icon(Icons.send, color: Colors.white, size: 20),
         ),
       ),
     );
@@ -573,8 +538,8 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: widget.isRecording 
-                  ? Colors.red 
+              color: widget.isRecording
+                  ? Colors.red
                   : AppColors.surfaceVariant.withOpacity(0.5),
               borderRadius: BorderRadius.circular(20),
             ),
@@ -585,8 +550,8 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
                 onTap: _handleVoiceRecord,
                 child: Icon(
                   widget.isRecording ? Icons.stop : Icons.mic,
-                  color: widget.isRecording 
-                      ? Colors.white 
+                  color: widget.isRecording
+                      ? Colors.white
                       : AppColors.textSecondary,
                   size: 20,
                 ),
@@ -682,15 +647,9 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(28),
-              border: Border.all(
-                color: color.withOpacity(0.3),
-              ),
+              border: Border.all(color: color.withOpacity(0.3)),
             ),
-            child: Icon(
-              icon,
-              color: color,
-              size: 28,
-            ),
+            child: Icon(icon, color: color, size: 28),
           ),
           const SizedBox(height: 8),
           Text(

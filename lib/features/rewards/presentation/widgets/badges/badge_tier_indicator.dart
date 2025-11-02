@@ -4,20 +4,9 @@ import 'package:flutter/services.dart';
 
 import '../../../domain/entities/badge_tier.dart';
 
-enum TierDisplayMode {
-  frame,
-  badge,
-  progress,
-  comparison,
-}
+enum TierDisplayMode { frame, badge, progress, comparison }
 
-enum MaterialType {
-  bronze,
-  silver,
-  gold,
-  platinum,
-  diamond,
-}
+enum MaterialType { bronze, silver, gold, platinum, diamond }
 
 class BadgeTierIndicator extends StatefulWidget {
   final BadgeTier currentTier;
@@ -107,45 +96,29 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
       vsync: this,
     );
 
-    _glowAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _glowController,
-      curve: Curves.easeInOut,
-    ));
+    _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
+    );
 
-    _upgradeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _upgradeController,
-      curve: Curves.elasticOut,
-    ));
+    _upgradeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _upgradeController, curve: Curves.elasticOut),
+    );
 
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: widget.progress,
-    ).animate(CurvedAnimation(
-      parent: _progressController,
-      curve: Curves.easeOutCubic,
-    ));
+    _progressAnimation = Tween<double>(begin: 0.0, end: widget.progress)
+        .animate(
+          CurvedAnimation(
+            parent: _progressController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.15,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.15).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
-    _sparkleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _sparkleController,
-      curve: Curves.easeInOut,
-    ));
+    _sparkleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _sparkleController, curve: Curves.easeInOut),
+    );
 
     _upgradeController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -159,7 +132,7 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
     if (widget.enableAnimations) {
       _glowController.repeat(reverse: true);
       _progressController.forward();
-      
+
       if (widget.progress >= 1.0 && widget.enableUpgradeAnimation) {
         Future.delayed(const Duration(milliseconds: 500), () {
           _triggerUpgradeAnimation();
@@ -190,15 +163,18 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
   @override
   void didUpdateWidget(BadgeTierIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.progress != widget.progress) {
-      _progressAnimation = Tween<double>(
-        begin: oldWidget.progress,
-        end: widget.progress,
-      ).animate(CurvedAnimation(
-        parent: _progressController,
-        curve: Curves.easeOutCubic,
-      ));
+      _progressAnimation =
+          Tween<double>(
+            begin: oldWidget.progress,
+            end: widget.progress,
+          ).animate(
+            CurvedAnimation(
+              parent: _progressController,
+              curve: Curves.easeOutCubic,
+            ),
+          );
       _progressController.reset();
       _progressController.forward();
 
@@ -233,21 +209,19 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildTierDisplay(),
-          
+
           if (widget.showProgressText || widget.showNextTierPreview)
             const SizedBox(height: 8),
-          
-          if (widget.showProgressText)
-            _buildProgressText(),
-          
+
+          if (widget.showProgressText) _buildProgressText(),
+
           if (widget.showNextTierPreview && widget.nextTier != null)
             const SizedBox(height: 4),
-          
+
           if (widget.showNextTierPreview && widget.nextTier != null)
             _buildNextTierPreview(),
-          
-          if (_showTooltip && widget.showTierBenefits)
-            _buildBenefitsTooltip(),
+
+          if (_showTooltip && widget.showTierBenefits) _buildBenefitsTooltip(),
         ],
       ),
     );
@@ -274,7 +248,7 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
         _pulseAnimation,
       ]),
       builder: (context, child) {
-        final scale = _showingUpgrade 
+        final scale = _showingUpgrade
             ? (1.0 + _upgradeAnimation.value * 0.3)
             : _pulseAnimation.value;
 
@@ -284,12 +258,10 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
             alignment: Alignment.center,
             children: [
               // Glow effect
-              if (widget.enableAnimations)
-                _buildGlowEffect(),
+              if (widget.enableAnimations) _buildGlowEffect(),
 
               // Sparkle effects during upgrade
-              if (_showingUpgrade)
-                _buildSparkleEffects(),
+              if (_showingUpgrade) _buildSparkleEffects(),
 
               // Main frame
               _buildMainFrame(),
@@ -298,8 +270,7 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
               _buildTierIcon(),
 
               // Upgrade explosion effect
-              if (_showingUpgrade)
-                _buildUpgradeEffect(),
+              if (_showingUpgrade) _buildUpgradeEffect(),
             ],
           ),
         );
@@ -314,10 +285,7 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: _getTierGradient(),
-        border: Border.all(
-          color: _getTierColor().withOpacity(0.8),
-          width: 3,
-        ),
+        border: Border.all(color: _getTierColor().withOpacity(0.8), width: 3),
         boxShadow: [
           BoxShadow(
             color: _getTierColor().withOpacity(0.4),
@@ -371,11 +339,7 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
 
         if (widget.nextTier != null) ...[
           const SizedBox(width: 20),
-          Icon(
-            Icons.arrow_forward,
-            size: 16,
-            color: Colors.grey[500],
-          ),
+          Icon(Icons.arrow_forward, size: 16, color: Colors.grey[500]),
           const SizedBox(width: 20),
 
           // Next tier
@@ -405,10 +369,7 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         gradient: _getTierGradient(),
-        border: Border.all(
-          color: _getTierBorderColor(),
-          width: 4,
-        ),
+        border: Border.all(color: _getTierBorderColor(), width: 4),
       ),
       child: Container(
         margin: const EdgeInsets.all(8),
@@ -519,10 +480,7 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(3),
                 gradient: LinearGradient(
-                  colors: [
-                    _getTierColor(),
-                    _getTierColor().withOpacity(0.7),
-                  ],
+                  colors: [_getTierColor(), _getTierColor().withOpacity(0.7)],
                 ),
               ),
             ),
@@ -534,7 +492,7 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
 
   Widget _buildMiniFrame(BadgeTier tier, {required bool isActive}) {
     final size = widget.size * 0.6;
-    
+
     return Container(
       width: size,
       height: size,
@@ -545,13 +503,15 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
           color: _getTierColorForTier(tier).withOpacity(isActive ? 1.0 : 0.5),
           width: 2,
         ),
-        boxShadow: isActive ? [
-          BoxShadow(
-            color: _getTierColorForTier(tier).withOpacity(0.3),
-            blurRadius: 6,
-            spreadRadius: 1,
-          ),
-        ] : null,
+        boxShadow: isActive
+            ? [
+                BoxShadow(
+                  color: _getTierColorForTier(tier).withOpacity(0.3),
+                  blurRadius: 6,
+                  spreadRadius: 1,
+                ),
+              ]
+            : null,
       ),
       child: Center(
         child: Text(
@@ -629,11 +589,7 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
         children: [
           Row(
             children: [
-              Icon(
-                _getTierIcon(),
-                size: 16,
-                color: _getTierColor(),
-              ),
+              Icon(_getTierIcon(), size: 16, color: _getTierColor()),
               const SizedBox(width: 6),
               Text(
                 '${_getTierDisplayName()} Benefits',
@@ -646,28 +602,26 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
             ],
           ),
           const SizedBox(height: 8),
-          ...widget.tierBenefits.map((benefit) => Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.check_circle,
-                  size: 12,
-                  color: Colors.green,
-                ),
-                const SizedBox(width: 6),
-                Expanded(
-                  child: Text(
-                    benefit,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black87,
+          ...widget.tierBenefits.map(
+            (benefit) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, size: 12, color: Colors.green),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      benefit,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          )),
+          ),
         ],
       ),
     );
@@ -700,7 +654,8 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
     return Color.lerp(_getTierColor(), Colors.black, 0.3)!;
   }
 
-  LinearGradient _getTierGradient() => _getTierGradientForTier(widget.currentTier);
+  LinearGradient _getTierGradient() =>
+      _getTierGradientForTier(widget.currentTier);
 
   LinearGradient _getTierGradientForTier(BadgeTier tier) {
     final baseColor = _getTierColorForTier(tier);
@@ -743,7 +698,8 @@ class _BadgeTierIndicatorState extends State<BadgeTierIndicator>
     }
   }
 
-  String _getTierDisplayName() => _getTierDisplayNameForTier(widget.currentTier);
+  String _getTierDisplayName() =>
+      _getTierDisplayNameForTier(widget.currentTier);
 
   String _getTierDisplayNameForTier(BadgeTier tier) {
     return tier.toString().split('.').last.toUpperCase();
@@ -754,10 +710,7 @@ class SparklePainter extends CustomPainter {
   final double animation;
   final Color color;
 
-  SparklePainter({
-    required this.animation,
-    required this.color,
-  });
+  SparklePainter({required this.animation, required this.color});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -771,12 +724,12 @@ class SparklePainter extends CustomPainter {
     for (int i = 0; i < sparkleCount; i++) {
       final angle = (i / sparkleCount) * 2 * math.pi;
       final radius = (size.width * 0.4) + (20 * animation);
-      
+
       final x = center.dx + radius * math.cos(angle);
       final y = center.dy + radius * math.sin(angle);
-      
+
       final sparkleSize = 3 + (2 * math.sin(animation * math.pi));
-      
+
       // Draw sparkle as a star
       _drawStar(canvas, Offset(x, y), sparkleSize, paint);
     }
@@ -804,5 +757,6 @@ class SparklePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(SparklePainter oldDelegate) => animation != oldDelegate.animation;
+  bool shouldRepaint(SparklePainter oldDelegate) =>
+      animation != oldDelegate.animation;
 }

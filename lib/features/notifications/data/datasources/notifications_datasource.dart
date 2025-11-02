@@ -14,7 +14,10 @@ class NotificationException implements Exception {
 abstract class NotificationsDataSource {
   Future<List<NotificationModel>> getNotifications(String userId);
   Future<List<NotificationModel>> getUnreadNotifications(String userId);
-  Future<List<NotificationModel>> getNotificationsByType(String userId, String type);
+  Future<List<NotificationModel>> getNotificationsByType(
+    String userId,
+    String type,
+  );
   Future<void> markAsRead(String notificationId);
   Future<void> markAllAsRead(String userId);
   Future<void> deleteNotification(String notificationId);
@@ -41,7 +44,9 @@ class SupabaseNotificationsDataSource implements NotificationsDataSource {
           .map((json) => NotificationModel.fromJson(json))
           .toList();
     } catch (e) {
-      throw NotificationException('Failed to fetch notifications: ${e.toString()}');
+      throw NotificationException(
+        'Failed to fetch notifications: ${e.toString()}',
+      );
     }
   }
 
@@ -59,7 +64,9 @@ class SupabaseNotificationsDataSource implements NotificationsDataSource {
           .map((json) => NotificationModel.fromJson(json))
           .toList();
     } catch (e) {
-      throw NotificationException('Failed to fetch unread notifications: ${e.toString()}');
+      throw NotificationException(
+        'Failed to fetch unread notifications: ${e.toString()}',
+      );
     }
   }
 
@@ -80,7 +87,9 @@ class SupabaseNotificationsDataSource implements NotificationsDataSource {
           .map((json) => NotificationModel.fromJson(json))
           .toList();
     } catch (e) {
-      throw NotificationException('Failed to fetch notifications by type: ${e.toString()}');
+      throw NotificationException(
+        'Failed to fetch notifications by type: ${e.toString()}',
+      );
     }
   }
 
@@ -95,7 +104,9 @@ class SupabaseNotificationsDataSource implements NotificationsDataSource {
           })
           .eq('id', notificationId);
     } catch (e) {
-      throw NotificationException('Failed to mark notification as read: ${e.toString()}');
+      throw NotificationException(
+        'Failed to mark notification as read: ${e.toString()}',
+      );
     }
   }
 
@@ -111,36 +122,38 @@ class SupabaseNotificationsDataSource implements NotificationsDataSource {
           .eq('user_id', userId)
           .eq('is_read', false);
     } catch (e) {
-      throw NotificationException('Failed to mark all notifications as read: ${e.toString()}');
+      throw NotificationException(
+        'Failed to mark all notifications as read: ${e.toString()}',
+      );
     }
   }
 
   @override
   Future<void> deleteNotification(String notificationId) async {
     try {
-      await client
-          .from('notifications')
-          .delete()
-          .eq('id', notificationId);
+      await client.from('notifications').delete().eq('id', notificationId);
     } catch (e) {
-      throw NotificationException('Failed to delete notification: ${e.toString()}');
+      throw NotificationException(
+        'Failed to delete notification: ${e.toString()}',
+      );
     }
   }
 
   @override
   Future<void> deleteAllNotifications(String userId) async {
     try {
-      await client
-          .from('notifications')
-          .delete()
-          .eq('user_id', userId);
+      await client.from('notifications').delete().eq('user_id', userId);
     } catch (e) {
-      throw NotificationException('Failed to delete all notifications: ${e.toString()}');
+      throw NotificationException(
+        'Failed to delete all notifications: ${e.toString()}',
+      );
     }
   }
 
   @override
-  Future<NotificationModel> createNotification(NotificationModel notification) async {
+  Future<NotificationModel> createNotification(
+    NotificationModel notification,
+  ) async {
     try {
       final response = await client
           .from('notifications')
@@ -150,7 +163,9 @@ class SupabaseNotificationsDataSource implements NotificationsDataSource {
 
       return NotificationModel.fromJson(response);
     } catch (e) {
-      throw NotificationException('Failed to create notification: ${e.toString()}');
+      throw NotificationException(
+        'Failed to create notification: ${e.toString()}',
+      );
     }
   }
 }

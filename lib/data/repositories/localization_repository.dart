@@ -22,4 +22,3 @@ abstract class LocalizationRepository {
   /// Clear cache; if [locale] provided, only that locale is cleared.
   void clearCache({String? locale});
 }
-

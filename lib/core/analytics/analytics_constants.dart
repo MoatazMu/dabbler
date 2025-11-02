@@ -2,19 +2,19 @@
 class AnalyticsConfig {
   // Enable/disable analytics in debug mode
   static const bool enableInDebug = true;
-  
+
   // Sample rate for performance metrics (0.0 to 1.0)
   static const double performanceSampleRate = 0.1;
-  
+
   // Batch size for event uploads
   static const int eventBatchSize = 50;
-  
+
   // Maximum events to store locally
   static const int maxLocalEvents = 1000;
-  
+
   // Event upload interval in seconds
   static const int uploadIntervalSeconds = 60;
-  
+
   // Session timeout in minutes
   static const int sessionTimeoutMinutes = 30;
 }
@@ -59,7 +59,7 @@ class AnalyticsFunnels {
     'funnel_price_set',
     'funnel_game_created',
   ];
-  
+
   // Game joining funnel
   static const List<String> gameJoinFunnel = [
     'funnel_game_viewed',
@@ -68,7 +68,7 @@ class AnalyticsFunnels {
     'funnel_payment_completed',
     'funnel_game_joined',
   ];
-  
+
   // Search funnel
   static const List<String> searchFunnel = [
     'funnel_search_initiated',
@@ -77,7 +77,7 @@ class AnalyticsFunnels {
     'funnel_result_clicked',
     'funnel_game_viewed_from_search',
   ];
-  
+
   // Check-in funnel
   static const List<String> checkInFunnel = [
     'funnel_checkin_started',
@@ -117,14 +117,14 @@ class AnalyticsGoals {
   static const String gameJoined = 'goal_game_joined';
   static const String gameCompleted = 'goal_game_completed';
   static const String userRetained = 'goal_user_retained';
-  
+
   // Secondary goals
   static const String profileCompleted = 'goal_profile_completed';
   static const String friendAdded = 'goal_friend_added';
   static const String venueReviewed = 'goal_venue_reviewed';
   static const String gameShared = 'goal_game_shared';
   static const String premiumUpgrade = 'goal_premium_upgrade';
-  
+
   // Engagement goals
   static const String dailyActiveUser = 'goal_daily_active_user';
   static const String weeklyActiveUser = 'goal_weekly_active_user';
@@ -138,7 +138,7 @@ class AnalyticsParameters {
   static const String sessionId = 'session_id';
   static const String userId = 'user_id';
   static const String deviceId = 'device_id';
-  
+
   // Game parameters
   static const String gameId = 'game_id';
   static const String sportType = 'sport_type';
@@ -148,7 +148,7 @@ class AnalyticsParameters {
   static const String gameDuration = 'game_duration';
   static const String gameDate = 'game_date';
   static const String gameTime = 'game_time';
-  
+
   // User parameters
   static const String userAge = 'user_age';
   static const String userGender = 'user_gender';
@@ -156,25 +156,25 @@ class AnalyticsParameters {
   static const String userSkillLevel = 'user_skill_level';
   static const String userTier = 'user_tier';
   static const String accountAge = 'account_age';
-  
+
   // Search parameters
   static const String searchQuery = 'search_query';
   static const String searchFilters = 'search_filters';
   static const String resultsCount = 'results_count';
   static const String searchLatency = 'search_latency';
-  
+
   // Performance parameters
   static const String loadTime = 'load_time';
   static const String responseTime = 'response_time';
   static const String errorCode = 'error_code';
   static const String errorMessage = 'error_message';
-  
+
   // Location parameters
   static const String latitude = 'latitude';
   static const String longitude = 'longitude';
   static const String locationAccuracy = 'location_accuracy';
   static const String distanceKm = 'distance_km';
-  
+
   // Device parameters
   static const String platform = 'platform';
   static const String appVersion = 'app_version';
@@ -192,29 +192,29 @@ class AnalyticsScreens {
   static const String explore = 'explore';
   static const String myGames = 'my_games';
   static const String profile = 'profile';
-  
+
   // Game screens
   static const String gameDetails = 'game_details';
   static const String gameCreation = 'game_creation';
   static const String gameSearch = 'game_search';
   static const String gameCheckIn = 'game_checkin';
-  
+
   // User screens
   static const String login = 'login';
   static const String signup = 'signup';
   static const String onboarding = 'onboarding';
   static const String settings = 'settings';
-  
+
   // Venue screens
   static const String venueDetails = 'venue_details';
   static const String venueList = 'venue_list';
   static const String venueMap = 'venue_map';
-  
+
   // Social screens
   static const String friends = 'friends';
   static const String messages = 'messages';
   static const String notifications = 'notifications';
-  
+
   // Support screens
   static const String help = 'help';
   static const String feedback = 'feedback';
@@ -238,10 +238,10 @@ class AnalyticsCategories {
 
 /// Event priorities (for batching and upload optimization)
 enum AnalyticsEventPriority {
-  low,     // Background events, can be delayed
-  medium,  // Standard user interactions
-  high,    // Important business events
-  critical // Errors and critical events that should be sent immediately
+  low, // Background events, can be delayed
+  medium, // Standard user interactions
+  high, // Important business events
+  critical, // Errors and critical events that should be sent immediately
 }
 
 /// Analytics event model

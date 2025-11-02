@@ -200,29 +200,59 @@ class AchievementsLocalDataSource {
   /// Create database indexes
   Future<void> _createIndexes(Database db) async {
     // Achievement indexes
-    await db.execute('CREATE INDEX idx_achievements_category ON $_achievementsTable(category)');
-    await db.execute('CREATE INDEX idx_achievements_is_hidden ON $_achievementsTable(is_hidden)');
-    await db.execute('CREATE INDEX idx_achievements_cached_at ON $_achievementsTable(cached_at)');
+    await db.execute(
+      'CREATE INDEX idx_achievements_category ON $_achievementsTable(category)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_achievements_is_hidden ON $_achievementsTable(is_hidden)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_achievements_cached_at ON $_achievementsTable(cached_at)',
+    );
 
     // User progress indexes
-    await db.execute('CREATE INDEX idx_user_progress_user_id ON $_userProgressTable(user_id)');
-    await db.execute('CREATE INDEX idx_user_progress_achievement_id ON $_userProgressTable(achievement_id)');
-    await db.execute('CREATE INDEX idx_user_progress_status ON $_userProgressTable(status)');
-    await db.execute('CREATE INDEX idx_user_progress_updated_at ON $_userProgressTable(updated_at)');
+    await db.execute(
+      'CREATE INDEX idx_user_progress_user_id ON $_userProgressTable(user_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_user_progress_achievement_id ON $_userProgressTable(achievement_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_user_progress_status ON $_userProgressTable(status)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_user_progress_updated_at ON $_userProgressTable(updated_at)',
+    );
 
     // Point transactions indexes
-    await db.execute('CREATE INDEX idx_point_transactions_user_id ON $_pointTransactionsTable(user_id)');
-    await db.execute('CREATE INDEX idx_point_transactions_type ON $_pointTransactionsTable(type)');
-    await db.execute('CREATE INDEX idx_point_transactions_created_at ON $_pointTransactionsTable(created_at)');
+    await db.execute(
+      'CREATE INDEX idx_point_transactions_user_id ON $_pointTransactionsTable(user_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_point_transactions_type ON $_pointTransactionsTable(type)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_point_transactions_created_at ON $_pointTransactionsTable(created_at)',
+    );
 
     // Event queue indexes
-    await db.execute('CREATE INDEX idx_event_queue_status ON $_eventQueueTable(status)');
-    await db.execute('CREATE INDEX idx_event_queue_user_id ON $_eventQueueTable(user_id)');
-    await db.execute('CREATE INDEX idx_event_queue_created_at ON $_eventQueueTable(created_at)');
+    await db.execute(
+      'CREATE INDEX idx_event_queue_status ON $_eventQueueTable(status)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_event_queue_user_id ON $_eventQueueTable(user_id)',
+    );
+    await db.execute(
+      'CREATE INDEX idx_event_queue_created_at ON $_eventQueueTable(created_at)',
+    );
   }
 
   /// Handle database upgrades
-  Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
+  Future<void> _upgradeDatabase(
+    Database db,
+    int oldVersion,
+    int newVersion,
+  ) async {
     // Handle migrations between versions
     if (oldVersion < newVersion) {
       // Add migration logic here when needed
@@ -336,7 +366,10 @@ class AchievementsLocalDataSource {
   // =============================================================================
 
   /// Cache user progress data
-  Future<void> cacheUserProgress(String userId, List<UserProgressModel> progress) async {
+  Future<void> cacheUserProgress(
+    String userId,
+    List<UserProgressModel> progress,
+  ) async {
     final db = await database;
     final batch = db.batch();
 
@@ -523,7 +556,9 @@ class AchievementsLocalDataSource {
       _userBadgesTable,
       where: whereClause,
       whereArgs: whereArgs,
-      orderBy: showcaseOnly ? 'showcase_order ASC, earned_at DESC' : 'earned_at DESC',
+      orderBy: showcaseOnly
+          ? 'showcase_order ASC, earned_at DESC'
+          : 'earned_at DESC',
     );
 
     return result.map((map) => _badgeFromMap(map)).toList();
@@ -596,9 +631,7 @@ class AchievementsLocalDataSource {
   }
 
   /// Get queued events for processing
-  Future<List<Map<String, dynamic>>> getQueuedEvents({
-    int limit = 50,
-  }) async {
+  Future<List<Map<String, dynamic>>> getQueuedEvents({int limit = 50}) async {
     final db = await database;
     final result = await db.query(
       _eventQueueTable,
@@ -608,14 +641,18 @@ class AchievementsLocalDataSource {
       limit: limit,
     );
 
-    return result.map((row) => {
-      'id': row['id'],
-      'userId': row['user_id'],
-      'type': row['event_type'],
-      'data': jsonDecode(row['event_data'] as String),
-      'timestamp': row['created_at'],
-      'retryCount': row['retry_count'],
-    }).toList();
+    return result
+        .map(
+          (row) => {
+            'id': row['id'],
+            'userId': row['user_id'],
+            'type': row['event_type'],
+            'data': jsonDecode(row['event_data'] as String),
+            'timestamp': row['created_at'],
+            'retryCount': row['retry_count'],
+          },
+        )
+        .toList();
   }
 
   /// Mark event as processed
@@ -662,15 +699,11 @@ class AchievementsLocalDataSource {
   /// Update sync status for a table
   Future<void> updateSyncStatus(String tableName) async {
     final db = await database;
-    await db.insert(
-      _syncStatusTable,
-      {
-        'table_name': tableName,
-        'last_sync_at': DateTime.now().toIso8601String(),
-        'sync_count': 'sync_count + 1',
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert(_syncStatusTable, {
+      'table_name': tableName,
+      'last_sync_at': DateTime.now().toIso8601String(),
+      'sync_count': 'sync_count + 1',
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   /// Get sync status for a table
@@ -690,7 +723,7 @@ class AchievementsLocalDataSource {
   Future<Map<String, dynamic>> getAllSyncStatuses() async {
     final db = await database;
     final result = await db.query(_syncStatusTable);
-    
+
     final statuses = <String, dynamic>{};
     for (final row in result) {
       statuses[row['table_name'] as String] = {
@@ -700,7 +733,7 @@ class AchievementsLocalDataSource {
         'lastErrorAt': row['last_error_at'],
       };
     }
-    
+
     return statuses;
   }
 
@@ -711,18 +744,16 @@ class AchievementsLocalDataSource {
   /// Update cache metadata
   Future<void> _updateCacheMetadata(String cacheKey, int itemCount) async {
     final db = await database;
-    await db.insert(
-      _cacheMetadataTable,
-      {
-        'cache_key': cacheKey,
-        'created_at': DateTime.now().toIso8601String(),
-        'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
-        'size_bytes': itemCount * 1024, // Rough estimate
-        'access_count': 1,
-        'last_accessed_at': DateTime.now().toIso8601String(),
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert(_cacheMetadataTable, {
+      'cache_key': cacheKey,
+      'created_at': DateTime.now().toIso8601String(),
+      'expires_at': DateTime.now()
+          .add(const Duration(hours: 24))
+          .toIso8601String(),
+      'size_bytes': itemCount * 1024, // Rough estimate
+      'access_count': 1,
+      'last_accessed_at': DateTime.now().toIso8601String(),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   /// Get cache statistics
@@ -754,14 +785,14 @@ class AchievementsLocalDataSource {
   Future<void> clearCache() async {
     final db = await database;
     final batch = db.batch();
-    
+
     batch.delete(_achievementsTable);
     batch.delete(_userProgressTable);
     batch.delete(_pointTransactionsTable);
     batch.delete(_userBadgesTable);
     batch.delete(_userTiersTable);
     batch.delete(_cacheMetadataTable);
-    
+
     await batch.commit(noResult: true);
   }
 
@@ -769,7 +800,7 @@ class AchievementsLocalDataSource {
   Future<int> getCacheSize() async {
     final db = await database;
     final result = await db.rawQuery(
-      'SELECT SUM(size_bytes) as total_size FROM $_cacheMetadataTable'
+      'SELECT SUM(size_bytes) as total_size FROM $_cacheMetadataTable',
     );
     return Sqflite.firstIntValue(result) ?? 0;
   }
@@ -778,7 +809,7 @@ class AchievementsLocalDataSource {
   Future<void> cleanExpiredCache() async {
     final db = await database;
     final now = DateTime.now().toIso8601String();
-    
+
     // Get expired cache keys
     final expiredKeys = await db.query(
       _cacheMetadataTable,
@@ -786,26 +817,26 @@ class AchievementsLocalDataSource {
       where: 'expires_at < ?',
       whereArgs: [now],
     );
-    
+
     // Delete expired cache data based on cache key patterns
     final batch = db.batch();
     for (final row in expiredKeys) {
       final cacheKey = row['cache_key'] as String;
-      
+
       if (cacheKey.startsWith('achievements')) {
         // Could implement more granular cleanup
       } else if (cacheKey.startsWith('progress_')) {
         // Clean specific user progress
       }
     }
-    
+
     // Delete expired metadata
     batch.delete(
       _cacheMetadataTable,
       where: 'expires_at < ?',
       whereArgs: [now],
     );
-    
+
     await batch.commit(noResult: true);
   }
 
@@ -830,7 +861,9 @@ class AchievementsLocalDataSource {
       'icon_url': null, // Not available in model
       'badge_url': null, // Not available in model
       'created_at': achievement.createdAt.toIso8601String(),
-      'updated_at': achievement.updatedAt?.toIso8601String() ?? achievement.createdAt.toIso8601String(),
+      'updated_at':
+          achievement.updatedAt?.toIso8601String() ??
+          achievement.createdAt.toIso8601String(),
       'expires_at': achievement.availableUntil?.toIso8601String(),
       'metadata': jsonEncode({}),
       'cached_at': DateTime.now().toIso8601String(),

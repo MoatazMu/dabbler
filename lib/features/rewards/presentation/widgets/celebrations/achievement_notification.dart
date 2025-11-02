@@ -70,10 +70,9 @@ class ProgressData {
     return (currentProgress / targetProgress).clamp(0.0, 1.0);
   }
 
-  int get remainingProgress => (targetProgress - currentProgress).clamp(0, targetProgress);
+  int get remainingProgress =>
+      (targetProgress - currentProgress).clamp(0, targetProgress);
 }
-
-
 
 /// Achievement notification widget
 class AchievementNotification extends StatefulWidget {
@@ -101,7 +100,8 @@ class AchievementNotification extends StatefulWidget {
   });
 
   @override
-  State<AchievementNotification> createState() => _AchievementNotificationState();
+  State<AchievementNotification> createState() =>
+      _AchievementNotificationState();
 }
 
 class _AchievementNotificationState extends State<AchievementNotification>
@@ -151,37 +151,22 @@ class _AchievementNotificationState extends State<AchievementNotification>
       vsync: this,
     );
 
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, -1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.elasticOut,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero).animate(
+          CurvedAnimation(parent: _slideController, curve: Curves.elasticOut),
+        );
 
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.elasticOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
+    );
 
-    _glowAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _glowController,
-      curve: Curves.easeInOut,
-    ));
+    _glowAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _glowController, curve: Curves.easeInOut),
+    );
 
-    _dismissAnimation = Tween<double>(
-      begin: 1.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(
-      parent: _dismissController,
-      curve: Curves.easeInOut,
-    ));
+    _dismissAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
+      CurvedAnimation(parent: _dismissController, curve: Curves.easeInOut),
+    );
   }
 
   void _startEntryAnimation() {
@@ -207,7 +192,7 @@ class _AchievementNotificationState extends State<AchievementNotification>
 
   void _handleDismiss() {
     if (_isDismissed) return;
-    
+
     setState(() {
       _isDismissed = true;
     });
@@ -224,7 +209,7 @@ class _AchievementNotificationState extends State<AchievementNotification>
 
   void _handleAction(String action) {
     widget.onAction?.call(action);
-    
+
     if (widget.enableHaptics) {
       HapticFeedback.selectionClick();
     }
@@ -273,7 +258,7 @@ class _AchievementNotificationState extends State<AchievementNotification>
 
   Widget _buildNotificationCard(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return AnimatedBuilder(
       animation: _glowAnimation,
       builder: (context, child) {
@@ -282,7 +267,9 @@ class _AchievementNotificationState extends State<AchievementNotification>
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: widget.achievement.tierColor.withOpacity(0.2 + 0.3 * _glowAnimation.value),
+                color: widget.achievement.tierColor.withOpacity(
+                  0.2 + 0.3 * _glowAnimation.value,
+                ),
                 blurRadius: 12 + 8 * _glowAnimation.value,
                 spreadRadius: 2 + 2 * _glowAnimation.value,
                 offset: const Offset(0, 4),
@@ -294,7 +281,9 @@ class _AchievementNotificationState extends State<AchievementNotification>
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
               side: BorderSide(
-                color: widget.achievement.tierColor.withOpacity(0.3 + 0.4 * _glowAnimation.value),
+                color: widget.achievement.tierColor.withOpacity(
+                  0.3 + 0.4 * _glowAnimation.value,
+                ),
                 width: 2,
               ),
             ),
@@ -318,8 +307,7 @@ class _AchievementNotificationState extends State<AchievementNotification>
                   _buildMainContent(theme),
                   if (widget.showProgress && widget.nextProgress != null)
                     _buildProgressSection(theme),
-                  if (widget.showActions)
-                    _buildActionButtons(theme),
+                  if (widget.showActions) _buildActionButtons(theme),
                 ],
               ),
             ),
@@ -392,11 +380,7 @@ class _AchievementNotificationState extends State<AchievementNotification>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.add_circle,
-                  size: 16,
-                  color: Colors.green[600],
-                ),
+                Icon(Icons.add_circle, size: 16, color: Colors.green[600]),
                 const SizedBox(width: 4),
                 Text(
                   '+${widget.achievement.formattedPoints}',
@@ -410,11 +394,7 @@ class _AchievementNotificationState extends State<AchievementNotification>
           ),
           IconButton(
             onPressed: _handleDismiss,
-            icon: Icon(
-              Icons.close,
-              color: Colors.grey[600],
-              size: 20,
-            ),
+            icon: Icon(Icons.close, color: Colors.grey[600], size: 20),
           ),
         ],
       ),
@@ -469,7 +449,7 @@ class _AchievementNotificationState extends State<AchievementNotification>
 
   Widget _buildProgressSection(ThemeData theme) {
     final progress = widget.nextProgress!;
-    
+
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       padding: const EdgeInsets.all(12),
@@ -483,11 +463,7 @@ class _AchievementNotificationState extends State<AchievementNotification>
         children: [
           Row(
             children: [
-              Icon(
-                Icons.trending_up,
-                size: 16,
-                color: Colors.grey[600],
-              ),
+              Icon(Icons.trending_up, size: 16, color: Colors.grey[600]),
               const SizedBox(width: 6),
               Text(
                 'Next Goal: ${progress.nextAchievementName}',
@@ -592,10 +568,12 @@ class AchievementNotificationManager extends StatefulWidget {
   });
 
   @override
-  State<AchievementNotificationManager> createState() => _AchievementNotificationManagerState();
+  State<AchievementNotificationManager> createState() =>
+      _AchievementNotificationManagerState();
 }
 
-class _AchievementNotificationManagerState extends State<AchievementNotificationManager> {
+class _AchievementNotificationManagerState
+    extends State<AchievementNotificationManager> {
   final List<String> _visibleAchievements = [];
   final List<String> _dismissedAchievements = [];
 
@@ -606,7 +584,11 @@ class _AchievementNotificationManagerState extends State<AchievementNotification
   }
 
   void _scheduleNotifications() {
-    for (int i = 0; i < widget.achievements.length && i < widget.maxVisible; i++) {
+    for (
+      int i = 0;
+      i < widget.achievements.length && i < widget.maxVisible;
+      i++
+    ) {
       Future.delayed(widget.stackDelay * i, () {
         if (mounted) {
           setState(() {
@@ -624,7 +606,8 @@ class _AchievementNotificationManagerState extends State<AchievementNotification
     });
 
     // Show next achievement if available
-    final nextIndex = _visibleAchievements.length + _dismissedAchievements.length;
+    final nextIndex =
+        _visibleAchievements.length + _dismissedAchievements.length;
     if (nextIndex < widget.achievements.length) {
       Future.delayed(const Duration(milliseconds: 200), () {
         if (mounted) {
@@ -657,12 +640,10 @@ class _AchievementNotificationManagerState extends State<AchievementNotification
               achievement: widget.achievements.firstWhere(
                 (a) => a.id == _visibleAchievements[i],
               ),
-              onAction: (action) => widget.onAction?.call(_visibleAchievements[i], action),
+              onAction: (action) =>
+                  widget.onAction?.call(_visibleAchievements[i], action),
               onDismiss: () => _handleDismiss(_visibleAchievements[i]),
-              margin: EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: i * 4.0,
-              ),
+              margin: EdgeInsets.symmetric(horizontal: 16, vertical: i * 4.0),
             ),
           ),
       ],

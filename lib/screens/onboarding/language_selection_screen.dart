@@ -7,7 +7,8 @@ class LanguageSelectionScreen extends StatefulWidget {
   const LanguageSelectionScreen({super.key});
 
   @override
-  State<LanguageSelectionScreen> createState() => _LanguageSelectionScreenState();
+  State<LanguageSelectionScreen> createState() =>
+      _LanguageSelectionScreenState();
 }
 
 class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
@@ -52,17 +53,14 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
     try {
       final localizationService = MockLocalizationService();
       await localizationService.setLanguage(_selectedLanguage);
-      
+
       if (mounted) {
         Navigator.pop(context);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -87,7 +85,7 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 32),
-              
+
               // Header
               Text(
                 'Choose Your Language',
@@ -96,39 +94,50 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               Text(
                 'Select your preferred language for the app',
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
-              
+
               const SizedBox(height: 48),
-              
+
               // Language Options
               ..._languages.map((language) {
                 final isSelected = _selectedLanguage == language['code'];
-                
+
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: GestureDetector(
                     onTap: () => _selectLanguage(language['code']!),
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 14,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? Theme.of(context).colorScheme.primary.withOpacity(0.07)
+                            ? Theme.of(
+                                context,
+                              ).colorScheme.primary.withOpacity(0.07)
                             : Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(AppConstants.borderRadius),
+                        borderRadius: BorderRadius.circular(
+                          AppConstants.borderRadius,
+                        ),
                         border: Border.all(
                           color: isSelected
-                              ? Theme.of(context).colorScheme.primary.withOpacity(0.3)
-                              : Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.3)
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.outline.withOpacity(0.1),
                           width: 1,
                         ),
                       ),
@@ -145,12 +154,19 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                               children: [
                                 Text(
                                   language['native']!,
-                                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                                    color: isSelected
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.onSurface,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyLarge
+                                      ?.copyWith(
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
+                                        color: isSelected
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
+                                      ),
                                 ),
                                 if (language['code'] != 'en') ...[
                                   const SizedBox(height: 2),
@@ -166,13 +182,16 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                           ),
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 200),
-                            transitionBuilder: (child, anim) => ScaleTransition(scale: anim, child: child),
+                            transitionBuilder: (child, anim) =>
+                                ScaleTransition(scale: anim, child: child),
                             child: isSelected
                                 ? Icon(
                                     Icons.check_circle_rounded,
                                     key: ValueKey(language['code']),
                                     size: 20,
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                   )
                                 : const SizedBox(width: 20),
                           ),
@@ -182,15 +201,15 @@ class _LanguageSelectionScreenState extends State<LanguageSelectionScreen> {
                   ),
                 );
               }),
-              
+
               const Spacer(),
-              
+
               // Continue Button
               AppButton(
                 onPressed: _isLoading ? null : _handleSubmit,
                 label: _isLoading ? 'Saving...' : 'Continue',
               ),
-              
+
               const SizedBox(height: 32),
             ],
           ),

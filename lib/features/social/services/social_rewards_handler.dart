@@ -63,6 +63,5 @@ class SocialRewardsHandler {
   }
 
   /// Cleanup method
-  void dispose() {
-  }
+  void dispose() {}
 }

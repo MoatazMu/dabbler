@@ -28,7 +28,8 @@ class GameCard extends StatefulWidget {
   State<GameCard> createState() => _GameCardState();
 }
 
-class _GameCardState extends State<GameCard> with SingleTickerProviderStateMixin {
+class _GameCardState extends State<GameCard>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -40,10 +41,7 @@ class _GameCardState extends State<GameCard> with SingleTickerProviderStateMixin
       vsync: this,
     )..repeat(reverse: true);
 
-    _animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut,
-    );
+    _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
   }
 
   @override
@@ -56,8 +54,12 @@ class _GameCardState extends State<GameCard> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark ? Colors.white : const Color(0xFF1E0E33);
-    final secondaryColor = isDark ? Colors.white.withOpacity(0.70) : const Color(0xFF1E0E33).withOpacity(0.70);
-    final tertiaryColor = isDark ? Colors.white.withOpacity(0.90) : const Color(0xFF1E0E33).withOpacity(0.90);
+    final secondaryColor = isDark
+        ? Colors.white.withOpacity(0.70)
+        : const Color(0xFF1E0E33).withOpacity(0.70);
+    final tertiaryColor = isDark
+        ? Colors.white.withOpacity(0.90)
+        : const Color(0xFF1E0E33).withOpacity(0.90);
 
     return AnimatedBuilder(
       animation: _animation,
@@ -84,7 +86,11 @@ class _GameCardState extends State<GameCard> with SingleTickerProviderStateMixin
                           Expanded(
                             child: Row(
                               children: [
-                                Icon(Iconsax.calendar_copy, size: 18, color: tertiaryColor),
+                                Icon(
+                                  Iconsax.calendar_copy,
+                                  size: 18,
+                                  color: tertiaryColor,
+                                ),
                                 const SizedBox(width: 8),
                                 Flexible(
                                   child: Text(
@@ -125,7 +131,11 @@ class _GameCardState extends State<GameCard> with SingleTickerProviderStateMixin
                       // Date and Time row
                       Row(
                         children: [
-                          Icon(Iconsax.clock_copy, size: 18, color: tertiaryColor),
+                          Icon(
+                            Iconsax.clock_copy,
+                            size: 18,
+                            color: tertiaryColor,
+                          ),
                           const SizedBox(width: 8),
                           Flexible(
                             child: Text(
@@ -145,13 +155,20 @@ class _GameCardState extends State<GameCard> with SingleTickerProviderStateMixin
                       // Location row
                       Row(
                         children: [
-                          Icon(Iconsax.location_copy, size: 18, color: tertiaryColor),
+                          Icon(
+                            Iconsax.location_copy,
+                            size: 18,
+                            color: tertiaryColor,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               widget.location,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: primaryColor, fontSize: 15),
+                              style: TextStyle(
+                                color: primaryColor,
+                                fontSize: 15,
+                              ),
                             ),
                           ),
                         ],
@@ -165,7 +182,10 @@ class _GameCardState extends State<GameCard> with SingleTickerProviderStateMixin
                           const SizedBox(width: 10),
                           Text(
                             '+${widget.othersCount} others',
-                            style: TextStyle(color: secondaryColor, fontSize: 14.5),
+                            style: TextStyle(
+                              color: secondaryColor,
+                              fontSize: 14.5,
+                            ),
                           ),
                         ],
                       ),
@@ -211,14 +231,18 @@ class _GameCardBackgroundPainter extends CustomPainter {
 
     // Animate gradient positions with a breathing effect
     final breathe = animationValue * 0.15; // Subtle 15% movement
-    
+
     // Layer 1: Animated linear gradient (reduced green opacity)
     final linearPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment(0.95 - breathe, 0.35 + breathe),
         end: Alignment(-0.95 + breathe, -0.35 - breathe),
         colors: _createSmoothGradient(
-          Color.lerp(const Color(0x3300FF9A), const Color.fromARGB(72, 0, 255, 153), animationValue * 0.3)!,
+          Color.lerp(
+            const Color(0x3300FF9A),
+            const Color.fromARGB(72, 0, 255, 153),
+            animationValue * 0.3,
+          )!,
           const Color(0x0000FF9A),
           steps: 12,
         ),
@@ -229,13 +253,14 @@ class _GameCardBackgroundPainter extends CustomPainter {
     // Layer 2: Animated radial gradient at bottom-left
     final radial2Paint = Paint()
       ..shader = RadialGradient(
-        center: Alignment(
-          -1.0 + (breathe * 0.5),
-          1.0 - (breathe * 0.3),
-        ),
+        center: Alignment(-1.0 + (breathe * 0.5), 1.0 - (breathe * 0.3)),
         radius: 1.4179 + (breathe * 0.2),
         colors: _createSmoothGradient(
-          Color.lerp(const Color(0x800BB8DD), const Color(0x9F0BB8DD), animationValue * 0.25)!,
+          Color.lerp(
+            const Color(0x800BB8DD),
+            const Color(0x9F0BB8DD),
+            animationValue * 0.25,
+          )!,
           const Color(0x000BB8DD),
           steps: 10,
         ),
@@ -246,13 +271,14 @@ class _GameCardBackgroundPainter extends CustomPainter {
     // Layer 3: Animated radial gradient at right side (main glow)
     final radial1Paint = Paint()
       ..shader = RadialGradient(
-        center: Alignment(
-          1.0 - (breathe * 0.4),
-          0.4752 + (breathe * 0.5),
-        ),
+        center: Alignment(1.0 - (breathe * 0.4), 0.4752 + (breathe * 0.5)),
         radius: 1.6781 + (breathe * 0.3),
         colors: _createSmoothGradient(
-          Color.lerp(const Color(0xFF5CFF00), const Color(0xFFAAFF55), animationValue * 0.2)!,
+          Color.lerp(
+            const Color(0xFF5CFF00),
+            const Color(0xFFAAFF55),
+            animationValue * 0.2,
+          )!,
           const Color(0x001E0E33),
           steps: 15,
         ),
@@ -269,14 +295,18 @@ class _GameCardBackgroundPainter extends CustomPainter {
 
     // Animate gradient positions with a breathing effect
     final breathe = animationValue * 0.15; // Subtle 15% movement
-    
+
     // Layer 1: Animated linear gradient (vibrant mint/teal)
     final linearPaint = Paint()
       ..shader = LinearGradient(
         begin: Alignment(0.95 - breathe, 0.35 + breathe),
         end: Alignment(-0.95 + breathe, -0.35 - breathe),
         colors: _createSmoothGradient(
-          Color.lerp(const Color(0x6600D9A3), const Color(0x8000D9A3), animationValue * 0.3)!,
+          Color.lerp(
+            const Color(0x6600D9A3),
+            const Color(0x8000D9A3),
+            animationValue * 0.3,
+          )!,
           const Color(0x0000D9A3),
           steps: 12,
         ),
@@ -287,13 +317,14 @@ class _GameCardBackgroundPainter extends CustomPainter {
     // Layer 2: Animated radial gradient at bottom-left (vibrant cyan/blue)
     final radial2Paint = Paint()
       ..shader = RadialGradient(
-        center: Alignment(
-          -1.0 + (breathe * 0.5),
-          1.0 - (breathe * 0.3),
-        ),
+        center: Alignment(-1.0 + (breathe * 0.5), 1.0 - (breathe * 0.3)),
         radius: 1.4179 + (breathe * 0.2),
         colors: _createSmoothGradient(
-          Color.lerp(const Color(0x8009A8DD), const Color(0x9F09A8DD), animationValue * 0.25)!,
+          Color.lerp(
+            const Color(0x8009A8DD),
+            const Color(0x9F09A8DD),
+            animationValue * 0.25,
+          )!,
           const Color(0x0009A8DD),
           steps: 10,
         ),
@@ -304,13 +335,14 @@ class _GameCardBackgroundPainter extends CustomPainter {
     // Layer 3: Animated radial gradient at right side (vibrant violet/purple)
     final radial1Paint = Paint()
       ..shader = RadialGradient(
-        center: Alignment(
-          1.0 - (breathe * 0.4),
-          0.4752 + (breathe * 0.5),
-        ),
+        center: Alignment(1.0 - (breathe * 0.4), 0.4752 + (breathe * 0.5)),
         radius: 1.6781 + (breathe * 0.3),
         colors: _createSmoothGradient(
-          Color.lerp(const Color(0xFFB88FFF), const Color(0xFFD4B3FF), animationValue * 0.2)!,
+          Color.lerp(
+            const Color(0xFFB88FFF),
+            const Color(0xFFD4B3FF),
+            animationValue * 0.2,
+          )!,
           const Color(0x00F5EDFF),
           steps: 15,
         ),
@@ -320,7 +352,11 @@ class _GameCardBackgroundPainter extends CustomPainter {
   }
 
   /// Creates smooth color transitions using exponential easing
-  List<Color> _createSmoothGradient(Color start, Color end, {required int steps}) {
+  List<Color> _createSmoothGradient(
+    Color start,
+    Color end, {
+    required int steps,
+  }) {
     final colors = <Color>[];
     for (int i = 0; i < steps; i++) {
       final t = i / (steps - 1);
@@ -332,7 +368,11 @@ class _GameCardBackgroundPainter extends CustomPainter {
   }
 
   /// Creates smooth stop positions with easing
-  List<double> _createSmoothStops(double start, double end, {required int steps}) {
+  List<double> _createSmoothStops(
+    double start,
+    double end, {
+    required int steps,
+  }) {
     final stops = <double>[];
     for (int i = 0; i < steps; i++) {
       final t = i / (steps - 1);
@@ -359,13 +399,13 @@ class _OutlinePill extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final pillColor = isDark ? Colors.white : const Color(0xFF1E0E33);
-    final backgroundColor = isDark 
-        ? Colors.white.withOpacity(0.05) 
+    final backgroundColor = isDark
+        ? Colors.white.withOpacity(0.05)
         : const Color(0xFF1E0E33).withOpacity(0.08);
-    final borderColor = isDark 
-        ? Colors.white.withOpacity(0.85) 
+    final borderColor = isDark
+        ? Colors.white.withOpacity(0.85)
         : const Color(0xFF1E0E33).withOpacity(0.90);
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(

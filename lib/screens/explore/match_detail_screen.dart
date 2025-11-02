@@ -32,7 +32,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
         slivers: [
           // App Bar with Hero Image
           _buildSliverAppBar(),
-          
+
           // Content
           SliverToBoxAdapter(
             child: Padding(
@@ -43,23 +43,23 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                   // Match Info Header
                   _buildMatchInfoHeader(),
                   const SizedBox(height: 24),
-                  
+
                   // Venue & Time Info
                   _buildVenueTimeInfo(),
                   const SizedBox(height: 24),
-                  
+
                   // Price & Payment Info
                   _buildPriceInfo(),
                   const SizedBox(height: 24),
-                  
+
                   // Roster Section
                   _buildRosterSection(),
                   const SizedBox(height: 24),
-                  
+
                   // Game Details
                   _buildGameDetails(),
                   const SizedBox(height: 24),
-                  
+
                   // Organizer Info
                   _buildOrganizerInfo(),
                   const SizedBox(height: 32),
@@ -79,20 +79,13 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
       pinned: true,
       backgroundColor: context.colors.surface,
       leading: IconButton(
-        icon: Icon(
-          LucideIcons.arrowLeft,
-          color: context.colors.onSurface,
-        ),
+        icon: Icon(LucideIcons.arrowLeft, color: context.colors.onSurface),
         onPressed: () => Navigator.of(context).pop(),
       ),
       actions: [
         IconButton(
-          icon: Icon(
-            LucideIcons.share2,
-            color: context.colors.onSurface,
-          ),
-          onPressed: () {
-          },
+          icon: Icon(LucideIcons.share2, color: context.colors.onSurface),
+          onPressed: () {},
         ),
         IconButton(
           icon: Icon(
@@ -138,7 +131,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                       ),
                     ),
             ),
-            
+
             // Gradient overlay
             Container(
               decoration: BoxDecoration(
@@ -152,13 +145,16 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                 ),
               ),
             ),
-            
+
             // Match status badge
             Positioned(
               top: 80,
               right: 20,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: _getStatusColor().withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(16),
@@ -239,11 +235,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
         children: [
           Row(
             children: [
-              Icon(
-                LucideIcons.mapPin,
-                size: 20,
-                color: context.colors.primary,
-              ),
+              Icon(LucideIcons.mapPin, size: 20, color: context.colors.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -270,19 +262,14 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                   LucideIcons.navigation,
                   color: context.colors.primary,
                 ),
-                onPressed: () {
-                },
+                onPressed: () {},
               ),
             ],
           ),
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(
-                LucideIcons.clock,
-                size: 20,
-                color: context.colors.primary,
-              ),
+              Icon(LucideIcons.clock, size: 20, color: context.colors.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -327,8 +314,9 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
 
   Widget _buildPriceInfo() {
     final isFree = widget.match.price == 0;
-    final spotsLeft = widget.match.maxParticipants - widget.match.participants.length;
-    
+    final spotsLeft =
+        widget.match.maxParticipants - widget.match.participants.length;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -364,12 +352,12 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: spotsLeft > 0 
+              color: spotsLeft > 0
                   ? Colors.green.withValues(alpha: 0.1)
                   : Colors.red.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: spotsLeft > 0 
+                color: spotsLeft > 0
                     ? Colors.green.withValues(alpha: 0.3)
                     : Colors.red.withValues(alpha: 0.3),
                 width: 1,
@@ -391,7 +379,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
   Widget _buildRosterSection() {
     final participants = widget.match.participants;
     final maxParticipants = widget.match.maxParticipants;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -415,7 +403,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        
+
         // Participants Grid
         GridView.builder(
           shrinkWrap: true,
@@ -438,7 +426,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
             }
           },
         ),
-        
+
         // Waitlist (if any)
         if (widget.match.waitlist.isNotEmpty) ...[
           const SizedBox(height: 16),
@@ -472,12 +460,12 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
   Widget _buildParticipantTile(Participant participant, bool isConfirmed) {
     return Container(
       decoration: BoxDecoration(
-        color: isConfirmed 
+        color: isConfirmed
             ? context.colors.surface
             : context.colors.outline.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isConfirmed 
+          color: isConfirmed
               ? context.colors.outline.withValues(alpha: 0.1)
               : context.colors.outline.withValues(alpha: 0.2),
           width: 1,
@@ -568,27 +556,27 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
             ),
           ),
           const SizedBox(height: 16),
-          
+
           _buildDetailRow(
             icon: LucideIcons.users,
             label: 'Format',
             value: widget.match.format.name,
           ),
           const SizedBox(height: 8),
-          
+
           _buildDetailRow(
             icon: LucideIcons.target,
             label: 'Skill Level',
             value: widget.match.skillLevel,
           ),
           const SizedBox(height: 8),
-          
+
           _buildDetailRow(
             icon: LucideIcons.clock,
             label: 'Duration',
             value: '${widget.match.duration.inMinutes} minutes',
           ),
-          
+
           if (widget.match.amenities.isNotEmpty) ...[
             const SizedBox(height: 8),
             _buildDetailRow(
@@ -609,11 +597,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
   }) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: context.colors.onSurfaceVariant,
-        ),
+        Icon(icon, size: 16, color: context.colors.onSurfaceVariant),
         const SizedBox(width: 8),
         Text(
           '$label:',
@@ -635,7 +619,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
 
   Widget _buildOrganizerInfo() {
     final organizer = widget.match.organizer;
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -679,8 +663,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
               LucideIcons.messageCircle,
               color: context.colors.primary,
             ),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -688,10 +671,11 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
   }
 
   Widget _buildBottomBar() {
-    final spotsLeft = widget.match.maxParticipants - widget.match.participants.length;
+    final spotsLeft =
+        widget.match.maxParticipants - widget.match.participants.length;
     final isFull = spotsLeft <= 0;
     final isPastDeadline = DateTime.now().isAfter(widget.match.startTime);
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -710,8 +694,12 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
               child: AppButton(
                 label: _isJoined ? 'Leave Game' : 'Join Game',
                 onPressed: _isJoining ? null : _handleJoinLeave,
-                variant: _isJoined ? ButtonVariant.secondary : ButtonVariant.primary,
-                leadingIcon: _isJoined ? LucideIcons.userMinus : LucideIcons.userPlus,
+                variant: _isJoined
+                    ? ButtonVariant.secondary
+                    : ButtonVariant.primary,
+                leadingIcon: _isJoined
+                    ? LucideIcons.userMinus
+                    : LucideIcons.userPlus,
                 isLoading: _isJoining,
               ),
             ),
@@ -728,8 +716,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
           const SizedBox(width: 12),
           AppButton(
             label: 'Share',
-            onPressed: () {
-            },
+            onPressed: () {},
             variant: ButtonVariant.secondary,
             leadingIcon: LucideIcons.share2,
           ),
@@ -746,7 +733,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
     try {
       // Simulate API call
       await Future.delayed(const Duration(seconds: 1));
-      
+
       setState(() {
         _isJoined = !_isJoined;
         _isJoining = false;
@@ -766,7 +753,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
       setState(() {
         _isJoining = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -781,7 +768,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
   Color _getStatusColor() {
     final now = DateTime.now();
     final timeUntilMatch = widget.match.startTime.difference(now);
-    
+
     if (timeUntilMatch.isNegative) {
       return Colors.grey;
     } else if (timeUntilMatch.inHours < 1) {
@@ -796,7 +783,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
   String _getStatusText() {
     final now = DateTime.now();
     final timeUntilMatch = widget.match.startTime.difference(now);
-    
+
     if (timeUntilMatch.isNegative) {
       return 'Ended';
     } else if (timeUntilMatch.inHours < 1) {
@@ -813,7 +800,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final matchDate = DateTime(dateTime.year, dateTime.month, dateTime.day);
-    
+
     String dateText;
     if (matchDate == today) {
       dateText = 'Today';
@@ -823,24 +810,25 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
       final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
       dateText = days[dateTime.weekday - 1];
     }
-    
-    final timeText = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
-    
+
+    final timeText =
+        '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+
     return '$dateText at $timeText';
   }
 
   String _getTimeUntilMatch() {
     final now = DateTime.now();
     final timeUntilMatch = widget.match.startTime.difference(now);
-    
+
     if (timeUntilMatch.isNegative) {
       return 'Ended';
     }
-    
+
     final days = timeUntilMatch.inDays;
     final hours = timeUntilMatch.inHours % 24;
     final minutes = timeUntilMatch.inMinutes % 60;
-    
+
     if (days > 0) {
       return '${days}d ${hours}h';
     } else if (hours > 0) {

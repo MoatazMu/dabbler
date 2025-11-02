@@ -121,16 +121,10 @@ class RewardsController extends StateNotifier<RewardsState> {
       await _loadUserRewards();
       await _loadRecentTransactions();
       await _loadPendingNotifications();
-      
-      state = state.copyWith(
-        isLoading: false,
-        lastUpdated: DateTime.now(),
-      );
+
+      state = state.copyWith(isLoading: false, lastUpdated: DateTime.now());
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -147,7 +141,10 @@ class RewardsController extends StateNotifier<RewardsState> {
   /// Load user's total points and tier information
   Future<void> _loadUserRewards() async {
     final tierResult = await _repository.getUserTier(userId);
-    final transactionsResult = await _repository.getPointTransactions(userId, limit: 100);
+    final transactionsResult = await _repository.getPointTransactions(
+      userId,
+      limit: 100,
+    );
 
     // Calculate total points from transactions
     double totalPoints = 0.0;
@@ -155,26 +152,32 @@ class RewardsController extends StateNotifier<RewardsState> {
     double weeklyPoints = 0.0;
 
     await transactionsResult.fold(
-      (failure) => throw Exception('Failed to load transactions: ${failure.message}'),
+      (failure) =>
+          throw Exception('Failed to load transactions: ${failure.message}'),
       (transactions) async {
         // Calculate totals from transactions
         totalPoints = transactions.fold(0.0, (sum, t) => sum + t.finalPoints);
-        
+
         final now = DateTime.now();
         final startOfDay = DateTime(now.year, now.month, now.day);
         final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
-        final startOfWeekDay = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
-        
+        final startOfWeekDay = DateTime(
+          startOfWeek.year,
+          startOfWeek.month,
+          startOfWeek.day,
+        );
+
         todayPoints = transactions
             .where((t) => t.createdAt.isAfter(startOfDay))
             .fold(0.0, (sum, t) => sum + t.finalPoints);
-            
+
         weeklyPoints = transactions
             .where((t) => t.createdAt.isAfter(startOfWeekDay))
             .fold(0.0, (sum, t) => sum + t.finalPoints);
 
         await tierResult.fold(
-          (failure) => throw Exception('Failed to load tier: ${failure.message}'),
+          (failure) =>
+              throw Exception('Failed to load tier: ${failure.message}'),
           (userTier) async {
             final tierProgress = userTier?.calculateProgress() ?? 0.0;
             final pointsToNext = userTier?.getPointsToNextTier() ?? 0.0;
@@ -201,7 +204,8 @@ class RewardsController extends StateNotifier<RewardsState> {
     );
 
     transactionsResult.fold(
-      (failure) => throw Exception('Failed to load transactions: ${failure.message}'),
+      (failure) =>
+          throw Exception('Failed to load transactions: ${failure.message}'),
       (transactions) {
         state = state.copyWith(recentTransactions: transactions);
       },
@@ -215,8 +219,6 @@ class RewardsController extends StateNotifier<RewardsState> {
     state = state.copyWith(pendingNotifications: []);
   }
 
-
-
   /// Add points and update state
   Future<void> addPoints({
     required double points,
@@ -227,7 +229,7 @@ class RewardsController extends StateNotifier<RewardsState> {
     try {
       // For now, simulate adding points by updating local state
       // In a real implementation, this would use a use case to add points
-      
+
       final transaction = PointTransaction(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: userId,
@@ -242,9 +244,10 @@ class RewardsController extends StateNotifier<RewardsState> {
       );
 
       // Update local state immediately
-      final updatedTransactions = [transaction, ...state.recentTransactions]
-          .take(_maxRecentTransactions)
-          .toList();
+      final updatedTransactions = [
+        transaction,
+        ...state.recentTransactions,
+      ].take(_maxRecentTransactions).toList();
 
       state = state.copyWith(
         totalPoints: state.totalPoints + points,
@@ -281,7 +284,8 @@ class RewardsController extends StateNotifier<RewardsState> {
         userId: userId,
         type: NotificationType.tierProgression,
         title: 'Tier Up!',
-        message: 'Congratulations! You\'ve reached ${newTierLevel.displayName}!',
+        message:
+            'Congratulations! You\'ve reached ${newTierLevel.displayName}!',
         data: {
           'previous_tier': state.currentTier?.level.level,
           'new_tier': newTierLevel.level,
@@ -292,7 +296,10 @@ class RewardsController extends StateNotifier<RewardsState> {
       );
 
       // Add to pending notifications
-      final updatedNotifications = [notification, ...state.pendingNotifications];
+      final updatedNotifications = [
+        notification,
+        ...state.pendingNotifications,
+      ];
       state = state.copyWith(pendingNotifications: updatedNotifications);
 
       // Refresh tier data
@@ -305,9 +312,11 @@ class RewardsController extends StateNotifier<RewardsState> {
   /// Mark notification as read
   void markNotificationRead(String notificationId) {
     final updatedNotifications = state.pendingNotifications
-        .map((notification) => notification.id == notificationId
-            ? notification.copyWith(isRead: true)
-            : notification)
+        .map(
+          (notification) => notification.id == notificationId
+              ? notification.copyWith(isRead: true)
+              : notification,
+        )
         .toList();
 
     state = state.copyWith(pendingNotifications: updatedNotifications);
@@ -323,7 +332,7 @@ class RewardsController extends StateNotifier<RewardsState> {
     final cached = state.cache[key];
     if (cached is Map<String, dynamic>) {
       final timestamp = cached['timestamp'] as DateTime?;
-      if (timestamp != null && 
+      if (timestamp != null &&
           DateTime.now().difference(timestamp) < _cacheExpiration) {
         return cached['value'] as T?;
       }
@@ -334,10 +343,7 @@ class RewardsController extends StateNotifier<RewardsState> {
   /// Set cached value
   void setCachedValue<T>(String key, T value) {
     final updatedCache = Map<String, dynamic>.from(state.cache);
-    updatedCache[key] = {
-      'value': value,
-      'timestamp': DateTime.now(),
-    };
+    updatedCache[key] = {'value': value, 'timestamp': DateTime.now()};
     state = state.copyWith(cache: updatedCache);
   }
 
@@ -362,7 +368,9 @@ class RewardsController extends StateNotifier<RewardsState> {
       tierProgress: state.tierProgress,
       pointsToNextTier: state.pointsToNextTier,
       recentTransactionCount: state.recentTransactions.length,
-      unreadNotifications: state.pendingNotifications.where((n) => !n.isRead).length,
+      unreadNotifications: state.pendingNotifications
+          .where((n) => !n.isRead)
+          .length,
       lastUpdated: state.lastUpdated,
     );
   }

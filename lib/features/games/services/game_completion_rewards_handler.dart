@@ -4,7 +4,6 @@ import '../../rewards/domain/entities/badge_tier.dart';
 
 /// Game completion integration with rewards system
 class GameCompletionRewardsHandler {
-  
   GameCompletionRewardsHandler();
 
   /// Handle game completion with rewards integration
@@ -18,8 +17,10 @@ class GameCompletionRewardsHandler {
     required BuildContext context,
   }) async {
     try {
-      debugPrint('Game completion handler called for user $userId, game $gameId');
-      
+      debugPrint(
+        'Game completion handler called for user $userId, game $gameId',
+      );
+
       // Calculate base points for game completion
       final pointsEarned = _calculateGamePoints(
         sport: sport,
@@ -27,12 +28,11 @@ class GameCompletionRewardsHandler {
         gameDuration: gameDuration,
         gameStats: gameStats,
       );
-      
+
       debugPrint('Points earned: $pointsEarned');
-      
+
       // Show haptic feedback
       HapticFeedback.mediumImpact();
-      
     } catch (e) {
       debugPrint('Error handling game completion rewards: $e');
     }
@@ -101,12 +101,18 @@ class GameCompletionRewardsHandler {
   /// Get milestone name for achievement
   String _getMilestoneName(int count) {
     switch (count) {
-      case 5: return 'Newcomer';
-      case 10: return 'Regular';
-      case 25: return 'Veteran';
-      case 50: return 'Expert';
-      case 100: return 'Master';
-      default: return 'Player';
+      case 5:
+        return 'Newcomer';
+      case 10:
+        return 'Regular';
+      case 25:
+        return 'Veteran';
+      case 50:
+        return 'Expert';
+      case 100:
+        return 'Master';
+      default:
+        return 'Player';
     }
   }
 }

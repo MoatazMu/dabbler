@@ -12,7 +12,8 @@ class PaymentMethodsScreen extends ConsumerStatefulWidget {
   const PaymentMethodsScreen({super.key});
 
   @override
-  ConsumerState<PaymentMethodsScreen> createState() => _PaymentMethodsScreenState();
+  ConsumerState<PaymentMethodsScreen> createState() =>
+      _PaymentMethodsScreenState();
 }
 
 class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
@@ -30,7 +31,9 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
     final userId = _authService.getCurrentUserId();
     if (userId == null) return;
 
-    ref.read(paymentMethodsControllerProvider(userId).notifier).loadPaymentMethods();
+    ref
+        .read(paymentMethodsControllerProvider(userId).notifier)
+        .loadPaymentMethods();
   }
 
   @override
@@ -38,9 +41,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
     final userId = _authService.getCurrentUserId();
     if (userId == null) {
       return Scaffold(
-        appBar: CustomAppBar(
-          actionIcon: Iconsax.card_copy,
-        ),
+        appBar: CustomAppBar(actionIcon: Iconsax.card_copy),
         body: const Center(
           child: Text('Please sign in to view payment methods'),
         ),
@@ -51,27 +52,25 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      appBar: CustomAppBar(
-        actionIcon: Iconsax.card_copy,
-      ),
+      appBar: CustomAppBar(actionIcon: Iconsax.card_copy),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
           : state.error != null
-              ? _buildErrorState(state.error!)
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(20, 116, 20, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildTransactionHistoryCard(context),
-                      const SizedBox(height: 16),
-                      _buildAddPaymentButton(context),
-                      const SizedBox(height: 24),
-                      _buildPaymentMethodsList(context, state.paymentMethods),
-                      const SizedBox(height: 32),
-                    ],
-                  ),
-                ),
+          ? _buildErrorState(state.error!)
+          : SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(20, 116, 20, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildTransactionHistoryCard(context),
+                  const SizedBox(height: 16),
+                  _buildAddPaymentButton(context),
+                  const SizedBox(height: 24),
+                  _buildPaymentMethodsList(context, state.paymentMethods),
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
     );
   }
 
@@ -80,11 +79,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            LucideIcons.alertCircle,
-            color: Colors.red,
-            size: 48,
-          ),
+          Icon(LucideIcons.alertCircle, color: Colors.red, size: 48),
           const SizedBox(height: 16),
           Text(
             error,
@@ -112,10 +107,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
           gradient: const LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF813FD6),
-              Color(0xFF9D5CE8),
-            ],
+            colors: [Color(0xFF813FD6), Color(0xFF9D5CE8)],
           ),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
@@ -197,33 +189,26 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
     );
   }
 
-  Widget _buildPaymentMethodsList(BuildContext context, List<pm.PaymentMethod> methods) {
+  Widget _buildPaymentMethodsList(
+    BuildContext context,
+    List<pm.PaymentMethod> methods,
+  ) {
     if (methods.isEmpty) {
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(32.0),
           child: Column(
             children: [
-              Icon(
-                LucideIcons.creditCard,
-                size: 64,
-                color: Colors.grey[400],
-              ),
+              Icon(LucideIcons.creditCard, size: 64, color: Colors.grey[400]),
               const SizedBox(height: 16),
               Text(
                 'No payment methods yet',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey[600]),
               ),
               const SizedBox(height: 8),
               Text(
                 'Add your first payment method to get started',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[500],
-                ),
+                style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -257,7 +242,10 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
     );
   }
 
-  Widget _buildPaymentMethodCard(BuildContext context, pm.PaymentMethod method) {
+  Widget _buildPaymentMethodCard(
+    BuildContext context,
+    pm.PaymentMethod method,
+  ) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -292,9 +280,14 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
                       if (method.isDefault) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -312,10 +305,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
                   const SizedBox(height: 4),
                   Text(
                     _getMethodSubtitle(method),
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
                 ],
               ),
@@ -505,10 +495,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: const Text(
-              'Delete',
-              style: TextStyle(color: Colors.red),
-            ),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
           ),
         ],
       ),
@@ -524,9 +511,9 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
         .deletePaymentMethod(method.id);
 
     if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Payment method deleted')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Payment method deleted')));
     } else if (!success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(

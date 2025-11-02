@@ -19,7 +19,14 @@ class RegisterFormState {
     this.user,
   });
 
-  RegisterFormState copyWith({String? email, String? password, bool? isLoading, String? error, AuthSession? session, User? user}) => RegisterFormState(
+  RegisterFormState copyWith({
+    String? email,
+    String? password,
+    bool? isLoading,
+    String? error,
+    AuthSession? session,
+    User? user,
+  }) => RegisterFormState(
     email: email ?? this.email,
     password: password ?? this.password,
     isLoading: isLoading ?? this.isLoading,
@@ -35,13 +42,21 @@ class RegisterController extends StateNotifier<RegisterFormState> {
 
   Future<void> register() async {
     state = state.copyWith(isLoading: true, error: null);
-    final result = await registerUseCase(RegisterParams(email: state.email, password: state.password));
+    final result = await registerUseCase(
+      RegisterParams(email: state.email, password: state.password),
+    );
     result.fold(
-      (failure) => state = state.copyWith(isLoading: false, error: failure.message),
-      (session) => state = state.copyWith(isLoading: false, session: session, error: null),
+      (failure) =>
+          state = state.copyWith(isLoading: false, error: failure.message),
+      (session) => state = state.copyWith(
+        isLoading: false,
+        session: session,
+        error: null,
+      ),
     );
   }
 
   void updateEmail(String email) => state = state.copyWith(email: email);
-  void updatePassword(String password) => state = state.copyWith(password: password);
+  void updatePassword(String password) =>
+      state = state.copyWith(password: password);
 }

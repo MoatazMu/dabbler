@@ -23,9 +23,9 @@ class OnboardingProgress extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!),
             minHeight: 4,
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Step indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -50,4 +50,4 @@ class OnboardingProgress extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -15,11 +15,7 @@ class HelpCenterScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.help_outline,
-              size: 64,
-              color: Colors.grey,
-            ),
+            Icon(Icons.help_outline, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
               'Help Center',

@@ -25,9 +25,7 @@ abstract class SportProfilesRepository {
   });
 
   /// Remove my sport preference (hard delete; no deleted_at column present).
-  Future<Result<void>> removeMySport({
-    required String sportKey,
-  });
+  Future<Result<void>> removeMySport({required String sportKey});
 
   /// Realtime stream of my preferences (composite PK uses user_id + sport_key).
   Stream<Result<List<SportProfile>>> watchMySports();

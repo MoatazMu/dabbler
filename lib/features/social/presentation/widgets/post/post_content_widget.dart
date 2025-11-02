@@ -25,7 +25,7 @@ class PostContentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -35,12 +35,10 @@ class PostContentWidget extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 12),
             child: Text(
               content,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                height: 1.4,
-              ),
+              style: theme.textTheme.bodyLarge?.copyWith(height: 1.4),
             ),
           ),
-        
+
         // Sports tags
         if (sports != null && sports!.isNotEmpty)
           Padding(
@@ -48,19 +46,21 @@ class PostContentWidget extends StatelessWidget {
             child: Wrap(
               spacing: 8,
               runSpacing: 4,
-              children: sports!.map((sport) => _buildSportChip(theme, sport)).toList(),
+              children: sports!
+                  .map((sport) => _buildSportChip(theme, sport))
+                  .toList(),
             ),
           ),
-        
+
         // Media grid
         if (media != null && media!.isNotEmpty)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
             child: _buildMediaGrid(theme),
           ),
-        
+
         // Mentions and hashtags
-        if ((mentions != null && mentions!.isNotEmpty) || 
+        if ((mentions != null && mentions!.isNotEmpty) ||
             (hashtags != null && hashtags!.isNotEmpty))
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
@@ -178,12 +178,13 @@ class PostContentWidget extends StatelessWidget {
   }
 
   Widget _buildSingleMedia(ThemeData theme, dynamic mediaItem, int index) {
-    final isImage = mediaItem['type'] == 'image' || 
-                   mediaItem['url'].toString().contains('image') ||
-                   mediaItem['url'].toString().contains('jpg') ||
-                   mediaItem['url'].toString().contains('png') ||
-                   mediaItem['url'].toString().contains('jpeg');
-    
+    final isImage =
+        mediaItem['type'] == 'image' ||
+        mediaItem['url'].toString().contains('image') ||
+        mediaItem['url'].toString().contains('jpg') ||
+        mediaItem['url'].toString().contains('png') ||
+        mediaItem['url'].toString().contains('jpeg');
+
     return GestureDetector(
       onTap: () => onMediaTap?.call(index),
       child: Container(
@@ -195,12 +196,13 @@ class PostContentWidget extends StatelessWidget {
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
           child: isImage
-            ? Image.network(
-                mediaItem['url'],
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _buildMediaPlaceholder(theme),
-              )
-            : _buildMediaPlaceholder(theme),
+              ? Image.network(
+                  mediaItem['url'],
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      _buildMediaPlaceholder(theme),
+                )
+              : _buildMediaPlaceholder(theme),
         ),
       ),
     );
@@ -225,7 +227,7 @@ class PostContentWidget extends StatelessWidget {
         // Mentions
         if (mentions != null)
           ...mentions!.map((mention) => _buildMentionChip(theme, mention)),
-        
+
         // Hashtags
         if (hashtags != null)
           ...hashtags!.map((hashtag) => _buildHashtagChip(theme, hashtag)),

@@ -46,17 +46,11 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
           SnackBar(
             content: Row(
               children: [
-                Icon(
-                  LucideIcons.alertCircle,
-                  color: Colors.white,
-                  size: 16,
-                ),
+                Icon(LucideIcons.alertCircle, color: Colors.white, size: 16),
                 const SizedBox(width: 8),
                 Text(
                   'Failed to load draft: $e',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -84,19 +78,17 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     return AnimatedBuilder(
       animation: _viewModel,
       builder: (context, child) {
-    return Scaffold(
+        return Scaffold(
           backgroundColor: context.colors.surface,
           appBar: _buildAppBar(context),
           body: Column(
             children: [
               // Progress indicator
               _buildProgressIndicator(context),
-              
+
               // Step content
-              Expanded(
-                child: _buildStepContent(context),
-              ),
-              
+              Expanded(child: _buildStepContent(context)),
+
               // Navigation buttons
               _buildNavigationButtons(context),
             ],
@@ -143,9 +135,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
               onPressed: () => _viewModel.reset(),
               style: TextButton.styleFrom(
                 foregroundColor: context.colors.primary,
-                textStyle: TextStyle(
-                  fontWeight: FontWeight.w600,
-                ),
+                textStyle: TextStyle(fontWeight: FontWeight.w600),
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 minimumSize: const Size(80, kToolbarHeight),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -182,7 +172,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
           ),
         ],
       ),
-        child: Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Top row with step info and percentage
@@ -221,7 +211,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                   if (canSaveAsDraft) ...[
                     const SizedBox(width: 12),
                     GestureDetector(
-                      onTap: isLoading ? null : () => _handleSaveAsDraft(context),
+                      onTap: isLoading
+                          ? null
+                          : () => _handleSaveAsDraft(context),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 12,
@@ -231,7 +223,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                           color: context.colors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: context.colors.primary.withValues(alpha: 0.2),
+                            color: context.colors.primary.withValues(
+                              alpha: 0.2,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -261,7 +255,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          
+
           // Progress bar with step indicators
           Stack(
             alignment: Alignment.centerLeft,
@@ -296,7 +290,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                 children: List.generate(totalSteps, (index) {
                   final isCompleted = index < stepIndex;
                   final isCurrent = index == stepIndex;
-                  
+
                   return Container(
                     width: 12,
                     height: 12,
@@ -322,9 +316,10 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
               ),
             ],
           ),
-          
+
           // Last saved indicator (if draft exists)
-          if (_viewModel.state.isDraft && _viewModel.state.lastSaved != null) ...[
+          if (_viewModel.state.isDraft &&
+              _viewModel.state.lastSaved != null) ...[
             const SizedBox(height: 8),
             Row(
               children: [
@@ -352,7 +347,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   String _getTimeAgo(DateTime dateTime) {
     final now = DateTime.now();
     final difference = now.difference(dateTime);
-    
+
     if (difference.inMinutes < 1) {
       return 'just now';
     } else if (difference.inMinutes < 60) {
@@ -367,23 +362,17 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
   void _handleSaveAsDraft(BuildContext context) async {
     try {
       await _viewModel.saveAsDraft();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
               children: [
-                Icon(
-                  LucideIcons.check,
-                  color: Colors.white,
-                  size: 16,
-                ),
+                Icon(LucideIcons.check, color: Colors.white, size: 16),
                 const SizedBox(width: 8),
                 const Text(
                   'Draft saved successfully',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -403,17 +392,11 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
           SnackBar(
             content: Row(
               children: [
-                Icon(
-                  LucideIcons.alertCircle,
-                  color: Colors.white,
-                  size: 16,
-                ),
+                Icon(LucideIcons.alertCircle, color: Colors.white, size: 16),
                 const SizedBox(width: 8),
                 Text(
                   'Failed to save draft: $e',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -475,9 +458,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                 leadingIcon: LucideIcons.arrowLeft,
               ),
             ),
-          
+
           if (canGoBack) const SizedBox(width: 12),
-          
+
           // Next/Create button
           Expanded(
             flex: canGoBack ? 1 : 2,
@@ -494,11 +477,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
     );
   }
 
-  
-
   void _handleNextPressed() async {
     final state = _viewModel.state;
-    
+
     if (state.currentStep == GameCreationStep.reviewAndConfirm) {
       // Final step - create the game
       final success = await _viewModel.createGame();
@@ -581,11 +562,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                 color: Colors.green.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(
-                LucideIcons.check,
-                color: Colors.green,
-                size: 20,
-              ),
+              child: Icon(LucideIcons.check, color: Colors.green, size: 20),
             ),
             const SizedBox(width: 12),
             Text(

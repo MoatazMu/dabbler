@@ -12,29 +12,34 @@ import '../../../../utils/enums/social_enums.dart'; // Import MessageType
 // =============================================================================
 
 /// Provider for PostsController
-final postsControllerProvider = StateNotifierProvider<PostsController, PostsState>((ref) {
-  // Placeholder implementation - in real app, inject proper use cases
-  throw UnimplementedError('PostsController dependencies not implemented');
-});
+final postsControllerProvider =
+    StateNotifierProvider<PostsController, PostsState>((ref) {
+      // Placeholder implementation - in real app, inject proper use cases
+      throw UnimplementedError('PostsController dependencies not implemented');
+    });
 
 // =============================================================================
 // SOCIAL FEED CONTROLLER PROVIDER
 // =============================================================================
 
 /// Provider for SocialFeedController
-final socialFeedControllerProvider = StateNotifierProvider<SocialFeedController, SocialFeedState>((ref) {
-  return SocialFeedController();
-});
+final socialFeedControllerProvider =
+    StateNotifierProvider<SocialFeedController, SocialFeedState>((ref) {
+      return SocialFeedController();
+    });
 
 // =============================================================================
 // FRIENDS CONTROLLER PROVIDER
 // =============================================================================
 
 /// Provider for FriendsController
-final friendsControllerProvider = StateNotifierProvider<FriendsController, FriendsState>((ref) {
-  // Placeholder implementation - in real app, inject proper use cases
-  throw UnimplementedError('FriendsController dependencies not implemented');
-});
+final friendsControllerProvider =
+    StateNotifierProvider<FriendsController, FriendsState>((ref) {
+      // Placeholder implementation - in real app, inject proper use cases
+      throw UnimplementedError(
+        'FriendsController dependencies not implemented',
+      );
+    });
 
 // =============================================================================
 // FRIENDS COMPUTED PROVIDERS
@@ -69,7 +74,10 @@ final hasPendingFriendRequestsProvider = Provider<bool>((ref) {
 // =============================================================================
 
 /// Friend profile provider
-final friendProfileProvider = FutureProvider.family<dynamic, String>((ref, friendId) async {
+final friendProfileProvider = FutureProvider.family<dynamic, String>((
+  ref,
+  friendId,
+) async {
   // Mock friend profile object using a simple map-like dynamic with fields used in widgets
   await Future.delayed(const Duration(milliseconds: 200));
   return _MockFriend(
@@ -84,31 +92,46 @@ final friendProfileProvider = FutureProvider.family<dynamic, String>((ref, frien
 });
 
 /// Mutual friends provider
-final mutualFriendsProvider = FutureProvider.family<List<dynamic>, String>((ref, friendId) async {
+final mutualFriendsProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  friendId,
+) async {
   await Future.delayed(const Duration(milliseconds: 200));
-  return List.generate(6, (i) => _MockFriend(
-    id: 'mutual_$i',
-    name: 'Mutual Friend $i',
-    username: 'mutual_$i',
-    avatarUrl: null,
-  ));
+  return List.generate(
+    6,
+    (i) => _MockFriend(
+      id: 'mutual_$i',
+      name: 'Mutual Friend $i',
+      username: 'mutual_$i',
+      avatarUrl: null,
+    ),
+  );
 });
 
 /// Shared activities provider
-final sharedActivitiesProvider = FutureProvider.family<List<dynamic>, String>((ref, friendId) async {
+final sharedActivitiesProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  friendId,
+) async {
   await Future.delayed(const Duration(milliseconds: 200));
-  return List.generate(4, (i) => _MockActivity(
-    id: 'activity_$i',
-    title: 'Pickup Game $i',
-    description: 'Friendly match at the park',
-    type: i % 2 == 0 ? 'soccer' : 'basketball',
-    date: DateTime.now().subtract(Duration(days: i)),
-    location: 'City Park',
-  ));
+  return List.generate(
+    4,
+    (i) => _MockActivity(
+      id: 'activity_$i',
+      title: 'Pickup Game $i',
+      description: 'Friendly match at the park',
+      type: i % 2 == 0 ? 'soccer' : 'basketball',
+      date: DateTime.now().subtract(Duration(days: i)),
+      location: 'City Park',
+    ),
+  );
 });
 
 /// Common interests provider
-final commonInterestsProvider = FutureProvider.family<List<dynamic>, String>((ref, friendId) async {
+final commonInterestsProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  friendId,
+) async {
   await Future.delayed(const Duration(milliseconds: 200));
   return [
     _MockInterest(name: 'Football', type: 'sports'),
@@ -161,14 +184,16 @@ class _MockInterest {
 }
 
 // =============================================================================
-// CHAT CONTROLLER PROVIDER  
+// CHAT CONTROLLER PROVIDER
 // =============================================================================
 
 /// Provider for ChatController
-final chatControllerProvider = StateNotifierProvider<ChatController, ChatState>((ref) {
-  // In real implementation, inject use case dependency
-  throw UnimplementedError('ChatController use case dependency not provided');
-});
+final chatControllerProvider = StateNotifierProvider<ChatController, ChatState>(
+  (ref) {
+    // In real implementation, inject use case dependency
+    throw UnimplementedError('ChatController use case dependency not provided');
+  },
+);
 
 // =============================================================================
 // COMPUTED PROVIDERS (DERIVED STATE)
@@ -221,10 +246,8 @@ final newMessagesStreamProvider = StreamProvider<List<ChatMessageModel>>((ref) {
 /// Provider for notification badges
 final notificationBadgesProvider = Provider<Map<String, int>>((ref) {
   final unreadMessages = ref.watch(totalUnreadMessagesProvider);
-  
-  return {
-    'messages': unreadMessages,
-  };
+
+  return {'messages': unreadMessages};
 });
 
 /// Provider for checking if there are any notifications
@@ -238,27 +261,26 @@ final hasNotificationsProvider = Provider<bool>((ref) {
 // =============================================================================
 
 /// Provider for conversation participants
-final conversationParticipantsProvider = FutureProvider.family<List<dynamic>, String>((ref, conversationId) async {
-  // Mock implementation - in real app, this would fetch from repository
-  await Future.delayed(const Duration(milliseconds: 300));
-  return [
-    {
-      'id': 'user1',
-      'name': 'John Doe',
-      'avatarUrl': null,
-      'isAdmin': true,
-    },
-    {
-      'id': 'user2',
-      'name': 'Jane Smith',
-      'avatarUrl': null,
-      'isAdmin': false,
-    },
-  ];
-});
+final conversationParticipantsProvider =
+    FutureProvider.family<List<dynamic>, String>((ref, conversationId) async {
+      // Mock implementation - in real app, this would fetch from repository
+      await Future.delayed(const Duration(milliseconds: 300));
+      return [
+        {'id': 'user1', 'name': 'John Doe', 'avatarUrl': null, 'isAdmin': true},
+        {
+          'id': 'user2',
+          'name': 'Jane Smith',
+          'avatarUrl': null,
+          'isAdmin': false,
+        },
+      ];
+    });
 
 /// Provider for conversation media
-final conversationMediaProvider = FutureProvider.family<List<dynamic>, String>((ref, conversationId) async {
+final conversationMediaProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  conversationId,
+) async {
   // Mock implementation - in real app, this would fetch from repository
   await Future.delayed(const Duration(milliseconds: 300));
   return [
@@ -314,7 +336,10 @@ final recentChatContactsProvider = Provider<List<Map<String, dynamic>>>((ref) {
 // =============================================================================
 
 /// Provider for post details
-final postDetailsProvider = FutureProvider.family<dynamic, String>((ref, postId) async {
+final postDetailsProvider = FutureProvider.family<dynamic, String>((
+  ref,
+  postId,
+) async {
   // Mock implementation - in real app, this would fetch from repository
   await Future.delayed(const Duration(milliseconds: 300));
   return _MockPost(
@@ -344,7 +369,10 @@ final postDetailsProvider = FutureProvider.family<dynamic, String>((ref, postId)
 });
 
 /// Provider for post comments
-final postCommentsProvider = FutureProvider.family<List<dynamic>, String>((ref, postId) async {
+final postCommentsProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  postId,
+) async {
   // Mock implementation - in real app, this would fetch from repository
   await Future.delayed(const Duration(milliseconds: 300));
   return [
@@ -406,7 +434,10 @@ final postCommentsCountProvider = Provider.family<int, String>((ref, postId) {
 });
 
 /// Provider for post likes
-final postLikesProvider = FutureProvider.family<List<dynamic>, String>((ref, postId) async {
+final postLikesProvider = FutureProvider.family<List<dynamic>, String>((
+  ref,
+  postId,
+) async {
   // Mock implementation - in real app, this would fetch from repository
   await Future.delayed(const Duration(milliseconds: 300));
   return [
@@ -517,10 +548,7 @@ class _MockLike {
   final _MockUser user;
   final ReactionType reactionType;
 
-  const _MockLike({
-    required this.user,
-    required this.reactionType,
-  });
+  const _MockLike({required this.user, required this.reactionType});
 }
 
 // =============================================================================
@@ -531,10 +559,10 @@ class _MockLike {
 extension SocialProvidersExtension on WidgetRef {
   // Controllers
   ChatController get chatController => read(chatControllerProvider.notifier);
-  
+
   // States
   ChatState get chatState => watch(chatControllerProvider);
-  
+
   // Computed values
   int get totalUnreadMessages => watch(totalUnreadMessagesProvider);
   bool get hasNotifications => watch(hasNotificationsProvider);

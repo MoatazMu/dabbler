@@ -76,9 +76,7 @@ class CircleRepositoryImpl implements CircleRepository {
     try {
       final uid = svc.authUserId();
       if (uid == null) {
-        yield left(
-          const AuthFailure(message: 'Not authenticated'),
-        );
+        yield left(const AuthFailure(message: 'Not authenticated'));
         return;
       }
 
@@ -103,9 +101,7 @@ class CircleRepositoryImpl implements CircleRepository {
     try {
       final rows = await _db.rpc('rpc_friend_requests_inbox');
       if (rows is List) return right(rows.cast<Map<String, dynamic>>());
-      return left(
-        ServerFailure(message: 'Unexpected inbox shape'),
-      );
+      return left(ServerFailure(message: 'Unexpected inbox shape'));
     } catch (e) {
       return left(svc.mapPostgrestError(e));
     }
@@ -116,9 +112,7 @@ class CircleRepositoryImpl implements CircleRepository {
     try {
       final rows = await _db.rpc('rpc_friend_requests_outbox');
       if (rows is List) return right(rows.cast<Map<String, dynamic>>());
-      return left(
-        ServerFailure(message: 'Unexpected outbox shape'),
-      );
+      return left(ServerFailure(message: 'Unexpected outbox shape'));
     } catch (e) {
       return left(svc.mapPostgrestError(e));
     }
@@ -132,7 +126,8 @@ class CircleRepositoryImpl implements CircleRepository {
   }) async {
     try {
       var q = _db.from('v_squad_card').select();
-      if (squadId != null) q = q.eq('id', squadId); // best-effort generic filter
+      if (squadId != null)
+        q = q.eq('id', squadId); // best-effort generic filter
       if (limit != null && offset != null) {
         q = q.range(offset, offset + limit - 1);
       }

@@ -18,7 +18,7 @@ class ProfileScreen extends ConsumerStatefulWidget {
   ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen> 
+class _ProfileScreenState extends ConsumerState<ProfileScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _refreshController;
@@ -40,16 +40,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController, 
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
-    
+
     // Load initial data
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadProfileData();
@@ -86,7 +86,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileControllerProvider);
     final sportsState = ref.watch(sportsProfileControllerProvider);
-    
+
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _onRefresh,
@@ -134,9 +134,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           'My Profile',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         centerTitle: false,
         titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
@@ -154,7 +154,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Widget _buildProfileHeader(BuildContext context, ProfileState profileState) {
     final profile = profileState.profile;
-    
+
     return Container(
       margin: const EdgeInsets.all(20),
       padding: const EdgeInsets.all(24),
@@ -177,13 +177,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 tag: 'profile-avatar',
                 child: CircleAvatar(
                   radius: 50,
-                  backgroundColor: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                  backgroundImage: profile?.avatarUrl != null 
-                      ? (profile!.avatarUrl!.startsWith('assets/') 
-                          ? AssetImage(profile.avatarUrl!) as ImageProvider
-                          : NetworkImage(profile.avatarUrl!))
+                  backgroundColor: Theme.of(
+                    context,
+                  ).primaryColor.withValues(alpha: 0.1),
+                  backgroundImage: profile?.avatarUrl != null
+                      ? (profile!.avatarUrl!.startsWith('assets/')
+                            ? AssetImage(profile.avatarUrl!) as ImageProvider
+                            : NetworkImage(profile.avatarUrl!))
                       : null,
-                  child: profile?.avatarUrl == null 
+                  child: profile?.avatarUrl == null
                       ? Icon(
                           Icons.person,
                           size: 50,
@@ -220,18 +222,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           const SizedBox(height: 16),
           Text(
             profile?.getDisplayName() ?? 'Add Your Name',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           if (profile?.bio != null) ...[
             const SizedBox(height: 8),
             Text(
               profile!.bio!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
@@ -264,17 +266,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
         ),
       ],
     );
   }
 
-  Widget _buildProfileCompletion(BuildContext context, ProfileState profileState) {
+  Widget _buildProfileCompletion(
+    BuildContext context,
+    ProfileState profileState,
+  ) {
     final completion = _calculateCompletion(profileState.profile);
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.all(20),
@@ -306,9 +311,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               const SizedBox(width: 8),
               Text(
                 'Profile Completion',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               ),
               const Spacer(),
               Text(
@@ -349,7 +354,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Widget _buildBasicInfo(BuildContext context, ProfileState profileState) {
     final profile = profileState.profile;
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.all(20),
@@ -371,9 +376,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             children: [
               Text(
                 'Basic Information',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               IconButton(
@@ -389,16 +394,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           if (profile?.phoneNumber != null)
             _buildInfoRow(context, Icons.phone_outlined, profile!.phoneNumber!),
           if (profile?.location != null)
-            _buildInfoRow(context, Icons.location_on_outlined, profile!.location!),
+            _buildInfoRow(
+              context,
+              Icons.location_on_outlined,
+              profile!.location!,
+            ),
           if (profile?.dateOfBirth != null)
             _buildInfoRow(
-              context, 
-              Icons.cake_outlined, 
+              context,
+              Icons.cake_outlined,
               '${_calculateAge(profile!.dateOfBirth!)} years old',
             ),
-          if (profile == null || 
-              (profile.email.isEmpty && profile.phoneNumber == null && 
-               profile.location == null && profile.dateOfBirth == null))
+          if (profile == null ||
+              (profile.email.isEmpty &&
+                  profile.phoneNumber == null &&
+                  profile.location == null &&
+                  profile.dateOfBirth == null))
             _buildEmptyState(context, 'Add your basic information'),
         ],
       ),
@@ -413,17 +424,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           Icon(icon, size: 20, color: Colors.grey[600]),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              text,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSportsProfiles(BuildContext context, SportsProfileState sportsState) {
+  Widget _buildSportsProfiles(
+    BuildContext context,
+    SportsProfileState sportsState,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: Column(
@@ -433,9 +444,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             children: [
               Text(
                 'Sports Profiles',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const Spacer(),
               TextButton(
@@ -491,7 +502,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                    color: Theme.of(
+                      context,
+                    ).primaryColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Icon(
@@ -503,7 +516,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 if (sport.isPrimarySport) ...[
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange,
                       borderRadius: BorderRadius.circular(8),
@@ -520,9 +536,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             const SizedBox(height: 12),
             Text(
               sport.sportName,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -537,9 +553,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             const SizedBox(height: 8),
             Text(
               '${sport.yearsPlaying} years',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
             ),
             if (sport.achievements.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -547,9 +563,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 spacing: 4,
                 children: sport.achievements.take(2).map((achievement) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+                      color: Theme.of(
+                        context,
+                      ).primaryColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
@@ -569,7 +590,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  Widget _buildStatisticsSummary(BuildContext context, ProfileState profileState) {
+  Widget _buildStatisticsSummary(
+    BuildContext context,
+    ProfileState profileState,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       padding: const EdgeInsets.all(20),
@@ -589,18 +613,28 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         children: [
           Text(
             'Activity Summary',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
-                child: _buildStatColumn(context, 'Games Played', '12', Icons.sports_soccer),
+                child: _buildStatColumn(
+                  context,
+                  'Games Played',
+                  '12',
+                  Icons.sports_soccer,
+                ),
               ),
               Expanded(
-                child: _buildStatColumn(context, 'Win Rate', '67%', Icons.emoji_events),
+                child: _buildStatColumn(
+                  context,
+                  'Win Rate',
+                  '67%',
+                  Icons.emoji_events,
+                ),
               ),
             ],
           ),
@@ -608,10 +642,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           Row(
             children: [
               Expanded(
-                child: _buildStatColumn(context, 'Average Rating', '4.8', Icons.star),
+                child: _buildStatColumn(
+                  context,
+                  'Average Rating',
+                  '4.8',
+                  Icons.star,
+                ),
               ),
               Expanded(
-                child: _buildStatColumn(context, 'Friends Made', '24', Icons.people),
+                child: _buildStatColumn(
+                  context,
+                  'Friends Made',
+                  '24',
+                  Icons.people,
+                ),
               ),
             ],
           ),
@@ -620,7 +664,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  Widget _buildStatColumn(BuildContext context, String label, String value, IconData icon) {
+  Widget _buildStatColumn(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -630,11 +679,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            color: Theme.of(context).primaryColor,
-            size: 24,
-          ),
+          child: Icon(icon, color: Theme.of(context).primaryColor, size: 24),
         ),
         const SizedBox(height: 8),
         Text(
@@ -647,9 +692,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
           textAlign: TextAlign.center,
         ),
       ],
@@ -666,17 +711,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.info_outline,
-            color: Colors.grey[400],
-            size: 32,
-          ),
+          Icon(Icons.info_outline, color: Colors.grey[400], size: 32),
           const SizedBox(height: 8),
           Text(
             message,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -715,7 +756,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   int _calculateAge(DateTime dateOfBirth) {
     final today = DateTime.now();
     int age = today.year - dateOfBirth.year;
-    if (today.month < dateOfBirth.month || 
+    if (today.month < dateOfBirth.month ||
         (today.month == dateOfBirth.month && today.day < dateOfBirth.day)) {
       age--;
     }
@@ -774,7 +815,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     // Get current user ID from profile state
     final profileState = ref.watch(profileControllerProvider);
     final userProfile = profileState.profile;
-    
+
     if (userProfile == null) {
       return const SizedBox.shrink();
     }
@@ -784,9 +825,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ProfileRewardsWidget(
-            userId: userProfile.id,
-          ),
+          ProfileRewardsWidget(userId: userProfile.id),
           const SizedBox(height: 12),
           Align(
             alignment: Alignment.centerRight,
@@ -795,7 +834,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               icon: const Icon(Icons.leaderboard_outlined, size: 18),
               label: const Text('View Leaderboard'),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 textStyle: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
