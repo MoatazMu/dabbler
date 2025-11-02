@@ -5,11 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:intl/intl.dart';
-import 'package:dabbler/data/models/game.dart';
 // import 'package:dabbler/core/services/games_service.dart'; // File doesn't exist
 import 'package:dabbler/themes/app_theme.dart';
-import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/core/services/auth_service.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/widgets/game_card.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
 import 'package:dabbler/widgets/category_buttons.dart';
@@ -82,77 +81,82 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 // Rank and Notification Row
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // Rank/Leaderboard Button
-                    GestureDetector(
-                      onTap: () {
-                        context.go(RoutePaths.rewards);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.12),
-                            width: 1,
+                    // Rank/Leaderboard Button (hidden when rewards disabled)
+                    if (FeatureFlags.enablePlayerRatings)
+                      GestureDetector(
+                        onTap: () {
+                          context.go(RoutePaths.rewards);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 10,
                           ),
-                          gradient: const LinearGradient(
-                            begin: Alignment.centerLeft,
-                            end: Alignment.centerRight,
-                            colors: [Color(0xFF7B4397), Color(0xFFDC2430)],
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Iconsax.cup_copy,
-                              size: 20,
-                              color: Colors.white,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.12),
+                              width: 1,
                             ),
-                            const SizedBox(width: 8),
-                            const Text(
-                              'Silver',
-                              style: TextStyle(
+                            gradient: const LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [Color(0xFF7B4397), Color(0xFFDC2430)],
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Iconsax.cup_copy,
+                                size: 20,
                                 color: Colors.white,
-                                fontFamily: 'Inter',
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                height: 1.43,
-                                letterSpacing: -0.15,
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Notification Icon
-                    GestureDetector(
-                      onTap: () {
-                        context.go(RoutePaths.notifications);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: const Color(0xFFEBD7FA).withOpacity(0.24),
-                            width: 1,
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Silver',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.43,
+                                  letterSpacing: -0.15,
+                                ),
+                              ),
+                            ],
                           ),
-                          color: const Color(0xFF301C4D),
-                        ),
-                        child: Icon(
-                          Iconsax.notification_copy,
-                          size: 24,
-                          color: const Color(0xFFEBD7FA),
                         ),
                       ),
-                    ),
+                    if (FeatureFlags.enablePlayerRatings &&
+                        FeatureFlags.notifications)
+                      const SizedBox(width: 12),
+
+                    // Notification Icon (hidden when notifications disabled)
+                    if (FeatureFlags.notifications)
+                      GestureDetector(
+                        onTap: () {
+                          context.go(RoutePaths.notifications);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: const Color(0xFFEBD7FA).withOpacity(0.24),
+                              width: 1,
+                            ),
+                            color: const Color(0xFF301C4D),
+                          ),
+                          child: Icon(
+                            Iconsax.notification_copy,
+                            size: 24,
+                            color: const Color(0xFFEBD7FA),
+                          ),
+                        ),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 20),

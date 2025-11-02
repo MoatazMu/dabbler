@@ -12,7 +12,7 @@ class ActionCards extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // MVP: Hide Create Game card if feature is disabled
-    if (!FeatureFlags.enableGameCreation) {
+    if (!FeatureFlags.createGamePublic) {
       // Show only Join Game card, centered and full width
       return _ActionCard(
         icon: Iconsax.discover_copy,

@@ -46,6 +46,17 @@ class FeatureFlags {
   // HIDDEN FEATURES (Future Release)
   // ============================================================================
 
+  /// Central MVP feature flags (UI gating only; do not delete code).
+  static const bool multiSport = false;
+  static const bool organiserProfile = false;
+  static const bool createGamePublic =
+      false; // admin-only create stays; hide public surfaces
+  static const bool socialFeed = false;
+  static const bool messaging = false;
+  static const bool notifications = false;
+  static const bool squads = false;
+  static const bool venuesBooking = false; // venues remain read-only
+
   /// Game Management (Admin/Testing Only)
   static const bool enableGameCreation = false; // Hide from users
   static const bool enableGameEditing = false;

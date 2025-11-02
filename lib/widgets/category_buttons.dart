@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../themes/app_theme.dart';
+import '../core/config/feature_flags.dart';
 
 /// Category Buttons Widget - Community, Sports, Activities
 /// Polished with proper button states and theme support
@@ -19,35 +20,43 @@ class CategoryButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        // Community Button
+    final List<Widget> buttons = [];
+
+    // Community Button (gated by socialFeed flag)
+    if (FeatureFlags.socialFeed) {
+      buttons.add(
         _CategoryButton(
           icon: Iconsax.hashtag_copy,
           label: 'Community',
           accentColor: const Color(0xFFFFCA71), // Golden yellow
           onTap: onCommunityTap,
         ),
-        const SizedBox(width: 8),
+      );
+      buttons.add(const SizedBox(width: 8));
+    }
 
-        // Sports Button
-        _CategoryButton(
-          icon: Iconsax.game_copy,
-          label: 'Sports',
-          accentColor: const Color(0xFF05DF72), // Green
-          onTap: onSportsTap,
-        ),
-        const SizedBox(width: 8),
-
-        // Activities Button
-        _CategoryButton(
-          icon: Iconsax.archive_copy,
-          label: 'Activities',
-          accentColor: const Color(0xFFFF8383), // Coral red
-          onTap: onActivitiesTap,
-        ),
-      ],
+    // Sports Button (always visible for MVP)
+    buttons.add(
+      _CategoryButton(
+        icon: Iconsax.game_copy,
+        label: 'Sports',
+        accentColor: const Color(0xFF05DF72), // Green
+        onTap: onSportsTap,
+      ),
     );
+    buttons.add(const SizedBox(width: 8));
+
+    // Activities Button (always visible for MVP)
+    buttons.add(
+      _CategoryButton(
+        icon: Iconsax.archive_copy,
+        label: 'Activities',
+        accentColor: const Color(0xFFFF8383), // Coral red
+        onTap: onActivitiesTap,
+      ),
+    );
+
+    return Row(children: buttons);
   }
 }
 

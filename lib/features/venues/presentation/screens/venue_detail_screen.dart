@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
 
 class VenueDetailScreen extends ConsumerStatefulWidget {
   final String venueId;
@@ -955,20 +956,23 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
-                const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: _bookNow,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                // Hide booking button when venuesBooking flag is false
+                if (FeatureFlags.venuesBooking) ...[
+                  const SizedBox(width: 8),
+                  ElevatedButton(
+                    onPressed: _bookNow,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Book Now',
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
-                  child: const Text(
-                    'Book Now',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
+                ],
               ],
             ),
           ],

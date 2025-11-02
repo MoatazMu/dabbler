@@ -74,7 +74,6 @@ import 'package:dabbler/features/social/presentation/screens/onboarding/social_o
 import '../utils/constants/route_constants.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import '../utils/transitions/page_transitions.dart';
-import '../routes/route_arguments.dart';
 
 // Import RegistrationData from the correct location
 
