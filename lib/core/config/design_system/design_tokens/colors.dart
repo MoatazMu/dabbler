@@ -53,37 +53,31 @@ class DabblerColors {
     },
   );
 
-  static const MaterialColor warning = MaterialColor(
-    0xFFF59E0B,
-    {
-      50: Color(0xFFFFFBEB),
-      100: Color(0xFFFEF3C7),
-      200: Color(0xFFFDE68A),
-      300: Color(0xFFFCD34D),
-      400: Color(0xFFFBBF24),
-      500: Color(0xFFF59E0B),
-      600: Color(0xFFD97706),
-      700: Color(0xFFB45309),
-      800: Color(0xFF92400E),
-      900: Color(0xFF78350F),
-    },
-  );
+  static const MaterialColor warning = MaterialColor(0xFFF59E0B, {
+    50: Color(0xFFFFFBEB),
+    100: Color(0xFFFEF3C7),
+    200: Color(0xFFFDE68A),
+    300: Color(0xFFFCD34D),
+    400: Color(0xFFFBBF24),
+    500: Color(0xFFF59E0B),
+    600: Color(0xFFD97706),
+    700: Color(0xFFB45309),
+    800: Color(0xFF92400E),
+    900: Color(0xFF78350F),
+  });
 
-  static const MaterialColor error = MaterialColor(
-    0xFFEF4444,
-    {
-      50: Color(0xFFFEF2F2),
-      100: Color(0xFFFEE2E2),
-      200: Color(0xFFFECACA),
-      300: Color(0xFFFCA5A5),
-      400: Color(0xFFF87171),
-      500: Color(0xFFEF4444),
-      600: Color(0xFFDC2626),
-      700: Color(0xFFB91C1C),
-      800: Color(0xFF991B1B),
-      900: Color(0xFF7F1D1D),
-    },
-  );
+  static const MaterialColor error = MaterialColor(0xFFEF4444, {
+    50: Color(0xFFFEF2F2),
+    100: Color(0xFFFEE2E2),
+    200: Color(0xFFFECACA),
+    300: Color(0xFFFCA5A5),
+    400: Color(0xFFF87171),
+    500: Color(0xFFEF4444),
+    600: Color(0xFFDC2626),
+    700: Color(0xFFB91C1C),
+    800: Color(0xFF991B1B),
+    900: Color(0xFF7F1D1D),
+  });
 
   // Neutral Colors - Light Theme
   static const Color backgroundLight = Color(0xFFFAFAFA);
@@ -118,7 +112,7 @@ class DabblerColors {
   static MaterialColor createMaterialColor(Color color) {
     List<double> strengths = <double>[.05, .1, .2, .3, .4, .5, .6, .7, .8, .9];
     Map<int, Color> swatch = {};
-    
+
     final int r = color.red, g = color.green, b = color.blue;
 
     for (int i = 0; i < 10; i++) {
@@ -130,7 +124,7 @@ class DabblerColors {
         1,
       );
     }
-    
+
     return MaterialColor(color.value, swatch);
   }
 }

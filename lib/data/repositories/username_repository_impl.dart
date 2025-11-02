@@ -1,11 +1,12 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failure.dart';
-import '../../core/types/result.dart';
-import '../../services/supabase/supabase_service.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart' as core;
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import '../models/profile.dart';
 import 'username_repository.dart';
+
+typedef Result<T> = core.Result<T, Failure>;
 
 class UsernameRepositoryImpl implements UsernameRepository {
   UsernameRepositoryImpl(this.svc);
@@ -18,7 +19,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
   Future<Result<bool>> isAvailable(String username) async {
     final trimmed = username.trim();
     if (trimmed.isEmpty) {
-      return right(true);
+      return core.Ok(true);
     }
     try {
       final row = await _client
@@ -26,9 +27,9 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select('id')
           .eq('username', trimmed)
           .maybeSingle();
-      return right(row == null);
+      return core.Ok(row == null);
     } catch (error) {
-      return left(
+      return core.Err(
         ServerFailure(
           message: 'Failed to check username availability',
           cause: error,
@@ -46,11 +47,11 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .eq('username', username.trim())
           .maybeSingle();
       if (row == null) {
-        return left(const NotFoundFailure(message: 'Username not found'));
+        return core.Err(const NotFoundFailure(message: 'Username not found'));
       }
-      return right(Profile.fromJson(Map<String, dynamic>.from(row)));
+      return core.Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
     } catch (error) {
-      return left(
+      return core.Err(
         ServerFailure(
           message: 'Failed to fetch profile by username',
           cause: error,
@@ -84,9 +85,9 @@ class UsernameRepositoryImpl implements UsernameRepository {
             ),
           )
           .toList(growable: false);
-      return right(rows);
+      return core.Ok(rows);
     } catch (error) {
-      return left(
+      return core.Err(
         ServerFailure(message: 'Failed to search usernames', cause: error),
       );
     }
@@ -106,20 +107,22 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(
+        return core.Err(
           const NotFoundFailure(message: 'Profile not found or not owned'),
         );
       }
-      return right(Profile.fromJson(Map<String, dynamic>.from(row)));
+      return core.Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
-        return left(const ConflictFailure(message: 'Username already taken'));
+        return core.Err(
+          const ConflictFailure(message: 'Username already taken'),
+        );
       }
-      return left(
+      return core.Err(
         ServerFailure(message: 'Failed to set username', cause: error),
       );
     } catch (error) {
-      return left(
+      return core.Err(
         ServerFailure(message: 'Failed to set username', cause: error),
       );
     }
@@ -132,7 +135,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
   }) async {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) {
-      return left(const AuthFailure(message: 'Not authenticated'));
+      return core.Err(const AuthFailure(message: 'Not authenticated'));
     }
     final trimmed = username.trim();
     try {
@@ -143,7 +146,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .eq('profile_type', profileType)
           .maybeSingle();
       if (profileRow == null) {
-        return left(
+        return core.Err(
           NotFoundFailure(
             message: 'Profile of type $profileType not found for current user',
           ),
@@ -158,20 +161,22 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(
+        return core.Err(
           const NotFoundFailure(message: 'Profile not found after update'),
         );
       }
-      return right(Profile.fromJson(Map<String, dynamic>.from(row)));
+      return core.Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
-        return left(const ConflictFailure(message: 'Username already taken'));
+        return core.Err(
+          const ConflictFailure(message: 'Username already taken'),
+        );
       }
-      return left(
+      return core.Err(
         ServerFailure(message: 'Failed to update username', cause: error),
       );
     } catch (error) {
-      return left(
+      return core.Err(
         ServerFailure(message: 'Failed to update username', cause: error),
       );
     }
@@ -181,7 +186,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
   Stream<Result<Profile>> myProfileTypeStream(String profileType) async* {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) {
-      yield left(const AuthFailure(message: 'Not authenticated'));
+      yield core.Err(const AuthFailure(message: 'Not authenticated'));
       return;
     }
     try {
@@ -194,14 +199,16 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .maybeSingle();
 
       if (data == null) {
-        yield left(const NotFoundFailure(message: 'Profile not found'));
+        yield core.Err(const NotFoundFailure(message: 'Profile not found'));
         return;
       }
 
       final map = Map<String, dynamic>.from(data);
-      yield right(Profile.fromJson(map));
+      yield core.Ok(Profile.fromJson(map));
     } catch (error) {
-      yield left(ServerFailure(message: 'Failed to get profile', cause: error));
+      yield core.Err(
+        ServerFailure(message: 'Failed to get profile', cause: error),
+      );
     }
   }
 }

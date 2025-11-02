@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/logger.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/logger.dart';
 import '../../../../utils/enums/social_enums.dart';
 import '../repositories/posts_repository.dart';
-import '../../data/models/post_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
 
 /// Parameters for creating a post
 class CreatePostParams {

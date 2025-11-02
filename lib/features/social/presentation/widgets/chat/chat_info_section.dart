@@ -17,7 +17,7 @@ class ChatInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -38,7 +38,10 @@ class ChatInfoSection extends StatelessWidget {
                             : null,
                         child: conversation.avatarUrl == null
                             ? Text(
-                                conversation.name?.substring(0, 1).toUpperCase() ?? '?',
+                                conversation.name
+                                        ?.substring(0, 1)
+                                        .toUpperCase() ??
+                                    '?',
                                 style: theme.textTheme.headlineMedium,
                               )
                             : null,
@@ -86,7 +89,8 @@ class ChatInfoSection extends StatelessWidget {
                             ),
                         ],
                       ),
-                      if (conversation.description != null && conversation.description!.isNotEmpty)
+                      if (conversation.description != null &&
+                          conversation.description!.isNotEmpty)
                         Text(
                           conversation.description!,
                           style: theme.textTheme.bodyMedium?.copyWith(
@@ -105,7 +109,7 @@ class ChatInfoSection extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             if (onEditDescription != null) ...[
               const SizedBox(height: 16),
               Row(

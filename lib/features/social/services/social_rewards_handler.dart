@@ -1,4 +1,4 @@
-import '../../rewards/domain/entities/achievement.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
 
 /// Social system integration with rewards
 class SocialRewardsHandler {
@@ -63,6 +63,5 @@ class SocialRewardsHandler {
   }
 
   /// Cleanup method
-  void dispose() {
-  }
+  void dispose() {}
 }

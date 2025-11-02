@@ -54,14 +54,12 @@ class _CommentInputState extends State<CommentInput> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
-          top: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.2),
-          ),
+          top: BorderSide(color: theme.colorScheme.outline.withOpacity(0.2)),
         ),
       ),
       child: SafeArea(
@@ -79,9 +77,9 @@ class _CommentInputState extends State<CommentInput> {
                   color: theme.colorScheme.onPrimaryContainer,
                 ),
               ),
-              
+
               const SizedBox(width: 12),
-              
+
               // Text input
               Expanded(
                 child: Container(
@@ -110,36 +108,36 @@ class _CommentInputState extends State<CommentInput> {
                         vertical: 12,
                       ),
                       suffixIcon: _hasText
-                        ? IconButton(
-                            onPressed: _submitComment,
-                            icon: widget.isSubmitting
-                              ? SizedBox(
-                                  width: 20,
-                                  height: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      theme.colorScheme.primary,
+                          ? IconButton(
+                              onPressed: _submitComment,
+                              icon: widget.isSubmitting
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
+                                              theme.colorScheme.primary,
+                                            ),
+                                      ),
+                                    )
+                                  : Icon(
+                                      Icons.send,
+                                      color: theme.colorScheme.primary,
                                     ),
-                                  ),
-                                )
-                              : Icon(
-                                  Icons.send,
-                                  color: theme.colorScheme.primary,
-                                ),
-                          )
-                        : null,
+                            )
+                          : null,
                     ),
                   ),
                 ),
               ),
-              
+
               // Emoji button
               if (!_hasText) ...[
                 const SizedBox(width: 8),
                 IconButton(
-                  onPressed: () {
-                  },
+                  onPressed: () {},
                   icon: Icon(
                     Icons.emoji_emotions_outlined,
                     color: theme.colorScheme.onSurfaceVariant,

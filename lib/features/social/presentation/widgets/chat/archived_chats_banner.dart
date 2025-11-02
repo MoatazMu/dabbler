@@ -4,16 +4,12 @@ class ArchivedChatsBanner extends StatelessWidget {
   final int count;
   final VoidCallback? onTap;
 
-  const ArchivedChatsBanner({
-    super.key,
-    required this.count,
-    this.onTap,
-  });
+  const ArchivedChatsBanner({super.key, required this.count, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Material(

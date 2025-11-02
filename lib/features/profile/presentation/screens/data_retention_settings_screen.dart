@@ -2,22 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../services/data_retention_service.dart';
-import '../../../../core/utils/logger.dart';
+import 'package:dabbler/core/utils/logger.dart';
 
 /// Data Retention Settings Screen for GDPR compliance
 class DataRetentionSettingsScreen extends ConsumerStatefulWidget {
   final String userId;
 
-  const DataRetentionSettingsScreen({
-    super.key,
-    required this.userId,
-  });
+  const DataRetentionSettingsScreen({super.key, required this.userId});
 
   @override
-  ConsumerState<DataRetentionSettingsScreen> createState() => _DataRetentionSettingsScreenState();
+  ConsumerState<DataRetentionSettingsScreen> createState() =>
+      _DataRetentionSettingsScreenState();
 }
 
-class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSettingsScreen> {
+class _DataRetentionSettingsScreenState
+    extends ConsumerState<DataRetentionSettingsScreen> {
   bool _isLoading = true;
   bool _isSaving = false;
   Map<String, Duration> _retentionPolicies = {};
@@ -38,10 +37,12 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
 
     try {
       final dataRetentionService = ref.read(dataRetentionServiceProvider);
-      
+
       // Load current policy or use defaults
-      final policy = await dataRetentionService.getUserRetentionPolicy(widget.userId);
-      
+      final policy = await dataRetentionService.getUserRetentionPolicy(
+        widget.userId,
+      );
+
       if (policy != null) {
         _retentionPolicies = Map.from(policy.policies);
         _autoCleanupEnabled = policy.autoCleanupEnabled;
@@ -51,8 +52,9 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
       }
 
       // Load upcoming cleanups
-      _upcomingCleanups = await dataRetentionService.getUpcomingCleanups(widget.userId);
-
+      _upcomingCleanups = await dataRetentionService.getUpcomingCleanups(
+        widget.userId,
+      );
     } catch (e) {
       Logger.error('Error loading retention settings', e);
       _showErrorMessage('Failed to load retention settings');
@@ -70,7 +72,7 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
 
     try {
       final dataRetentionService = ref.read(dataRetentionServiceProvider);
-      
+
       await dataRetentionService.configureRetentionPolicy(
         userId: widget.userId,
         retentionPolicies: _retentionPolicies,
@@ -85,11 +87,10 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
             backgroundColor: Colors.green,
           ),
         );
-        
+
         // Reload to get updated upcoming cleanups
         await _loadRetentionSettings();
       }
-
     } catch (e) {
       Logger.error('Error saving retention settings', e);
       _showErrorMessage('Failed to save retention settings');
@@ -103,10 +104,7 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
   void _showErrorMessage(String message) {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(message),
-          backgroundColor: Colors.red,
-        ),
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
       );
     }
   }
@@ -130,7 +128,9 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Grace period requested for ${_getDataTypeDisplayName(dataType)}'),
+              content: Text(
+                'Grace period requested for ${_getDataTypeDisplayName(dataType)}',
+              ),
               backgroundColor: Colors.green,
             ),
           );
@@ -146,9 +146,7 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -160,10 +158,7 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
             padding: const EdgeInsets.only(bottom: 8),
             child: const Text(
               'GDPR Compliance',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ),
         ),
@@ -228,8 +223,10 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
               style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
-            
-            ..._retentionPolicies.entries.map((entry) => _buildRetentionPolicyItem(entry.key, entry.value)),
+
+            ..._retentionPolicies.entries.map(
+              (entry) => _buildRetentionPolicyItem(entry.key, entry.value),
+            ),
           ],
         ),
       ),
@@ -240,7 +237,10 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: Icon(_getDataTypeIcon(dataType), color: _getDataTypeColor(dataType)),
+        leading: Icon(
+          _getDataTypeIcon(dataType),
+          color: _getDataTypeColor(dataType),
+        ),
         title: Text(_getDataTypeDisplayName(dataType)),
         subtitle: Text(_getDataTypeDescription(dataType)),
         trailing: Row(
@@ -270,10 +270,10 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
 
   List<DropdownMenuItem<int>> _getRetentionOptions(String dataType) {
     final options = <int>[];
-    
+
     // Base options for all data types
     options.addAll([30, 90, 180, 365, 365 * 2, 365 * 3, 365 * 5, 365 * 7]);
-    
+
     // Special options for specific data types
     switch (dataType) {
       case 'audit_logs':
@@ -285,11 +285,15 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
     }
 
     options.sort();
-    
-    return options.map((days) => DropdownMenuItem<int>(
-      value: days,
-      child: Text(_formatDuration(Duration(days: days))),
-    )).toList();
+
+    return options
+        .map(
+          (days) => DropdownMenuItem<int>(
+            value: days,
+            child: Text(_formatDuration(Duration(days: days))),
+          ),
+        )
+        .toList();
   }
 
   Widget _buildUpcomingCleanupsCard() {
@@ -310,14 +314,18 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
               ],
             ),
             const SizedBox(height: 16),
-            
+
             if (_upcomingCleanups.isEmpty) ...[
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(32),
                   child: Column(
                     children: [
-                      Icon(Icons.check_circle_outline, size: 64, color: Colors.green),
+                      Icon(
+                        Icons.check_circle_outline,
+                        size: 64,
+                        color: Colors.green,
+                      ),
                       SizedBox(height: 16),
                       Text(
                         'No upcoming cleanups scheduled',
@@ -328,7 +336,9 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
                 ),
               ),
             ] else ...[
-              ..._upcomingCleanups.map((cleanup) => _buildUpcomingCleanupItem(cleanup)),
+              ..._upcomingCleanups.map(
+                (cleanup) => _buildUpcomingCleanupItem(cleanup),
+              ),
             ],
           ],
         ),
@@ -356,7 +366,9 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Scheduled: ${DateFormat('MMM dd, yyyy').format(scheduledDate)}'),
+            Text(
+              'Scheduled: ${DateFormat('MMM dd, yyyy').format(scheduledDate)}',
+            ),
             Text('Days remaining: $daysUntilCleanup'),
           ],
         ),
@@ -401,25 +413,33 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
               ],
             ),
             const SizedBox(height: 16),
-            
+
             SwitchListTile(
               title: const Text('Enable Automatic Cleanup'),
-              subtitle: const Text('Automatically delete data based on retention policies'),
+              subtitle: const Text(
+                'Automatically delete data based on retention policies',
+              ),
               value: _autoCleanupEnabled,
               onChanged: (value) => setState(() => _autoCleanupEnabled = value),
             ),
-            
+
             const Divider(),
-            
+
             ListTile(
               title: const Text('Default Grace Period'),
-              subtitle: const Text('Time before data deletion where you can request recovery'),
+              subtitle: const Text(
+                'Time before data deletion where you can request recovery',
+              ),
               trailing: DropdownButton<int>(
                 value: _gracePeriod.inDays,
-                items: [7, 14, 30, 60, 90].map((days) => DropdownMenuItem(
-                  value: days,
-                  child: Text('$days days'),
-                )).toList(),
+                items: [7, 14, 30, 60, 90]
+                    .map(
+                      (days) => DropdownMenuItem(
+                        value: days,
+                        child: Text('$days days'),
+                      ),
+                    )
+                    .toList(),
                 onChanged: (value) {
                   if (value != null) {
                     setState(() => _gracePeriod = Duration(days: value));
@@ -451,28 +471,33 @@ class _DataRetentionSettingsScreenState extends ConsumerState<DataRetentionSetti
               ],
             ),
             const SizedBox(height: 16),
-            
-            const Text('Important Information:', style: TextStyle(fontWeight: FontWeight.w500)),
+
+            const Text(
+              'Important Information:',
+              style: TextStyle(fontWeight: FontWeight.w500),
+            ),
             const SizedBox(height: 8),
-            
+
             ...[
               'Data is automatically deleted based on your retention settings',
               'Grace periods can be requested to delay deletion',
               'Some data may be retained longer for legal compliance',
               'Critical security logs are kept for minimum required periods',
               'You can export your data before deletion using the Data Export feature',
-            ].map((info) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.info, size: 16, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  Expanded(child: Text(info)),
-                ],
+            ].map(
+              (info) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(Icons.info, size: 16, color: Colors.blue),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(info)),
+                  ],
+                ),
               ),
-            )),
-            
+            ),
+
             const SizedBox(height: 16),
             Row(
               children: [
@@ -667,9 +692,13 @@ You have full control over your data retention preferences within legal limits.
 /// Extension to capitalize strings
 extension StringExtension on String {
   String title() {
-    return split(' ').map((word) => 
-      word.isEmpty ? word : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
-    ).join(' ');
+    return split(' ')
+        .map(
+          (word) => word.isEmpty
+              ? word
+              : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+        )
+        .join(' ');
   }
 }
 
@@ -695,26 +724,33 @@ class _GracePeriodDialogState extends State<_GracePeriodDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Request a grace period for ${widget.dataType.replaceAll('_', ' ')} data deletion.'),
+          Text(
+            'Request a grace period for ${widget.dataType.replaceAll('_', ' ')} data deletion.',
+          ),
           const SizedBox(height: 16),
-          
+
           const Text('Grace Period Duration:'),
           DropdownButton<Duration>(
             value: _selectedDuration,
             isExpanded: true,
-            items: [
-              Duration(days: 7),
-              Duration(days: 14),
-              Duration(days: 30),
-              Duration(days: 60),
-              Duration(days: 90),
-            ].map((duration) => DropdownMenuItem(
-              value: duration,
-              child: Text('${duration.inDays} days'),
-            )).toList(),
+            items:
+                [
+                      Duration(days: 7),
+                      Duration(days: 14),
+                      Duration(days: 30),
+                      Duration(days: 60),
+                      Duration(days: 90),
+                    ]
+                    .map(
+                      (duration) => DropdownMenuItem(
+                        value: duration,
+                        child: Text('${duration.inDays} days'),
+                      ),
+                    )
+                    .toList(),
             onChanged: (value) => setState(() => _selectedDuration = value!),
           ),
-          
+
           const SizedBox(height: 16),
           TextField(
             controller: _reasonController,
@@ -735,7 +771,9 @@ class _GracePeriodDialogState extends State<_GracePeriodDialog> {
         ElevatedButton(
           onPressed: () => Navigator.pop(context, {
             'duration': _selectedDuration,
-            'reason': _reasonController.text.trim().isEmpty ? null : _reasonController.text.trim(),
+            'reason': _reasonController.text.trim().isEmpty
+                ? null
+                : _reasonController.text.trim(),
           }),
           child: const Text('Request'),
         ),

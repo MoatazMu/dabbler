@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../routes/route_arguments.dart';
-import '../screens/activities/activities_screen_v2.dart';
-import '../screens/game/create_game_screen.dart';
-import '../screens/home/home_screen.dart';
+import 'package:dabbler/features/misc/presentation/features/activities_screen_v2.dart';
+import 'package:dabbler/features/misc/presentation/features/create_game_screen.dart';
+import 'package:dabbler/features/home/presentation/features/home_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -15,9 +15,9 @@ class AppRoutes {
 
   /// Static routes that don't require arguments.
   static Map<String, WidgetBuilder> get routes => {
-        home: (_) => const HomeScreen(),
-        bookings: (_) => const ActivitiesScreenV2(),
-      };
+    home: (_) => const HomeScreen(),
+    bookings: (_) => const ActivitiesScreenV2(),
+  };
 
   /// Route factory used by legacy Navigator.pushNamed flows.
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
@@ -28,17 +28,17 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ActivitiesScreenV2());
       case gameCreate:
         final args = settings.arguments;
-        final typedArgs =
-            args is CreateGameRouteArgs ? args : const CreateGameRouteArgs();
+        final typedArgs = args is CreateGameRouteArgs
+            ? args
+            : const CreateGameRouteArgs();
         return MaterialPageRoute(
           builder: (_) => CreateGameScreen(initialData: typedArgs),
           settings: settings,
         );
       default:
         return MaterialPageRoute(
-          builder: (_) => const Scaffold(
-            body: Center(child: Text('Page not found')),
-          ),
+          builder: (_) =>
+              const Scaffold(body: Center(child: Text('Page not found'))),
         );
     }
   }
@@ -64,10 +64,7 @@ class AppRoutes {
         arguments: resolvedArgs,
       );
     } else {
-      Navigator.of(context).pushNamed(
-        gameCreate,
-        arguments: resolvedArgs,
-      );
+      Navigator.of(context).pushNamed(gameCreate, arguments: resolvedArgs);
     }
   }
 }

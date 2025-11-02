@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'dart:math' as math;
 
-import '../../domain/entities/achievement.dart';
-import '../../domain/entities/badge_tier.dart';
-import '../../domain/entities/user_progress.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
 
 enum ProgressSize { small, medium, large }
 
@@ -49,7 +49,7 @@ class ProgressVisualization extends StatelessWidget {
   Widget _buildSingleProgress() {
     final progressValue = userProgress.calculateProgress() / 100.0;
     final isCompleted = userProgress.status == ProgressStatus.completed;
-    
+
     return CircularProgressVisualization(
       progress: progressValue,
       isCompleted: isCompleted,
@@ -63,7 +63,7 @@ class ProgressVisualization extends StatelessWidget {
     final progressValue = userProgress.calculateProgress() / 100.0;
     final current = _getCurrentValue();
     final target = _getTargetValue();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -91,7 +91,7 @@ class ProgressVisualization extends StatelessWidget {
     final currentStreak = _getCurrentValue();
     final targetStreak = _getTargetValue();
     final progressValue = userProgress.calculateProgress() / 100.0;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -128,7 +128,7 @@ class ProgressVisualization extends StatelessWidget {
   Widget _buildConditionalProgress() {
     final steps = _getConditionalSteps();
     final completedSteps = _getCompletedSteps();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -156,11 +156,8 @@ class ProgressVisualization extends StatelessWidget {
     if (userProgress.status == ProgressStatus.completed) {
       return _buildSingleProgress();
     }
-    
-    return MysteryProgress(
-      size: size,
-      animated: animated,
-    );
+
+    return MysteryProgress(size: size, animated: animated);
   }
 
   Color _getProgressColor() {
@@ -218,12 +215,14 @@ class ProgressVisualization extends StatelessWidget {
   }
 
   List<String> _getConditionalSteps() {
-    final conditions = userProgress.requiredProgress['conditions'] as List<dynamic>?;
+    final conditions =
+        userProgress.requiredProgress['conditions'] as List<dynamic>?;
     return conditions?.cast<String>() ?? [];
   }
 
   List<String> _getCompletedSteps() {
-    final completed = userProgress.currentProgress['completed'] as List<dynamic>?;
+    final completed =
+        userProgress.currentProgress['completed'] as List<dynamic>?;
     return completed?.cast<String>() ?? [];
   }
 }
@@ -248,7 +247,7 @@ class CircularProgressVisualization extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dimension = _getDimension();
-    
+
     return SizedBox(
       width: dimension,
       height: dimension,
@@ -263,7 +262,7 @@ class CircularProgressVisualization extends StatelessWidget {
               color: color.withOpacity(0.1),
             ),
           ),
-          
+
           // Progress indicator
           if (animated)
             TweenAnimationBuilder<double>(
@@ -286,15 +285,11 @@ class CircularProgressVisualization extends StatelessWidget {
               valueColor: AlwaysStoppedAnimation<Color>(color),
               strokeWidth: _getStrokeWidth(),
             ),
-          
+
           // Center icon
           Center(
             child: isCompleted
-                ? Icon(
-                    Icons.check_circle,
-                    color: color,
-                    size: dimension * 0.4,
-                  )
+                ? Icon(Icons.check_circle, color: color, size: dimension * 0.4)
                 : Text(
                     '${(progress * 100).round()}%',
                     style: TextStyle(
@@ -361,7 +356,7 @@ class SegmentedProgressBar extends StatelessWidget {
       child: Row(
         children: List.generate(segments, (index) {
           Widget segment;
-          
+
           if (index < completedSegments) {
             // Completed segment
             segment = Container(
@@ -405,17 +400,18 @@ class SegmentedProgressBar extends StatelessWidget {
           }
 
           if (animated && index <= completedSegments) {
-            segment = segment.animate()
-              .fadeIn(
-                duration: 200.ms,
-                delay: Duration(milliseconds: index * 100),
-              )
-              .scale(
-                begin: const Offset(0.8, 0.8),
-                end: const Offset(1.0, 1.0),
-                duration: 200.ms,
-                delay: Duration(milliseconds: index * 100),
-              );
+            segment = segment
+                .animate()
+                .fadeIn(
+                  duration: 200.ms,
+                  delay: Duration(milliseconds: index * 100),
+                )
+                .scale(
+                  begin: const Offset(0.8, 0.8),
+                  end: const Offset(1.0, 1.0),
+                  duration: 200.ms,
+                  delay: Duration(milliseconds: index * 100),
+                );
           }
 
           return Padding(
@@ -471,27 +467,23 @@ class StreakCalendar extends StatelessWidget {
   Widget build(BuildContext context) {
     final daySize = _getDaySize();
     final daysToShow = math.min(targetStreak, 14); // Show max 14 days
-    
+
     return Wrap(
       spacing: 2,
       runSpacing: 2,
       children: List.generate(daysToShow, (index) {
         final isCompleted = index < currentStreak;
         final isToday = index == currentStreak - 1;
-        
+
         Widget day = Container(
           width: daySize,
           height: daySize,
           decoration: BoxDecoration(
-            color: isCompleted 
-                ? Colors.orange 
-                : Colors.grey.withOpacity(0.2),
+            color: isCompleted ? Colors.orange : Colors.grey.withOpacity(0.2),
             borderRadius: BorderRadius.circular(4),
-            border: isToday 
-                ? Border.all(color: Colors.orange, width: 2)
-                : null,
+            border: isToday ? Border.all(color: Colors.orange, width: 2) : null,
           ),
-          child: isCompleted 
+          child: isCompleted
               ? const Icon(
                   Icons.local_fire_department,
                   color: Colors.white,
@@ -501,17 +493,18 @@ class StreakCalendar extends StatelessWidget {
         );
 
         if (animated && isCompleted) {
-          day = day.animate()
-            .fadeIn(
-              duration: 200.ms,
-              delay: Duration(milliseconds: index * 50),
-            )
-            .scale(
-              begin: const Offset(0.5, 0.5),
-              end: const Offset(1.0, 1.0),
-              duration: 200.ms,
-              delay: Duration(milliseconds: index * 50),
-            );
+          day = day
+              .animate()
+              .fadeIn(
+                duration: 200.ms,
+                delay: Duration(milliseconds: index * 50),
+              )
+              .scale(
+                begin: const Offset(0.5, 0.5),
+                end: const Offset(1.0, 1.0),
+                duration: 200.ms,
+                delay: Duration(milliseconds: index * 50),
+              );
         }
 
         return day;
@@ -551,31 +544,23 @@ class StepIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stepSize = _getStepSize();
-    
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(totalSteps, (index) {
         final isCompleted = index < currentStep;
         final isCurrent = index == currentStep;
-        
+
         Widget step = Container(
           width: stepSize,
           height: stepSize,
           decoration: BoxDecoration(
-            color: isCompleted 
-                ? color 
-                : color.withOpacity(0.2),
+            color: isCompleted ? color : color.withOpacity(0.2),
             shape: BoxShape.circle,
-            border: isCurrent 
-                ? Border.all(color: color, width: 2)
-                : null,
+            border: isCurrent ? Border.all(color: color, width: 2) : null,
           ),
-          child: isCompleted 
-              ? Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: stepSize * 0.6,
-                )
+          child: isCompleted
+              ? Icon(Icons.check, color: Colors.white, size: stepSize * 0.6)
               : Center(
                   child: Text(
                     '${index + 1}',
@@ -589,17 +574,18 @@ class StepIndicator extends StatelessWidget {
         );
 
         if (animated && isCompleted) {
-          step = step.animate()
-            .fadeIn(
-              duration: 300.ms,
-              delay: Duration(milliseconds: index * 100),
-            )
-            .scale(
-              begin: const Offset(0.5, 0.5),
-              end: const Offset(1.0, 1.0),
-              duration: 300.ms,
-              delay: Duration(milliseconds: index * 100),
-            );
+          step = step
+              .animate()
+              .fadeIn(
+                duration: 300.ms,
+                delay: Duration(milliseconds: index * 100),
+              )
+              .scale(
+                begin: const Offset(0.5, 0.5),
+                end: const Offset(1.0, 1.0),
+                duration: 300.ms,
+                delay: Duration(milliseconds: index * 100),
+              );
         }
 
         return Padding(
@@ -636,7 +622,7 @@ class MysteryProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dimension = _getDimension();
-    
+
     Widget mystery = Container(
       width: dimension,
       height: dimension,
@@ -659,11 +645,9 @@ class MysteryProgress extends StatelessWidget {
     );
 
     if (animated) {
-      mystery = mystery.animate(onPlay: (controller) => controller.repeat())
-        .shimmer(
-          duration: 2.seconds,
-          color: Colors.purple.withOpacity(0.2),
-        );
+      mystery = mystery
+          .animate(onPlay: (controller) => controller.repeat())
+          .shimmer(duration: 2.seconds, color: Colors.purple.withOpacity(0.2));
     }
 
     return mystery;

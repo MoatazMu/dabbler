@@ -1,6 +1,6 @@
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/either.dart';
-import '../entities/user_settings.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/data/models/profile/user_settings.dart';
 import '../repositories/settings_repository.dart';
 
 /// Parameters for changing settings
@@ -33,7 +33,8 @@ class ChangeSettingsParams {
     this.reminderMinutesBefore,
   });
 
-  bool get hasUpdates => themeMode != null ||
+  bool get hasUpdates =>
+      themeMode != null ||
       language != null ||
       enablePushNotifications != null ||
       gameInviteNotifications != null ||
@@ -67,7 +68,9 @@ class ChangeSettingsUseCase {
 
   ChangeSettingsUseCase(this._settingsRepository);
 
-  Future<Either<Failure, ChangeSettingsResult>> call(ChangeSettingsParams params) async {
+  Future<Either<Failure, ChangeSettingsResult>> call(
+    ChangeSettingsParams params,
+  ) async {
     try {
       // Validate input parameters
       final validationResult = _validateParams(params);
@@ -76,11 +79,13 @@ class ChangeSettingsUseCase {
       }
 
       // Get current settings for comparison
-      final currentSettingsResult = await _settingsRepository.getSettings(params.userId);
+      final currentSettingsResult = await _settingsRepository.getSettings(
+        params.userId,
+      );
       if (currentSettingsResult.isLeft) {
         return Left(currentSettingsResult.leftOrNull()!);
       }
-      
+
       final currentSettings = currentSettingsResult.rightOrNull()!;
 
       // Apply business rules and constraints
@@ -110,20 +115,31 @@ class ChangeSettingsUseCase {
         defaultIsPublic: currentSettings.defaultIsPublic,
         defaultAllowWaitlist: currentSettings.defaultAllowWaitlist,
         defaultAdvanceNoticeHours: currentSettings.defaultAdvanceNoticeHours,
-        enablePushNotifications: finalParams.enablePushNotifications ?? currentSettings.enablePushNotifications,
-        gameInviteNotifications: finalParams.gameInviteNotifications ?? currentSettings.gameInviteNotifications,
-        gameReminderNotifications: finalParams.gameReminderNotifications ?? currentSettings.gameReminderNotifications,
+        enablePushNotifications:
+            finalParams.enablePushNotifications ??
+            currentSettings.enablePushNotifications,
+        gameInviteNotifications:
+            finalParams.gameInviteNotifications ??
+            currentSettings.gameInviteNotifications,
+        gameReminderNotifications:
+            finalParams.gameReminderNotifications ??
+            currentSettings.gameReminderNotifications,
         gameUpdateNotifications: currentSettings.gameUpdateNotifications,
-        socialNotifications: finalParams.socialNotifications ?? currentSettings.socialNotifications,
+        socialNotifications:
+            finalParams.socialNotifications ??
+            currentSettings.socialNotifications,
         systemNotifications: currentSettings.systemNotifications,
         notificationSound: currentSettings.notificationSound,
         vibrationEnabled: currentSettings.vibrationEnabled,
-        reminderMinutesBefore: finalParams.reminderMinutesBefore ?? currentSettings.reminderMinutesBefore,
+        reminderMinutesBefore:
+            finalParams.reminderMinutesBefore ??
+            currentSettings.reminderMinutesBefore,
         showTrafficLayer: currentSettings.showTrafficLayer,
         showSatelliteView: currentSettings.showSatelliteView,
         defaultMapZoom: currentSettings.defaultMapZoom,
         autoLocationDetection: currentSettings.autoLocationDetection,
-        enableDataSaver: finalParams.enableDataSaver ?? currentSettings.enableDataSaver,
+        enableDataSaver:
+            finalParams.enableDataSaver ?? currentSettings.enableDataSaver,
         preloadImages: currentSettings.preloadImages,
         backgroundRefresh: currentSettings.backgroundRefresh,
         cacheSize: currentSettings.cacheSize,
@@ -134,7 +150,10 @@ class ChangeSettingsUseCase {
       );
 
       // Perform the settings update
-      final updateResult = await _settingsRepository.updateSettings(params.userId, updatedSettings);
+      final updateResult = await _settingsRepository.updateSettings(
+        params.userId,
+        updatedSettings,
+      );
       if (updateResult.isLeft) {
         return Left(updateResult.leftOrNull()!);
       }
@@ -142,7 +161,10 @@ class ChangeSettingsUseCase {
       final finalUpdatedSettings = updateResult.rightOrNull()!;
 
       // Calculate changed settings
-      final changedSettings = _calculateChangedSettings(currentSettings, finalUpdatedSettings);
+      final changedSettings = _calculateChangedSettings(
+        currentSettings,
+        finalUpdatedSettings,
+      );
 
       // Check if restart is required
       final requiresRestart = _requiresRestart(changedSettings);
@@ -150,13 +172,14 @@ class ChangeSettingsUseCase {
       // Generate warnings
       final warnings = _generateWarnings(finalUpdatedSettings, changedSettings);
 
-      return Right(ChangeSettingsResult(
-        updatedSettings: finalUpdatedSettings,
-        warnings: warnings,
-        changedSettings: changedSettings,
-        requiresRestart: requiresRestart,
-      ));
-
+      return Right(
+        ChangeSettingsResult(
+          updatedSettings: finalUpdatedSettings,
+          warnings: warnings,
+          changedSettings: changedSettings,
+          requiresRestart: requiresRestart,
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Settings update failed: $e'));
     }
@@ -168,7 +191,18 @@ class ChangeSettingsUseCase {
 
     // Validate language
     if (params.language != null) {
-      const validLanguages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ar', 'zh', 'ja', 'ko'];
+      const validLanguages = [
+        'en',
+        'es',
+        'fr',
+        'de',
+        'it',
+        'pt',
+        'ar',
+        'zh',
+        'ja',
+        'ko',
+      ];
       if (!validLanguages.contains(params.language!.toLowerCase())) {
         errors.add('Unsupported language');
       }
@@ -176,7 +210,9 @@ class ChangeSettingsUseCase {
 
     // Validate reminder time
     if (params.reminderMinutesBefore != null) {
-      if (params.reminderMinutesBefore! < 5 || params.reminderMinutesBefore! > 1440) { // 5 minutes to 24 hours
+      if (params.reminderMinutesBefore! < 5 ||
+          params.reminderMinutesBefore! > 1440) {
+        // 5 minutes to 24 hours
         errors.add('Reminder time must be between 5 and 1440 minutes');
       }
     }
@@ -214,9 +250,9 @@ class ChangeSettingsUseCase {
     }
 
     // Business Rule: If any notification type is enabled, enable push notifications
-    if ((params.gameInviteNotifications == true || 
-         params.gameReminderNotifications == true || 
-         params.socialNotifications == true) &&
+    if ((params.gameInviteNotifications == true ||
+            params.gameReminderNotifications == true ||
+            params.socialNotifications == true) &&
         processedParams.enablePushNotifications != false) {
       processedParams = ChangeSettingsParams(
         userId: processedParams.userId,
@@ -238,7 +274,10 @@ class ChangeSettingsUseCase {
   }
 
   /// Calculate which settings have changed
-  Map<String, dynamic> _calculateChangedSettings(UserSettings current, UserSettings updated) {
+  Map<String, dynamic> _calculateChangedSettings(
+    UserSettings current,
+    UserSettings updated,
+  ) {
     final changes = <String, dynamic>{};
 
     if (current.themeMode != updated.themeMode) {
@@ -249,10 +288,7 @@ class ChangeSettingsUseCase {
     }
 
     if (current.language != updated.language) {
-      changes['language'] = {
-        'old': current.language,
-        'new': updated.language,
-      };
+      changes['language'] = {'old': current.language, 'new': updated.language};
     }
 
     if (current.enablePushNotifications != updated.enablePushNotifications) {
@@ -269,7 +305,8 @@ class ChangeSettingsUseCase {
       };
     }
 
-    if (current.gameReminderNotifications != updated.gameReminderNotifications) {
+    if (current.gameReminderNotifications !=
+        updated.gameReminderNotifications) {
       changes['game_reminder_notifications'] = {
         'old': current.gameReminderNotifications,
         'new': updated.gameReminderNotifications,
@@ -324,22 +361,31 @@ class ChangeSettingsUseCase {
   /// Check if app restart is required
   bool _requiresRestart(Map<String, dynamic> changedSettings) {
     const restartRequiredSettings = ['language', 'theme_mode'];
-    
-    return changedSettings.keys.any((key) => restartRequiredSettings.contains(key));
+
+    return changedSettings.keys.any(
+      (key) => restartRequiredSettings.contains(key),
+    );
   }
 
   /// Generate warnings for the user
-  List<String> _generateWarnings(UserSettings settings, Map<String, dynamic> changedSettings) {
+  List<String> _generateWarnings(
+    UserSettings settings,
+    Map<String, dynamic> changedSettings,
+  ) {
     final warnings = <String>[];
 
     // Warning: All notifications disabled
     if (!settings.enablePushNotifications) {
-      warnings.add('All push notifications are disabled. You may miss important updates.');
+      warnings.add(
+        'All push notifications are disabled. You may miss important updates.',
+      );
     }
 
     // Warning: Short reminder time
     if (settings.reminderMinutesBefore < 30) {
-      warnings.add('Short reminder time may not provide enough notice for games.');
+      warnings.add(
+        'Short reminder time may not provide enough notice for games.',
+      );
     }
 
     // Warning: Data saver enabled

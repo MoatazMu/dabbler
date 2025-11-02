@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
-import '../../../core/utils/either.dart';
-import '../../../core/analytics/analytics_service.dart';
-import '../../../core/services/storage_service.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
+import 'package:dabbler/core/services/storage_service.dart';
 import '../../domain/repositories/social_repository.dart';
-import '../data/models/user_model.dart';
+import 'package:dabbler/data/models/user_model.dart';
 
 /// Service for advanced user discovery with intelligent matching algorithms
 class UserDiscoveryService {

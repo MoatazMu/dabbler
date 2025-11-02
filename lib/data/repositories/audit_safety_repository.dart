@@ -1,5 +1,4 @@
-
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/abuse_flag.dart';
 
 abstract class AuditSafetyRepository {
@@ -23,4 +22,3 @@ abstract class AuditSafetyRepository {
   /// Watch current user's reports in realtime (ordered DESC).
   Stream<List<AbuseFlag>> watchMyReports({int limit = 50});
 }
-

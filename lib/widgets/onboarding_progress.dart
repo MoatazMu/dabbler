@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../core/services/mock_onboarding_service.dart';
-import '../core/utils/constants.dart';
+import 'package:dabbler/core/services/mock_onboarding_service.dart';
+import 'package:dabbler/core/utils/constants.dart';
 
 class OnboardingProgress extends StatelessWidget {
   final MockOnboardingService _onboardingService = MockOnboardingService();
@@ -23,9 +23,9 @@ class OnboardingProgress extends StatelessWidget {
             valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[700]!),
             minHeight: 4,
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Step indicator
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -50,4 +50,4 @@ class OnboardingProgress extends StatelessWidget {
       ),
     );
   }
-} 
+}

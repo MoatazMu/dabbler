@@ -2,23 +2,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../../domain/entities/achievement.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
 
-enum BadgeRarity {
-  common,
-  uncommon,
-  rare,
-  epic,
-  legendary,
-  mythic,
-}
+enum BadgeRarity { common, uncommon, rare, epic, legendary, mythic }
 
-enum BadgeQualitySettings {
-  low,
-  medium,
-  high,
-  ultra,
-}
+enum BadgeQualitySettings { low, medium, high, ultra }
 
 class BadgeDisplay extends StatefulWidget {
   final Achievement achievement;
@@ -107,45 +95,25 @@ class _BadgeDisplayState extends State<BadgeDisplay>
       vsync: this,
     );
 
-    _shineAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _shineController,
-      curve: Curves.easeInOut,
-    ));
+    _shineAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _shineController, curve: Curves.easeInOut),
+    );
 
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.elasticOut,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _rotationController, curve: Curves.elasticOut),
+    );
 
-    _flipAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _flipController,
-      curve: Curves.easeInOut,
-    ));
+    _flipAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _flipController, curve: Curves.easeInOut),
+    );
 
-    _scaleAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.easeInOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut),
+    );
 
-    _particleAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _particleController,
-      curve: Curves.easeOut,
-    ));
+    _particleAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _particleController, curve: Curves.easeOut),
+    );
 
     if (widget.enableParticleEffects) {
       _particleController.repeat();
@@ -159,20 +127,22 @@ class _BadgeDisplayState extends State<BadgeDisplay>
     final random = math.Random();
 
     for (int i = 0; i < particleCount; i++) {
-      _particles.add(RarityParticle(
-        position: Offset(
-          random.nextDouble() * widget.size,
-          random.nextDouble() * widget.size,
+      _particles.add(
+        RarityParticle(
+          position: Offset(
+            random.nextDouble() * widget.size,
+            random.nextDouble() * widget.size,
+          ),
+          velocity: Offset(
+            (random.nextDouble() - 0.5) * 2,
+            (random.nextDouble() - 0.5) * 2,
+          ),
+          color: _getRarityParticleColor(),
+          size: random.nextDouble() * 3 + 1,
+          life: random.nextDouble() * 2 + 1,
+          opacity: random.nextDouble() * 0.8 + 0.2,
         ),
-        velocity: Offset(
-          (random.nextDouble() - 0.5) * 2,
-          (random.nextDouble() - 0.5) * 2,
-        ),
-        color: _getRarityParticleColor(),
-        size: random.nextDouble() * 3 + 1,
-        life: random.nextDouble() * 2 + 1,
-        opacity: random.nextDouble() * 0.8 + 0.2,
-      ));
+      );
     }
   }
 
@@ -221,20 +191,18 @@ class _BadgeDisplayState extends State<BadgeDisplay>
                     _buildShadow(),
 
                   // Particle effects
-                  if (widget.enableParticleEffects)
-                    _buildParticleEffects(),
+                  if (widget.enableParticleEffects) _buildParticleEffects(),
 
                   // Main badge
                   _buildMainBadge(),
 
                   // Shine effect overlay
-                  if (widget.enableShineAnimation && 
+                  if (widget.enableShineAnimation &&
                       widget.quality != BadgeQualitySettings.low)
                     _buildShineEffect(),
 
                   // Rarity border effect
-                  if (widget.rarity != BadgeRarity.common)
-                    _buildRarityBorder(),
+                  if (widget.rarity != BadgeRarity.common) _buildRarityBorder(),
                 ],
               ),
             ),
@@ -254,7 +222,9 @@ class _BadgeDisplayState extends State<BadgeDisplay>
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.3),
-                blurRadius: widget.quality == BadgeQualitySettings.ultra ? 15 : 10,
+                blurRadius: widget.quality == BadgeQualitySettings.ultra
+                    ? 15
+                    : 10,
                 spreadRadius: 2,
               ),
             ],
@@ -275,7 +245,7 @@ class _BadgeDisplayState extends State<BadgeDisplay>
         animation: _flipAnimation,
         builder: (context, child) {
           final isShowingBack = _flipAnimation.value > 0.5;
-          
+
           return Transform(
             alignment: Alignment.center,
             transform: Matrix4.identity()
@@ -313,15 +283,12 @@ class _BadgeDisplayState extends State<BadgeDisplay>
         children: [
           // Base material effect
           _buildMaterialEffect(),
-          
+
           // Achievement icon
           _buildAchievementIcon(),
 
           // Tier indicator
-          Positioned(
-            bottom: widget.size * 0.1,
-            child: _buildTierBadge(),
-          ),
+          Positioned(bottom: widget.size * 0.1, child: _buildTierBadge()),
         ],
       ),
     );
@@ -336,16 +303,9 @@ class _BadgeDisplayState extends State<BadgeDisplay>
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            Colors.grey[300]!,
-            Colors.grey[400]!,
-            Colors.grey[500]!,
-          ],
+          colors: [Colors.grey[300]!, Colors.grey[400]!, Colors.grey[500]!],
         ),
-        border: Border.all(
-          color: Colors.grey[600]!,
-          width: 3,
-        ),
+        border: Border.all(color: Colors.grey[600]!, width: 3),
       ),
       child: Padding(
         padding: EdgeInsets.all(widget.size * 0.15),
@@ -479,10 +439,7 @@ class _BadgeDisplayState extends State<BadgeDisplay>
       height: widget.size + 8,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(
-          color: _getRarityColor(),
-          width: 3,
-        ),
+        border: Border.all(color: _getRarityColor(), width: 3),
         boxShadow: [
           BoxShadow(
             color: _getRarityColor().withOpacity(0.6),
@@ -547,7 +504,7 @@ class _BadgeDisplayState extends State<BadgeDisplay>
     setState(() {
       _currentRotationY += details.delta.dx * 0.01;
       _currentRotationX -= details.delta.dy * 0.01;
-      
+
       // Clamp rotation values
       _currentRotationX = _currentRotationX.clamp(-0.3, 0.3);
       _currentRotationY = _currentRotationY.clamp(-0.3, 0.3);
@@ -562,7 +519,7 @@ class _BadgeDisplayState extends State<BadgeDisplay>
   void _returnToCenter() {
     _rotationController.reset();
     _rotationController.forward();
-    
+
     _rotationController.addListener(() {
       setState(() {
         _currentRotationX = _currentRotationX * (1 - _rotationAnimation.value);
@@ -585,7 +542,7 @@ class _BadgeDisplayState extends State<BadgeDisplay>
     _scaleController.forward().then((_) {
       _scaleController.reverse();
     });
-    
+
     if (widget.enableShineAnimation) {
       _shineController.reset();
       _shineController.forward();
@@ -593,7 +550,9 @@ class _BadgeDisplayState extends State<BadgeDisplay>
   }
 
   Color _getTierColor() {
-    return Color(int.parse('0xFF${widget.achievement.getTierColorHex().substring(1)}'));
+    return Color(
+      int.parse('0xFF${widget.achievement.getTierColorHex().substring(1)}'),
+    );
   }
 
   Color _getTierBorderColor() {
@@ -724,8 +683,10 @@ class RarityParticlePainter extends CustomPainter {
       );
 
       // Keep particles within bounds
-      if (currentPosition.dx < 0 || currentPosition.dx > size.width ||
-          currentPosition.dy < 0 || currentPosition.dy > size.height) {
+      if (currentPosition.dx < 0 ||
+          currentPosition.dx > size.width ||
+          currentPosition.dy < 0 ||
+          currentPosition.dy > size.height) {
         continue;
       }
 
@@ -788,12 +749,16 @@ class RarityParticlePainter extends CustomPainter {
     final path = Path();
     path.moveTo(center.dx, center.dy + size);
     path.quadraticBezierTo(
-      center.dx - size, center.dy,
-      center.dx, center.dy - size,
+      center.dx - size,
+      center.dy,
+      center.dx,
+      center.dy - size,
     );
     path.quadraticBezierTo(
-      center.dx + size, center.dy,
-      center.dx, center.dy + size,
+      center.dx + size,
+      center.dy,
+      center.dx,
+      center.dy + size,
     );
     canvas.drawPath(path, paint);
   }

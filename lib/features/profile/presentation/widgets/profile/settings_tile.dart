@@ -29,27 +29,30 @@ class SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     Widget tile = Container(
       color: backgroundColor,
       child: InkWell(
         onTap: isEnabled ? onTap : null,
         child: Padding(
-          padding: contentPadding ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding:
+              contentPadding ??
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
               // Leading icon or widget
               if (leadingIcon != null || leadingWidget != null) ...[
-                leadingWidget ?? Icon(
-                  leadingIcon!,
-                  color: isEnabled
-                      ? theme.iconTheme.color
-                      : theme.disabledColor,
-                  size: 24,
-                ),
+                leadingWidget ??
+                    Icon(
+                      leadingIcon!,
+                      color: isEnabled
+                          ? theme.iconTheme.color
+                          : theme.disabledColor,
+                      size: 24,
+                    ),
                 const SizedBox(width: 16),
               ],
-              
+
               // Title and subtitle
               Expanded(
                 child: Column(
@@ -71,7 +74,9 @@ class SettingsTile extends StatelessWidget {
                         subtitle!,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: isEnabled
-                              ? theme.textTheme.bodyMedium?.color?.withOpacity(0.7)
+                              ? theme.textTheme.bodyMedium?.color?.withOpacity(
+                                  0.7,
+                                )
                               : theme.disabledColor,
                         ),
                       ),
@@ -79,12 +84,9 @@ class SettingsTile extends StatelessWidget {
                   ],
                 ),
               ),
-              
+
               // Trailing widget
-              if (trailing != null) ...[
-                const SizedBox(width: 8),
-                trailing!,
-              ],
+              if (trailing != null) ...[const SizedBox(width: 8), trailing!],
             ],
           ),
         ),
@@ -151,9 +153,7 @@ class SettingsTile extends StatelessWidget {
           ? Icon(
               Icons.arrow_forward_ios,
               size: 16,
-              color: isEnabled
-                  ? Colors.grey[600]
-                  : Colors.grey[400],
+              color: isEnabled ? Colors.grey[600] : Colors.grey[400],
             )
           : null,
     );
@@ -220,10 +220,7 @@ class SettingsTile extends StatelessWidget {
       leadingIcon: leadingIcon,
       onTap: onTap,
       isEnabled: isEnabled,
-      trailing: _BadgeWidget(
-        badgeText: badgeText,
-        badgeColor: badgeColor,
-      ),
+      trailing: _BadgeWidget(badgeText: badgeText, badgeColor: badgeColor),
     );
   }
 
@@ -299,7 +296,7 @@ class SettingsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       margin: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
@@ -331,7 +328,7 @@ class SettingsSection extends StatelessWidget {
           ...tiles.asMap().entries.map((entry) {
             final index = entry.key;
             final tile = entry.value;
-            
+
             // Don't show divider on the last tile
             if (index == tiles.length - 1) {
               return SettingsTile(
@@ -347,7 +344,7 @@ class SettingsSection extends StatelessWidget {
                 contentPadding: tile.contentPadding,
               );
             }
-            
+
             return tile;
           }),
         ],
@@ -386,9 +383,7 @@ class _SelectionWidget extends StatelessWidget {
         Icon(
           Icons.arrow_forward_ios,
           size: 16,
-          color: isEnabled
-              ? Colors.grey[600]
-              : Colors.grey[400],
+          color: isEnabled ? Colors.grey[600] : Colors.grey[400],
         ),
       ],
     );
@@ -412,15 +407,13 @@ class _ActionWidget extends StatelessWidget {
     if (isDestructive && finalTextColor == null) {
       finalTextColor = Colors.red;
     }
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       child: Text(
         'Action',
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-          color: isEnabled
-              ? finalTextColor
-              : Theme.of(context).disabledColor,
+          color: isEnabled ? finalTextColor : Theme.of(context).disabledColor,
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -432,10 +425,7 @@ class _BadgeWidget extends StatelessWidget {
   final String badgeText;
   final Color? badgeColor;
 
-  const _BadgeWidget({
-    required this.badgeText,
-    this.badgeColor,
-  });
+  const _BadgeWidget({required this.badgeText, this.badgeColor});
 
   @override
   Widget build(BuildContext context) {

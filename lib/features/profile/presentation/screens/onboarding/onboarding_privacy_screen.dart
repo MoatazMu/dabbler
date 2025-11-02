@@ -10,15 +10,17 @@ class OnboardingPrivacyScreen extends ConsumerStatefulWidget {
   const OnboardingPrivacyScreen({super.key});
 
   @override
-  ConsumerState<OnboardingPrivacyScreen> createState() => _OnboardingPrivacyScreenState();
+  ConsumerState<OnboardingPrivacyScreen> createState() =>
+      _OnboardingPrivacyScreenState();
 }
 
-class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScreen>
+class _OnboardingPrivacyScreenState
+    extends ConsumerState<OnboardingPrivacyScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   // Privacy settings
   String _profileVisibility = 'public';
   bool _showRealName = true;
@@ -31,43 +33,36 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
   String _dataRetention = '1_year';
   bool _allowAnalytics = true;
   bool _marketingEmails = false;
-  
+
   bool _isLoading = false;
   bool _hasReviewedPrivacy = false;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
-    
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
+
     _animationController.forward();
     _loadExistingData();
   }
-  
+
   void _loadExistingData() {
     final controller = ref.read(onboardingControllerProvider);
     final existingData = controller.progress?.stepData['step_4'];
-    
+
     if (existingData != null) {
       _profileVisibility = existingData['profile_visibility'] ?? 'public';
       _showRealName = existingData['show_real_name'] ?? true;
@@ -83,18 +78,18 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       _hasReviewedPrivacy = existingData['privacy_reviewed'] ?? false;
     }
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(onboardingControllerProvider);
     final variant = controller.currentVariant ?? 'control';
-    
+
     return Scaffold(
       backgroundColor: DesignSystem.colors.background,
       body: SafeArea(
@@ -113,13 +108,13 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ),
     );
   }
-  
+
   Widget _buildContent(BuildContext context, String variant) {
     return Column(
       children: [
         // App bar
         _buildAppBar(),
-        
+
         // Content
         Expanded(
           child: CustomScrollView(
@@ -131,7 +126,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
                   child: _buildHeader(variant),
                 ),
               ),
-              
+
               // Privacy sections
               SliverToBoxAdapter(
                 child: Padding(
@@ -147,7 +142,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
                   ),
                 ),
               ),
-              
+
               // Privacy review section
               SliverToBoxAdapter(
                 child: Padding(
@@ -155,7 +150,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
                   child: _buildPrivacyReviewSection(variant),
                 ),
               ),
-              
+
               // Bottom section
               SliverToBoxAdapter(
                 child: Padding(
@@ -164,17 +159,17 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
                     children: [
                       // Personalized tip
                       _buildPersonalizedTip(variant),
-                      
+
                       const SizedBox(height: 24),
-                      
+
                       // Complete button
                       _buildCompleteButton(variant),
-                      
+
                       const SizedBox(height: 16),
-                      
+
                       // Progress indicator
                       _buildProgressIndicator(),
-                      
+
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -186,7 +181,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ],
     );
   }
-  
+
   Widget _buildAppBar() {
     return Container(
       padding: const EdgeInsets.all(16.0),
@@ -199,9 +194,9 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
               color: DesignSystem.colors.textPrimary,
             ),
           ),
-          
+
           const Spacer(),
-          
+
           TextButton(
             onPressed: () => _skipStep(),
             child: Text(
@@ -213,13 +208,13 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ),
     );
   }
-  
+
   Widget _buildHeader(String variant) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          variant == 'gamified' 
+          variant == 'gamified'
               ? '🔒 Secure Your Privacy'
               : 'Privacy & Data Settings',
           style: DesignSystem.typography.headlineMedium.copyWith(
@@ -227,9 +222,9 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             fontWeight: FontWeight.bold,
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         Text(
           variant == 'gamified'
               ? 'Control your privacy to earn trust badges and security points!'
@@ -241,7 +236,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ],
     );
   }
-  
+
   Widget _buildProfileVisibilitySection() {
     return _buildSection(
       title: 'Profile Visibility',
@@ -262,9 +257,9 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             });
           },
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         _buildSwitchSetting(
           title: 'Show real name',
           subtitle: 'Display your full name instead of username',
@@ -275,7 +270,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             });
           },
         ),
-        
+
         _buildSwitchSetting(
           title: 'Show age',
           subtitle: 'Display your age on profile',
@@ -286,7 +281,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             });
           },
         ),
-        
+
         _buildSwitchSetting(
           title: 'Show general location',
           subtitle: 'Display your city/area to help find local games',
@@ -297,7 +292,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             });
           },
         ),
-        
+
         _buildSwitchSetting(
           title: 'Show sports history',
           subtitle: 'Display past games and statistics',
@@ -311,7 +306,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ],
     );
   }
-  
+
   Widget _buildCommunicationSection() {
     return _buildSection(
       title: 'Communication',
@@ -327,7 +322,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             });
           },
         ),
-        
+
         _buildSwitchSetting(
           title: 'Allow game invitations',
           subtitle: 'Receive invites to join games',
@@ -338,7 +333,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             });
           },
         ),
-        
+
         _buildSwitchSetting(
           title: 'Show online status',
           subtitle: 'Let others see when you\'re active',
@@ -352,7 +347,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ],
     );
   }
-  
+
   Widget _buildDataSection() {
     return _buildSection(
       title: 'Data & Analytics',
@@ -374,9 +369,9 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             });
           },
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         _buildSwitchSetting(
           title: 'Analytics & performance',
           subtitle: 'Help us improve the app with anonymous usage data',
@@ -387,7 +382,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             });
           },
         ),
-        
+
         _buildSwitchSetting(
           title: 'Marketing communications',
           subtitle: 'Receive emails about new features and games',
@@ -401,7 +396,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ],
     );
   }
-  
+
   Widget _buildSection({
     required String title,
     required IconData icon,
@@ -419,11 +414,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
         children: [
           Row(
             children: [
-              Icon(
-                icon,
-                color: DesignSystem.colors.primary,
-                size: 20,
-              ),
+              Icon(icon, color: DesignSystem.colors.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 title,
@@ -434,15 +425,15 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           ...children,
         ],
       ),
     );
   }
-  
+
   Widget _buildSwitchSetting({
     required String title,
     required String subtitle,
@@ -482,7 +473,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ),
     );
   }
-  
+
   Widget _buildDropdownSetting({
     required String title,
     String? subtitle,
@@ -516,30 +507,35 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: DesignSystem.colors.border),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          ),
-          items: items.entries.map((entry) => DropdownMenuItem(
-            value: entry.key,
-            child: Text(
-              entry.value,
-              style: DesignSystem.typography.bodyMedium,
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
             ),
-          )).toList(),
+          ),
+          items: items.entries
+              .map(
+                (entry) => DropdownMenuItem(
+                  value: entry.key,
+                  child: Text(
+                    entry.value,
+                    style: DesignSystem.typography.bodyMedium,
+                  ),
+                ),
+              )
+              .toList(),
           onChanged: onChanged,
         ),
       ],
     );
   }
-  
+
   Widget _buildPrivacyReviewSection(String variant) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: DesignSystem.colors.primary.withOpacity(0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: DesignSystem.colors.primary.withOpacity(0.2),
-        ),
+        border: Border.all(color: DesignSystem.colors.primary.withOpacity(0.2)),
       ),
       child: Column(
         children: [
@@ -562,18 +558,18 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
               ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           Text(
             'I have reviewed and understand my privacy settings. I can update these preferences anytime in my account settings.',
             style: DesignSystem.typography.bodyMedium.copyWith(
               color: DesignSystem.colors.primary,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Row(
             children: [
               Checkbox(
@@ -602,7 +598,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
               ),
             ],
           ),
-          
+
           if (variant == 'gamified' && _hasReviewedPrivacy)
             Container(
               margin: const EdgeInsets.only(top: 12),
@@ -634,27 +630,21 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ),
     );
   }
-  
+
   Widget _buildPersonalizedTip(String variant) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: DesignSystem.colors.info.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: DesignSystem.colors.info.withOpacity(0.2),
-        ),
+        border: Border.all(color: DesignSystem.colors.info.withOpacity(0.2)),
       ),
       child: Row(
         children: [
-          Icon(
-            LucideIcons.info,
-            color: DesignSystem.colors.info,
-            size: 20,
-          ),
-          
+          Icon(LucideIcons.info, color: DesignSystem.colors.info, size: 20),
+
           const SizedBox(width: 12),
-          
+
           Expanded(
             child: Text(
               'Your privacy settings can be updated anytime. We recommend keeping your profile visible to find the best game matches.',
@@ -667,10 +657,10 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       ),
     );
   }
-  
+
   Widget _buildCompleteButton(String variant) {
     final canComplete = _hasReviewedPrivacy;
-    
+
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -697,7 +687,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    variant == 'gamified' 
+                    variant == 'gamified'
                         ? '🎉 Complete & Claim All Rewards!'
                         : '✨ Complete Profile',
                     style: DesignSystem.typography.titleMedium.copyWith(
@@ -705,19 +695,16 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  
+
                   const SizedBox(width: 8),
-                  
-                  const Icon(
-                    LucideIcons.check,
-                    size: 20,
-                  ),
+
+                  const Icon(LucideIcons.check, size: 20),
                 ],
               ),
       ),
     );
   }
-  
+
   Widget _buildProgressIndicator() {
     return Column(
       children: [
@@ -727,28 +714,30 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
             color: DesignSystem.colors.textSecondary,
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         LinearProgressIndicator(
           value: 1.0,
           backgroundColor: DesignSystem.colors.border,
-          valueColor: AlwaysStoppedAnimation<Color>(DesignSystem.colors.primary),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            DesignSystem.colors.primary,
+          ),
         ),
       ],
     );
   }
-  
+
   Future<void> _completeOnboarding() async {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final controller = ref.read(onboardingControllerProvider);
       final gamification = ref.read(onboardingGamificationProvider);
       final variant = controller.currentVariant ?? 'control';
-      
+
       // Prepare step data
       final stepData = {
         'profile_visibility': _profileVisibility,
@@ -765,17 +754,17 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
         'privacy_reviewed': _hasReviewedPrivacy,
         'completed_at': DateTime.now().toIso8601String(),
       };
-      
+
       // Complete the step
       await controller.completeStep(4, stepData);
-      
+
       // Award points for gamified variant
       if (variant == 'gamified') {
         final userId = controller.currentUserId;
         if (userId != null) {
           int points = 20; // Base completion points
           if (_hasReviewedPrivacy) points += 10; // Privacy review bonus
-          
+
           await gamification.awardPoints(
             userId,
             points,
@@ -784,13 +773,12 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
           );
         }
       }
-      
+
       // Complete entire onboarding
       await controller.completeOnboarding();
-      
+
       // Navigate to completion screen
       context.go(RoutePaths.onboardingCompletion);
-      
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -804,7 +792,7 @@ class _OnboardingPrivacyScreenState extends ConsumerState<OnboardingPrivacyScree
       });
     }
   }
-  
+
   void _skipStep() {
     final controller = ref.read(onboardingControllerProvider);
     controller.skipStep(4, reason: 'user_skipped');

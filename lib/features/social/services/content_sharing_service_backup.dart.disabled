@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../core/utils/either.dart';
-import '../../../core/services/analytics_service.dart';
-import '../../../core/services/storage_service.dart';
-import '../data/models/post_model.dart';
-import '../data/models/user_model.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
+import 'package:dabbler/core/services/storage_service.dart';
+import 'package:dabbler/data/models/post_model.dart';
+import 'package:dabbler/data/models/user_model.dart';
 
 /// Service for handling content sharing and deep links
 class ContentSharingService {

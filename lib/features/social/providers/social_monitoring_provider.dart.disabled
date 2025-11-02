@@ -1,5 +1,5 @@
-import '../../../core/analytics/analytics_service.dart';
-import '../../../core/services/storage_service.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
+import 'package:dabbler/core/services/storage_service.dart';
 import '../services/social_analytics_service.dart';
 import '../services/social_health_monitoring_service.dart';
 import '../services/social_performance_monitoring_service.dart';

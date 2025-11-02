@@ -1,6 +1,6 @@
-import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failure.dart';
-import '../entities/activity_log.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/data/models/activities/activity_log.dart';
 import '../repositories/activity_log_repository.dart';
 
 /// Use case for getting user activities with filtering
@@ -9,7 +9,7 @@ class GetUserActivities {
 
   GetUserActivities(this.repository);
 
-  Future<Either<Failure, List<ActivityLog>>> call({
+  Future<Result<List<ActivityLog>, Failure>> call({
     required String userId,
     ActivityType? type,
     String? category,
@@ -17,8 +17,8 @@ class GetUserActivities {
     DateTime? endDate,
     int page = 1,
     int limit = 50,
-  }) async {
-    return await repository.getUserActivities(
+  }) {
+    return repository.getUserActivities(
       userId: userId,
       type: type,
       category: category,
@@ -36,12 +36,12 @@ class GetActivityStats {
 
   GetActivityStats(this.repository);
 
-  Future<Either<Failure, Map<String, int>>> call({
+  Future<Result<Map<String, int>, Failure>> call({
     required String userId,
     DateTime? startDate,
     DateTime? endDate,
-  }) async {
-    return await repository.getUserActivityStats(
+  }) {
+    return repository.getUserActivityStats(
       userId: userId,
       startDate: startDate,
       endDate: endDate,
@@ -55,7 +55,7 @@ class CreateActivityLog {
 
   CreateActivityLog(this.repository);
 
-  Future<Either<Failure, ActivityLog>> call({
+  Future<Result<ActivityLog, Failure>> call({
     required String userId,
     required ActivityType type,
     String? subType,
@@ -78,8 +78,8 @@ class CreateActivityLog {
     String? iconUrl,
     String? thumbnailUrl,
     String? actionRoute,
-  }) async {
-    return await repository.createActivity(
+  }) {
+    return repository.createActivity(
       userId: userId,
       type: type,
       subType: subType,
@@ -112,14 +112,11 @@ class GetRecentActivities {
 
   GetRecentActivities(this.repository);
 
-  Future<Either<Failure, List<ActivityLog>>> call({
+  Future<Result<List<ActivityLog>, Failure>> call({
     required String userId,
     int days = 7,
-  }) async {
-    return await repository.getRecentActivities(
-      userId: userId,
-      days: days,
-    );
+  }) {
+    return repository.getRecentActivities(userId: userId, days: days);
   }
 }
 
@@ -129,7 +126,7 @@ class GetCategoryStats {
 
   GetCategoryStats(this.repository);
 
-  Future<Either<Failure, Map<String, int>>> call(String userId) async {
-    return await repository.getCategoryStats(userId);
+  Future<Result<Map<String, int>, Failure>> call(String userId) {
+    return repository.getCategoryStats(userId);
   }
 }

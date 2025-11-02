@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/achievement.dart';
-import '../../domain/entities/badge_tier.dart';
-import '../../domain/entities/user_progress.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// State for achievements management
@@ -70,7 +70,8 @@ class AchievementsState {
       }
 
       // Category filter
-      if (selectedCategory != null && achievement.category != selectedCategory) {
+      if (selectedCategory != null &&
+          achievement.category != selectedCategory) {
         return false;
       }
 
@@ -88,11 +89,11 @@ class AchievementsState {
         case AchievementFilter.notStarted:
           return progress.status == ProgressStatus.notStarted;
         case AchievementFilter.available:
-          return achievement.isAvailable() && 
-                 progress.status != ProgressStatus.completed;
+          return achievement.isAvailable() &&
+              progress.status != ProgressStatus.completed;
         case AchievementFilter.locked:
-          return !achievement.isAvailable() || 
-                 !achievement.meetsPrerequisites(_getCompletedAchievementIds());
+          return !achievement.isAvailable() ||
+              !achievement.meetsPrerequisites(_getCompletedAchievementIds());
         case AchievementFilter.all:
           return true;
       }
@@ -110,7 +111,9 @@ class AchievementsState {
         filtered.sort((a, b) {
           final progressA = _getProgressForAchievement(a.id);
           final progressB = _getProgressForAchievement(b.id);
-          return progressB.calculateProgress().compareTo(progressA.calculateProgress());
+          return progressB.calculateProgress().compareTo(
+            progressA.calculateProgress(),
+          );
         });
         break;
       case AchievementSort.tier:
@@ -130,8 +133,9 @@ class AchievementsState {
       return AchievementWithProgress(
         achievement: achievement,
         progress: progress,
-        isUnlocked: achievement.isAvailable() &&
-                   achievement.meetsPrerequisites(_getCompletedAchievementIds()),
+        isUnlocked:
+            achievement.isAvailable() &&
+            achievement.meetsPrerequisites(_getCompletedAchievementIds()),
       );
     }).toList();
   }
@@ -145,7 +149,7 @@ class AchievementsState {
     final inProgressCount = userProgress
         .where((p) => p.status == ProgressStatus.inProgress)
         .length;
-    
+
     final totalPoints = achievements.fold(0, (sum, a) => sum + a.points);
     final earnedPoints = userProgress
         .where((p) => p.status == ProgressStatus.completed)
@@ -156,8 +160,11 @@ class AchievementsState {
       totalAchievements: totalAchievements,
       completedAchievements: completedCount,
       inProgressAchievements: inProgressCount,
-      availableAchievements: totalAchievements - completedCount - inProgressCount,
-      completionRate: totalAchievements > 0 ? (completedCount / totalAchievements) * 100 : 0,
+      availableAchievements:
+          totalAchievements - completedCount - inProgressCount,
+      completionRate: totalAchievements > 0
+          ? (completedCount / totalAchievements) * 100
+          : 0,
       totalPoints: totalPoints,
       earnedPoints: earnedPoints,
       pointsProgress: totalPoints > 0 ? (earnedPoints / totalPoints) * 100 : 0,
@@ -212,16 +219,10 @@ class AchievementsController extends StateNotifier<AchievementsState> {
     try {
       await _loadAchievements();
       await _loadUserProgress();
-      
-      state = state.copyWith(
-        isLoading: false,
-        lastUpdated: DateTime.now(),
-      );
+
+      state = state.copyWith(isLoading: false, lastUpdated: DateTime.now());
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -235,7 +236,8 @@ class AchievementsController extends StateNotifier<AchievementsState> {
     final result = await _repository.getAchievements();
 
     result.fold(
-      (failure) => throw Exception('Failed to load achievements: ${failure.message}'),
+      (failure) =>
+          throw Exception('Failed to load achievements: ${failure.message}'),
       (achievements) {
         final achievementsMap = <String, Achievement>{};
         for (final achievement in achievements) {
@@ -255,7 +257,8 @@ class AchievementsController extends StateNotifier<AchievementsState> {
     final result = await _repository.getUserProgress(userId);
 
     result.fold(
-      (failure) => throw Exception('Failed to load user progress: ${failure.message}'),
+      (failure) =>
+          throw Exception('Failed to load user progress: ${failure.message}'),
       (progress) {
         state = state.copyWith(userProgress: progress);
       },
@@ -318,12 +321,14 @@ class AchievementsController extends StateNotifier<AchievementsState> {
         .map((p) => p.achievementId)
         .toList();
 
-    return achievement.isAvailable() && 
-           achievement.meetsPrerequisites(completedIds);
+    return achievement.isAvailable() &&
+        achievement.meetsPrerequisites(completedIds);
   }
 
   /// Get achievements by category
-  List<AchievementWithProgress> getAchievementsByCategory(AchievementCategory category) {
+  List<AchievementWithProgress> getAchievementsByCategory(
+    AchievementCategory category,
+  ) {
     return state.filteredAchievements
         .where((ap) => ap.achievement.category == category)
         .toList();
@@ -331,23 +336,31 @@ class AchievementsController extends StateNotifier<AchievementsState> {
 
   /// Get trending achievements (most progress recently)
   List<AchievementWithProgress> getTrendingAchievements({int limit = 5}) {
-    final recentlyUpdated = state.filteredAchievements
-        .where((ap) => ap.progress.status == ProgressStatus.inProgress)
-        .toList()
-      ..sort((a, b) => b.progress.updatedAt.compareTo(a.progress.updatedAt));
+    final recentlyUpdated =
+        state.filteredAchievements
+            .where((ap) => ap.progress.status == ProgressStatus.inProgress)
+            .toList()
+          ..sort(
+            (a, b) => b.progress.updatedAt.compareTo(a.progress.updatedAt),
+          );
 
     return recentlyUpdated.take(limit).toList();
   }
 
   /// Get recommended achievements
   List<AchievementWithProgress> getRecommendedAchievements({int limit = 3}) {
-    final available = state.filteredAchievements
-        .where((ap) => 
-          ap.isUnlocked &&
-          ap.progress.status != ProgressStatus.completed &&
-          ap.achievement.tier == BadgeTier.bronze) // Start with easier achievements
-        .toList()
-      ..sort((a, b) => a.achievement.points.compareTo(b.achievement.points));
+    final available =
+        state.filteredAchievements
+            .where(
+              (ap) =>
+                  ap.isUnlocked &&
+                  ap.progress.status != ProgressStatus.completed &&
+                  ap.achievement.tier == BadgeTier.bronze,
+            ) // Start with easier achievements
+            .toList()
+          ..sort(
+            (a, b) => a.achievement.points.compareTo(b.achievement.points),
+          );
 
     return available.take(limit).toList();
   }
@@ -359,7 +372,7 @@ class AchievementsController extends StateNotifier<AchievementsState> {
     }
 
     final result = await _repository.searchAchievements(query);
-    
+
     return result.fold(
       (failure) => <Achievement>[],
       (achievements) => achievements,
@@ -370,7 +383,6 @@ class AchievementsController extends StateNotifier<AchievementsState> {
   void clearError() {
     state = state.copyWith(error: null);
   }
-
 }
 
 /// Achievement combined with progress information
@@ -443,11 +455,4 @@ enum AchievementFilter {
 }
 
 /// Achievement sort options
-enum AchievementSort {
-  name,
-  points,
-  progress,
-  tier,
-  category,
-  dateCreated,
-}
+enum AchievementSort { name, points, progress, tier, category, dateCreated }

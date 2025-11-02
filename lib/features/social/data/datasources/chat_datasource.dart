@@ -1,8 +1,8 @@
 import 'dart:io';
 import '../../../../utils/enums/social_enums.dart'; // For MessageType enum
-import '../models/chat_message_model.dart';
-import '../models/conversation_model.dart';
-import '../../domain/entities/post.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
+import 'package:dabbler/data/models/social/conversation_model.dart';
+import 'package:dabbler/data/models/social/post.dart';
 
 /// Exception types for chat data source operations
 class ChatDataSourceException implements Exception {
@@ -23,7 +23,7 @@ class ChatDataSourceException implements Exception {
 /// Message delivery exception
 class MessageDeliveryException extends ChatDataSourceException {
   final String? tempId;
-  
+
   const MessageDeliveryException({
     required super.message,
     this.tempId,
@@ -71,7 +71,7 @@ class ChatMediaUploadException extends ChatDataSourceException {
 /// Rate limit exception for messages
 class MessageRateLimitException extends ChatDataSourceException {
   final int retryAfterSeconds;
-  
+
   const MessageRateLimitException({
     required super.message,
     required this.retryAfterSeconds,
@@ -299,9 +299,7 @@ abstract class ChatDataSource {
   });
 
   /// Get total unread count across all conversations
-  Future<int> getTotalUnreadCount({
-    required String userId,
-  });
+  Future<int> getTotalUnreadCount({required String userId});
 
   /// Mute conversation
   Future<bool> muteConversation({
@@ -372,9 +370,7 @@ abstract class ChatDataSource {
   });
 
   /// Get blocked users list
-  Future<List<String>> getBlockedUsersInChat({
-    required String userId,
-  });
+  Future<List<String>> getBlockedUsersInChat({required String userId});
 
   /// Report message
   Future<bool> reportMessage({

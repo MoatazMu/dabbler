@@ -14,14 +14,13 @@ class SocialFeedScreen extends ConsumerStatefulWidget {
 
 class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
     with AutomaticKeepAliveClientMixin {
-  
   @override
   bool get wantKeepAlive => true;
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Social'),
@@ -51,27 +50,15 @@ class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
       body: const CustomScrollView(
         slivers: [
           // Social widgets will be implemented here
-          SliverToBoxAdapter(
-            child: SizedBox(height: 16),
-          ),
+          SliverToBoxAdapter(child: SizedBox(height: 16)),
           // Stories/highlights section
-          SliverToBoxAdapter(
-            child: _StoriesSection(),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(height: 16),
-          ),
+          SliverToBoxAdapter(child: _StoriesSection()),
+          SliverToBoxAdapter(child: SizedBox(height: 16)),
           // Quick actions (friend suggestions, etc.)
-          SliverToBoxAdapter(
-            child: _QuickActionsSection(),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(height: 16),
-          ),
+          SliverToBoxAdapter(child: _QuickActionsSection()),
+          SliverToBoxAdapter(child: SizedBox(height: 16)),
           // Posts feed
-          SliverToBoxAdapter(
-            child: _PostsFeedSection(),
-          ),
+          SliverToBoxAdapter(child: _PostsFeedSection()),
         ],
       ),
       floatingActionButton: FloatingActionButton(

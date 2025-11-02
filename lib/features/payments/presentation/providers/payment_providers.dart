@@ -11,22 +11,28 @@ final _supabaseClientProvider = Provider<SupabaseClient>((ref) {
 });
 
 /// Payment methods data source provider
-final paymentMethodsDataSourceProvider = Provider<PaymentMethodsDataSource>((ref) {
+final paymentMethodsDataSourceProvider = Provider<PaymentMethodsDataSource>((
+  ref,
+) {
   final supabaseClient = ref.watch(_supabaseClientProvider);
   return SupabasePaymentMethodsDataSource(supabaseClient);
 });
 
 /// Payment methods repository provider
-final paymentMethodsRepositoryProvider = Provider<PaymentMethodsRepository>((ref) {
+final paymentMethodsRepositoryProvider = Provider<PaymentMethodsRepository>((
+  ref,
+) {
   final dataSource = ref.watch(paymentMethodsDataSourceProvider);
   return PaymentMethodsRepositoryImpl(dataSource);
 });
 
 /// Payment methods controller provider (requires userId)
-final paymentMethodsControllerProvider = StateNotifierProvider.family<
-    PaymentMethodsController,
-    PaymentMethodsState,
-    String>((ref, userId) {
-  final repository = ref.watch(paymentMethodsRepositoryProvider);
-  return PaymentMethodsController(repository, userId);
-});
+final paymentMethodsControllerProvider =
+    StateNotifierProvider.family<
+      PaymentMethodsController,
+      PaymentMethodsState,
+      String
+    >((ref, userId) {
+      final repository = ref.watch(paymentMethodsRepositoryProvider);
+      return PaymentMethodsController(repository, userId);
+    });

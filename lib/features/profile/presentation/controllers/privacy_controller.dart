@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/privacy_settings.dart';
+import 'package:dabbler/data/models/profile/privacy_settings.dart';
 import '../../domain/usecases/manage_privacy_usecase.dart';
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 /// State for privacy management
 class PrivacyState {
@@ -57,10 +57,9 @@ class PrivacyState {
 class PrivacyController extends StateNotifier<PrivacyState> {
   final ManagePrivacyUseCase? _managePrivacyUseCase;
 
-  PrivacyController({
-    ManagePrivacyUseCase? managePrivacyUseCase,
-  })  : _managePrivacyUseCase = managePrivacyUseCase,
-        super(const PrivacyState());
+  PrivacyController({ManagePrivacyUseCase? managePrivacyUseCase})
+    : _managePrivacyUseCase = managePrivacyUseCase,
+      super(const PrivacyState());
 
   /// Load privacy settings
   Future<void> loadPrivacySettings(String userId) async {
@@ -135,8 +134,10 @@ class PrivacyController extends StateNotifier<PrivacyState> {
         showAge: state.pendingChanges['showAge'] as bool?,
         showStatistics: state.pendingChanges['showStats'] as bool?,
         allowDirectMessages: state.pendingChanges['messagePreference'] as bool?,
-        allowGameInvitations: state.pendingChanges['gameInvitePreference'] as bool?,
-        shareDataWithPartners: state.pendingChanges['dataSharingLevel'] as bool?,
+        allowGameInvitations:
+            state.pendingChanges['gameInvitePreference'] as bool?,
+        shareDataWithPartners:
+            state.pendingChanges['dataSharingLevel'] as bool?,
         allowAnalytics: state.pendingChanges['allowDataAnalytics'] as bool?,
         blockedUsers: state.pendingChanges['blockedUsers'] as List<String>?,
       );
@@ -152,8 +153,12 @@ class PrivacyController extends StateNotifier<PrivacyState> {
           return false;
         },
         (updateResult) {
-          final privacyScore = _calculatePrivacyScore(updateResult.updatedSettings);
-          final securityWarnings = _generateSecurityWarnings(updateResult.updatedSettings);
+          final privacyScore = _calculatePrivacyScore(
+            updateResult.updatedSettings,
+          );
+          final securityWarnings = _generateSecurityWarnings(
+            updateResult.updatedSettings,
+          );
 
           state = state.copyWith(
             isSaving: false,

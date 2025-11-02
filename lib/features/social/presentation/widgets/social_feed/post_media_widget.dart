@@ -76,7 +76,7 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
               itemCount: widget.media.length,
               itemBuilder: (context, index) {
                 final media = widget.media[index];
-                
+
                 return GestureDetector(
                   onTap: () => widget.onMediaTap?.call(index),
                   onDoubleTap: widget.onMediaDoubleTap,
@@ -97,11 +97,7 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
 
           // Media counter
           if (widget.media.length > 1)
-            Positioned(
-              top: 12,
-              right: 12,
-              child: _buildMediaCounter(),
-            ),
+            Positioned(top: 12, right: 12, child: _buildMediaCounter()),
 
           // Navigation arrows
           if (widget.media.length > 1) ...[
@@ -165,15 +161,15 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
             fit: BoxFit.cover,
             loadingBuilder: (context, child, loadingProgress) {
               if (loadingProgress == null) return child;
-              
+
               return Container(
                 color: Colors.grey.shade200,
                 child: Center(
                   child: CircularProgressIndicator(
                     value: loadingProgress.expectedTotalBytes != null
-                      ? loadingProgress.cumulativeBytesLoaded / 
-                        loadingProgress.expectedTotalBytes!
-                      : null,
+                        ? loadingProgress.cumulativeBytesLoaded /
+                              loadingProgress.expectedTotalBytes!
+                        : null,
                   ),
                 ),
               );
@@ -184,11 +180,7 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
           ),
 
           // Download overlay
-          Positioned(
-            top: 8,
-            right: 8,
-            child: _buildMediaActions(media),
-          ),
+          Positioned(top: 8, right: 8, child: _buildMediaActions(media)),
         ],
       ),
     );
@@ -211,11 +203,7 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
           Container(
             color: Colors.black,
             child: const Center(
-              child: Icon(
-                Icons.video_library,
-                color: Colors.white,
-                size: 48,
-              ),
+              child: Icon(Icons.video_library, color: Colors.white, size: 48),
             ),
           ),
 
@@ -228,11 +216,7 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
             ),
             child: IconButton(
               onPressed: () => _playVideo(media),
-              icon: const Icon(
-                Icons.play_arrow,
-                color: Colors.white,
-                size: 32,
-              ),
+              icon: const Icon(Icons.play_arrow, color: Colors.white, size: 32),
               padding: const EdgeInsets.all(16),
             ),
           ),
@@ -261,11 +245,7 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
           ),
 
         // Media actions
-        Positioned(
-          top: 8,
-          right: 8,
-          child: _buildMediaActions(media),
-        ),
+        Positioned(top: 8, right: 8, child: _buildMediaActions(media)),
       ],
     );
   }
@@ -279,12 +259,10 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
           fit: BoxFit.cover,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
-            
+
             return Container(
               color: Colors.grey.shade200,
-              child: const Center(
-                child: CircularProgressIndicator(),
-              ),
+              child: const Center(child: CircularProgressIndicator()),
             );
           },
           errorBuilder: (context, error, stackTrace) {
@@ -314,11 +292,7 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
         ),
 
         // Media actions
-        Positioned(
-          top: 8,
-          right: 8,
-          child: _buildMediaActions(media),
-        ),
+        Positioned(top: 8, right: 8, child: _buildMediaActions(media)),
       ],
     );
   }
@@ -334,18 +308,11 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.broken_image,
-              size: 48,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.broken_image, size: 48, color: Colors.grey.shade400),
             const SizedBox(height: 8),
             Text(
               message,
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
               textAlign: TextAlign.center,
             ),
           ],
@@ -373,8 +340,8 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: index == _currentIndex
-                  ? Colors.white
-                  : Colors.white.withOpacity(0.4),
+                    ? Colors.white
+                    : Colors.white.withOpacity(0.4),
               ),
             ),
           ),
@@ -406,22 +373,12 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
     required VoidCallback onTap,
   }) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.black54,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
       child: IconButton(
         onPressed: onTap,
-        icon: Icon(
-          icon,
-          color: Colors.white,
-          size: 20,
-        ),
+        icon: Icon(icon, color: Colors.white, size: 20),
         padding: const EdgeInsets.all(8),
-        constraints: const BoxConstraints(
-          minWidth: 36,
-          minHeight: 36,
-        ),
+        constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
       ),
     );
   }
@@ -437,29 +394,15 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
         children: [
           IconButton(
             onPressed: () => _downloadMedia(media),
-            icon: const Icon(
-              Icons.download,
-              color: Colors.white,
-              size: 20,
-            ),
+            icon: const Icon(Icons.download, color: Colors.white, size: 20),
             padding: const EdgeInsets.all(8),
-            constraints: const BoxConstraints(
-              minWidth: 36,
-              minHeight: 36,
-            ),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
           IconButton(
             onPressed: () => _shareMedia(media),
-            icon: const Icon(
-              Icons.share,
-              color: Colors.white,
-              size: 20,
-            ),
+            icon: const Icon(Icons.share, color: Colors.white, size: 20),
             padding: const EdgeInsets.all(8),
-            constraints: const BoxConstraints(
-              minWidth: 36,
-              minHeight: 36,
-            ),
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
         ],
       ),
@@ -488,10 +431,7 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
     Navigator.pushNamed(
       context,
       '/media/video-player',
-      arguments: {
-        'media': media,
-        'autoPlay': true,
-      },
+      arguments: {'media': media, 'autoPlay': true},
     );
   }
 
@@ -502,19 +442,15 @@ class _PostMediaWidgetState extends ConsumerState<PostMediaWidget> {
   }
 
   void _shareMedia(dynamic media) {
-    Navigator.pushNamed(
-      context,
-      '/share/media',
-      arguments: {'media': media},
-    );
+    Navigator.pushNamed(context, '/share/media', arguments: {'media': media});
   }
 
   String _formatDuration(int? durationInSeconds) {
     if (durationInSeconds == null) return '0:00';
-    
+
     final minutes = durationInSeconds ~/ 60;
     final seconds = durationInSeconds % 60;
-    
+
     return '$minutes:${seconds.toString().padLeft(2, '0')}';
   }
 }
@@ -571,7 +507,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
               itemCount: widget.media.length,
               itemBuilder: (context, index) {
                 final media = widget.media[index];
-                
+
                 return Center(
                   child: InteractiveViewer(
                     minScale: 0.5,
@@ -600,20 +536,14 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.black54,
-                        Colors.transparent,
-                      ],
+                      colors: [Colors.black54, Colors.transparent],
                     ),
                   ),
                   child: Row(
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: Colors.white,
-                        ),
+                        icon: const Icon(Icons.arrow_back, color: Colors.white),
                       ),
                       const Spacer(),
                       Text(
@@ -627,10 +557,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                       const Spacer(),
                       IconButton(
                         onPressed: () => _shareCurrentMedia(),
-                        icon: const Icon(
-                          Icons.share,
-                          color: Colors.white,
-                        ),
+                        icon: const Icon(Icons.share, color: Colors.white),
                       ),
                     ],
                   ),
@@ -653,10 +580,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                     gradient: LinearGradient(
                       begin: Alignment.bottomCenter,
                       end: Alignment.topCenter,
-                      colors: [
-                        Colors.black54,
-                        Colors.transparent,
-                      ],
+                      colors: [Colors.black54, Colors.transparent],
                     ),
                   ),
                   child: Row(
@@ -664,17 +588,11 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                     children: [
                       IconButton(
                         onPressed: () => _downloadCurrentMedia(),
-                        icon: const Icon(
-                          Icons.download,
-                          color: Colors.white,
-                        ),
+                        icon: const Icon(Icons.download, color: Colors.white),
                       ),
                       IconButton(
                         onPressed: () => _shareCurrentMedia(),
-                        icon: const Icon(
-                          Icons.share,
-                          color: Colors.white,
-                        ),
+                        icon: const Icon(Icons.share, color: Colors.white),
                       ),
                       IconButton(
                         onPressed: () => _showMediaInfo(),
@@ -696,7 +614,10 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                   right: 0,
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(16),
@@ -712,8 +633,8 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: index == _currentIndex
-                                ? Colors.white
-                                : Colors.white.withOpacity(0.4),
+                                  ? Colors.white
+                                  : Colors.white.withOpacity(0.4),
                             ),
                           ),
                         ),
@@ -736,11 +657,9 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
           fit: BoxFit.contain,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
-            
+
             return const Center(
-              child: CircularProgressIndicator(
-                color: Colors.white,
-              ),
+              child: CircularProgressIndicator(color: Colors.white),
             );
           },
           errorBuilder: (context, error, stackTrace) {
@@ -748,25 +667,18 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.broken_image,
-                    color: Colors.white,
-                    size: 64,
-                  ),
+                  Icon(Icons.broken_image, color: Colors.white, size: 64),
                   SizedBox(height: 16),
                   Text(
                     'Failed to load image',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                    ),
+                    style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                 ],
               ),
             );
           },
         );
-      
+
       case 'video':
         return GestureDetector(
           onTap: () => _playVideo(media),
@@ -774,10 +686,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
             fit: StackFit.expand,
             children: [
               if (media.thumbnailUrl != null)
-                Image.network(
-                  media.thumbnailUrl!,
-                  fit: BoxFit.contain,
-                )
+                Image.network(media.thumbnailUrl!, fit: BoxFit.contain)
               else
                 const Center(
                   child: Icon(
@@ -786,7 +695,7 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
                     size: 64,
                   ),
                 ),
-              
+
               const Center(
                 child: Icon(
                   Icons.play_circle_outline,
@@ -797,24 +706,17 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
             ],
           ),
         );
-      
+
       default:
         return const Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.insert_drive_file,
-                color: Colors.white,
-                size: 64,
-              ),
+              Icon(Icons.insert_drive_file, color: Colors.white, size: 64),
               SizedBox(height: 16),
               Text(
                 'Unsupported media type',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: Colors.white, fontSize: 16),
               ),
             ],
           ),
@@ -826,20 +728,13 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
     Navigator.pushNamed(
       context,
       '/media/video-player',
-      arguments: {
-        'media': media,
-        'autoPlay': true,
-      },
+      arguments: {'media': media, 'autoPlay': true},
     );
   }
 
   void _shareCurrentMedia() {
     final media = widget.media[_currentIndex];
-    Navigator.pushNamed(
-      context,
-      '/share/media',
-      arguments: {'media': media},
-    );
+    Navigator.pushNamed(context, '/share/media', arguments: {'media': media});
   }
 
   void _downloadCurrentMedia() {
@@ -871,9 +766,9 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
           children: [
             Text(
               'Media Info',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Text('Type: ${media.type ?? 'Unknown'}'),
@@ -893,17 +788,19 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
   String _formatFileSize(int bytes) {
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
   String _formatDuration(int? durationInSeconds) {
     if (durationInSeconds == null) return '0:00';
-    
+
     final hours = durationInSeconds ~/ 3600;
     final minutes = (durationInSeconds % 3600) ~/ 60;
     final seconds = durationInSeconds % 60;
-    
+
     if (hours > 0) {
       return '$hours:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
     } else {

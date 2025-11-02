@@ -1,11 +1,11 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/errors/exceptions.dart';
-import '../../domain/entities/game.dart';
-import '../../domain/entities/player.dart';
+import 'package:dabbler/data/models/games/game.dart';
+import 'package:dabbler/data/models/games/player.dart';
 import '../../domain/repositories/games_repository.dart';
 import '../datasources/games_remote_data_source.dart';
-import '../models/game_model.dart';
+import 'package:dabbler/data/models/games/game_model.dart';
 
 // Additional failures for games
 class ServerFailure extends Failure {
@@ -20,7 +20,7 @@ class UnknownFailure extends Failure {
   const UnknownFailure(String message) : super(message: message);
 }
 
-// Additional exceptions for games  
+// Additional exceptions for games
 class ServerException implements Exception {
   final String message;
   const ServerException(this.message);
@@ -37,25 +37,25 @@ class GamesRepositoryImpl implements GamesRepository {
   // In-memory cache for games
   final Map<String, GameModel> _gamesCache = {};
   final Map<String, List<GameModel>> _listCache = {};
-  
-  GamesRepositoryImpl({
-    required this.remoteDataSource,
-  });
+
+  GamesRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, Game>> createGame(Map<String, dynamic> gameData) async {
+  Future<Either<Failure, Game>> createGame(
+    Map<String, dynamic> gameData,
+  ) async {
     try {
       final gameModel = await remoteDataSource.createGame(gameData);
-      
+
       // Cache the created game
       _gamesCache[gameModel.id] = gameModel;
-      
+
       // Clear list caches to force refresh
       _listCache.clear();
-      
+
       return Right(gameModel);
     } on ServerException catch (e) {
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -64,19 +64,22 @@ class GamesRepositoryImpl implements GamesRepository {
   }
 
   @override
-  Future<Either<Failure, Game>> updateGame(String gameId, Map<String, dynamic> updates) async {
+  Future<Either<Failure, Game>> updateGame(
+    String gameId,
+    Map<String, dynamic> updates,
+  ) async {
     try {
       final gameModel = await remoteDataSource.updateGame(gameId, updates);
-      
+
       // Update cache
       _gamesCache[gameModel.id] = gameModel;
-      
+
       // Clear list caches to force refresh
       _listCache.clear();
-      
+
       return Right(gameModel);
     } on ServerException catch (e) {
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -93,13 +96,13 @@ class GamesRepositoryImpl implements GamesRepository {
       }
 
       final gameModel = await remoteDataSource.getGame(gameId);
-      
+
       // Cache the game
       _gamesCache[gameModel.id] = gameModel;
-      
+
       return Right(gameModel);
     } on ServerException catch (e) {
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -116,8 +119,15 @@ class GamesRepositoryImpl implements GamesRepository {
     bool ascending = true,
   }) async {
     try {
-      final cacheKey = _generateCacheKey('games', filters, page, limit, sortBy, ascending);
-      
+      final cacheKey = _generateCacheKey(
+        'games',
+        filters,
+        page,
+        limit,
+        sortBy,
+        ascending,
+      );
+
       // Check cache first
       if (_listCache.containsKey(cacheKey)) {
         return Right(_listCache[cacheKey]!.cast<Game>());
@@ -130,16 +140,16 @@ class GamesRepositoryImpl implements GamesRepository {
         sortBy: sortBy,
         ascending: ascending,
       );
-      
+
       // Cache individual games and the list
       for (final game in games) {
         _gamesCache[game.id] = game;
       }
       _listCache[cacheKey] = games;
-      
+
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -156,18 +166,18 @@ class GamesRepositoryImpl implements GamesRepository {
       }
 
       final result = await remoteDataSource.joinGame(gameId, playerId);
-      
+
       if (result) {
         // Clear cache to force refresh on next get
         _gamesCache.remove(gameId);
         _listCache.clear();
       }
-      
+
       return Right(result);
     } on ServerException catch (e) {
       // Revert optimistic update if failed
       _gamesCache.remove(gameId);
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -176,19 +186,22 @@ class GamesRepositoryImpl implements GamesRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> leaveGame(String gameId, String playerId) async {
+  Future<Either<Failure, bool>> leaveGame(
+    String gameId,
+    String playerId,
+  ) async {
     try {
       final result = await remoteDataSource.leaveGame(gameId, playerId);
-      
+
       if (result) {
         // Clear cache to force refresh
         _gamesCache.remove(gameId);
         _listCache.clear();
       }
-      
+
       return Right(result);
     } on ServerException catch (e) {
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -200,16 +213,16 @@ class GamesRepositoryImpl implements GamesRepository {
   Future<Either<Failure, bool>> cancelGame(String gameId) async {
     try {
       final result = await remoteDataSource.cancelGame(gameId);
-      
+
       if (result) {
         // Clear cache to force refresh
         _gamesCache.remove(gameId);
         _listCache.clear();
       }
-      
+
       return Right(result);
     } on ServerException catch (e) {
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -225,8 +238,13 @@ class GamesRepositoryImpl implements GamesRepository {
     int limit = 20,
   }) async {
     try {
-      final cacheKey = _generateCacheKey('my_games', {'userId': userId, 'status': status}, page, limit);
-      
+      final cacheKey = _generateCacheKey(
+        'my_games',
+        {'userId': userId, 'status': status},
+        page,
+        limit,
+      );
+
       // Check cache first
       if (_listCache.containsKey(cacheKey)) {
         return Right(_listCache[cacheKey]!.cast<Game>());
@@ -238,16 +256,16 @@ class GamesRepositoryImpl implements GamesRepository {
         page: page,
         limit: limit,
       );
-      
+
       // Cache individual games and the list
       for (final game in games) {
         _gamesCache[game.id] = game;
       }
       _listCache[cacheKey] = games;
-      
+
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -270,15 +288,15 @@ class GamesRepositoryImpl implements GamesRepository {
         page: page,
         limit: limit,
       );
-      
+
       // Cache individual games but not the search list (as it may change frequently)
       for (final game in games) {
         _gamesCache[game.id] = game;
       }
-      
+
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
@@ -304,19 +322,21 @@ class GamesRepositoryImpl implements GamesRepository {
         page: page,
         limit: limit,
       );
-      
+
       // Cache individual games
       for (final game in games) {
         _gamesCache[game.id] = game;
       }
-      
+
       return Right(games.cast<Game>());
     } on ServerException catch (e) {
-      return Left(ServerFailure( e.message));
+      return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
-      return Left(UnknownFailure('Failed to get nearby games: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get nearby games: ${e.toString()}'),
+      );
     }
   }
 
@@ -336,7 +356,9 @@ class GamesRepositoryImpl implements GamesRepository {
       );
       return Right(games.cast<Game>());
     } catch (e) {
-      return Left(UnknownFailure('Failed to get games by sport: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get games by sport: ${e.toString()}'),
+      );
     }
   }
 
@@ -352,7 +374,9 @@ class GamesRepositoryImpl implements GamesRepository {
       );
       return Right(games.cast<Game>());
     } catch (e) {
-      return Left(UnknownFailure('Failed to get trending games: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get trending games: ${e.toString()}'),
+      );
     }
   }
 
@@ -370,21 +394,31 @@ class GamesRepositoryImpl implements GamesRepository {
       );
       return Right(games.cast<Game>());
     } catch (e) {
-      return Left(UnknownFailure('Failed to get recommended games: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get recommended games: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> updateGameStatus(String gameId, GameStatus status) async {
+  Future<Either<Failure, bool>> updateGameStatus(
+    String gameId,
+    GameStatus status,
+  ) async {
     try {
-      final result = await remoteDataSource.updateGameStatus(gameId, status.toString().split('.').last);
+      final result = await remoteDataSource.updateGameStatus(
+        gameId,
+        status.toString().split('.').last,
+      );
       if (result) {
         _gamesCache.remove(gameId);
         _listCache.clear();
       }
       return Right(result);
     } catch (e) {
-      return Left(UnknownFailure('Failed to update game status: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to update game status: ${e.toString()}'),
+      );
     }
   }
 
@@ -395,7 +429,11 @@ class GamesRepositoryImpl implements GamesRepository {
     String? message,
   ) async {
     try {
-      final result = await remoteDataSource.invitePlayersToGame(gameId, playerIds, message);
+      final result = await remoteDataSource.invitePlayersToGame(
+        gameId,
+        playerIds,
+        message,
+      );
       return Right(result);
     } catch (e) {
       return Left(UnknownFailure('Failed to invite players: ${e.toString()}'));
@@ -409,19 +447,27 @@ class GamesRepositoryImpl implements GamesRepository {
     bool accepted,
   ) async {
     try {
-      final result = await remoteDataSource.respondToGameInvitation(gameId, playerId, accepted);
+      final result = await remoteDataSource.respondToGameInvitation(
+        gameId,
+        playerId,
+        accepted,
+      );
       if (result) {
         _gamesCache.remove(gameId);
         _listCache.clear();
       }
       return Right(result);
     } catch (e) {
-      return Left(UnknownFailure('Failed to respond to invitation: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to respond to invitation: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getUserGameStats(String userId) async {
+  Future<Either<Failure, Map<String, dynamic>>> getUserGameStats(
+    String userId,
+  ) async {
     try {
       final stats = await remoteDataSource.getUserGameStats(userId);
       return Right(stats);
@@ -437,7 +483,11 @@ class GamesRepositoryImpl implements GamesRepository {
     String? description,
   ) async {
     try {
-      final result = await remoteDataSource.reportGame(gameId, reason, description);
+      final result = await remoteDataSource.reportGame(
+        gameId,
+        reason,
+        description,
+      );
       return Right(result);
     } catch (e) {
       return Left(UnknownFailure('Failed to report game: ${e.toString()}'));
@@ -445,7 +495,10 @@ class GamesRepositoryImpl implements GamesRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> toggleGameFavorite(String gameId, String userId) async {
+  Future<Either<Failure, bool>> toggleGameFavorite(
+    String gameId,
+    String userId,
+  ) async {
     try {
       final result = await remoteDataSource.toggleGameFavorite(gameId, userId);
       return Right(result);
@@ -468,17 +521,24 @@ class GamesRepositoryImpl implements GamesRepository {
       );
       return Right(games.cast<Game>());
     } catch (e) {
-      return Left(UnknownFailure('Failed to get favorite games: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get favorite games: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> canUserJoinGame(String gameId, String userId) async {
+  Future<Either<Failure, bool>> canUserJoinGame(
+    String gameId,
+    String userId,
+  ) async {
     try {
       final result = await remoteDataSource.canUserJoinGame(gameId, userId);
       return Right(result);
     } catch (e) {
-      return Left(UnknownFailure('Failed to check join eligibility: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to check join eligibility: ${e.toString()}'),
+      );
     }
   }
 
@@ -496,7 +556,9 @@ class GamesRepositoryImpl implements GamesRepository {
       );
       return Right(games.cast<Game>());
     } catch (e) {
-      return Left(UnknownFailure('Failed to get game history: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get game history: ${e.toString()}'),
+      );
     }
   }
 
@@ -514,11 +576,11 @@ class GamesRepositoryImpl implements GamesRepository {
         newStartTime,
         newEndTime,
       );
-      
+
       // Cache the new game
       _gamesCache[gameModel.id] = gameModel;
       _listCache.clear();
-      
+
       return Right(gameModel);
     } catch (e) {
       return Left(UnknownFailure('Failed to duplicate game: ${e.toString()}'));
@@ -531,12 +593,21 @@ class GamesRepositoryImpl implements GamesRepository {
       final players = await remoteDataSource.getGamePlayers(gameId);
       return Right(players.cast<Player>());
     } catch (e) {
-      return Left(UnknownFailure('Failed to get game players: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get game players: ${e.toString()}'),
+      );
     }
   }
 
   // Helper method to generate cache keys
-  String _generateCacheKey(String prefix, Map<String, dynamic>? params, int page, int limit, [String? sortBy, bool? ascending]) {
+  String _generateCacheKey(
+    String prefix,
+    Map<String, dynamic>? params,
+    int page,
+    int limit, [
+    String? sortBy,
+    bool? ascending,
+  ]) {
     final buffer = StringBuffer(prefix);
     if (params != null) {
       params.forEach((key, value) {

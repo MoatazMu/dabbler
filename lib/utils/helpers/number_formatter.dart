@@ -52,7 +52,7 @@ class NumberFormatter {
     if (rank % 100 >= 11 && rank % 100 <= 13) {
       return '${rank}th';
     }
-    
+
     switch (rank % 10) {
       case 1:
         return '${rank}st';

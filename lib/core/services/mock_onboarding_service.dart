@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MockOnboardingService {
-  static final MockOnboardingService _instance = MockOnboardingService._internal();
+  static final MockOnboardingService _instance =
+      MockOnboardingService._internal();
   factory MockOnboardingService() => _instance;
   MockOnboardingService._internal();
 
@@ -71,13 +72,17 @@ class MockOnboardingService {
   // Get onboarding progress (0.0 to 1.0)
   double getOnboardingProgress() {
     final totalSteps = 4; // profile, sports, intent, complete
-    final completedCount = _completedSteps.values.where((completed) => completed).length;
+    final completedCount = _completedSteps.values
+        .where((completed) => completed)
+        .length;
     return completedCount / totalSteps;
   }
 
   // Get current step number
   int getCurrentStepNumber() {
-    final completedCount = _completedSteps.values.where((completed) => completed).length;
+    final completedCount = _completedSteps.values
+        .where((completed) => completed)
+        .length;
     return completedCount + 1;
   }
 
@@ -113,4 +118,4 @@ class MockOnboardingService {
         .map((entry) => entry.key)
         .toList();
   }
-} 
+}

@@ -55,14 +55,7 @@ class ConfettiParticle {
 }
 
 /// Confetti shapes enum
-enum ConfettiShape {
-  circle,
-  square,
-  triangle,
-  star,
-  heart,
-  diamond,
-}
+enum ConfettiShape { circle, square, triangle, star, heart, diamond }
 
 /// Confetti animation configuration
 class ConfettiConfig {
@@ -219,9 +212,11 @@ class _ConfettiAnimationState extends State<ConfettiAnimation>
 
     for (int i = 0; i < widget.config.particleCount; i++) {
       final angle = (_random.nextDouble() - 0.5) * widget.config.spread;
-      final speed = widget.config.minSpeed + 
-          _random.nextDouble() * (widget.config.maxSpeed - widget.config.minSpeed);
-      
+      final speed =
+          widget.config.minSpeed +
+          _random.nextDouble() *
+              (widget.config.maxSpeed - widget.config.minSpeed);
+
       final velocity = Offset(
         math.cos(angle - math.pi / 2) * speed,
         math.sin(angle - math.pi / 2) * speed,
@@ -230,14 +225,20 @@ class _ConfettiAnimationState extends State<ConfettiAnimation>
       final particle = ConfettiParticle(
         position: origin,
         velocity: velocity,
-        color: widget.config.colors[_random.nextInt(widget.config.colors.length)],
-        size: widget.config.minSize + 
-            _random.nextDouble() * (widget.config.maxSize - widget.config.minSize),
+        color:
+            widget.config.colors[_random.nextInt(widget.config.colors.length)],
+        size:
+            widget.config.minSize +
+            _random.nextDouble() *
+                (widget.config.maxSize - widget.config.minSize),
         rotation: _random.nextDouble() * 2 * math.pi,
         rotationSpeed: (_random.nextDouble() - 0.5) * 10,
-        shape: widget.config.shapes[_random.nextInt(widget.config.shapes.length)],
-        life: widget.config.minLife + 
-            _random.nextDouble() * (widget.config.maxLife - widget.config.minLife),
+        shape:
+            widget.config.shapes[_random.nextInt(widget.config.shapes.length)],
+        life:
+            widget.config.minLife +
+            _random.nextDouble() *
+                (widget.config.maxLife - widget.config.minLife),
         maxLife: widget.config.maxLife,
       );
 
@@ -251,15 +252,15 @@ class _ConfettiAnimationState extends State<ConfettiAnimation>
     final now = DateTime.now();
     final deltaTime = _lastPhysicsUpdate != null
         ? now.difference(_lastPhysicsUpdate!).inMicroseconds / 1000000.0
-        : 1/60.0;
+        : 1 / 60.0;
     _lastPhysicsUpdate = now;
 
     // Clamp delta time to prevent large jumps
-    final clampedDelta = deltaTime.clamp(0.0, 1/30.0);
+    final clampedDelta = deltaTime.clamp(0.0, 1 / 30.0);
 
     for (int i = _particles.length - 1; i >= 0; i--) {
       final particle = _particles[i];
-      
+
       // Update life
       final newLife = particle.life - clampedDelta;
       if (newLife <= 0) {
@@ -269,7 +270,7 @@ class _ConfettiAnimationState extends State<ConfettiAnimation>
 
       // Apply physics
       var newVelocity = particle.velocity;
-      
+
       // Apply gravity
       newVelocity = Offset(
         newVelocity.dx,
@@ -283,7 +284,8 @@ class _ConfettiAnimationState extends State<ConfettiAnimation>
       final newPosition = particle.position + newVelocity * clampedDelta;
 
       // Update rotation
-      final newRotation = particle.rotation + particle.rotationSpeed * clampedDelta;
+      final newRotation =
+          particle.rotation + particle.rotationSpeed * clampedDelta;
 
       _particles[i] = particle.copyWith(
         position: newPosition,
@@ -306,7 +308,7 @@ class _ConfettiAnimationState extends State<ConfettiAnimation>
   @override
   void didUpdateWidget(ConfettiAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (widget.isPlaying != oldWidget.isPlaying) {
       if (widget.isPlaying) {
         _startAnimation();
@@ -349,10 +351,8 @@ class ConfettiPainter extends CustomPainter {
   final List<ConfettiParticle> particles;
   final Animation<double> animation;
 
-  ConfettiPainter({
-    required this.particles,
-    required this.animation,
-  }) : super(repaint: animation);
+  ConfettiPainter({required this.particles, required this.animation})
+    : super(repaint: animation);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -371,7 +371,12 @@ class ConfettiPainter extends CustomPainter {
     }
   }
 
-  void _drawShape(Canvas canvas, ConfettiShape shape, double size, Paint paint) {
+  void _drawShape(
+    Canvas canvas,
+    ConfettiShape shape,
+    double size,
+    Paint paint,
+  ) {
     switch (shape) {
       case ConfettiShape.circle:
         canvas.drawCircle(Offset.zero, size / 2, paint);
@@ -441,19 +446,25 @@ class ConfettiPainter extends CustomPainter {
 
     // Heart shape using bezier curves
     path.moveTo(0, heartSize * 0.3);
-    
+
     // Left side
     path.cubicTo(
-      -heartSize * 0.5, -heartSize * 0.2,
-      -heartSize * 0.8, heartSize * 0.1,
-      0, heartSize * 0.8,
+      -heartSize * 0.5,
+      -heartSize * 0.2,
+      -heartSize * 0.8,
+      heartSize * 0.1,
+      0,
+      heartSize * 0.8,
     );
-    
+
     // Right side
     path.cubicTo(
-      heartSize * 0.8, heartSize * 0.1,
-      heartSize * 0.5, -heartSize * 0.2,
-      0, heartSize * 0.3,
+      heartSize * 0.8,
+      heartSize * 0.1,
+      heartSize * 0.5,
+      -heartSize * 0.2,
+      0,
+      heartSize * 0.3,
     );
 
     canvas.drawPath(path, paint);
@@ -462,7 +473,7 @@ class ConfettiPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
     return oldDelegate is! ConfettiPainter ||
-           oldDelegate.particles != particles;
+        oldDelegate.particles != particles;
   }
 }
 
@@ -501,11 +512,7 @@ class ConfettiPresets {
   );
 
   static const ConfettiConfig explosion = ConfettiConfig(
-    colors: [
-      Colors.orange,
-      Colors.red,
-      Colors.yellow,
-    ],
+    colors: [Colors.orange, Colors.red, Colors.yellow],
     shapes: [ConfettiShape.star, ConfettiShape.diamond],
     particleCount: 300,
     duration: Duration(seconds: 2),
@@ -517,11 +524,7 @@ class ConfettiPresets {
   );
 
   static const ConfettiConfig hearts = ConfettiConfig(
-    colors: [
-      Colors.pink,
-      Colors.red,
-      Color(0xFFFF69B4),
-    ],
+    colors: [Colors.pink, Colors.red, Color(0xFFFF69B4)],
     shapes: [ConfettiShape.heart],
     particleCount: 100,
     duration: Duration(seconds: 5),
@@ -532,11 +535,7 @@ class ConfettiPresets {
   );
 
   static const ConfettiConfig goldRush = ConfettiConfig(
-    colors: [
-      Color(0xFFFFD700),
-      Color(0xFFFFA500),
-      Color(0xFFFFFF00),
-    ],
+    colors: [Color(0xFFFFD700), Color(0xFFFFA500), Color(0xFFFFFF00)],
     shapes: [ConfettiShape.star, ConfettiShape.circle],
     particleCount: 150,
     duration: Duration(seconds: 3),

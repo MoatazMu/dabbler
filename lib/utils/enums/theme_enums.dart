@@ -1,5 +1,6 @@
 /// Theme and appearance enum definitions with Flutter theme integration
 library;
+
 import 'package:flutter/material.dart';
 
 /// Enum representing different theme modes in the application
@@ -13,11 +14,8 @@ enum AppThemeMode {
   const AppThemeMode(this.value, this.displayName);
 
   /// Create AppThemeMode from string value
-  static AppThemeMode fromString(String value) =>
-      AppThemeMode.values.firstWhere(
-        (e) => e.value == value,
-        orElse: () => AppThemeMode.system,
-      );
+  static AppThemeMode fromString(String value) => AppThemeMode.values
+      .firstWhere((e) => e.value == value, orElse: () => AppThemeMode.system);
 
   /// Convert to Flutter's ThemeMode
   ThemeMode toThemeMode() {
@@ -74,11 +72,7 @@ enum AppThemeMode {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                icon,
-                size: 32,
-                color: selected ? Colors.blue : Colors.grey,
-              ),
+              Icon(icon, size: 32, color: selected ? Colors.blue : Colors.grey),
               const SizedBox(height: 8),
               Text(
                 displayName,
@@ -90,10 +84,7 @@ enum AppThemeMode {
               const SizedBox(height: 4),
               Text(
                 description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -121,11 +112,10 @@ enum AccentColor {
   const AccentColor(this.value, this.displayName, this.color);
 
   /// Create AccentColor from string value
-  static AccentColor fromString(String value) =>
-      AccentColor.values.firstWhere(
-        (e) => e.value == value,
-        orElse: () => AccentColor.blue,
-      );
+  static AccentColor fromString(String value) => AccentColor.values.firstWhere(
+    (e) => e.value == value,
+    orElse: () => AccentColor.blue,
+  );
 
   /// Get Material Color swatch for theme generation
   MaterialColor get materialColor {
@@ -172,16 +162,12 @@ enum AccentColor {
                     color: color.withOpacity(0.5),
                     blurRadius: 8,
                     spreadRadius: 2,
-                  )
+                  ),
                 ]
               : null,
         ),
         child: selected
-            ? Icon(
-                Icons.check,
-                color: Colors.white,
-                size: size * 0.5,
-              )
+            ? Icon(Icons.check, color: Colors.white, size: size * 0.5)
             : null,
       ),
     );
@@ -201,17 +187,13 @@ enum FontSize {
   const FontSize(this.value, this.displayName, this.scaleFactor);
 
   /// Create FontSize from string value
-  static FontSize fromString(String value) =>
-      FontSize.values.firstWhere(
-        (e) => e.value == value,
-        orElse: () => FontSize.medium,
-      );
+  static FontSize fromString(String value) => FontSize.values.firstWhere(
+    (e) => e.value == value,
+    orElse: () => FontSize.medium,
+  );
 
   /// Generate a font size preview widget
-  Widget toPreview({
-    required bool selected,
-    required VoidCallback onSelected,
-  }) {
+  Widget toPreview({required bool selected, required VoidCallback onSelected}) {
     return InkWell(
       onTap: onSelected,
       borderRadius: BorderRadius.circular(8),
@@ -219,9 +201,7 @@ enum FontSize {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: selected ? Colors.blue.withOpacity(0.1) : Colors.transparent,
-          border: Border.all(
-            color: selected ? Colors.blue : Colors.grey[300]!,
-          ),
+          border: Border.all(color: selected ? Colors.blue : Colors.grey[300]!),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Text(
@@ -239,21 +219,51 @@ enum FontSize {
   /// Get text theme with this font size applied
   TextTheme applyToTextTheme(TextTheme base) {
     return base.copyWith(
-      displayLarge: base.displayLarge?.copyWith(fontSize: (base.displayLarge?.fontSize ?? 57) * scaleFactor),
-      displayMedium: base.displayMedium?.copyWith(fontSize: (base.displayMedium?.fontSize ?? 45) * scaleFactor),
-      displaySmall: base.displaySmall?.copyWith(fontSize: (base.displaySmall?.fontSize ?? 36) * scaleFactor),
-      headlineLarge: base.headlineLarge?.copyWith(fontSize: (base.headlineLarge?.fontSize ?? 32) * scaleFactor),
-      headlineMedium: base.headlineMedium?.copyWith(fontSize: (base.headlineMedium?.fontSize ?? 28) * scaleFactor),
-      headlineSmall: base.headlineSmall?.copyWith(fontSize: (base.headlineSmall?.fontSize ?? 24) * scaleFactor),
-      titleLarge: base.titleLarge?.copyWith(fontSize: (base.titleLarge?.fontSize ?? 22) * scaleFactor),
-      titleMedium: base.titleMedium?.copyWith(fontSize: (base.titleMedium?.fontSize ?? 16) * scaleFactor),
-      titleSmall: base.titleSmall?.copyWith(fontSize: (base.titleSmall?.fontSize ?? 14) * scaleFactor),
-      bodyLarge: base.bodyLarge?.copyWith(fontSize: (base.bodyLarge?.fontSize ?? 16) * scaleFactor),
-      bodyMedium: base.bodyMedium?.copyWith(fontSize: (base.bodyMedium?.fontSize ?? 14) * scaleFactor),
-      bodySmall: base.bodySmall?.copyWith(fontSize: (base.bodySmall?.fontSize ?? 12) * scaleFactor),
-      labelLarge: base.labelLarge?.copyWith(fontSize: (base.labelLarge?.fontSize ?? 14) * scaleFactor),
-      labelMedium: base.labelMedium?.copyWith(fontSize: (base.labelMedium?.fontSize ?? 12) * scaleFactor),
-      labelSmall: base.labelSmall?.copyWith(fontSize: (base.labelSmall?.fontSize ?? 11) * scaleFactor),
+      displayLarge: base.displayLarge?.copyWith(
+        fontSize: (base.displayLarge?.fontSize ?? 57) * scaleFactor,
+      ),
+      displayMedium: base.displayMedium?.copyWith(
+        fontSize: (base.displayMedium?.fontSize ?? 45) * scaleFactor,
+      ),
+      displaySmall: base.displaySmall?.copyWith(
+        fontSize: (base.displaySmall?.fontSize ?? 36) * scaleFactor,
+      ),
+      headlineLarge: base.headlineLarge?.copyWith(
+        fontSize: (base.headlineLarge?.fontSize ?? 32) * scaleFactor,
+      ),
+      headlineMedium: base.headlineMedium?.copyWith(
+        fontSize: (base.headlineMedium?.fontSize ?? 28) * scaleFactor,
+      ),
+      headlineSmall: base.headlineSmall?.copyWith(
+        fontSize: (base.headlineSmall?.fontSize ?? 24) * scaleFactor,
+      ),
+      titleLarge: base.titleLarge?.copyWith(
+        fontSize: (base.titleLarge?.fontSize ?? 22) * scaleFactor,
+      ),
+      titleMedium: base.titleMedium?.copyWith(
+        fontSize: (base.titleMedium?.fontSize ?? 16) * scaleFactor,
+      ),
+      titleSmall: base.titleSmall?.copyWith(
+        fontSize: (base.titleSmall?.fontSize ?? 14) * scaleFactor,
+      ),
+      bodyLarge: base.bodyLarge?.copyWith(
+        fontSize: (base.bodyLarge?.fontSize ?? 16) * scaleFactor,
+      ),
+      bodyMedium: base.bodyMedium?.copyWith(
+        fontSize: (base.bodyMedium?.fontSize ?? 14) * scaleFactor,
+      ),
+      bodySmall: base.bodySmall?.copyWith(
+        fontSize: (base.bodySmall?.fontSize ?? 12) * scaleFactor,
+      ),
+      labelLarge: base.labelLarge?.copyWith(
+        fontSize: (base.labelLarge?.fontSize ?? 14) * scaleFactor,
+      ),
+      labelMedium: base.labelMedium?.copyWith(
+        fontSize: (base.labelMedium?.fontSize ?? 12) * scaleFactor,
+      ),
+      labelSmall: base.labelSmall?.copyWith(
+        fontSize: (base.labelSmall?.fontSize ?? 11) * scaleFactor,
+      ),
     );
   }
 }
@@ -289,10 +299,7 @@ enum InterfaceDensity {
   }
 
   /// Generate a density preview widget
-  Widget toPreview({
-    required bool selected,
-    required VoidCallback onSelected,
-  }) {
+  Widget toPreview({required bool selected, required VoidCallback onSelected}) {
     return InkWell(
       onTap: onSelected,
       child: Container(
@@ -303,9 +310,7 @@ enum InterfaceDensity {
         ),
         decoration: BoxDecoration(
           color: selected ? Colors.blue.withOpacity(0.1) : Colors.grey[100],
-          border: Border.all(
-            color: selected ? Colors.blue : Colors.grey[300]!,
-          ),
+          border: Border.all(color: selected ? Colors.blue : Colors.grey[300]!),
           borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
@@ -321,10 +326,7 @@ enum InterfaceDensity {
             const SizedBox(height: 4),
             Text(
               description,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -347,11 +349,8 @@ enum AnimationSpeed {
   const AnimationSpeed(this.value, this.displayName, this.multiplier);
 
   /// Create AnimationSpeed from string value
-  static AnimationSpeed fromString(String value) =>
-      AnimationSpeed.values.firstWhere(
-        (e) => e.value == value,
-        orElse: () => AnimationSpeed.normal,
-      );
+  static AnimationSpeed fromString(String value) => AnimationSpeed.values
+      .firstWhere((e) => e.value == value, orElse: () => AnimationSpeed.normal);
 
   /// Apply this animation speed to a duration
   Duration applyTo(Duration baseDuration) {

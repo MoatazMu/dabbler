@@ -1,5 +1,4 @@
-
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/profile.dart';
 import '../models/venue.dart';
 import '../models/post.dart';
@@ -23,4 +22,3 @@ abstract class SearchRepository {
     int offset = 0,
   });
 }
-

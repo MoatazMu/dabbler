@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/payment_method.dart';
+import 'package:dabbler/data/models/payments/payment_method.dart';
 import '../../domain/repositories/payment_methods_repository.dart';
 
 /// Payment methods state
@@ -37,7 +37,7 @@ class PaymentMethodsController extends StateNotifier<PaymentMethodsState> {
   final String userId;
 
   PaymentMethodsController(this._repository, this.userId)
-      : super(const PaymentMethodsState());
+    : super(const PaymentMethodsState());
 
   /// Load payment methods for user
   Future<void> loadPaymentMethods() async {
@@ -47,15 +47,14 @@ class PaymentMethodsController extends StateNotifier<PaymentMethodsState> {
 
     result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
       },
       (methods) {
         final defaultMethod = methods.firstWhere(
           (m) => m.isDefault,
-          orElse: () => methods.isNotEmpty ? methods.first : throw StateError('No methods'),
+          orElse: () => methods.isNotEmpty
+              ? methods.first
+              : throw StateError('No methods'),
         );
 
         state = state.copyWith(
@@ -75,10 +74,7 @@ class PaymentMethodsController extends StateNotifier<PaymentMethodsState> {
 
     return result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
         return false;
       },
       (newMethod) {
@@ -99,10 +95,7 @@ class PaymentMethodsController extends StateNotifier<PaymentMethodsState> {
 
     return result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
         return false;
       },
       (_) {
@@ -123,14 +116,14 @@ class PaymentMethodsController extends StateNotifier<PaymentMethodsState> {
   Future<bool> setDefaultPaymentMethod(String paymentMethodId) async {
     state = state.copyWith(isLoading: true, error: null);
 
-    final result = await _repository.setDefaultPaymentMethod(userId, paymentMethodId);
+    final result = await _repository.setDefaultPaymentMethod(
+      userId,
+      paymentMethodId,
+    );
 
     return result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoading: false,
-          error: failure.message,
-        );
+        state = state.copyWith(isLoading: false, error: failure.message);
         return false;
       },
       (_) {

@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../data/models/post_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
 import '../../../utils/enums/social_enums.dart';
 import '../domain/repositories/posts_repository.dart';
 
@@ -7,9 +7,9 @@ import '../domain/repositories/posts_repository.dart';
 /// All user actions (comments, ratings, game creation, etc.) become activity posts
 class ActivityPostService {
   final PostsRepository _postRepository;
-  
+
   ActivityPostService(this._postRepository);
-  
+
   /// Create a comment activity post when user comments on something
   Future<PostModel?> createCommentPost({
     required String commentContent,
@@ -20,23 +20,20 @@ class ActivityPostService {
       final activityContent = PostActivityType.comment.getContentTemplate({
         'content': commentContent,
       });
-      
+
       final result = await _postRepository.createPost(
         content: activityContent,
         visibility: privacy.toPostVisibility(),
         replyToPostId: originalPostId,
       );
-      
-      return result.fold(
-        (failure) => null,
-        (postModel) => postModel,
-      );
+
+      return result.fold((failure) => null, (postModel) => postModel);
     } catch (e) {
       // Log error
       return null;
     }
   }
-  
+
   /// Create a venue rating activity post when user rates a venue
   Future<PostModel?> createVenueRatingPost({
     required String venueName,
@@ -51,7 +48,7 @@ class ActivityPostService {
         'rating': rating.toString(),
         'review': review ?? '',
       });
-      
+
       final result = await _postRepository.createPost(
         content: activityContent,
         mediaUrls: mediaUrls,
@@ -59,16 +56,13 @@ class ActivityPostService {
         locationName: venueName,
         tags: [venueName],
       );
-      
-      return result.fold(
-        (failure) => null,
-        (postModel) => postModel,
-      );
+
+      return result.fold((failure) => null, (postModel) => postModel);
     } catch (e) {
       return null;
     }
   }
-  
+
   /// Create a game creation activity post when user creates a game
   Future<PostModel?> createGameCreationPost({
     required String gameType,
@@ -81,7 +75,7 @@ class ActivityPostService {
         'gameType': gameType,
         'venueName': venueName,
       });
-      
+
       final result = await _postRepository.createPost(
         content: activityContent,
         visibility: privacy.toPostVisibility(),
@@ -89,16 +83,13 @@ class ActivityPostService {
         locationName: venueName,
         tags: [gameType, venueName],
       );
-      
-      return result.fold(
-        (failure) => null,
-        (postModel) => postModel,
-      );
+
+      return result.fold((failure) => null, (postModel) => postModel);
     } catch (e) {
       return null;
     }
   }
-  
+
   /// Create a check-in activity post when user checks in at a venue
   Future<PostModel?> createCheckInPost({
     required String venueName,
@@ -112,7 +103,7 @@ class ActivityPostService {
         'venueName': venueName,
         'note': note ?? '',
       });
-      
+
       final result = await _postRepository.createPost(
         content: activityContent,
         mediaUrls: mediaUrls,
@@ -121,16 +112,13 @@ class ActivityPostService {
         tags: [venueName],
         mentionedUsers: taggedFriends,
       );
-      
-      return result.fold(
-        (failure) => null,
-        (postModel) => postModel,
-      );
+
+      return result.fold((failure) => null, (postModel) => postModel);
     } catch (e) {
       return null;
     }
   }
-  
+
   /// Create a venue booking activity post when user books a venue
   Future<PostModel?> createVenueBookingPost({
     required String venueName,
@@ -140,25 +128,24 @@ class ActivityPostService {
     try {
       final activityContent = PostActivityType.venueBooking.getContentTemplate({
         'venueName': venueName,
-        'date': bookingDate.toLocal().toString().split(' ')[0], // Just date part
+        'date': bookingDate.toLocal().toString().split(
+          ' ',
+        )[0], // Just date part
       });
-      
+
       final result = await _postRepository.createPost(
         content: activityContent,
         visibility: privacy.toPostVisibility(),
         locationName: venueName,
         tags: [venueName],
       );
-      
-      return result.fold(
-        (failure) => null,
-        (postModel) => postModel,
-      );
+
+      return result.fold((failure) => null, (postModel) => postModel);
     } catch (e) {
       return null;
     }
   }
-  
+
   /// Create a game join activity post when user joins a game
   Future<PostModel?> createGameJoinPost({
     required String gameType,
@@ -171,7 +158,7 @@ class ActivityPostService {
         'gameType': gameType,
         'venueName': venueName,
       });
-      
+
       final result = await _postRepository.createPost(
         content: activityContent,
         visibility: privacy.toPostVisibility(),
@@ -179,16 +166,13 @@ class ActivityPostService {
         locationName: venueName,
         tags: [gameType, venueName],
       );
-      
-      return result.fold(
-        (failure) => null,
-        (postModel) => postModel,
-      );
+
+      return result.fold((failure) => null, (postModel) => postModel);
     } catch (e) {
       return null;
     }
   }
-  
+
   /// Create an achievement activity post when user earns an achievement
   Future<PostModel?> createAchievementPost({
     required String achievementName,
@@ -200,23 +184,20 @@ class ActivityPostService {
       final activityContent = PostActivityType.achievement.getContentTemplate({
         'achievementName': achievementName,
       });
-      
+
       final result = await _postRepository.createPost(
         content: activityContent,
         mediaUrls: mediaUrls,
         visibility: privacy.toPostVisibility(),
         tags: ['achievement', achievementName],
       );
-      
-      return result.fold(
-        (failure) => null,
-        (postModel) => postModel,
-      );
+
+      return result.fold((failure) => null, (postModel) => postModel);
     } catch (e) {
       return null;
     }
   }
-  
+
   /// Check if a user can perform a specific activity type
   bool canPerformActivity(PostActivityType activityType) {
     // Add business logic here for permissions, limits, etc.

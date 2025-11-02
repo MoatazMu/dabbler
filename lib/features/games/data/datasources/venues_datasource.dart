@@ -1,7 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../models/venue_model.dart';
-import '../models/sport_config_model.dart';
+import 'package:dabbler/data/models/games/venue_model.dart';
+import 'package:dabbler/data/models/games/sport_config_model.dart';
 import 'venues_remote_data_source.dart';
 
 // Custom exceptions for venues
@@ -22,7 +22,7 @@ class VenueUnavailableException implements Exception {
 
 class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
   final SupabaseClient _supabaseClient;
-  
+
   // In-memory cache for frequently accessed venues
   final Map<String, VenueModel> _venueCache = {};
   final Map<String, List<VenueModel>> _listCache = {};
@@ -41,18 +41,18 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
   }) async {
     try {
       print('🔍 [DEBUG] getVenues called with filters: $filters');
-      
+
       final cacheKey = 'venues_${filters.hashCode}_${page}_$limit';
-      
+
       // Check cache first
       if (_isCacheValid(cacheKey)) {
-        print('📦 [DEBUG] Returning ${_listCache[cacheKey]!.length} venues from cache');
+        print(
+          '📦 [DEBUG] Returning ${_listCache[cacheKey]!.length} venues from cache',
+        );
         return _listCache[cacheKey]!;
       }
 
-      var query = _supabaseClient
-          .from('venues')
-          .select('*');
+      var query = _supabaseClient.from('venues').select('*');
 
       // Apply filters
       if (filters != null) {
@@ -67,7 +67,7 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           }
         }
         */
-        
+
         if (filters['city'] != null) {
           query = query.eq('city', filters['city']);
         }
@@ -98,7 +98,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
         print('📍 [DEBUG] First venue: ${response.first['name']}');
       }
 
-      final venues = response.map<VenueModel>((json) => VenueModel.fromJson(json)).toList();
+      final venues = response
+          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .toList();
 
       // Update cache
       _listCache[cacheKey] = venues;
@@ -172,7 +174,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
       var searchQuery = _supabaseClient
           .from('venues')
           .select('*')
-          .or('name.ilike.%$query%,description.ilike.%$query%,address.ilike.%$query%');
+          .or(
+            'name.ilike.%$query%,description.ilike.%$query%,address.ilike.%$query%',
+          );
 
       // Location-based filtering if coordinates provided
       if (latitude != null && longitude != null && radiusKm != null) {
@@ -184,18 +188,23 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           page: page,
           limit: limit,
         );
-        
+
         // Filter by search query - using only name and description for now
-        return nearbyVenues.where((venue) =>
-          venue.name.toLowerCase().contains(query.toLowerCase()) ||
-          venue.description.toLowerCase().contains(query.toLowerCase())
-        ).toList();
+        return nearbyVenues
+            .where(
+              (venue) =>
+                  venue.name.toLowerCase().contains(query.toLowerCase()) ||
+                  venue.description.toLowerCase().contains(query.toLowerCase()),
+            )
+            .toList();
       }
 
       // Apply additional filters
       if (filters != null) {
         if (filters['sport'] != null) {
-          searchQuery = searchQuery.contains('supported_sports', [filters['sport']]);
+          searchQuery = searchQuery.contains('supported_sports', [
+            filters['sport'],
+          ]);
         }
       }
 
@@ -203,7 +212,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .order('name')
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<VenueModel>((json) => VenueModel.fromJson(json)).toList();
+      return response
+          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
@@ -222,20 +233,27 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
   }) async {
     try {
       // Use PostGIS function for location-based queries
-      final response = await _supabaseClient.rpc('get_nearby_venues', params: {
-        'lat': latitude,
-        'lng': longitude,
-        'radius_km': radiusKm,
-        'sport_filter': filters?['sport'],
-        'page_offset': (page - 1) * limit,
-        'page_limit': limit,
-      });
+      final response = await _supabaseClient.rpc(
+        'get_nearby_venues',
+        params: {
+          'lat': latitude,
+          'lng': longitude,
+          'radius_km': radiusKm,
+          'sport_filter': filters?['sport'],
+          'page_offset': (page - 1) * limit,
+          'page_limit': limit,
+        },
+      );
 
-      return response.map<VenueModel>((json) => VenueModel.fromJson(json)).toList();
+      return response
+          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get nearby venues: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get nearby venues: ${e.toString()}',
+      );
     }
   }
 
@@ -248,7 +266,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .eq('venue_id', venueId)
           .order('sport_name');
 
-      return response.map<SportConfigModel>((json) => SportConfigModel.fromJson(json)).toList();
+      return response
+          .map<SportConfigModel>((json) => SportConfigModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
@@ -265,19 +285,26 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     String? sport,
   }) async {
     try {
-      final response = await _supabaseClient.rpc('check_venue_availability', params: {
-        'venue_id': venueId,
-        'check_date': date,
-        'start_time': startTime,
-        'end_time': endTime,
-        'sport_type': sport,
-      });
+      final response = await _supabaseClient.rpc(
+        'check_venue_availability',
+        params: {
+          'venue_id': venueId,
+          'check_date': date,
+          'start_time': startTime,
+          'end_time': endTime,
+          'sport_type': sport,
+        },
+      );
 
-      return response.map<TimeSlotModel>((json) => TimeSlotModel.fromJson(json)).toList();
+      return response
+          .map<TimeSlotModel>((json) => TimeSlotModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to check availability: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to check availability: ${e.toString()}',
+      );
     }
   }
 
@@ -295,11 +322,15 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .order('featured_priority', ascending: false)
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<VenueModel>((json) => VenueModel.fromJson(json)).toList();
+      return response
+          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get featured venues: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get featured venues: ${e.toString()}',
+      );
     }
   }
 
@@ -336,11 +367,15 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .order('average_rating', ascending: false)
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<VenueModel>((json) => VenueModel.fromJson(json)).toList();
+      return response
+          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venues by sport: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venues by sport: ${e.toString()}',
+      );
     }
   }
 
@@ -376,7 +411,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venue reviews: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venue reviews: ${e.toString()}',
+      );
     }
   }
 
@@ -412,9 +449,10 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
 
   Future<void> _updateVenueAverageRating(String venueId) async {
     try {
-      await _supabaseClient.rpc('update_venue_average_rating', params: {
-        'venue_id': venueId,
-      });
+      await _supabaseClient.rpc(
+        'update_venue_average_rating',
+        params: {'venue_id': venueId},
+      );
     } catch (e) {
       print('Failed to update venue average rating: $e');
     }
@@ -451,7 +489,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venue operating hours: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venue operating hours: ${e.toString()}',
+      );
     }
   }
 
@@ -462,17 +502,22 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     String? date,
   }) async {
     try {
-      final response = await _supabaseClient.rpc('get_venue_pricing', params: {
-        'venue_id': venueId,
-        'sport_type': sport,
-        'pricing_date': date,
-      });
+      final response = await _supabaseClient.rpc(
+        'get_venue_pricing',
+        params: {
+          'venue_id': venueId,
+          'sport_type': sport,
+          'pricing_date': date,
+        },
+      );
 
       return response as Map<String, dynamic>;
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venue pricing: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venue pricing: ${e.toString()}',
+      );
     }
   }
 
@@ -489,11 +534,15 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .single();
 
       final venueAmenities = List<String>.from(response['amenities'] ?? []);
-      return requiredAmenities.every((amenity) => venueAmenities.contains(amenity));
+      return requiredAmenities.every(
+        (amenity) => venueAmenities.contains(amenity),
+      );
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to check venue amenities: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to check venue amenities: ${e.toString()}',
+      );
     }
   }
 
@@ -510,7 +559,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venue contact info: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venue contact info: ${e.toString()}',
+      );
     }
   }
 
@@ -528,7 +579,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .order('created_at', ascending: false)
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<VenueModel>((json) => VenueModel.fromJson(json)).toList();
+      return response
+          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
@@ -561,16 +614,18 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
   @override
   Future<bool> toggleVenueFavorite(String venueId, String userId) async {
     try {
-      await _supabaseClient.rpc('toggle_venue_favorite', params: {
-        'venue_id': venueId,
-        'user_id': userId,
-      });
+      await _supabaseClient.rpc(
+        'toggle_venue_favorite',
+        params: {'venue_id': venueId, 'user_id': userId},
+      );
 
       return true;
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to toggle venue favorite: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to toggle venue favorite: ${e.toString()}',
+      );
     }
   }
 
@@ -588,11 +643,15 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .order('name')
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<VenueModel>((json) => VenueModel.fromJson(json)).toList();
+      return response
+          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get favorite venues: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get favorite venues: ${e.toString()}',
+      );
     }
   }
 
@@ -626,7 +685,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venue booking history: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venue booking history: ${e.toString()}',
+      );
     }
   }
 
@@ -637,17 +698,22 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     String? endDate,
   }) async {
     try {
-      final response = await _supabaseClient.rpc('get_venue_utilization_stats', params: {
-        'venue_id': venueId,
-        'start_date': startDate,
-        'end_date': endDate,
-      });
+      final response = await _supabaseClient.rpc(
+        'get_venue_utilization_stats',
+        params: {
+          'venue_id': venueId,
+          'start_date': startDate,
+          'end_date': endDate,
+        },
+      );
 
       return response as Map<String, dynamic>;
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venue utilization stats: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venue utilization stats: ${e.toString()}',
+      );
     }
   }
 
@@ -660,34 +726,44 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     int limit = 20,
   }) async {
     try {
-      final response = await _supabaseClient.rpc('get_recommended_venues', params: {
-        'user_id': userId,
-        'user_lat': latitude,
-        'user_lng': longitude,
-        'page_offset': (page - 1) * limit,
-        'page_limit': limit,
-      });
+      final response = await _supabaseClient.rpc(
+        'get_recommended_venues',
+        params: {
+          'user_id': userId,
+          'user_lat': latitude,
+          'user_lng': longitude,
+          'page_offset': (page - 1) * limit,
+          'page_limit': limit,
+        },
+      );
 
-      return response.map<VenueModel>((json) => VenueModel.fromJson(json)).toList();
+      return response
+          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get recommended venues: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get recommended venues: ${e.toString()}',
+      );
     }
   }
 
   @override
   Future<Map<String, dynamic>> getVenuePeakHours(String venueId) async {
     try {
-      final response = await _supabaseClient.rpc('get_venue_peak_hours', params: {
-        'venue_id': venueId,
-      });
+      final response = await _supabaseClient.rpc(
+        'get_venue_peak_hours',
+        params: {'venue_id': venueId},
+      );
 
       return response as Map<String, dynamic>;
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venue peak hours: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venue peak hours: ${e.toString()}',
+      );
     }
   }
 
@@ -698,22 +774,29 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     String sport,
   ) async {
     try {
-      final response = await _supabaseClient.rpc('check_venue_capacity', params: {
-        'venue_id': venueId,
-        'check_datetime': dateTime,
-        'sport_type': sport,
-      });
+      final response = await _supabaseClient.rpc(
+        'check_venue_capacity',
+        params: {
+          'venue_id': venueId,
+          'check_datetime': dateTime,
+          'sport_type': sport,
+        },
+      );
 
       return response as Map<String, dynamic>;
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to check venue capacity: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to check venue capacity: ${e.toString()}',
+      );
     }
   }
 
   @override
-  Future<Map<String, dynamic>> getVenueWeatherSuitability(String venueId) async {
+  Future<Map<String, dynamic>> getVenueWeatherSuitability(
+    String venueId,
+  ) async {
     try {
       final response = await _supabaseClient
           .from('venues')
@@ -725,7 +808,9 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venue weather suitability: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venue weather suitability: ${e.toString()}',
+      );
     }
   }
 
@@ -741,7 +826,10 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
       var query = _supabaseClient
           .from('venues')
           .select('*, venue_promotions!inner(*)')
-          .gte('venue_promotions.valid_until', DateTime.now().toIso8601String());
+          .gte(
+            'venue_promotions.valid_until',
+            DateTime.now().toIso8601String(),
+          );
 
       // Location filtering if provided
       if (latitude != null && longitude != null && radiusKm != null) {
@@ -752,7 +840,7 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           page: page,
           limit: limit,
         );
-        
+
         // Filter for venues with active promotions - simplified for now
         return nearbyVenues;
       }
@@ -761,11 +849,15 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .order('venue_promotions.discount_percentage', ascending: false)
           .range((page - 1) * limit, page * limit - 1);
 
-      return response.map<VenueModel>((json) => VenueModel.fromJson(json)).toList();
+      return response
+          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      throw VenueServerException('Failed to get venues with promotions: ${e.toString()}');
+      throw VenueServerException(
+        'Failed to get venues with promotions: ${e.toString()}',
+      );
     }
   }
 
@@ -779,9 +871,11 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
   void _clearVenueCache(String venueId) {
     _venueCache.remove(venueId);
     _cacheTimestamps.remove(venueId);
-    
+
     // Clear related list caches
-    final keysToRemove = _listCache.keys.where((key) => key.contains(venueId)).toList();
+    final keysToRemove = _listCache.keys
+        .where((key) => key.contains(venueId))
+        .toList();
     for (final key in keysToRemove) {
       _listCache.remove(key);
       _cacheTimestamps.remove(key);

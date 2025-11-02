@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/usecases/create_post_usecase.dart';
-import '../../data/models/post_model.dart';
-import '../../../../core/models/user_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart';
 import '../../../../utils/enums/social_enums.dart';
 
 /// State for post creation and management
@@ -21,7 +21,7 @@ class PostsState {
   final bool isLoadingHashtags;
   final String mentionQuery;
   final String hashtagQuery;
-  
+
   // Additional properties for create post screen
   final List<dynamic> selectedMedia;
   final List<String> selectedSports;
@@ -114,8 +114,9 @@ class PostsState {
 
   // Computed getters
   bool get hasDraft => currentDraft != null;
-  bool get canPublish => currentDraft != null && 
-      currentDraft!.content.trim().isNotEmpty && 
+  bool get canPublish =>
+      currentDraft != null &&
+      currentDraft!.content.trim().isNotEmpty &&
       !isCreatingPost;
   bool get hasScheduledPosts => scheduledPosts.isNotEmpty;
   int get totalMediaUploading => mediaUploadProgress.values
@@ -124,7 +125,9 @@ class PostsState {
   double get overallUploadProgress {
     if (mediaUploadProgress.isEmpty) return 0.0;
     final total = mediaUploadProgress.values.fold<double>(
-      0.0, (sum, progress) => sum + progress.progress);
+      0.0,
+      (sum, progress) => sum + progress.progress,
+    );
     return total / mediaUploadProgress.length;
   }
 }
@@ -169,7 +172,7 @@ class MediaUploadProgress {
 /// Controller for post creation and management
 class PostsController extends StateNotifier<PostsState> {
   final dynamic _createPostUseCase;
-  
+
   Timer? _draftAutoSaveTimer;
   Timer? _mentionDebounceTimer;
   Timer? _hashtagDebounceTimer;
@@ -206,10 +209,7 @@ class PostsController extends StateNotifier<PostsState> {
       visibility: PostVisibility.public,
     );
 
-    state = state.copyWith(
-      currentDraft: newDraft,
-      error: null,
-    );
+    state = state.copyWith(currentDraft: newDraft, error: null);
 
     _startAutoSave();
   }
@@ -222,7 +222,7 @@ class PostsController extends StateNotifier<PostsState> {
       content: content,
       updatedAt: DateTime.now(),
     );
-    
+
     state = state.copyWith(currentDraft: updatedDraft);
 
     // Extract mentions and hashtags
@@ -236,11 +236,11 @@ class PostsController extends StateNotifier<PostsState> {
 
     // Start upload progress tracking
     final uploadProgress = <String, MediaUploadProgress>{};
-    
+
     for (int i = 0; i < mediaFiles.length; i++) {
       final file = mediaFiles[i];
       final mediaId = 'media_${DateTime.now().millisecondsSinceEpoch}_$i';
-      
+
       uploadProgress[mediaId] = MediaUploadProgress(
         mediaId: mediaId,
         fileName: file.path.split('/').last,
@@ -255,7 +255,7 @@ class PostsController extends StateNotifier<PostsState> {
     for (int i = 0; i < mediaFiles.length; i++) {
       final file = mediaFiles[i];
       final mediaId = 'media_${DateTime.now().millisecondsSinceEpoch}_$i';
-      
+
       try {
         await _uploadMedia(mediaId, file);
       } catch (e) {
@@ -276,12 +276,12 @@ class PostsController extends StateNotifier<PostsState> {
       final updatedMediaList = state.currentDraft!.mediaUrls
           .where((url) => !url.contains(mediaId))
           .toList();
-      
+
       final updatedDraft = state.currentDraft!.copyWith(
         mediaUrls: updatedMediaList,
         updatedAt: DateTime.now(),
       );
-      
+
       state = state.copyWith(
         currentDraft: updatedDraft,
         mediaUploadProgress: updatedProgress,
@@ -297,7 +297,7 @@ class PostsController extends StateNotifier<PostsState> {
       visibility: visibility,
       updatedAt: DateTime.now(),
     );
-    
+
     state = state.copyWith(currentDraft: updatedDraft);
   }
 
@@ -309,7 +309,7 @@ class PostsController extends StateNotifier<PostsState> {
       tags: categories,
       updatedAt: DateTime.now(),
     );
-    
+
     state = state.copyWith(currentDraft: updatedDraft);
   }
 
@@ -320,27 +320,18 @@ class PostsController extends StateNotifier<PostsState> {
     state = state.copyWith(isSavingDraft: true);
 
     try {
-      final draft = state.currentDraft!.copyWith(
-        updatedAt: DateTime.now(),
-      );
+      final draft = state.currentDraft!.copyWith(updatedAt: DateTime.now());
 
       // Save to local storage
       final updatedDrafts = Map<String, PostModel>.from(state.savedDrafts);
       updatedDrafts[draft.id] = draft;
 
-      state = state.copyWith(
-        savedDrafts: updatedDrafts,
-        isSavingDraft: false,
-      );
+      state = state.copyWith(savedDrafts: updatedDrafts, isSavingDraft: false);
 
       // Persist to storage
       await _persistDraft(draft);
-
     } catch (e) {
-      state = state.copyWith(
-        isSavingDraft: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isSavingDraft: false, error: e.toString());
     }
   }
 
@@ -348,10 +339,7 @@ class PostsController extends StateNotifier<PostsState> {
   void loadDraft(String draftId) {
     final draft = state.savedDrafts[draftId];
     if (draft != null) {
-      state = state.copyWith(
-        currentDraft: draft,
-        error: null,
-      );
+      state = state.copyWith(currentDraft: draft, error: null);
       _startAutoSave();
     }
   }
@@ -371,7 +359,6 @@ class PostsController extends StateNotifier<PostsState> {
       }
 
       await _deleteDraftFromStorage(draftId);
-
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -381,10 +368,7 @@ class PostsController extends StateNotifier<PostsState> {
   Future<void> publishPost() async {
     if (state.currentDraft == null || state.isCreatingPost) return;
 
-    state = state.copyWith(
-      isCreatingPost: true,
-      error: null,
-    );
+    state = state.copyWith(isCreatingPost: true, error: null);
 
     try {
       final params = CreatePostParams(
@@ -399,13 +383,10 @@ class PostsController extends StateNotifier<PostsState> {
       );
 
       final result = await _createPostUseCase(params);
-      
+
       result.fold(
         (failure) {
-          state = state.copyWith(
-            isCreatingPost: false,
-            error: failure.message,
-          );
+          state = state.copyWith(isCreatingPost: false, error: failure.message);
         },
         (success) {
           // Clear current draft and remove from saved drafts
@@ -425,10 +406,7 @@ class PostsController extends StateNotifier<PostsState> {
         },
       );
     } catch (e) {
-      state = state.copyWith(
-        isCreatingPost: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isCreatingPost: false, error: e.toString());
     }
   }
 
@@ -443,7 +421,7 @@ class PostsController extends StateNotifier<PostsState> {
 
       // Add to scheduled posts
       final updatedScheduled = [...state.scheduledPosts, scheduledPost];
-      
+
       // Remove from current draft and saved drafts
       final updatedDrafts = Map<String, PostModel>.from(state.savedDrafts);
       updatedDrafts.remove(state.currentDraft!.id);
@@ -456,7 +434,6 @@ class PostsController extends StateNotifier<PostsState> {
 
       _stopAutoSave();
       await _persistScheduledPost(scheduledPost);
-
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -472,7 +449,6 @@ class PostsController extends StateNotifier<PostsState> {
       state = state.copyWith(scheduledPosts: updatedScheduled);
 
       await _removeScheduledPostFromStorage(postId);
-
     } catch (e) {
       state = state.copyWith(error: e.toString());
     }
@@ -493,7 +469,7 @@ class PostsController extends StateNotifier<PostsState> {
 
       try {
         final suggestions = await _fetchMentionSuggestions(query);
-        
+
         // Only update if query hasn't changed
         if (state.mentionQuery == query) {
           state = state.copyWith(
@@ -503,10 +479,7 @@ class PostsController extends StateNotifier<PostsState> {
         }
       } catch (e) {
         if (state.mentionQuery == query) {
-          state = state.copyWith(
-            isLoadingMentions: false,
-            error: e.toString(),
-          );
+          state = state.copyWith(isLoadingMentions: false, error: e.toString());
         }
       }
     });
@@ -527,7 +500,7 @@ class PostsController extends StateNotifier<PostsState> {
 
       try {
         final suggestions = await _fetchHashtagSuggestions(query);
-        
+
         // Only update if query hasn't changed
         if (state.hashtagQuery == query) {
           state = state.copyWith(
@@ -537,10 +510,7 @@ class PostsController extends StateNotifier<PostsState> {
         }
       } catch (e) {
         if (state.hashtagQuery == query) {
-          state = state.copyWith(
-            isLoadingHashtags: false,
-            error: e.toString(),
-          );
+          state = state.copyWith(isLoadingHashtags: false, error: e.toString());
         }
       }
     });
@@ -563,10 +533,7 @@ class PostsController extends StateNotifier<PostsState> {
 
   /// Clear current draft
   void clearDraft() {
-    state = state.copyWith(
-      currentDraft: null,
-      mediaUploadProgress: {},
-    );
+    state = state.copyWith(currentDraft: null, mediaUploadProgress: {});
     _stopAutoSave();
   }
 
@@ -574,7 +541,7 @@ class PostsController extends StateNotifier<PostsState> {
   void _extractMentions(String content) {
     final mentionRegex = RegExp(r'@(\w+)');
     final matches = mentionRegex.allMatches(content);
-    
+
     for (final match in matches) {
       final username = match.group(1);
       if (username != null && username.isNotEmpty) {
@@ -586,7 +553,7 @@ class PostsController extends StateNotifier<PostsState> {
   void _extractHashtags(String content) {
     final hashtagRegex = RegExp(r'#(\w+)');
     final matches = hashtagRegex.allMatches(content);
-    
+
     for (final match in matches) {
       final hashtag = match.group(1);
       if (hashtag != null && hashtag.isNotEmpty) {
@@ -617,10 +584,12 @@ class PostsController extends StateNotifier<PostsState> {
 
     // Mock successful upload
     final uploadedUrl = 'https://example.com/media/$mediaId';
-    _updateMediaProgress(mediaId, 
-        progress: 1.0, 
-        isCompleted: true, 
-        uploadedUrl: uploadedUrl);
+    _updateMediaProgress(
+      mediaId,
+      progress: 1.0,
+      isCompleted: true,
+      uploadedUrl: uploadedUrl,
+    );
 
     // Add to draft media URLs
     if (state.currentDraft != null) {
@@ -629,12 +598,13 @@ class PostsController extends StateNotifier<PostsState> {
         mediaUrls: updatedMediaUrls,
         updatedAt: DateTime.now(),
       );
-      
+
       state = state.copyWith(currentDraft: updatedDraft);
     }
   }
 
-  void _updateMediaProgress(String mediaId, {
+  void _updateMediaProgress(
+    String mediaId, {
     double? progress,
     bool? isCompleted,
     String? error,
@@ -694,23 +664,27 @@ class PostsController extends StateNotifier<PostsState> {
   Future<List<UserModel>> _fetchMentionSuggestions(String query) async {
     // Mock fetching mention suggestions
     await Future.delayed(const Duration(milliseconds: 300));
-    
-    return List.generate(5, (index) => UserModel(
-      id: 'mention_user_$index',
-      firstName: 'Mention',
-      lastName: 'User $index',
-      email: 'mention_user_$index@example.com',
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    ));
+
+    return List.generate(
+      5,
+      (index) => UserModel(
+        id: 'mention_user_$index',
+        fullName: 'User $index',
+        email: 'mention_user_$index@example.com',
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      ),
+    );
   }
 
   Future<List<String>> _fetchHashtagSuggestions(String query) async {
     // Mock fetching hashtag suggestions
     await Future.delayed(const Duration(milliseconds: 300));
-    
-    return List.generate(5, (index) => 
-        '${query.toLowerCase()}suggestion$index');
+
+    return List.generate(
+      5,
+      (index) => '${query.toLowerCase()}suggestion$index',
+    );
   }
 
   // Additional methods for create post screen
@@ -750,7 +724,10 @@ class PostsController extends StateNotifier<PostsState> {
   }
 
   // Wrapper methods for create post screen compatibility
-  Future<void> saveDraftWithContent({required String draftId, required String content}) async {
+  Future<void> saveDraftWithContent({
+    required String draftId,
+    required String content,
+  }) async {
     // Create a new draft with the given content
     final draft = PostModel(
       id: draftId,
@@ -803,13 +780,8 @@ class PostsController extends StateNotifier<PostsState> {
 
       return true;
     } catch (e) {
-      state = state.copyWith(
-        isCreatingPost: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isCreatingPost: false, error: e.toString());
       return false;
     }
   }
 }
-
-

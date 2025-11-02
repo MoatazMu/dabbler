@@ -102,15 +102,12 @@ class NotificationCursor {
   final DateTime createdAt;
   final String id;
 
-  const NotificationCursor({
-    required this.createdAt,
-    required this.id,
-  });
+  const NotificationCursor({required this.createdAt, required this.id});
 
   Map<String, dynamic> toMap() => {
-        'created_at': createdAt.toIso8601String(),
-        'id': id,
-      };
+    'created_at': createdAt.toIso8601String(),
+    'id': id,
+  };
 
   factory NotificationCursor.fromMap(Map<String, dynamic> map) {
     return NotificationCursor(
@@ -169,10 +166,8 @@ class NotificationItem {
   });
 
   /// Create cursor for pagination
-  NotificationCursor get cursor => NotificationCursor(
-        createdAt: createdAt,
-        id: id,
-      );
+  NotificationCursor get cursor =>
+      NotificationCursor(createdAt: createdAt, id: id);
 
   /// Parse from Supabase row
   factory NotificationItem.fromMap(Map<String, dynamic> map) {
@@ -254,7 +249,8 @@ class NotificationItem {
   }
 
   @override
-  String toString() => 'NotificationItem(id: $id, title: $title, isRead: $isRead)';
+  String toString() =>
+      'NotificationItem(id: $id, title: $title, isRead: $isRead)';
 
   @override
   bool operator ==(Object other) {
@@ -278,7 +274,8 @@ class RepoException implements Exception {
   RepoException(this.message, {this.error, this.stackTrace});
 
   @override
-  String toString() => 'RepoException: $message${error != null ? ' ($error)' : ''}';
+  String toString() =>
+      'RepoException: $message${error != null ? ' ($error)' : ''}';
 }
 
 // ============================================================================
@@ -287,14 +284,14 @@ class RepoException implements Exception {
 
 class NotificationsRepository {
   final SupabaseClient _client;
-  
+
   // Cache for realtime subscriptions
   final Map<String, RealtimeChannel> _subscriptions = {};
 
   NotificationsRepository(this._client);
 
   /// List notifications with keyset pagination and filters
-  /// 
+  ///
   /// Example indexes (assumed to exist):
   /// ```sql
   /// create index on notifications (user_id, is_read, created_at desc);
@@ -310,10 +307,7 @@ class NotificationsRepository {
   }) async {
     try {
       // Start query
-      var query = _client
-          .from('notifications')
-          .select()
-          .eq('user_id', userId);
+      var query = _client.from('notifications').select().eq('user_id', userId);
 
       // Apply type filter
       if (typeFilter != null) {
@@ -335,9 +329,9 @@ class NotificationsRepository {
         // Keyset pagination: created_at < cursor OR (created_at = cursor AND id < cursor.id)
         final cursorTime = cursor.createdAt.toIso8601String();
         final cursorId = cursor.id;
-        
+
         query = query.or(
-          'created_at.lt.$cursorTime,and(created_at.eq.$cursorTime,id.lt.$cursorId)'
+          'created_at.lt.$cursorTime,and(created_at.eq.$cursorTime,id.lt.$cursorId)',
         );
       }
 
@@ -360,7 +354,7 @@ class NotificationsRepository {
   }
 
   /// Create a new notification
-  /// 
+  ///
   /// RLS policy (assumed):
   /// ```sql
   /// create policy "Users can insert own notifications"
@@ -380,7 +374,7 @@ class NotificationsRepository {
   }) async {
     try {
       final now = DateTime.now().toIso8601String();
-      
+
       final response = await _client
           .from('notifications')
           .insert({
@@ -411,7 +405,7 @@ class NotificationsRepository {
   }
 
   /// Mark notification as read
-  /// 
+  ///
   /// RLS policy (assumed):
   /// ```sql
   /// create policy "Users can update own notifications"
@@ -461,14 +455,10 @@ class NotificationsRepository {
   Future<void> markAllReadForUser({required String userId}) async {
     try {
       final now = DateTime.now().toIso8601String();
-      
+
       await _client
           .from('notifications')
-          .update({
-            'is_read': true,
-            'read_at': now,
-            'updated_at': now,
-          })
+          .update({'is_read': true, 'read_at': now, 'updated_at': now})
           .eq('user_id', userId)
           .eq('is_read', false); // Only update unread notifications
     } catch (e, stack) {
@@ -481,7 +471,7 @@ class NotificationsRepository {
   }
 
   /// Delete a notification
-  /// 
+  ///
   /// RLS policy (assumed):
   /// ```sql
   /// create policy "Users can delete own notifications"
@@ -490,10 +480,7 @@ class NotificationsRepository {
   /// ```
   Future<void> delete({required String notificationId}) async {
     try {
-      await _client
-          .from('notifications')
-          .delete()
-          .eq('id', notificationId);
+      await _client.from('notifications').delete().eq('id', notificationId);
     } catch (e, stack) {
       throw RepoException(
         'Failed to delete notification',
@@ -504,10 +491,10 @@ class NotificationsRepository {
   }
 
   /// Subscribe to realtime notifications for a user
-  /// 
+  ///
   /// Listens to INSERT and UPDATE events on the notifications table
   /// filtered by user_id. Emits NotificationItem instances.
-  /// 
+  ///
   /// Example usage:
   /// ```dart
   /// final subscription = repo.subscribeUserNotifications(userId);
@@ -517,7 +504,7 @@ class NotificationsRepository {
   /// ```
   Stream<NotificationItem> subscribeUserNotifications(String userId) {
     final controller = StreamController<NotificationItem>.broadcast();
-    
+
     // Clean up any existing subscription for this user
     final channelKey = 'notifications_$userId';
     _subscriptions[channelKey]?.unsubscribe();
@@ -536,15 +523,12 @@ class NotificationsRepository {
           ),
           callback: (payload) {
             try {
-              final notification = NotificationItem.fromMap(
-                payload.newRecord,
-              );
+              final notification = NotificationItem.fromMap(payload.newRecord);
               controller.add(notification);
             } catch (e) {
-              controller.addError(RepoException(
-                'Failed to parse INSERT payload',
-                error: e,
-              ));
+              controller.addError(
+                RepoException('Failed to parse INSERT payload', error: e),
+              );
             }
           },
         )
@@ -559,15 +543,12 @@ class NotificationsRepository {
           ),
           callback: (payload) {
             try {
-              final notification = NotificationItem.fromMap(
-                payload.newRecord,
-              );
+              final notification = NotificationItem.fromMap(payload.newRecord);
               controller.add(notification);
             } catch (e) {
-              controller.addError(RepoException(
-                'Failed to parse UPDATE payload',
-                error: e,
-              ));
+              controller.addError(
+                RepoException('Failed to parse UPDATE payload', error: e),
+              );
             }
           },
         )

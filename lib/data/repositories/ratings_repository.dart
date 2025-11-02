@@ -1,5 +1,4 @@
-
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/rating.dart';
 
 abstract class RatingsRepository {
@@ -38,5 +37,3 @@ abstract class RatingsRepository {
   Future<Result<RatingAggregate?>> getGameAggregate(String gameId);
   Future<Result<RatingAggregate?>> getVenueAggregate(String venueId);
 }
-
-

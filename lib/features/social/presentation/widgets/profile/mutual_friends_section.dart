@@ -15,7 +15,7 @@ class MutualFriendsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -31,15 +31,12 @@ class MutualFriendsSection extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                TextButton(
-                  onPressed: onViewAll,
-                  child: const Text('View All'),
-                ),
+                TextButton(onPressed: onViewAll, child: const Text('View All')),
               ],
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             if (mutualFriends.isEmpty)
               Center(
                 child: Padding(
@@ -65,7 +62,9 @@ class MutualFriendsSection extends StatelessWidget {
             else
               Column(
                 children: [
-                  ...mutualFriends.take(6).map((friend) => _buildFriendTile(theme, friend)),
+                  ...mutualFriends
+                      .take(6)
+                      .map((friend) => _buildFriendTile(theme, friend)),
                   if (mutualFriends.length > 6)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
@@ -92,16 +91,12 @@ class MutualFriendsSection extends StatelessWidget {
       leading: CircleAvatar(
         radius: 20,
         backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-        backgroundImage: friend.avatarUrl != null 
-          ? NetworkImage(friend.avatarUrl) 
-          : null,
+        backgroundImage: friend.avatarUrl != null
+            ? NetworkImage(friend.avatarUrl)
+            : null,
         child: friend.avatarUrl == null
-          ? Icon(
-              Icons.person,
-              size: 20,
-              color: theme.colorScheme.primary,
-            )
-          : null,
+            ? Icon(Icons.person, size: 20, color: theme.colorScheme.primary)
+            : null,
       ),
       title: Text(
         friend.name ?? 'Unknown User',

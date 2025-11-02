@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../domain/entities/activity_log.dart';
-import '../models/activity_log_model.dart';
+import 'package:dabbler/data/models/activities/activity_log.dart';
+import 'package:dabbler/data/models/activities/activity_log_model.dart';
 
 /// Remote data source for activity logs using Supabase
 abstract class ActivityLogRemoteDataSource {
@@ -74,9 +74,11 @@ class ActivityLogRemoteDataSourceImpl implements ActivityLogRemoteDataSource {
       final response = await query
           .order('created_at', ascending: false)
           .range((page - 1) * limit, page * limit - 1);
-      
+
       List<ActivityLogModel> activities = (response as List)
-          .map((json) => ActivityLogModel.fromJson(json as Map<String, dynamic>))
+          .map(
+            (json) => ActivityLogModel.fromJson(json as Map<String, dynamic>),
+          )
           .toList();
 
       // Apply category filter in memory (since category is derived)
@@ -111,9 +113,9 @@ class ActivityLogRemoteDataSourceImpl implements ActivityLogRemoteDataSource {
       }
 
       final response = await query;
-      
+
       final Map<String, int> stats = {};
-      
+
       for (final item in response as List) {
         final type = item['activity_type'] as String;
         stats[type] = (stats[type] ?? 0) + 1;
@@ -130,7 +132,7 @@ class ActivityLogRemoteDataSourceImpl implements ActivityLogRemoteDataSource {
     try {
       final data = activity.toJson();
       data.remove('id'); // Let database generate ID
-      
+
       final response = await supabaseClient
           .from('activity_log')
           .insert(data)
@@ -183,10 +185,7 @@ class ActivityLogRemoteDataSourceImpl implements ActivityLogRemoteDataSource {
   @override
   Future<bool> deleteActivity(String activityId) async {
     try {
-      await supabaseClient
-          .from('activity_log')
-          .delete()
-          .eq('id', activityId);
+      await supabaseClient.from('activity_log').delete().eq('id', activityId);
 
       return true;
     } catch (e) {

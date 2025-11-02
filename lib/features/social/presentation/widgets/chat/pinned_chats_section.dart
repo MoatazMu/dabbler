@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/conversation_model.dart';
+import 'package:dabbler/data/models/social/conversation_model.dart';
 import 'conversation_tile.dart';
 
 class PinnedChatsSection extends StatelessWidget {
@@ -21,7 +21,7 @@ class PinnedChatsSection extends StatelessWidget {
     if (conversations.isEmpty) return const SizedBox.shrink();
 
     final theme = Theme.of(context);
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -29,11 +29,7 @@ class PinnedChatsSection extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Row(
             children: [
-              Icon(
-                Icons.push_pin,
-                size: 16,
-                color: theme.colorScheme.primary,
-              ),
+              Icon(Icons.push_pin, size: 16, color: theme.colorScheme.primary),
               const SizedBox(width: 8),
               Text(
                 'Pinned',
@@ -52,7 +48,7 @@ class PinnedChatsSection extends StatelessWidget {
           itemBuilder: (context, index) {
             final conversation = conversations[index];
             final unreadCount = unreadCounts[conversation.id] ?? 0;
-            
+
             return ConversationTile(
               key: Key(conversation.id),
               conversation: conversation,
@@ -62,8 +58,10 @@ class PinnedChatsSection extends StatelessWidget {
               isMuted: false,
               isArchived: false,
               onTap: () => onConversationTap(conversation),
-              onLongPress: () => _showConversationOptions(context, conversation),
-              onSwipeArchive: () => onConversationAction(conversation, 'archive'),
+              onLongPress: () =>
+                  _showConversationOptions(context, conversation),
+              onSwipeArchive: () =>
+                  onConversationAction(conversation, 'archive'),
               onSwipePin: () => onConversationAction(conversation, 'unpin'),
               onSwipeDelete: () => onConversationAction(conversation, 'delete'),
             );
@@ -74,9 +72,12 @@ class PinnedChatsSection extends StatelessWidget {
     );
   }
 
-  void _showConversationOptions(BuildContext context, ConversationModel conversation) {
+  void _showConversationOptions(
+    BuildContext context,
+    ConversationModel conversation,
+  ) {
     final theme = Theme.of(context);
-    
+
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -85,10 +86,7 @@ class PinnedChatsSection extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(
-                Icons.push_pin,
-                color: theme.colorScheme.primary,
-              ),
+              leading: Icon(Icons.push_pin, color: theme.colorScheme.primary),
               title: const Text('Unpin'),
               onTap: () {
                 Navigator.pop(context);
@@ -107,10 +105,7 @@ class PinnedChatsSection extends StatelessWidget {
               },
             ),
             ListTile(
-              leading: Icon(
-                Icons.delete,
-                color: theme.colorScheme.error,
-              ),
+              leading: Icon(Icons.delete, color: theme.colorScheme.error),
               title: Text(
                 'Delete',
                 style: TextStyle(color: theme.colorScheme.error),

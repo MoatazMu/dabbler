@@ -51,7 +51,7 @@ class DabblerTheme {
       scaffoldBackgroundColor: backgroundColor,
       cardColor: surfaceColor,
       dividerColor: dividerColor,
-      shadowColor: brightness == Brightness.light 
+      shadowColor: brightness == Brightness.light
           ? Colors.black.withValues(alpha: 0.1)
           : Colors.black.withValues(alpha: 0.3),
 
@@ -69,16 +69,12 @@ class DabblerTheme {
       cardTheme: CardThemeData(
         color: surfaceColor,
         elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: DabblerSpacing.all8,
       ),
 
       buttonTheme: ButtonThemeData(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         padding: DabblerSpacing.horizontal16,
       ),
 
@@ -87,9 +83,7 @@ class DabblerTheme {
           foregroundColor: Colors.white,
           backgroundColor: DabblerColors.primary,
           padding: DabblerSpacing.horizontal16,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       ),
 
@@ -97,13 +91,8 @@ class DabblerTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: DabblerColors.primary,
           padding: DabblerSpacing.horizontal16,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
-          side: BorderSide(
-            color: DabblerColors.primary,
-            width: 1,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          side: BorderSide(color: DabblerColors.primary, width: 1),
         ),
       ),
 
@@ -117,31 +106,19 @@ class DabblerTheme {
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: dividerColor,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: dividerColor, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: dividerColor,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: dividerColor, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: DabblerColors.primary,
-            width: 2,
-          ),
+          borderSide: BorderSide(color: DabblerColors.primary, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(
-            color: DabblerColors.error,
-            width: 1,
-          ),
+          borderSide: BorderSide(color: DabblerColors.error, width: 1),
         ),
         contentPadding: DabblerSpacing.all16,
       ),
@@ -155,10 +132,16 @@ class DabblerTheme {
   static TextTheme _getTextTheme(Color primaryColor, Color secondaryColor) {
     return TextTheme(
       displayLarge: DabblerTypography.headline1().copyWith(color: primaryColor),
-      displayMedium: DabblerTypography.headline2().copyWith(color: primaryColor),
+      displayMedium: DabblerTypography.headline2().copyWith(
+        color: primaryColor,
+      ),
       displaySmall: DabblerTypography.headline3().copyWith(color: primaryColor),
-      headlineMedium: DabblerTypography.headline4().copyWith(color: primaryColor),
-      headlineSmall: DabblerTypography.headline5().copyWith(color: primaryColor),
+      headlineMedium: DabblerTypography.headline4().copyWith(
+        color: primaryColor,
+      ),
+      headlineSmall: DabblerTypography.headline5().copyWith(
+        color: primaryColor,
+      ),
       titleLarge: DabblerTypography.headline6().copyWith(color: primaryColor),
       bodyLarge: DabblerTypography.body1().copyWith(color: primaryColor),
       bodyMedium: DabblerTypography.body2().copyWith(color: primaryColor),

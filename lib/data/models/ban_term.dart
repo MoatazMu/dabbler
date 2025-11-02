@@ -61,11 +61,5 @@ class BanTerm {
   }
 
   @override
-  int get hashCode => Object.hash(
-        id,
-        term,
-        kind,
-        enabled,
-        createdAt,
-      );
+  int get hashCode => Object.hash(id, term, kind, enabled, createdAt);
 }

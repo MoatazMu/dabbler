@@ -1,5 +1,5 @@
-import '../models/friend_model.dart';
-import '../../domain/entities/friend.dart';
+import 'package:dabbler/data/models/social/friend_model.dart';
+import 'package:dabbler/data/models/social/friend.dart';
 
 /// Exception types for friends data source operations
 class FriendsDataSourceException implements Exception {
@@ -109,10 +109,7 @@ abstract class FriendsDataSource {
   });
 
   /// Remove friend (unfriend)
-  Future<bool> removeFriend({
-    required String userId,
-    required String friendId,
-  });
+  Future<bool> removeFriend({required String userId, required String friendId});
 
   /// Block user
   Future<bool> blockUser({
@@ -197,9 +194,7 @@ abstract class FriendsDataSource {
   });
 
   /// Export friends data
-  Future<Map<String, dynamic>> exportFriendsData({
-    required String userId,
-  });
+  Future<Map<String, dynamic>> exportFriendsData({required String userId});
 
   /// Get friend recommendations based on mutual connections
   Future<List<FriendModel>> getFriendRecommendations({

@@ -3,9 +3,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../../themes/app_text_styles.dart';
 import '../../../../utils/helpers/date_formatter.dart';
-import '../../domain/entities/achievement.dart';
-import '../../domain/entities/badge_tier.dart';
-import '../../domain/entities/user_progress.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
 import '../widgets/progress_visualization.dart';
 
 class AchievementCard extends StatelessWidget {
@@ -28,17 +28,14 @@ class AchievementCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompleted = userProgress.status == ProgressStatus.completed;
     final isLocked = userProgress.status == ProgressStatus.notStarted;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: _getTierBorderColor(),
-            width: 2,
-          ),
+          border: Border.all(color: _getTierBorderColor(), width: 2),
           boxShadow: [
             BoxShadow(
               color: _getTierBorderColor().withOpacity(0.1),
@@ -54,32 +51,23 @@ class AchievementCard extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               child: isGridView ? _buildGridLayout() : _buildListLayout(),
             ),
-            
+
             // Lock overlay for locked achievements
             if (isLocked && achievement.type != AchievementType.hidden)
               _buildLockOverlay(),
-            
+
             // Mystery overlay for hidden achievements
             if (achievement.type == AchievementType.hidden && !isCompleted)
               _buildMysteryOverlay(),
-            
+
             // Completion glow effect
-            if (isCompleted)
-              _buildCompletionGlow(),
-            
+            if (isCompleted) _buildCompletionGlow(),
+
             // Category badge
-            Positioned(
-              top: 8,
-              right: 8,
-              child: _buildCategoryBadge(),
-            ),
-            
+            Positioned(top: 8, right: 8, child: _buildCategoryBadge()),
+
             // Rarity indicator
-            Positioned(
-              top: 8,
-              left: 8,
-              child: _buildRarityIndicator(),
-            ),
+            Positioned(top: 8, left: 8, child: _buildRarityIndicator()),
           ],
         ),
       ),
@@ -88,23 +76,21 @@ class AchievementCard extends StatelessWidget {
 
   Widget _buildGridLayout() {
     final isCompleted = userProgress.status == ProgressStatus.completed;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Icon and points row
         Row(
           children: [
-            Expanded(
-              child: _buildAchievementIcon(),
-            ),
+            Expanded(child: _buildAchievementIcon()),
             if (!isCompleted) const Spacer(),
             _buildPointsChip(),
           ],
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Title
         Text(
           achievement.name,
@@ -115,9 +101,9 @@ class AchievementCard extends StatelessWidget {
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         // Description
         Text(
           achievement.description,
@@ -127,12 +113,12 @@ class AchievementCard extends StatelessWidget {
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Progress section
         _buildProgressSection(),
-        
+
         // Completion date or quick actions
         if (isCompleted) ...[
           const SizedBox(height: 8),
@@ -150,9 +136,9 @@ class AchievementCard extends StatelessWidget {
       children: [
         // Icon
         _buildAchievementIcon(),
-        
+
         const SizedBox(width: 16),
-        
+
         // Main content
         Expanded(
           child: Column(
@@ -176,9 +162,9 @@ class AchievementCard extends StatelessWidget {
                   _buildPointsChip(),
                 ],
               ),
-              
+
               const SizedBox(height: 4),
-              
+
               // Description
               Text(
                 achievement.description,
@@ -188,9 +174,9 @@ class AchievementCard extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              
+
               const SizedBox(height: 8),
-              
+
               // Progress and completion info
               Row(
                 children: [
@@ -210,7 +196,7 @@ class AchievementCard extends StatelessWidget {
 
   Widget _buildAchievementIcon() {
     final iconSize = isGridView ? 48.0 : 56.0;
-    
+
     return Container(
       width: iconSize,
       height: iconSize,
@@ -251,11 +237,7 @@ class AchievementCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.star,
-            color: Colors.amber,
-            size: 14,
-          ),
+          const Icon(Icons.star, color: Colors.amber, size: 14),
           const SizedBox(width: 4),
           Text(
             '${achievement.points}',
@@ -279,9 +261,9 @@ class AchievementCard extends StatelessWidget {
           userProgress: userProgress,
           size: isGridView ? ProgressSize.small : ProgressSize.medium,
         ),
-        
+
         const SizedBox(height: 4),
-        
+
         // Progress text
         Text(
           _getProgressText(),
@@ -296,17 +278,13 @@ class AchievementCard extends StatelessWidget {
 
   Widget _buildCompletionInfo() {
     if (userProgress.completedAt == null) return const SizedBox.shrink();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
-            const Icon(
-              Icons.check_circle,
-              color: Colors.green,
-              size: 14,
-            ),
+            const Icon(Icons.check_circle, color: Colors.green, size: 14),
             const SizedBox(width: 4),
             Text(
               'Completed',
@@ -339,14 +317,11 @@ class AchievementCard extends StatelessWidget {
             onPressed: () {
               // Handle sharing
             },
-            icon: const Icon(
-              Icons.share,
-              size: 18,
-            ),
+            icon: const Icon(Icons.share, size: 18),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
-        
+
         // View details button
         Text(
           'Tap for details',
@@ -385,7 +360,7 @@ class AchievementCard extends StatelessWidget {
       BadgeTier.platinum: Icons.diamond_outlined,
       BadgeTier.diamond: Icons.auto_awesome,
     };
-    
+
     final rarityColors = {
       BadgeTier.bronze: const Color(0xFFCD7F32),
       BadgeTier.silver: const Color(0xFFC0C0C0),
@@ -393,7 +368,7 @@ class AchievementCard extends StatelessWidget {
       BadgeTier.platinum: const Color(0xFFE5E4E2),
       BadgeTier.diamond: const Color(0xFFB9F2FF),
     };
-    
+
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
@@ -419,11 +394,7 @@ class AchievementCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.lock_outline,
-                color: Colors.white,
-                size: 32,
-              ),
+              Icon(Icons.lock_outline, color: Colors.white, size: 32),
               SizedBox(height: 8),
               Text(
                 'Locked',
@@ -457,11 +428,7 @@ class AchievementCard extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.help_outline,
-                color: Colors.white,
-                size: 32,
-              ),
+              Icon(Icons.help_outline, color: Colors.white, size: 32),
               SizedBox(height: 8),
               Text(
                 'Mystery',
@@ -473,10 +440,7 @@ class AchievementCard extends StatelessWidget {
               SizedBox(height: 4),
               Text(
                 'Complete to reveal',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 12,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 12),
               ),
             ],
           ),
@@ -487,20 +451,21 @@ class AchievementCard extends StatelessWidget {
 
   Widget _buildCompletionGlow() {
     return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.green.withOpacity(0.3),
-              blurRadius: 20,
-              spreadRadius: 2,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.green.withOpacity(0.3),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ).animate(onPlay: (controller) => controller.repeat())
-      .shimmer(duration: 2.seconds, color: Colors.green.withOpacity(0.1));
+          ),
+        )
+        .animate(onPlay: (controller) => controller.repeat())
+        .shimmer(duration: 2.seconds, color: Colors.green.withOpacity(0.1));
   }
 
   Color _getTierBorderColor() {
@@ -603,7 +568,7 @@ class AchievementCard extends StatelessWidget {
 
   String _getProgressText() {
     final progressPercent = userProgress.calculateProgress();
-    
+
     switch (userProgress.status) {
       case ProgressStatus.completed:
         return 'Completed 🎉';

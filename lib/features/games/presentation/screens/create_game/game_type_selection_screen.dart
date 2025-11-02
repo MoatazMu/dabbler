@@ -11,7 +11,8 @@ class GameTypeSelectionScreen extends StatefulWidget {
   });
 
   @override
-  State<GameTypeSelectionScreen> createState() => _GameTypeSelectionScreenState();
+  State<GameTypeSelectionScreen> createState() =>
+      _GameTypeSelectionScreenState();
 }
 
 class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
@@ -135,8 +136,11 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
   List<Map<String, dynamic>> get _filteredOtherSports {
     if (_searchQuery.isEmpty) return _otherSports;
     return _otherSports
-        .where((sport) =>
-            sport['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where(
+          (sport) => sport['name'].toString().toLowerCase().contains(
+            _searchQuery.toLowerCase(),
+          ),
+        )
         .toList();
   }
 
@@ -156,31 +160,22 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
           children: [
             const Text(
               'What sport would you like to play?',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
               'Choose the sport for your game. We\'ll suggest appropriate settings.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey[600]),
             ),
             const SizedBox(height: 24),
-            
+
             // Popular Sports Section
             const Text(
               'Popular Sports',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            
+
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -194,22 +189,19 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
               itemBuilder: (context, index) {
                 final sport = _popularSports[index];
                 final isSelected = widget.selectedSport == sport['name'];
-                
+
                 return _buildSportCard(sport, isSelected, isPopular: true);
               },
             ),
             const SizedBox(height: 32),
-            
+
             // Search Section
             const Text(
               'More Sports',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
-            
+
             TextField(
               controller: _searchController,
               decoration: InputDecoration(
@@ -240,7 +232,7 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
               },
             ),
             const SizedBox(height: 16),
-            
+
             // Other Sports Grid
             if (_filteredOtherSports.isNotEmpty)
               GridView.builder(
@@ -256,7 +248,7 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                 itemBuilder: (context, index) {
                   final sport = _filteredOtherSports[index];
                   final isSelected = widget.selectedSport == sport['name'];
-                  
+
                   return _buildSportCard(sport, isSelected);
                 },
               )
@@ -269,10 +261,7 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                     const SizedBox(height: 12),
                     Text(
                       'No sports found for "$_searchQuery"',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                     const SizedBox(height: 16),
                     OutlinedButton.icon(
@@ -283,9 +272,9 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                   ],
                 ),
               ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Custom Sport Option (Future Feature)
             Container(
               width: double.infinity,
@@ -297,7 +286,11 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
               ),
               child: Column(
                 children: [
-                  Icon(Icons.add_circle_outline, size: 32, color: Colors.grey[600]),
+                  Icon(
+                    Icons.add_circle_outline,
+                    size: 32,
+                    color: Colors.grey[600],
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     'Don\'t see your sport?',
@@ -310,10 +303,7 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                   const SizedBox(height: 4),
                   Text(
                     'We\'ll add more sports soon!',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton(
@@ -329,7 +319,11 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
     );
   }
 
-  Widget _buildSportCard(Map<String, dynamic> sport, bool isSelected, {bool isPopular = false}) {
+  Widget _buildSportCard(
+    Map<String, dynamic> sport,
+    bool isSelected, {
+    bool isPopular = false,
+  }) {
     return Card(
       elevation: isSelected ? 8 : 2,
       shape: RoundedRectangleBorder(
@@ -355,11 +349,7 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                       color: sport['color'].withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
-                      sport['icon'],
-                      size: 24,
-                      color: sport['color'],
-                    ),
+                    child: Icon(sport['icon'], size: 24, color: sport['color']),
                   ),
                   const Spacer(),
                   if (isSelected)
@@ -377,7 +367,10 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                     ),
                   if (isPopular && !isSelected)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange[100],
                         borderRadius: BorderRadius.circular(8),
@@ -394,7 +387,7 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               Text(
                 sport['name'],
                 style: const TextStyle(
@@ -403,7 +396,7 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              
+
               // Players info
               Row(
                 children: [
@@ -411,15 +404,12 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                   const SizedBox(width: 4),
                   Text(
                     '${sport['minPlayers']}-${sport['maxPlayers']} players',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
               ),
               const SizedBox(height: 4),
-              
+
               // Duration info
               Row(
                 children: [
@@ -427,21 +417,18 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                   const SizedBox(width: 4),
                   Text(
                     sport['duration'],
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
-              
+
               // Team/Individual badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: sport['type'] == 'Team' 
-                      ? Colors.green[100] 
+                  color: sport['type'] == 'Team'
+                      ? Colors.green[100]
                       : Colors.blue[100],
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -450,8 +437,8 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
-                    color: sport['type'] == 'Team' 
-                        ? Colors.green[800] 
+                    color: sport['type'] == 'Team'
+                        ? Colors.green[800]
                         : Colors.blue[800],
                   ),
                 ),
@@ -466,7 +453,9 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
   void _suggestCustomSport() {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Thanks for suggesting "$_searchQuery"! We\'ll consider adding it.'),
+        content: Text(
+          'Thanks for suggesting "$_searchQuery"! We\'ll consider adding it.',
+        ),
         backgroundColor: Colors.green,
       ),
     );
@@ -492,7 +481,9 @@ class _GameTypeSelectionScreenState extends State<GameTypeSelectionScreen> {
                 if (value.isNotEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Thanks for requesting "$value"! We\'ll review it.'),
+                      content: Text(
+                        'Thanks for requesting "$value"! We\'ll review it.',
+                      ),
                       backgroundColor: Colors.green,
                     ),
                   );

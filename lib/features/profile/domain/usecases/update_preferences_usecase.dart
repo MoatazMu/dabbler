@@ -1,6 +1,6 @@
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/either.dart';
-import '../entities/user_preferences.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/data/models/profile/user_preferences.dart';
 import '../repositories/preferences_repository.dart';
 
 /// Parameters for updating preferences
@@ -35,7 +35,8 @@ class UpdatePreferencesParams {
     this.languagesSpoken,
   });
 
-  bool get hasUpdates => preferredSports != null ||
+  bool get hasUpdates =>
+      preferredSports != null ||
       skillLevel != null ||
       preferredLocations != null ||
       maxTravelDistance != null ||
@@ -70,7 +71,9 @@ class UpdatePreferencesUseCase {
 
   UpdatePreferencesUseCase(this._preferencesRepository);
 
-  Future<Either<Failure, UpdatePreferencesResult>> call(UpdatePreferencesParams params) async {
+  Future<Either<Failure, UpdatePreferencesResult>> call(
+    UpdatePreferencesParams params,
+  ) async {
     try {
       // Validate input parameters
       final validationResult = _validateParams(params);
@@ -79,11 +82,12 @@ class UpdatePreferencesUseCase {
       }
 
       // Get current preferences for comparison
-      final currentPreferencesResult = await _preferencesRepository.getPreferences(params.userId);
+      final currentPreferencesResult = await _preferencesRepository
+          .getPreferences(params.userId);
       if (currentPreferencesResult.isLeft) {
         return Left(currentPreferencesResult.leftOrNull()!);
       }
-      
+
       final currentPreferences = currentPreferencesResult.rightOrNull()!;
 
       // Apply business rules and constraints
@@ -97,30 +101,41 @@ class UpdatePreferencesUseCase {
       // Create updated preferences with new values
       final updatedPreferences = UserPreferences(
         userId: currentPreferences.userId,
-        preferredSports: finalParams.preferredSports ?? currentPreferences.preferredSports,
-        preferredGameTypes: finalParams.preferredGameTypes ?? currentPreferences.preferredGameTypes,
+        preferredSports:
+            finalParams.preferredSports ?? currentPreferences.preferredSports,
+        preferredGameTypes:
+            finalParams.preferredGameTypes ??
+            currentPreferences.preferredGameTypes,
         preferredDuration: currentPreferences.preferredDuration,
         preferredTeamSize: currentPreferences.preferredTeamSize,
         skillLevelPreferences: currentPreferences.skillLevelPreferences,
         skillLevel: finalParams.skillLevel ?? currentPreferences.skillLevel,
         minPlayers: finalParams.minPlayers ?? currentPreferences.minPlayers,
         maxPlayers: finalParams.maxPlayers ?? currentPreferences.maxPlayers,
-        competitionLevel: finalParams.competitionLevel ?? currentPreferences.competitionLevel,
+        competitionLevel:
+            finalParams.competitionLevel ?? currentPreferences.competitionLevel,
         playerType: finalParams.playerType ?? currentPreferences.playerType,
         maxTravelRadius: currentPreferences.maxTravelRadius,
-        maxTravelDistance: finalParams.maxTravelDistance ?? currentPreferences.maxTravelDistance,
+        maxTravelDistance:
+            finalParams.maxTravelDistance ??
+            currentPreferences.maxTravelDistance,
         preferredVenues: currentPreferences.preferredVenues,
-        preferredLocations: finalParams.preferredLocations ?? currentPreferences.preferredLocations,
+        preferredLocations:
+            finalParams.preferredLocations ??
+            currentPreferences.preferredLocations,
         travelWillingness: currentPreferences.travelWillingness,
         preferOutdoor: currentPreferences.preferOutdoor,
         preferIndoor: currentPreferences.preferIndoor,
         weeklyAvailability: currentPreferences.weeklyAvailability,
-        availableTimeSlots: finalParams.availableTimeSlots ?? currentPreferences.availableTimeSlots,
+        availableTimeSlots:
+            finalParams.availableTimeSlots ??
+            currentPreferences.availableTimeSlots,
         advanceBookingDays: currentPreferences.advanceBookingDays,
         minimumNoticeHours: currentPreferences.minimumNoticeHours,
         unavailableDates: currentPreferences.unavailableDates,
         openToNewPlayers: currentPreferences.openToNewPlayers,
-        openToNewSports: finalParams.openToNewSports ?? currentPreferences.openToNewSports,
+        openToNewSports:
+            finalParams.openToNewSports ?? currentPreferences.openToNewSports,
         ageRangePreference: currentPreferences.ageRangePreference,
         genderMixPreference: currentPreferences.genderMixPreference,
         preferFriendsOfFriends: currentPreferences.preferFriendsOfFriends,
@@ -130,7 +145,8 @@ class UpdatePreferencesUseCase {
         preferCasual: currentPreferences.preferCasual,
         acceptWaitlist: currentPreferences.acceptWaitlist,
         autoAcceptInvites: currentPreferences.autoAcceptInvites,
-        languagesSpoken: finalParams.languagesSpoken ?? currentPreferences.languagesSpoken,
+        languagesSpoken:
+            finalParams.languagesSpoken ?? currentPreferences.languagesSpoken,
         createdAt: currentPreferences.createdAt,
         updatedAt: DateTime.now(),
       );
@@ -147,21 +163,28 @@ class UpdatePreferencesUseCase {
       final finalUpdatedPreferences = updateResult.rightOrNull()!;
 
       // Calculate changed preferences
-      final changedPreferences = _calculateChangedPreferences(currentPreferences, finalUpdatedPreferences);
+      final changedPreferences = _calculateChangedPreferences(
+        currentPreferences,
+        finalUpdatedPreferences,
+      );
 
       // Calculate matching score for finding compatible players
       final matchingScore = _calculateMatchingScore(finalUpdatedPreferences);
 
       // Generate warnings
-      final warnings = _generateWarnings(finalUpdatedPreferences, changedPreferences);
+      final warnings = _generateWarnings(
+        finalUpdatedPreferences,
+        changedPreferences,
+      );
 
-      return Right(UpdatePreferencesResult(
-        updatedPreferences: finalUpdatedPreferences,
-        warnings: warnings,
-        changedPreferences: changedPreferences,
-        matchingScore: matchingScore,
-      ));
-
+      return Right(
+        UpdatePreferencesResult(
+          updatedPreferences: finalUpdatedPreferences,
+          warnings: warnings,
+          changedPreferences: changedPreferences,
+          matchingScore: matchingScore,
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Preferences update failed: $e'));
     }
@@ -173,7 +196,12 @@ class UpdatePreferencesUseCase {
 
     // Validate skill level
     if (params.skillLevel != null) {
-      const validSkillLevels = ['beginner', 'intermediate', 'advanced', 'professional'];
+      const validSkillLevels = [
+        'beginner',
+        'intermediate',
+        'advanced',
+        'professional',
+      ];
       if (!validSkillLevels.contains(params.skillLevel!.toLowerCase())) {
         errors.add('Invalid skill level');
       }
@@ -203,15 +231,28 @@ class UpdatePreferencesUseCase {
 
     // Validate competition level
     if (params.competitionLevel != null) {
-      const validCompetitionLevels = ['casual', 'competitive', 'tournament', 'professional'];
-      if (!validCompetitionLevels.contains(params.competitionLevel!.toLowerCase())) {
+      const validCompetitionLevels = [
+        'casual',
+        'competitive',
+        'tournament',
+        'professional',
+      ];
+      if (!validCompetitionLevels.contains(
+        params.competitionLevel!.toLowerCase(),
+      )) {
         errors.add('Invalid competition level');
       }
     }
 
     // Validate player type
     if (params.playerType != null) {
-      const validPlayerTypes = ['team_player', 'individual', 'captain', 'substitute', 'coach'];
+      const validPlayerTypes = [
+        'team_player',
+        'individual',
+        'captain',
+        'substitute',
+        'coach',
+      ];
       if (!validPlayerTypes.contains(params.playerType!.toLowerCase())) {
         errors.add('Invalid player type');
       }
@@ -274,13 +315,15 @@ class UpdatePreferencesUseCase {
     }
 
     // Business Rule: Professional skill level should increase max travel distance
-    if (params.skillLevel == 'professional' && params.maxTravelDistance == null) {
+    if (params.skillLevel == 'professional' &&
+        params.maxTravelDistance == null) {
       processedParams = UpdatePreferencesParams(
         userId: processedParams.userId,
         preferredSports: processedParams.preferredSports,
         skillLevel: processedParams.skillLevel,
         preferredLocations: processedParams.preferredLocations,
-        maxTravelDistance: 50.0, // Default higher travel distance for professionals
+        maxTravelDistance:
+            50.0, // Default higher travel distance for professionals
         availableTimeSlots: processedParams.availableTimeSlots,
         preferredGameTypes: processedParams.preferredGameTypes,
         minPlayers: processedParams.minPlayers,
@@ -296,7 +339,10 @@ class UpdatePreferencesUseCase {
   }
 
   /// Calculate which preferences have changed
-  Map<String, dynamic> _calculateChangedPreferences(UserPreferences current, UserPreferences updated) {
+  Map<String, dynamic> _calculateChangedPreferences(
+    UserPreferences current,
+    UserPreferences updated,
+  ) {
     final changes = <String, dynamic>{};
 
     if (!_listEquals(current.preferredSports, updated.preferredSports)) {
@@ -372,7 +418,8 @@ class UpdatePreferencesUseCase {
     // Time availability
     if (preferences.availableTimeSlots.isNotEmpty) {
       final totalSlots = preferences.availableTimeSlots.values.fold<int>(
-        0, (sum, slots) => sum + slots.length
+        0,
+        (sum, slots) => sum + slots.length,
       );
       score += totalSlots * 5.0;
       factors++;
@@ -385,7 +432,8 @@ class UpdatePreferencesUseCase {
     }
 
     // Location flexibility
-    if (preferences.maxTravelDistance != null && preferences.maxTravelDistance! > 10) {
+    if (preferences.maxTravelDistance != null &&
+        preferences.maxTravelDistance! > 10) {
       score += 15.0;
       factors++;
     }
@@ -400,7 +448,10 @@ class UpdatePreferencesUseCase {
   }
 
   /// Generate warnings for the user
-  List<String> _generateWarnings(UserPreferences preferences, Map<String, dynamic> changedPreferences) {
+  List<String> _generateWarnings(
+    UserPreferences preferences,
+    Map<String, dynamic> changedPreferences,
+  ) {
     final warnings = <String>[];
 
     // Warning: No preferred sports
@@ -410,14 +461,16 @@ class UpdatePreferencesUseCase {
 
     // Warning: Very limited availability
     final totalAvailableSlots = preferences.availableTimeSlots.values.fold<int>(
-      0, (sum, slots) => sum + slots.length
+      0,
+      (sum, slots) => sum + slots.length,
     );
     if (totalAvailableSlots < 3) {
       warnings.add('Limited availability may reduce game opportunities.');
     }
 
     // Warning: Very short travel distance
-    if (preferences.maxTravelDistance != null && preferences.maxTravelDistance! < 5) {
+    if (preferences.maxTravelDistance != null &&
+        preferences.maxTravelDistance! < 5) {
       warnings.add('Short travel distance may limit game options.');
     }
 
@@ -427,7 +480,8 @@ class UpdatePreferencesUseCase {
     }
 
     // Warning: Skill level vs competition level mismatch
-    if (preferences.skillLevel == 'beginner' && preferences.competitionLevel == 'professional') {
+    if (preferences.skillLevel == 'beginner' &&
+        preferences.competitionLevel == 'professional') {
       warnings.add('Skill level and competition level seem mismatched.');
     }
 
@@ -436,14 +490,27 @@ class UpdatePreferencesUseCase {
 
   // Helper methods
   bool _isValidDay(String day) {
-    const validDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+    const validDays = [
+      'monday',
+      'tuesday',
+      'wednesday',
+      'thursday',
+      'friday',
+      'saturday',
+      'sunday',
+    ];
     return validDays.contains(day.toLowerCase());
   }
 
   bool _isValidTimeSlot(String timeSlot) {
     // Basic time slot validation (e.g., "09:00-12:00", "evening", "morning")
     return RegExp(r'^\d{2}:\d{2}-\d{2}:\d{2}$').hasMatch(timeSlot) ||
-           ['morning', 'afternoon', 'evening', 'night'].contains(timeSlot.toLowerCase());
+        [
+          'morning',
+          'afternoon',
+          'evening',
+          'night',
+        ].contains(timeSlot.toLowerCase());
   }
 
   bool _isValidLanguage(String language) {

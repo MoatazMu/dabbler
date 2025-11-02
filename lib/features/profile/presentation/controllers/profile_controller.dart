@@ -1,10 +1,10 @@
 import 'package:dabbler/features/profile/domain/usecases/get_profile_usecase.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/user_profile.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
 import '../../domain/usecases/update_profile_usecase.dart';
 import '../../domain/usecases/calculate_profile_completion_usecase.dart';
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 /// State for the main profile controller
 class ProfileState {
@@ -44,7 +44,8 @@ class ProfileState {
       isRefreshing: isRefreshing ?? this.isRefreshing,
       errorMessage: errorMessage,
       completionPercentage: completionPercentage ?? this.completionPercentage,
-      completionRecommendations: completionRecommendations ?? this.completionRecommendations,
+      completionRecommendations:
+          completionRecommendations ?? this.completionRecommendations,
       lastUpdated: lastUpdated ?? this.lastUpdated,
       hasUnsavedChanges: hasUnsavedChanges ?? this.hasUnsavedChanges,
     );
@@ -87,10 +88,10 @@ class ProfileController extends StateNotifier<ProfileState> {
     required GetProfileUseCase getProfileUseCase,
     UpdateProfileUseCase? updateProfileUseCase,
     CalculateProfileCompletionUseCase? calculateCompletionUseCase,
-  })  : _getProfileUseCase = getProfileUseCase,
-        _updateProfileUseCase = updateProfileUseCase,
-        _calculateCompletionUseCase = calculateCompletionUseCase,
-        super(const ProfileState());
+  }) : _getProfileUseCase = getProfileUseCase,
+       _updateProfileUseCase = updateProfileUseCase,
+       _calculateCompletionUseCase = calculateCompletionUseCase,
+       super(const ProfileState());
 
   /// Initialize profile loading
   Future<void> initialize(String userId) async {
@@ -161,7 +162,7 @@ class ProfileController extends StateNotifier<ProfileState> {
       }
 
       final result = await _updateProfileUseCase.call(params);
-      
+
       return result.fold(
         (failure) {
           state = state.copyWith(
@@ -178,11 +179,10 @@ class ProfileController extends StateNotifier<ProfileState> {
             completionPercentage: updateResult.completionPercentage,
             hasUnsavedChanges: false,
           );
-          
+
           // Show warnings if any
-          if (updateResult.warnings.isNotEmpty) {
-          }
-          
+          if (updateResult.warnings.isNotEmpty) {}
+
           return true;
         },
       );
@@ -203,13 +203,16 @@ class ProfileController extends StateNotifier<ProfileState> {
       if (_calculateCompletionUseCase == null) {
         state = state.copyWith(
           completionPercentage: 75.0,
-          completionRecommendations: ['Add profile photo', 'Complete sports profiles'],
+          completionRecommendations: [
+            'Add profile photo',
+            'Complete sports profiles',
+          ],
         );
         return;
       }
 
       final result = _calculateCompletionUseCase.call(params);
-      
+
       result.fold(
         (failure) {
           // Silently fail completion calculation - not critical
@@ -250,10 +253,10 @@ class ProfileController extends StateNotifier<ProfileState> {
   /// Check if profile data should be refreshed
   bool _shouldRefresh() {
     if (state.lastUpdated == null) return true;
-    
+
     final now = DateTime.now();
     final difference = now.difference(state.lastUpdated!);
-    
+
     // Refresh if data is older than 5 minutes
     return difference.inMinutes > 5;
   }
@@ -302,11 +305,11 @@ class ProfileController extends StateNotifier<ProfileState> {
   bool get hasCriticalMissingInfo {
     final profile = state.profile;
     if (profile == null) return true;
-    
+
     return profile.displayName.isEmpty ||
-           profile.email.isEmpty ||
-           profile.bio?.isEmpty != false ||
-           profile.location?.isEmpty != false;
+        profile.email.isEmpty ||
+        profile.bio?.isEmpty != false ||
+        profile.location?.isEmpty != false;
   }
 
   /// Get profile strength score (0-100)
@@ -318,9 +321,9 @@ class ProfileController extends StateNotifier<ProfileState> {
   bool get canParticipateInGames {
     final profile = state.profile;
     if (profile == null) return false;
-    
+
     return profile.displayName.isNotEmpty &&
-           profile.location?.isNotEmpty == true &&
-           state.completionPercentage >= 40; // Minimum 40% completion required
+        profile.location?.isNotEmpty == true &&
+        state.completionPercentage >= 40; // Minimum 40% completion required
   }
 }

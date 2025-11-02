@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import '../../../../utils/constants/route_constants.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -20,7 +20,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final extra = GoRouterState.of(context).extra;
-    final prefill = extra is Map && extra['email'] is String ? extra['email'] as String : (extra is String ? extra : null);
+    final prefill = extra is Map && extra['email'] is String
+        ? extra['email'] as String
+        : (extra is String ? extra : null);
     if (prefill != null && _emailController.text.isEmpty) {
       _emailController.text = prefill;
     }
@@ -45,15 +47,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             return SingleChildScrollView(
               padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight - 16),
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight - 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Text(
                       'Reset Your Password',
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -66,7 +69,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      autofillHints: const [AutofillHints.username, AutofillHints.email],
+                      autofillHints: const [
+                        AutofillHints.username,
+                        AutofillHints.email,
+                      ],
                       textInputAction: TextInputAction.done,
                       style: Theme.of(context).textTheme.bodyLarge,
                       decoration: InputDecoration(
@@ -113,8 +119,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : () => _submit(context),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                          backgroundColor: Theme.of(
+                            context,
+                          ).colorScheme.primary,
+                          foregroundColor: Theme.of(
+                            context,
+                          ).colorScheme.onPrimary,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -122,8 +132,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                         ),
                         child: _isLoading
                             ? SizedBox(
-                                height: 20, 
-                                width: 20, 
+                                height: 20,
+                                width: 20,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -148,7 +158,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                           color: Theme.of(context).colorScheme.primaryContainer,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.2),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.primary.withOpacity(0.2),
                           ),
                         ),
                         child: Row(
@@ -163,9 +175,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                             Expanded(
                               child: Text(
                                 'Reset link sent! Check your email inbox and spam folder for instructions to reset your password.',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onPrimaryContainer,
+                                    ),
                               ),
                             ),
                           ],

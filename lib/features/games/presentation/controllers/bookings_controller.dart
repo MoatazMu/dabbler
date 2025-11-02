@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/booking.dart';
+import 'package:dabbler/data/models/games/booking.dart';
 import '../../domain/repositories/bookings_repository.dart';
 
 class BookingsState {
@@ -32,20 +32,18 @@ class BookingsState {
 
 class BookingsController extends StateNotifier<BookingsState> {
   final BookingsRepository _bookingsRepository;
-  
+
   BookingsController(this._bookingsRepository) : super(const BookingsState());
 
   Future<void> loadUpcomingBookings(String userId) async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final result = await _bookingsRepository.getMyBookings(
         userId,
-        filters: const BookingFilters(
-          status: BookingStatus.confirmed,
-        ),
+        filters: const BookingFilters(status: BookingStatus.confirmed),
       );
-      
+
       result.fold(
         (failure) {
           state = state.copyWith(
@@ -57,14 +55,13 @@ class BookingsController extends StateNotifier<BookingsState> {
           // Filter for upcoming bookings only
           final now = DateTime.now();
           final upcoming = bookings.where((booking) {
-            return booking.bookingDate.isAfter(now) || 
-                   booking.bookingDate.isAtSameMomentAs(DateTime(now.year, now.month, now.day));
+            return booking.bookingDate.isAfter(now) ||
+                booking.bookingDate.isAtSameMomentAs(
+                  DateTime(now.year, now.month, now.day),
+                );
           }).toList();
-          
-          state = state.copyWith(
-            upcomingBookings: upcoming,
-            isLoading: false,
-          );
+
+          state = state.copyWith(upcomingBookings: upcoming, isLoading: false);
         },
       );
     } catch (e) {
@@ -79,11 +76,9 @@ class BookingsController extends StateNotifier<BookingsState> {
     try {
       final result = await _bookingsRepository.getMyBookings(
         userId,
-        filters: const BookingFilters(
-          status: BookingStatus.completed,
-        ),
+        filters: const BookingFilters(status: BookingStatus.completed),
       );
-      
+
       result.fold(
         (failure) {
           // Don't update error state for past bookings
@@ -101,7 +96,7 @@ class BookingsController extends StateNotifier<BookingsState> {
   Future<void> cancelBooking(String bookingId, String reason) async {
     try {
       final result = await _bookingsRepository.cancelBooking(bookingId, reason);
-      
+
       result.fold(
         (failure) {
           state = state.copyWith(
@@ -117,9 +112,7 @@ class BookingsController extends StateNotifier<BookingsState> {
         },
       );
     } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to cancel booking: $e',
-      );
+      state = state.copyWith(error: 'Failed to cancel booking: $e');
     }
   }
 }

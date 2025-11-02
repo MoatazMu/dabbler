@@ -45,11 +45,11 @@ class _TypingIndicatorState extends State<TypingIndicator>
   @override
   void didUpdateWidget(TypingIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Restart hide timer when userNames change
     if (oldWidget.userNames != widget.userNames) {
       _startHideTimer();
-      
+
       // Fade in if new users started typing
       if (widget.userNames.isNotEmpty && oldWidget.userNames.isEmpty) {
         _fadeController.forward();
@@ -77,17 +77,16 @@ class _TypingIndicatorState extends State<TypingIndicator>
 
     // Create staggered animations for each dot
     _dotAnimations = List.generate(3, (index) {
-      return Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: _animationController,
-        curve: Interval(
-          index * 0.2,
-          (index * 0.2) + 0.4,
-          curve: Curves.easeInOut,
+      return Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _animationController,
+          curve: Interval(
+            index * 0.2,
+            (index * 0.2) + 0.4,
+            curve: Curves.easeInOut,
+          ),
         ),
-      ));
+      );
     });
 
     // Start animations if users are typing
@@ -117,13 +116,13 @@ class _TypingIndicatorState extends State<TypingIndicator>
 
   String _getTypingText() {
     if (widget.userNames.isEmpty) return '';
-    
+
     if (widget.isCompact) {
       return widget.userNames.length == 1
           ? '${widget.userNames.first} is typing...'
           : '${widget.userNames.length} people are typing...';
     }
-    
+
     if (widget.userNames.length == 1) {
       return '${widget.userNames.first} is typing';
     } else if (widget.userNames.length == 2) {
@@ -144,9 +143,11 @@ class _TypingIndicatorState extends State<TypingIndicator>
     return FadeTransition(
       opacity: _fadeAnimation,
       child: Container(
-        padding: widget.padding ?? (widget.isCompact 
-            ? const EdgeInsets.symmetric(vertical: 2)
-            : const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
+        padding:
+            widget.padding ??
+            (widget.isCompact
+                ? const EdgeInsets.symmetric(vertical: 2)
+                : const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
         child: widget.isCompact ? _buildCompactView() : _buildFullView(),
       ),
     );
@@ -160,12 +161,17 @@ class _TypingIndicatorState extends State<TypingIndicator>
         Flexible(
           child: Text(
             _getTypingText(),
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: widget.textColor ?? Theme.of(context).colorScheme.onSurface,
+            style:
+                Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color:
+                      widget.textColor ??
+                      Theme.of(context).colorScheme.onSurface,
                   fontStyle: FontStyle.italic,
                 ) ??
                 TextStyle(
-                  color: widget.textColor ?? Theme.of(context).colorScheme.onSurface,
+                  color:
+                      widget.textColor ??
+                      Theme.of(context).colorScheme.onSurface,
                   fontStyle: FontStyle.italic,
                   fontSize: 12,
                 ),
@@ -186,9 +192,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
             color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(20),
           ),
-          child: Center(
-            child: _buildAnimatedDots(size: 6),
-          ),
+          child: Center(child: _buildAnimatedDots(size: 6)),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -197,12 +201,17 @@ class _TypingIndicatorState extends State<TypingIndicator>
             children: [
               Text(
                 _getTypingText(),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: widget.textColor ?? Theme.of(context).colorScheme.onSurface,
+                style:
+                    Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color:
+                          widget.textColor ??
+                          Theme.of(context).colorScheme.onSurface,
                       fontStyle: FontStyle.italic,
                     ) ??
                     TextStyle(
-                      color: widget.textColor ?? Theme.of(context).colorScheme.onSurface,
+                      color:
+                          widget.textColor ??
+                          Theme.of(context).colorScheme.onSurface,
                       fontStyle: FontStyle.italic,
                       fontSize: 14,
                     ),
@@ -211,12 +220,17 @@ class _TypingIndicatorState extends State<TypingIndicator>
                 const SizedBox(height: 2),
                 Text(
                   _buildUsersList(),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                  style:
+                      Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 11,
                       ) ??
                       TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
                         fontSize: 11,
                       ),
                   overflow: TextOverflow.ellipsis,
@@ -247,8 +261,13 @@ class _TypingIndicatorState extends State<TypingIndicator>
                       width: size,
                       height: size,
                       decoration: BoxDecoration(
-                        color: (widget.dotColor ?? Theme.of(context).colorScheme.primary)
-                            .withValues(alpha: 0.4 + (0.6 * _dotAnimations[index].value)),
+                        color:
+                            (widget.dotColor ??
+                                    Theme.of(context).colorScheme.primary)
+                                .withValues(
+                                  alpha:
+                                      0.4 + (0.6 * _dotAnimations[index].value),
+                                ),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -302,22 +321,16 @@ class _TypingBubbleState extends State<TypingBubble>
       duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    
+
     _scaleAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(-0.3, 0),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOut,
-    ));
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
 
     _controller.forward();
 
@@ -358,15 +371,18 @@ class _TypingBubbleState extends State<TypingBubble>
                       backgroundImage: widget.avatarUrl!.isNotEmpty
                           ? NetworkImage(widget.avatarUrl!)
                           : null,
-                          child: widget.avatarUrl!.isEmpty
-                              ? Text(
-                                  widget.displayName?.substring(0, 1).toUpperCase() ?? '?',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                      ) ??
-                                      const TextStyle(fontWeight: FontWeight.bold),
-                                )
-                              : null,
+                      child: widget.avatarUrl!.isEmpty
+                          ? Text(
+                              widget.displayName
+                                      ?.substring(0, 1)
+                                      .toUpperCase() ??
+                                  '?',
+                              style:
+                                  Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(fontWeight: FontWeight.bold) ??
+                                  const TextStyle(fontWeight: FontWeight.bold),
+                            )
+                          : null,
                     ),
                     const SizedBox(width: 8),
                   ],
@@ -388,7 +404,7 @@ class _TypingBubbleState extends State<TypingBubble>
                       ),
                       boxShadow: [
                         BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
+                          color: Colors.black.withValues(alpha: 0.05),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -397,7 +413,7 @@ class _TypingBubbleState extends State<TypingBubble>
                     child: TypingIndicator(
                       userNames: widget.userNames,
                       isCompact: true,
-            dotColor: Theme.of(context).colorScheme.primary,
+                      dotColor: Theme.of(context).colorScheme.primary,
                       padding: EdgeInsets.zero,
                     ),
                   ),
@@ -436,23 +452,19 @@ class _TypingDotsState extends State<TypingDots>
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: widget.duration,
-      vsync: this,
-    );
+    _controller = AnimationController(duration: widget.duration, vsync: this);
 
     _animations = List.generate(3, (index) {
-      return Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(CurvedAnimation(
-        parent: _controller,
-        curve: Interval(
-          index * 0.2,
-          (index * 0.2) + 0.4,
-          curve: Curves.easeInOut,
+      return Tween<double>(begin: 0.0, end: 1.0).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Interval(
+            index * 0.2,
+            (index * 0.2) + 0.4,
+            curve: Curves.easeInOut,
+          ),
         ),
-      ));
+      );
     });
 
     _controller.repeat();
@@ -480,8 +492,11 @@ class _TypingDotsState extends State<TypingDots>
                   width: widget.size,
                   height: widget.size,
                   decoration: BoxDecoration(
-                    color: (widget.color ?? Theme.of(context).colorScheme.primary)
-            .withValues(alpha: 0.4 + (0.6 * _animations[index].value)),
+                    color:
+                        (widget.color ?? Theme.of(context).colorScheme.primary)
+                            .withValues(
+                              alpha: 0.4 + (0.6 * _animations[index].value),
+                            ),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -515,7 +530,7 @@ class ManagedTypingIndicator extends StatefulWidget {
 
 class _ManagedTypingIndicatorState extends State<ManagedTypingIndicator> {
   List<String> _typingUsers = [];
-  
+
   @override
   void initState() {
     super.initState();
@@ -531,7 +546,7 @@ class _ManagedTypingIndicatorState extends State<ManagedTypingIndicator> {
           _typingUsers = ['John Doe', 'Jane Smith'];
         });
         widget.onUsersTyping?.call();
-        
+
         // Auto-stop typing after 3 seconds
         Future.delayed(const Duration(seconds: 3), () {
           if (mounted) {

@@ -13,10 +13,11 @@ final supabaseClientProvider = Provider<SupabaseClient>((ref) {
   return Supabase.instance.client;
 });
 
-final onboardingControllerProvider = ChangeNotifierProvider<OnboardingController>((ref) {
-  final supabase = ref.read(supabaseClientProvider);
-  return OnboardingController(supabase: supabase);
-});
+final onboardingControllerProvider =
+    ChangeNotifierProvider<OnboardingController>((ref) {
+      final supabase = ref.read(supabaseClientProvider);
+      return OnboardingController(supabase: supabase);
+    });
 
 final onboardingGamificationProvider = Provider<OnboardingGamification>((ref) {
   final supabase = ref.read(supabaseClientProvider);
@@ -27,66 +28,63 @@ class ProfileOnboardingWelcomeScreen extends ConsumerStatefulWidget {
   const ProfileOnboardingWelcomeScreen({super.key});
 
   @override
-  ConsumerState<ProfileOnboardingWelcomeScreen> createState() => _ProfileOnboardingWelcomeScreenState();
+  ConsumerState<ProfileOnboardingWelcomeScreen> createState() =>
+      _ProfileOnboardingWelcomeScreenState();
 }
 
-class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardingWelcomeScreen> 
+class _ProfileOnboardingWelcomeScreenState
+    extends ConsumerState<ProfileOnboardingWelcomeScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _pulseController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _pulseAnimation;
-  
+
   String _socialProofMessage = '';
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Main animation controller
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1500),
       vsync: this,
     );
-    
+
     // Pulse animation for CTA button
     _pulseController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
-    ));
-    
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
-    ));
-    
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.05,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.elasticOut,
-    ));
-    
+
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      ),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: const Interval(0.2, 0.8, curve: Curves.easeOut),
+          ),
+        );
+
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.05).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.elasticOut),
+    );
+
     _loadSocialProof();
-    
+
     // Start animations
     _animationController.forward();
     _pulseController.repeat(reverse: true);
   }
-  
+
   Future<void> _loadSocialProof() async {
     final controller = ref.read(onboardingControllerProvider);
     final message = await controller.getSocialProofMessage();
@@ -96,19 +94,19 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
       });
     }
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     _pulseController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(onboardingControllerProvider);
     final variant = controller.currentVariant ?? 'control';
-    
+
     return Scaffold(
       backgroundColor: DesignSystem.colors.background,
       body: SafeArea(
@@ -127,7 +125,7 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
       ),
     );
   }
-  
+
   Widget _buildContent(BuildContext context, String variant) {
     return CustomScrollView(
       slivers: [
@@ -149,7 +147,7 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
             ),
           ),
         ),
-        
+
         // Main content
         SliverFillRemaining(
           hasScrollBody: false,
@@ -158,36 +156,35 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
             child: Column(
               children: [
                 const Spacer(),
-                
+
                 // Hero illustration
                 _buildHeroSection(variant),
-                
+
                 const SizedBox(height: 48),
-                
+
                 // Welcome content
                 _buildWelcomeContent(variant),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Benefits list
                 _buildBenefitsList(variant),
-                
+
                 const Spacer(),
-                
+
                 // Social proof
-                if (_socialProofMessage.isNotEmpty)
-                  _buildSocialProof(),
-                
+                if (_socialProofMessage.isNotEmpty) _buildSocialProof(),
+
                 const SizedBox(height: 24),
-                
+
                 // CTA Button
                 _buildCTAButton(variant),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Progress indicator
                 _buildProgressIndicator(),
-                
+
                 const SizedBox(height: 32),
               ],
             ),
@@ -196,7 +193,7 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
       ],
     );
   }
-  
+
   Widget _buildHeroSection(String variant) {
     return Container(
       width: 200,
@@ -219,31 +216,31 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
       ),
     );
   }
-  
+
   Widget _buildWelcomeContent(String variant) {
     return Column(
       children: [
         Text(
-          variant == 'gamified' 
+          variant == 'gamified'
               ? '🎯 Ready to Level Up?'
               : variant == 'minimal'
-                  ? 'Complete Your Profile'
-                  : 'Welcome to Your Journey!',
+              ? 'Complete Your Profile'
+              : 'Welcome to Your Journey!',
           style: DesignSystem.typography.headlineLarge.copyWith(
             color: DesignSystem.colors.textPrimary,
             fontWeight: FontWeight.bold,
           ),
           textAlign: TextAlign.center,
         ),
-        
+
         const SizedBox(height: 16),
-        
+
         Text(
           variant == 'gamified'
               ? 'Complete your profile, earn points, unlock badges, and join the most exciting sports community!'
               : variant == 'minimal'
-                  ? 'A few quick steps to personalize your experience and find perfect games.'
-                  : 'Let\'s set up your profile so you can discover amazing games and connect with fellow players in your area.',
+              ? 'A few quick steps to personalize your experience and find perfect games.'
+              : 'Let\'s set up your profile so you can discover amazing games and connect with fellow players in your area.',
           style: DesignSystem.typography.bodyLarge.copyWith(
             color: DesignSystem.colors.textSecondary,
             height: 1.5,
@@ -253,9 +250,9 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
       ],
     );
   }
-  
+
   Widget _buildBenefitsList(String variant) {
-    final benefits = variant == 'gamified' 
+    final benefits = variant == 'gamified'
         ? [
             BenefitItem(
               icon: LucideIcons.trophy,
@@ -274,41 +271,41 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
             ),
           ]
         : variant == 'minimal'
-            ? [
-                BenefitItem(
-                  icon: LucideIcons.search,
-                  title: 'Find Games',
-                  description: 'Discover games near you',
-                ),
-                BenefitItem(
-                  icon: LucideIcons.calendar,
-                  title: 'Easy Booking',
-                  description: 'Book with one tap',
-                ),
-              ]
-            : [
-                BenefitItem(
-                  icon: LucideIcons.mapPin,
-                  title: 'Local Games',
-                  description: 'Find games in your neighborhood',
-                ),
-                BenefitItem(
-                  icon: LucideIcons.clock,
-                  title: 'Flexible Scheduling',
-                  description: 'Games that fit your schedule',
-                ),
-                BenefitItem(
-                  icon: LucideIcons.shield,
-                  title: 'Safe & Verified',
-                  description: 'Play with trusted community members',
-                ),
-              ];
-    
+        ? [
+            BenefitItem(
+              icon: LucideIcons.search,
+              title: 'Find Games',
+              description: 'Discover games near you',
+            ),
+            BenefitItem(
+              icon: LucideIcons.calendar,
+              title: 'Easy Booking',
+              description: 'Book with one tap',
+            ),
+          ]
+        : [
+            BenefitItem(
+              icon: LucideIcons.mapPin,
+              title: 'Local Games',
+              description: 'Find games in your neighborhood',
+            ),
+            BenefitItem(
+              icon: LucideIcons.clock,
+              title: 'Flexible Scheduling',
+              description: 'Games that fit your schedule',
+            ),
+            BenefitItem(
+              icon: LucideIcons.shield,
+              title: 'Safe & Verified',
+              description: 'Play with trusted community members',
+            ),
+          ];
+
     return Column(
       children: benefits.map((benefit) => _buildBenefitItem(benefit)).toList(),
     );
   }
-  
+
   Widget _buildBenefitItem(BenefitItem benefit) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
@@ -327,9 +324,9 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
               size: 24,
             ),
           ),
-          
+
           const SizedBox(width: 16),
-          
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,9 +338,9 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                
+
                 const SizedBox(height: 4),
-                
+
                 Text(
                   benefit.description,
                   style: DesignSystem.typography.bodyMedium.copyWith(
@@ -357,28 +354,22 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
       ),
     );
   }
-  
+
   Widget _buildSocialProof() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: DesignSystem.colors.success.withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: DesignSystem.colors.success.withOpacity(0.3),
-        ),
+        border: Border.all(color: DesignSystem.colors.success.withOpacity(0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            LucideIcons.users,
-            color: DesignSystem.colors.success,
-            size: 16,
-          ),
-          
+          Icon(LucideIcons.users, color: DesignSystem.colors.success, size: 16),
+
           const SizedBox(width: 8),
-          
+
           Text(
             _socialProofMessage,
             style: DesignSystem.typography.bodySmall.copyWith(
@@ -390,7 +381,7 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
       ),
     );
   }
-  
+
   Widget _buildCTAButton(String variant) {
     return AnimatedBuilder(
       animation: _pulseAnimation,
@@ -417,20 +408,17 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
                     variant == 'gamified'
                         ? 'Start Earning Points!'
                         : variant == 'minimal'
-                            ? 'Get Started'
-                            : 'Let\'s Get Started',
+                        ? 'Get Started'
+                        : 'Let\'s Get Started',
                     style: DesignSystem.typography.titleMedium.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  
+
                   const SizedBox(width: 8),
-                  
-                  const Icon(
-                    LucideIcons.arrowRight,
-                    size: 20,
-                  ),
+
+                  const Icon(LucideIcons.arrowRight, size: 20),
                 ],
               ),
             ),
@@ -439,7 +427,7 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
       },
     );
   }
-  
+
   Widget _buildProgressIndicator() {
     return Column(
       children: [
@@ -449,24 +437,26 @@ class _ProfileOnboardingWelcomeScreenState extends ConsumerState<ProfileOnboardi
             color: DesignSystem.colors.textSecondary,
           ),
         ),
-        
+
         const SizedBox(height: 8),
-        
+
         LinearProgressIndicator(
           value: 0.0,
           backgroundColor: DesignSystem.colors.border,
-          valueColor: AlwaysStoppedAnimation<Color>(DesignSystem.colors.primary),
+          valueColor: AlwaysStoppedAnimation<Color>(
+            DesignSystem.colors.primary,
+          ),
         ),
       ],
     );
   }
-  
+
   void _startOnboarding() {
     final controller = ref.read(onboardingControllerProvider);
     controller.startOnboarding();
     context.go(RoutePaths.onboardingBasicInfo);
   }
-  
+
   void _showSkipWarning(BuildContext context) {
     showDialog(
       context: context,
@@ -512,7 +502,7 @@ class BenefitItem {
   final IconData icon;
   final String title;
   final String description;
-  
+
   BenefitItem({
     required this.icon,
     required this.title,

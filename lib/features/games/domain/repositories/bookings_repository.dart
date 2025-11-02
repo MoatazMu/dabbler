@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failure.dart';
-import '../entities/booking.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/games/booking.dart';
 
 /// Booking filter options
 class BookingFilters {
@@ -27,7 +27,8 @@ class BookingFilters {
   Map<String, dynamic> toJson() {
     return {
       if (status != null) 'status': status.toString().split('.').last,
-      if (paymentStatus != null) 'paymentStatus': paymentStatus.toString().split('.').last,
+      if (paymentStatus != null)
+        'paymentStatus': paymentStatus.toString().split('.').last,
       if (startDate != null) 'startDate': startDate!.toIso8601String(),
       if (endDate != null) 'endDate': endDate!.toIso8601String(),
       if (venueId != null) 'venueId': venueId,
@@ -40,7 +41,9 @@ class BookingFilters {
 
 abstract class BookingsRepository {
   /// Creates a new booking with the provided data
-  Future<Either<Failure, Booking>> createBooking(Map<String, dynamic> bookingData);
+  Future<Either<Failure, Booking>> createBooking(
+    Map<String, dynamic> bookingData,
+  );
 
   /// Retrieves a single booking by its ID
   Future<Either<Failure, Booking>> getBooking(String bookingId);
@@ -106,13 +109,21 @@ abstract class BookingsRepository {
   );
 
   /// Processes check-in for a booking
-  Future<Either<Failure, bool>> checkInBooking(String bookingId, String? checkedInBy);
+  Future<Either<Failure, bool>> checkInBooking(
+    String bookingId,
+    String? checkedInBy,
+  );
 
   /// Processes check-out for a booking
-  Future<Either<Failure, bool>> checkOutBooking(String bookingId, String? actualUsageDuration);
+  Future<Either<Failure, bool>> checkOutBooking(
+    String bookingId,
+    String? actualUsageDuration,
+  );
 
   /// Gets booking statistics for a user
-  Future<Either<Failure, Map<String, dynamic>>> getUserBookingStats(String userId);
+  Future<Either<Failure, Map<String, dynamic>>> getUserBookingStats(
+    String userId,
+  );
 
   /// Gets booking statistics for a venue
   Future<Either<Failure, Map<String, dynamic>>> getVenueBookingStats(
@@ -122,10 +133,18 @@ abstract class BookingsRepository {
   });
 
   /// Requests refund for a cancelled booking
-  Future<Either<Failure, bool>> requestRefund(String bookingId, String reason, double? refundAmount);
+  Future<Either<Failure, bool>> requestRefund(
+    String bookingId,
+    String reason,
+    double? refundAmount,
+  );
 
   /// Processes refund for a booking
-  Future<Either<Failure, bool>> processRefund(String bookingId, double refundAmount, String? transactionId);
+  Future<Either<Failure, bool>> processRefund(
+    String bookingId,
+    double refundAmount,
+    String? transactionId,
+  );
 
   /// Gets upcoming bookings for a user
   Future<Either<Failure, List<Booking>>> getUpcomingBookings(
@@ -146,37 +165,66 @@ abstract class BookingsRepository {
   Future<Either<Failure, List<Booking>>> getTodayBookings(String userId);
 
   /// Sends booking confirmation
-  Future<Either<Failure, bool>> sendBookingConfirmation(String bookingId, String method);
+  Future<Either<Failure, bool>> sendBookingConfirmation(
+    String bookingId,
+    String method,
+  );
 
   /// Sends booking reminder
-  Future<Either<Failure, bool>> sendBookingReminder(String bookingId, String method, int minutesBefore);
+  Future<Either<Failure, bool>> sendBookingReminder(
+    String bookingId,
+    String method,
+    int minutesBefore,
+  );
 
   /// Gets booking reminders for a user
-  Future<Either<Failure, List<Map<String, dynamic>>>> getBookingReminders(String userId, {bool activeOnly = true});
+  Future<Either<Failure, List<Map<String, dynamic>>>> getBookingReminders(
+    String userId, {
+    bool activeOnly = true,
+  });
 
   /// Sets up automatic booking reminders
-  Future<Either<Failure, bool>> setupBookingReminders(String bookingId, List<int> minutesBefore, List<String> methods);
+  Future<Either<Failure, bool>> setupBookingReminders(
+    String bookingId,
+    List<int> minutesBefore,
+    List<String> methods,
+  );
 
   /// Extends booking duration (if possible)
-  Future<Either<Failure, Booking>> extendBooking(String bookingId, int additionalMinutes);
+  Future<Either<Failure, Booking>> extendBooking(
+    String bookingId,
+    int additionalMinutes,
+  );
 
   /// Gets available extension time for a booking
   Future<Either<Failure, int>> getAvailableExtensionTime(String bookingId);
 
   /// Adds special requests to a booking
-  Future<Either<Failure, bool>> addBookingSpecialRequests(String bookingId, String requests);
+  Future<Either<Failure, bool>> addBookingSpecialRequests(
+    String bookingId,
+    String requests,
+  );
 
   /// Updates booking payment method
-  Future<Either<Failure, bool>> updatePaymentMethod(String bookingId, String paymentMethod);
+  Future<Either<Failure, bool>> updatePaymentMethod(
+    String bookingId,
+    String paymentMethod,
+  );
 
   /// Gets booking receipt/invoice
-  Future<Either<Failure, Map<String, dynamic>>> getBookingReceipt(String bookingId);
+  Future<Either<Failure, Map<String, dynamic>>> getBookingReceipt(
+    String bookingId,
+  );
 
   /// Downloads booking receipt as PDF
   Future<Either<Failure, String>> downloadBookingReceiptPdf(String bookingId);
 
   /// Shares booking details
-  Future<Either<Failure, bool>> shareBooking(String bookingId, String method, List<String> recipients);
+  Future<Either<Failure, bool>> shareBooking(
+    String bookingId,
+    String method,
+    List<String> recipients,
+  );
 
   /// Gets booking QR code for check-in
   Future<Either<Failure, String>> getBookingQrCode(String bookingId);
@@ -194,19 +242,35 @@ abstract class BookingsRepository {
   );
 
   /// Applies discount/promo code to booking
-  Future<Either<Failure, Map<String, dynamic>>> applyPromoCode(String bookingId, String promoCode);
+  Future<Either<Failure, Map<String, dynamic>>> applyPromoCode(
+    String bookingId,
+    String promoCode,
+  );
 
   /// Gets available promo codes for a user
-  Future<Either<Failure, List<Map<String, dynamic>>>> getAvailablePromoCodes(String userId, String? venueId);
+  Future<Either<Failure, List<Map<String, dynamic>>>> getAvailablePromoCodes(
+    String userId,
+    String? venueId,
+  );
 
   /// Rates and reviews a completed booking
-  Future<Either<Failure, bool>> rateBooking(String bookingId, double rating, String? review);
+  Future<Either<Failure, bool>> rateBooking(
+    String bookingId,
+    double rating,
+    String? review,
+  );
 
   /// Gets booking reviews/ratings
-  Future<Either<Failure, Map<String, dynamic>>> getBookingReviews(String bookingId);
+  Future<Either<Failure, Map<String, dynamic>>> getBookingReviews(
+    String bookingId,
+  );
 
   /// Reports an issue with a booking
-  Future<Either<Failure, bool>> reportBookingIssue(String bookingId, String issueType, String description);
+  Future<Either<Failure, bool>> reportBookingIssue(
+    String bookingId,
+    String issueType,
+    String description,
+  );
 
   /// Gets booking analytics for venue owner
   Future<Either<Failure, Map<String, dynamic>>> getBookingAnalytics(
@@ -217,7 +281,11 @@ abstract class BookingsRepository {
   });
 
   /// Gets no-show rate for a venue
-  Future<Either<Failure, double>> getNoShowRate(String venueId, {DateTime? startDate, DateTime? endDate});
+  Future<Either<Failure, double>> getNoShowRate(
+    String venueId, {
+    DateTime? startDate,
+    DateTime? endDate,
+  });
 
   /// Marks booking as no-show
   Future<Either<Failure, bool>> markAsNoShow(String bookingId, String? reason);

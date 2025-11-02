@@ -4,8 +4,8 @@ import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:meta/meta.dart';
 
-import '../../core/types/result.dart';
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/core/utils/json.dart';
 import '../models/schema_meta.dart';
 import 'base_repository.dart';
 import 'schema_meta_repository.dart';

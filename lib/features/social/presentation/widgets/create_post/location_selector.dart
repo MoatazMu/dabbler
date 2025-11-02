@@ -28,9 +28,9 @@ class LocationSelector extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Location',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const Spacer(),
                 IconButton(
@@ -41,7 +41,7 @@ class LocationSelector extends StatelessWidget {
                 ),
               ],
             ),
-            
+
             if (selectedLocation != null) ...[
               const SizedBox(height: 8),
               Container(
@@ -58,9 +58,7 @@ class LocationSelector extends StatelessWidget {
                       size: 16,
                     ),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(selectedLocation!),
-                    ),
+                    Expanded(child: Text(selectedLocation!)),
                     IconButton(
                       onPressed: () => onLocationChanged(null),
                       icon: const Icon(Icons.close, size: 16),

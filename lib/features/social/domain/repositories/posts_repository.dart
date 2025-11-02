@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../../../utils/enums/social_enums.dart';
-import '../../data/models/post_model.dart';
-import '../../data/models/social_feed_model.dart';
-import '../../data/models/reaction_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/data/models/social/social_feed_model.dart';
+import 'package:dabbler/data/models/social/reaction_model.dart';
 
 /// Abstract repository for posts and social feed operations
 abstract class PostsRepository {
@@ -179,14 +179,10 @@ abstract class PostsRepository {
   });
 
   /// Get post analytics (for post author)
-  Future<Either<Failure, Map<String, dynamic>>> getPostAnalytics(
-    String postId,
-  );
+  Future<Either<Failure, Map<String, dynamic>>> getPostAnalytics(String postId);
 
   /// Upload media for posts
-  Future<Either<Failure, List<String>>> uploadPostMedia(
-    List<String> filePaths,
-  );
+  Future<Either<Failure, List<String>>> uploadPostMedia(List<String> filePaths);
 
   /// Delete comment
   Future<Either<Failure, bool>> deleteComment(String commentId);

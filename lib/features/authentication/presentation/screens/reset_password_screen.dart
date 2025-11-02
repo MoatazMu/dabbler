@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import '../../../../utils/constants/route_constants.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -34,7 +34,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 decoration: InputDecoration(
                   labelText: 'New password',
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure1 ? Icons.visibility : Icons.visibility_off),
+                    icon: Icon(
+                      _obscure1 ? Icons.visibility : Icons.visibility_off,
+                    ),
                     onPressed: () => setState(() => _obscure1 = !_obscure1),
                   ),
                 ),
@@ -51,7 +53,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 decoration: InputDecoration(
                   labelText: 'Confirm password',
                   suffixIcon: IconButton(
-                    icon: Icon(_obscure2 ? Icons.visibility : Icons.visibility_off),
+                    icon: Icon(
+                      _obscure2 ? Icons.visibility : Icons.visibility_off,
+                    ),
                     onPressed: () => setState(() => _obscure2 = !_obscure2),
                   ),
                 ),
@@ -68,7 +72,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 onPressed: _isLoading
                     ? null
                     : () async {
-                        if (!(_formKey.currentState?.validate() ?? false)) return;
+                        if (!(_formKey.currentState?.validate() ?? false)) {
+                          return;
+                        }
                         setState(() {
                           _isLoading = true;
                           _error = null;
@@ -79,13 +85,22 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                           // After successful reset, go to login to sign in
                           context.go(RoutePaths.phoneInput);
                         } catch (e) {
-                          setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+                          setState(
+                            () => _error = e.toString().replaceFirst(
+                              'Exception: ',
+                              '',
+                            ),
+                          );
                         } finally {
                           if (mounted) setState(() => _isLoading = false);
                         }
                       },
                 child: _isLoading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Update Password'),
               ),
               if (_error != null) ...[

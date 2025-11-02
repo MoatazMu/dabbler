@@ -1,5 +1,4 @@
-
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/slot.dart';
 
 abstract class AvailabilityRepository {
@@ -32,4 +31,3 @@ abstract class AvailabilityRepository {
   /// Release (delete) a hold I created.
   Future<Result<void>> releaseHold(String holdId);
 }
-

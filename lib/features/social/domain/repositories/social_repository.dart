@@ -1,13 +1,12 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../../core/errors/failure.dart';
-import '../entities/post.dart';
-import '../entities/chat_message.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/social/post.dart';
+import 'package:dabbler/data/models/social/chat_message.dart';
 
 /// Main social repository interface that coordinates all social features
 abstract class SocialRepository {
-  
   // ============ POST OPERATIONS ============
-  
+
   /// Create a new post
   Future<Either<Failure, Post>> createPost({
     required String content,
@@ -95,9 +94,7 @@ abstract class SocialRepository {
   Future<Either<Failure, List<dynamic>>> getBlockedUsers();
 
   /// Get potential friends for suggestions
-  Future<Either<Failure, List<dynamic>>> getPotentialFriends({
-    int? limit,
-  });
+  Future<Either<Failure, List<dynamic>>> getPotentialFriends({int? limit});
 
   /// Get current user data
   Future<Either<Failure, dynamic>> getCurrentUser();
@@ -202,9 +199,7 @@ abstract class SocialRepository {
   // ============ ANALYTICS & SYNC OPERATIONS ============
 
   /// Sync data across features
-  Future<Either<Failure, bool>> syncData({
-    List<String>? features,
-  });
+  Future<Either<Failure, bool>> syncData({List<String>? features});
 
   /// Get sync status
   Future<Either<Failure, Map<String, dynamic>>> getSyncStatus();

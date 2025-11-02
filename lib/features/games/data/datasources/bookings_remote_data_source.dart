@@ -1,4 +1,4 @@
-import '../models/booking_model.dart';
+import 'package:dabbler/data/models/games/booking_model.dart';
 
 abstract class BookingsRemoteDataSource {
   Future<BookingModel> createBooking(
@@ -78,8 +78,5 @@ abstract class BookingsRemoteDataSource {
 
   Future<String> getBookingQRCode(String bookingId);
 
-  Future<BookingModel> extendBooking(
-    String bookingId,
-    int additionalMinutes,
-  );
+  Future<BookingModel> extendBooking(String bookingId, int additionalMinutes);
 }

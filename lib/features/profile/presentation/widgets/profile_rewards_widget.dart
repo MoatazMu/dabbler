@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../rewards/services/rewards_service_stub.dart' as rewards;
-import '../../../rewards/domain/entities/achievement.dart';
-import '../../../rewards/domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import '../../../rewards/presentation/widgets/ui/tier_badge_widget.dart';
 
 /// Profile integration with rewards system
 class ProfileRewardsWidget extends StatefulWidget {
   final String userId;
 
-  const ProfileRewardsWidget({
-    super.key,
-    required this.userId,
-  });
+  const ProfileRewardsWidget({super.key, required this.userId});
 
   @override
   State<ProfileRewardsWidget> createState() => _ProfileRewardsWidgetState();
@@ -34,15 +31,17 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
 
   Future<void> _loadRewardsData() async {
     setState(() => _isLoading = true);
-    
+
     try {
       final rewardsService = rewards.RewardsService();
-      
+
       final totalPoints = await rewardsService.getUserPoints(widget.userId);
-      final currentTier = await rewardsService.getUserTier(widget.userId);  
-      final achievements = await rewardsService.getUserAchievements(widget.userId);
+      final currentTier = await rewardsService.getUserTier(widget.userId);
+      final achievements = await rewardsService.getUserAchievements(
+        widget.userId,
+      );
       final rank = await rewardsService.getUserRank(widget.userId);
-      
+
       if (mounted) {
         setState(() {
           _totalPoints = totalPoints;
@@ -103,10 +102,7 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
             ),
             child: Row(
               children: [
-                TierBadgeWidget(
-                  tier: _currentTier,
-                  size: 48,
-                ),
+                TierBadgeWidget(tier: _currentTier, size: 48),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -114,10 +110,11 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
                     children: [
                       Text(
                         '${_currentTier.name} Tier',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: _currentTier.color,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: _currentTier.color,
+                            ),
                       ),
                       Text(
                         '$_totalPoints points',
@@ -130,7 +127,10 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
                 ),
                 if (_leaderboardRank > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -146,7 +146,7 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
               ],
             ),
           ),
-          
+
           // Stats grid
           Padding(
             padding: const EdgeInsets.all(16),
@@ -155,9 +155,9 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
               children: [
                 Text(
                   'Your Stats',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 12),
                 Row(
@@ -184,7 +184,9 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
                       child: _buildStatItem(
                         icon: LucideIcons.trendingUp,
                         label: 'Rank',
-                        value: _leaderboardRank > 0 ? '#$_leaderboardRank' : '--',
+                        value: _leaderboardRank > 0
+                            ? '#$_leaderboardRank'
+                            : '--',
                         color: Colors.green,
                       ),
                     ),
@@ -193,7 +195,7 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
               ],
             ),
           ),
-          
+
           // Recent achievements
           if (_recentAchievements.isNotEmpty) ...[
             const Divider(height: 1),
@@ -218,8 +220,8 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  ...(_recentAchievements.map((achievement) => 
-                    _buildAchievementItem(achievement)
+                  ...(_recentAchievements.map(
+                    (achievement) => _buildAchievementItem(achievement),
                   )),
                 ],
               ),
@@ -255,9 +257,9 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
           ),
           Text(
             label,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey[600],
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -270,7 +272,9 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -295,15 +299,15 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
               children: [
                 Text(
                   achievement.name,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 Text(
                   achievement.description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

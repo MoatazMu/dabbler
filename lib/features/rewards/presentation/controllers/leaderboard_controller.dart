@@ -1,14 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/leaderboard_entry.dart';
+import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// Leaderboard sorting options
-enum LeaderboardSort {
-  rank,
-  score,
-  name,
-  recent,
-}
+enum LeaderboardSort { rank, score, name, recent }
 
 /// State class for leaderboard management
 class LeaderboardState {
@@ -102,7 +97,7 @@ class LeaderboardState {
     // Sort entries
     filtered.sort((a, b) {
       int comparison = 0;
-      
+
       switch (sortBy) {
         case LeaderboardSort.rank:
           comparison = a.currentRank.compareTo(b.currentRank);
@@ -117,7 +112,7 @@ class LeaderboardState {
           comparison = a.lastActiveAt.compareTo(b.lastActiveAt);
           break;
       }
-      
+
       return isAscending ? comparison : -comparison;
     });
 
@@ -132,12 +127,15 @@ class LeaderboardState {
   /// Get user's position context (user rank ± 5 positions)
   List<LeaderboardEntry> get userContext {
     if (userRank == null || userRank! <= 0) return [];
-    
+
     final startRank = (userRank! - 5).clamp(1, entries.length);
     final endRank = (userRank! + 5).clamp(1, entries.length);
-    
+
     return entries
-        .where((entry) => entry.currentRank >= startRank && entry.currentRank <= endRank)
+        .where(
+          (entry) =>
+              entry.currentRank >= startRank && entry.currentRank <= endRank,
+        )
         .toList();
   }
 
@@ -170,8 +168,10 @@ class LeaderboardState {
   int _getActiveUsersToday() {
     final today = DateTime.now();
     final startOfDay = DateTime(today.year, today.month, today.day);
-    
-    return entries.where((entry) => entry.lastActiveAt.isAfter(startOfDay)).length;
+
+    return entries
+        .where((entry) => entry.lastActiveAt.isAfter(startOfDay))
+        .length;
   }
 
   Map<String, int> _getScoreDistribution() {
@@ -207,7 +207,8 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
   final RewardsRepository _repository;
   final String userId;
 
-  LeaderboardController(this._repository, this.userId) : super(const LeaderboardState()) {
+  LeaderboardController(this._repository, this.userId)
+    : super(const LeaderboardState()) {
     _initialize();
   }
 
@@ -231,10 +232,7 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
 
     await result.fold(
       (failure) async {
-        state = state.copyWith(
-          error: failure.toString(),
-          isLoading: false,
-        );
+        state = state.copyWith(error: failure.toString(), isLoading: false);
       },
       (entries) async {
         // Load user rank separately
@@ -245,10 +243,7 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
           sportFilter: state.sportFilter,
         );
 
-        final userRank = userRankResult.fold(
-          (failure) => null,
-          (rank) => rank,
-        );
+        final userRank = userRankResult.fold((failure) => null, (rank) => rank);
 
         // Load leaderboard stats
         final statsResult = await _repository.getLeaderboardStats(
@@ -264,14 +259,12 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
         // Find user entry in the loaded entries
         LeaderboardEntry? userEntry;
         try {
-          userEntry = entries.firstWhere(
-            (entry) => entry.userId == userId,
-          );
+          userEntry = entries.firstWhere((entry) => entry.userId == userId);
         } catch (e) {
           userEntry = null;
         }
 
-        final updatedEntries = append 
+        final updatedEntries = append
             ? [...state.entries, ...entries]
             : entries;
 
@@ -292,11 +285,7 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
   /// Changes leaderboard type and reloads data
   Future<void> changeLeaderboardType(LeaderboardType type) async {
     if (state.selectedType != type) {
-      state = state.copyWith(
-        selectedType: type,
-        currentPage: 1,
-        entries: [],
-      );
+      state = state.copyWith(selectedType: type, currentPage: 1, entries: []);
       await loadLeaderboard();
     }
   }
@@ -358,7 +347,7 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
   /// Gets entries around a specific rank
   Future<List<LeaderboardEntry>> getEntriesAroundRank(int rank) async {
     final targetPage = (rank / state.pageSize).ceil();
-    
+
     final result = await _repository.getLeaderboard(
       state.selectedType,
       state.selectedTimeframe,
@@ -367,10 +356,7 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
       sportFilter: state.sportFilter,
     );
 
-    return result.fold(
-      (failure) => [],
-      (entries) => entries,
-    );
+    return result.fold((failure) => [], (entries) => entries);
   }
 
   /// Gets user's historical performance
@@ -400,7 +386,7 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
     final insights = <String>[];
     final userRank = state.userRank!;
     final totalUsers = state.entries.length;
-    
+
     // Rank-based insights
     if (userRank <= 10) {
       insights.add('🏆 You\'re in the top 10!');
@@ -414,7 +400,7 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
     if (state.userEntry != null) {
       final userScore = state.userEntry!.totalPoints.round();
       final averageScore = state.leaderboardStats['average_score'] as int;
-      
+
       if (userScore > averageScore * 1.5) {
         insights.add('💪 Your score is 50% above average');
       } else if (userScore > averageScore) {
@@ -432,9 +418,10 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
       } catch (e) {
         nextRankEntry = null;
       }
-      
+
       if (nextRankEntry != null && state.userEntry != null) {
-        final pointsNeeded = nextRankEntry.totalPoints - state.userEntry!.totalPoints;
+        final pointsNeeded =
+            nextRankEntry.totalPoints - state.userEntry!.totalPoints;
         if (pointsNeeded <= 50) {
           insights.add('🎯 Only ${pointsNeeded.round()} points to next rank!');
         }
@@ -450,10 +437,10 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
 
   String _getMotivationMessage() {
     if (state.userRank == null) return 'Keep playing to see your rank!';
-    
+
     final rank = state.userRank!;
     final total = state.entries.length;
-    
+
     if (rank == 1) {
       return '🥇 Congratulations! You\'re #1!';
     } else if (rank <= 3) {
@@ -475,20 +462,20 @@ class LeaderboardController extends StateNotifier<LeaderboardState> {
     if (state.userRank == null || state.userRank == 1) {
       return 'Maintain your position!';
     }
-    
+
     final nextMilestone = _getNextRankMilestone(state.userRank!);
     return 'Aim for rank $nextMilestone!';
   }
 
   int _getNextRankMilestone(int currentRank) {
     final milestones = [1, 5, 10, 25, 50, 100, 250, 500, 1000];
-    
+
     for (final milestone in milestones) {
       if (milestone < currentRank) {
         return milestone;
       }
     }
-    
+
     // If no milestone is found, aim for the next round number
     if (currentRank > 100) {
       return ((currentRank - 1) ~/ 100) * 100;

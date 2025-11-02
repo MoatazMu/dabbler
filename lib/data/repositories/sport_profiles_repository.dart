@@ -1,4 +1,4 @@
-import 'package:dabbler/core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/sport_profile.dart';
 
 /// Repository contract for managing sport profile preferences for the
@@ -25,9 +25,7 @@ abstract class SportProfilesRepository {
   });
 
   /// Remove my sport preference (hard delete; no deleted_at column present).
-  Future<Result<void>> removeMySport({
-    required String sportKey,
-  });
+  Future<Result<void>> removeMySport({required String sportKey});
 
   /// Realtime stream of my preferences (composite PK uses user_id + sport_key).
   Stream<Result<List<SportProfile>>> watchMySports();

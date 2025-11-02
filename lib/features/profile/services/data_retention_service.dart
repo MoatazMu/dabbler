@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../../core/utils/logger.dart';
+import 'package:dabbler/core/utils/logger.dart';
 
 /// Service for managing GDPR-compliant data retention policies
 class DataRetentionService {
@@ -10,7 +10,7 @@ class DataRetentionService {
   static const String _logTag = 'DataRetentionService';
 
   DataRetentionService({SupabaseClient? supabase})
-      : _supabase = supabase ?? Supabase.instance.client;
+    : _supabase = supabase ?? Supabase.instance.client;
 
   /// Configure user data retention preferences
   Future<void> configureRetentionPolicy({
@@ -24,7 +24,9 @@ class DataRetentionService {
 
       await _supabase.from('user_retention_policies').upsert({
         'user_id': userId,
-        'policies': retentionPolicies.map((key, value) => MapEntry(key, value.inDays)),
+        'policies': retentionPolicies.map(
+          (key, value) => MapEntry(key, value.inDays),
+        ),
         'auto_cleanup_enabled': enableAutoCleanup,
         'grace_period_days': gracePeriod?.inDays ?? 30,
         'updated_at': DateTime.now().toIso8601String(),
@@ -53,13 +55,19 @@ class DataRetentionService {
 
       return UserRetentionPolicy.fromJson(response);
     } catch (e) {
-      Logger.warning('$_logTag: Could not fetch retention policy for user: $userId', e);
+      Logger.warning(
+        '$_logTag: Could not fetch retention policy for user: $userId',
+        e,
+      );
       return null;
     }
   }
 
   /// Schedule automatic data cleanup based on retention policies
-  Future<void> _scheduleCleanupTasks(String userId, Map<String, Duration> policies) async {
+  Future<void> _scheduleCleanupTasks(
+    String userId,
+    Map<String, Duration> policies,
+  ) async {
     try {
       // Clear existing scheduled tasks
       await _supabase
@@ -98,7 +106,7 @@ class DataRetentionService {
       Logger.info('$_logTag: Processing scheduled data cleanups');
 
       final result = DataCleanupResult();
-      
+
       // Get due cleanup tasks
       var query = _supabase
           .from('scheduled_cleanup_tasks')
@@ -108,19 +116,22 @@ class DataRetentionService {
           .limit(batchSize);
 
       final tasks = await query;
-      
+
       // Filter by data types if specified
-      final filteredTasks = dataTypes != null 
-          ? tasks.where((task) => dataTypes.contains(task['data_type'])).toList()
+      final filteredTasks = dataTypes != null
+          ? tasks
+                .where((task) => dataTypes.contains(task['data_type']))
+                .toList()
           : tasks;
 
       for (final task in filteredTasks) {
         await _processCleanupTask(task, result);
       }
 
-      Logger.info('$_logTag: Processed ${result.totalTasksProcessed} cleanup tasks');
+      Logger.info(
+        '$_logTag: Processed ${result.totalTasksProcessed} cleanup tasks',
+      );
       return result;
-
     } catch (e) {
       Logger.error('$_logTag: Error processing scheduled cleanups', e);
       throw DataRetentionException('Failed to process scheduled cleanups: $e');
@@ -128,12 +139,15 @@ class DataRetentionService {
   }
 
   /// Process individual cleanup task
-  Future<void> _processCleanupTask(Map<String, dynamic> task, DataCleanupResult result) async {
+  Future<void> _processCleanupTask(
+    Map<String, dynamic> task,
+    DataCleanupResult result,
+  ) async {
     try {
       final userId = task['user_id'] as String;
       final dataType = task['data_type'] as String;
       final taskId = task['id'] as String;
-      
+
       result.totalTasksProcessed++;
 
       // Check if user has grace period active
@@ -165,12 +179,13 @@ class DataRetentionService {
           .eq('id', taskId);
 
       result.tasksCompleted++;
-      Logger.info('$_logTag: Cleanup completed for user $userId, dataType $dataType: $deletedRecords records');
-
+      Logger.info(
+        '$_logTag: Cleanup completed for user $userId, dataType $dataType: $deletedRecords records',
+      );
     } catch (e) {
       Logger.error('$_logTag: Error processing cleanup task: ${task['id']}', e);
       result.tasksFailed++;
-      
+
       // Mark task as failed
       await _supabase
           .from('scheduled_cleanup_tasks')
@@ -204,7 +219,7 @@ class DataRetentionService {
   /// Postpone cleanup task
   Future<void> _postponeCleanup(String taskId, Duration delay) async {
     final newCleanupDate = DateTime.now().add(delay);
-    
+
     await _supabase
         .from('scheduled_cleanup_tasks')
         .update({
@@ -215,7 +230,11 @@ class DataRetentionService {
   }
 
   /// Send notification before data cleanup
-  Future<void> _sendCleanupNotification(String userId, String dataType, Map<String, dynamic> task) async {
+  Future<void> _sendCleanupNotification(
+    String userId,
+    String dataType,
+    Map<String, dynamic> task,
+  ) async {
     try {
       // Get user email
       final userResponse = await _supabase
@@ -227,15 +246,16 @@ class DataRetentionService {
       final userEmail = userResponse['email'];
 
       // This would integrate with your email service (e.g., SendGrid, AWS SES, etc.)
-      Logger.info('$_logTag: Would send cleanup notification to $userEmail for $dataType data');
-      
+      Logger.info(
+        '$_logTag: Would send cleanup notification to $userEmail for $dataType data',
+      );
+
       // Placeholder for actual email sending
       debugPrint('Cleanup Notification Email:');
       debugPrint('To: $userEmail');
       debugPrint('Subject: Data Cleanup Notification');
       debugPrint('Data Type: $dataType');
       debugPrint('Scheduled Date: ${task['scheduled_cleanup_date']}');
-      
     } catch (e) {
       Logger.warning('$_logTag: Could not send cleanup notification', e);
     }
@@ -281,17 +301,14 @@ class DataRetentionService {
   Future<int> _cleanupProfileData(String userId) async {
     // Delete non-essential profile data while keeping core account info
     int deleted = 0;
-    
+
     try {
       // Delete optional profile fields
       await _supabase
           .from('users')
-          .update({
-            'bio': null,
-            'avatar_url': null,
-          })
+          .update({'bio': null, 'avatar_url': null})
           .eq('id', userId);
-      
+
       deleted = 1; // One profile record updated
     } catch (e) {
       Logger.warning('$_logTag: Error cleaning up profile data', e);
@@ -302,8 +319,10 @@ class DataRetentionService {
 
   Future<int> _cleanupGameHistory(String userId) async {
     try {
-      final cutoffDate = DateTime.now().subtract(Duration(days: 365 * 2)); // Keep 2 years
-      
+      final cutoffDate = DateTime.now().subtract(
+        Duration(days: 365 * 2),
+      ); // Keep 2 years
+
       final result = await _supabase
           .from('games')
           .delete()
@@ -319,8 +338,10 @@ class DataRetentionService {
 
   Future<int> _cleanupMessages(String userId) async {
     try {
-      final cutoffDate = DateTime.now().subtract(Duration(days: 365)); // Keep 1 year
-      
+      final cutoffDate = DateTime.now().subtract(
+        Duration(days: 365),
+      ); // Keep 1 year
+
       final result = await _supabase
           .from('messages')
           .delete()
@@ -336,8 +357,10 @@ class DataRetentionService {
 
   Future<int> _cleanupAuditLogs(String userId) async {
     try {
-      final cutoffDate = DateTime.now().subtract(Duration(days: 365 * 2)); // Keep 2 years for security
-      
+      final cutoffDate = DateTime.now().subtract(
+        Duration(days: 365 * 2),
+      ); // Keep 2 years for security
+
       final result = await _supabase
           .from('audit_logs')
           .delete()
@@ -353,8 +376,10 @@ class DataRetentionService {
 
   Future<int> _cleanupLoginHistory(String userId) async {
     try {
-      final cutoffDate = DateTime.now().subtract(Duration(days: 180)); // Keep 6 months
-      
+      final cutoffDate = DateTime.now().subtract(
+        Duration(days: 180),
+      ); // Keep 6 months
+
       final result = await _supabase
           .from('login_history')
           .delete()
@@ -370,8 +395,10 @@ class DataRetentionService {
 
   Future<int> _cleanupMediaFiles(String userId) async {
     try {
-      final cutoffDate = DateTime.now().subtract(Duration(days: 365)); // Keep 1 year
-      
+      final cutoffDate = DateTime.now().subtract(
+        Duration(days: 365),
+      ); // Keep 1 year
+
       // First get the files to delete from storage
       final mediaFiles = await _supabase
           .from('user_media')
@@ -399,8 +426,10 @@ class DataRetentionService {
 
   Future<int> _cleanupLocationData(String userId) async {
     try {
-      final cutoffDate = DateTime.now().subtract(Duration(days: 90)); // Keep 3 months
-      
+      final cutoffDate = DateTime.now().subtract(
+        Duration(days: 90),
+      ); // Keep 3 months
+
       final result = await _supabase
           .from('location_data')
           .delete()
@@ -416,8 +445,10 @@ class DataRetentionService {
 
   Future<int> _cleanupAnalyticsData(String userId) async {
     try {
-      final cutoffDate = DateTime.now().subtract(Duration(days: 365)); // Keep 1 year
-      
+      final cutoffDate = DateTime.now().subtract(
+        Duration(days: 365),
+      ); // Keep 1 year
+
       final result = await _supabase
           .from('user_analytics')
           .delete()
@@ -432,7 +463,11 @@ class DataRetentionService {
   }
 
   /// Log cleanup action for audit purposes
-  Future<void> _logCleanupAction(String userId, String dataType, int recordsDeleted) async {
+  Future<void> _logCleanupAction(
+    String userId,
+    String dataType,
+    int recordsDeleted,
+  ) async {
     try {
       await _supabase.from('data_cleanup_audit').insert({
         'user_id': userId,
@@ -464,7 +499,9 @@ class DataRetentionService {
         'status': 'active',
       });
 
-      Logger.info('$_logTag: Grace period requested for user $userId, dataType $dataType');
+      Logger.info(
+        '$_logTag: Grace period requested for user $userId, dataType $dataType',
+      );
     } catch (e) {
       Logger.error('$_logTag: Error requesting grace period', e);
       throw DataRetentionException('Failed to request grace period: $e');
@@ -521,9 +558,10 @@ class UserRetentionPolicy {
   });
 
   factory UserRetentionPolicy.fromJson(Map<String, dynamic> json) {
-    final policiesMap = (json['policies'] as Map<String, dynamic>)
-        .map((key, value) => MapEntry(key, Duration(days: value as int)));
-    
+    final policiesMap = (json['policies'] as Map<String, dynamic>).map(
+      (key, value) => MapEntry(key, Duration(days: value as int)),
+    );
+
     return UserRetentionPolicy(
       userId: json['user_id'],
       policies: policiesMap,
@@ -569,9 +607,10 @@ class DataRetentionException implements Exception {
   final String? code;
 
   DataRetentionException(this.message, {this.code});
-  
+
   @override
-  String toString() => 'DataRetentionException: $message${code != null ? ' (Code: $code)' : ''}';
+  String toString() =>
+      'DataRetentionException: $message${code != null ? ' (Code: $code)' : ''}';
 }
 
 /// Provider for data retention service

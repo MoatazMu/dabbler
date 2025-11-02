@@ -77,10 +77,10 @@ class SportConfiguration {
   List<Duration> get durationOptions {
     final base = suggestedDuration.inMinutes;
     return [
-      Duration(minutes: (base * 0.75).round()),  // 75% of suggested
-      suggestedDuration,                         // Suggested duration
-      Duration(minutes: (base * 1.25).round()),  // 125% of suggested
-      Duration(minutes: (base * 1.5).round()),   // 150% of suggested
+      Duration(minutes: (base * 0.75).round()), // 75% of suggested
+      suggestedDuration, // Suggested duration
+      Duration(minutes: (base * 1.25).round()), // 125% of suggested
+      Duration(minutes: (base * 1.5).round()), // 150% of suggested
     ];
   }
 
@@ -124,10 +124,10 @@ class SportsConstants {
       idealPlayers: 10,
       positions: [
         'Point Guard',
-        'Shooting Guard', 
+        'Shooting Guard',
         'Small Forward',
         'Power Forward',
-        'Center'
+        'Center',
       ],
       scoringSystem: ScoringSystem.points,
       equipmentNeeded: ['Basketball', 'Court'],
@@ -155,16 +155,16 @@ class SportsConstants {
       minPlayers: 6,
       maxPlayers: 22,
       idealPlayers: 22,
-      positions: [
-        'Goalkeeper',
-        'Defender',
-        'Midfielder',
-        'Forward',
-        'Striker'
-      ],
+      positions: ['Goalkeeper', 'Defender', 'Midfielder', 'Forward', 'Striker'],
       scoringSystem: ScoringSystem.goals,
       equipmentNeeded: ['Soccer Ball', 'Goals', 'Cones'],
-      skillLevels: ['Beginner', 'Recreational', 'Intermediate', 'Competitive', 'Advanced'],
+      skillLevels: [
+        'Beginner',
+        'Recreational',
+        'Intermediate',
+        'Competitive',
+        'Advanced',
+      ],
       gameRules: [
         'Two teams of 11 players each (can be modified)',
         'Score by getting ball into opponent\'s goal',
@@ -221,7 +221,7 @@ class SportsConstants {
         'Opposite Hitter',
         'Setter',
         'Libero',
-        'Defensive Specialist'
+        'Defensive Specialist',
       ],
       scoringSystem: ScoringSystem.points,
       equipmentNeeded: ['Volleyball', 'Net'],
@@ -327,7 +327,12 @@ class SportsConstants {
       positions: ['Golfer'],
       scoringSystem: ScoringSystem.points,
       equipmentNeeded: ['Golf Clubs', 'Golf Balls', 'Tees'],
-      skillLevels: ['Beginner', 'High Handicap', 'Mid Handicap', 'Low Handicap'],
+      skillLevels: [
+        'Beginner',
+        'High Handicap',
+        'Mid Handicap',
+        'Low Handicap',
+      ],
       gameRules: [
         'Play 18 holes (or 9 holes)',
         'Lowest score wins',
@@ -522,7 +527,7 @@ class SportsConstants {
   /// Get default skill levels
   static List<String> get defaultSkillLevels => [
     'Beginner',
-    'Recreational', 
+    'Recreational',
     'Intermediate',
     'Competitive',
     'Advanced',
@@ -550,7 +555,7 @@ class SportsConstants {
   static bool isValidSkillLevel(SportType sport, String skillLevel) {
     final config = configurations[sport];
     if (config == null) return false;
-    
+
     return config.skillLevels.any(
       (level) => level.toLowerCase() == skillLevel.toLowerCase(),
     );
@@ -562,7 +567,7 @@ class SportsConstants {
     if (config == null) return const Duration(hours: 1);
 
     final baseDuration = config.suggestedDuration;
-    
+
     // Adjust based on skill level
     switch (skillLevel.toLowerCase()) {
       case 'beginner':

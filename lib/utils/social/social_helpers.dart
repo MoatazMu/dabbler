@@ -32,31 +32,52 @@ class SocialHelpers {
 
   /// Extract mentions from text (@username format)
   static List<String> extractMentions(String text) {
-    final mentionRegex = RegExp(SocialConstants.mentionPattern, caseSensitive: false);
+    final mentionRegex = RegExp(
+      SocialConstants.mentionPattern,
+      caseSensitive: false,
+    );
     final matches = mentionRegex.allMatches(text);
-    return matches.map((match) => match.group(1)!.toLowerCase()).toSet().toList();
+    return matches
+        .map((match) => match.group(1)!.toLowerCase())
+        .toSet()
+        .toList();
   }
 
   /// Extract hashtags from text (#hashtag format)
   static List<String> extractHashtags(String text) {
-    final hashtagRegex = RegExp(SocialConstants.hashtagPattern, caseSensitive: false);
+    final hashtagRegex = RegExp(
+      SocialConstants.hashtagPattern,
+      caseSensitive: false,
+    );
     final matches = hashtagRegex.allMatches(text);
-    return matches.map((match) => match.group(1)!.toLowerCase()).toSet().toList();
+    return matches
+        .map((match) => match.group(1)!.toLowerCase())
+        .toSet()
+        .toList();
   }
 
   /// Generate share text for a post
-  static String generateShareText(String postContent, String authorName, {String? appName}) {
+  static String generateShareText(
+    String postContent,
+    String authorName, {
+    String? appName,
+  }) {
     final cleanContent = _cleanTextForSharing(postContent);
-    final shortContent = cleanContent.length > 100 
-        ? '${cleanContent.substring(0, 100)}...' 
+    final shortContent = cleanContent.length > 100
+        ? '${cleanContent.substring(0, 100)}...'
         : cleanContent;
-    
+
     final app = appName ?? 'Dabbler';
     return 'Check out this post by $authorName on $app:\n\n"$shortContent"\n\nJoin the conversation!';
   }
 
   /// Calculate engagement rate (likes + comments + shares) / views
-  static double calculateEngagementRate(int likes, int comments, int shares, int views) {
+  static double calculateEngagementRate(
+    int likes,
+    int comments,
+    int shares,
+    int views,
+  ) {
     if (views == 0) return 0.0;
     final totalEngagement = likes + comments + shares;
     return (totalEngagement / views) * 100; // Return as percentage
@@ -87,19 +108,25 @@ class SocialHelpers {
     if (content.isEmpty) {
       errors.add('Post content cannot be empty');
     } else if (content.length > SocialConstants.maxPostLength) {
-      errors.add('Post content exceeds ${SocialConstants.maxPostLength} characters');
+      errors.add(
+        'Post content exceeds ${SocialConstants.maxPostLength} characters',
+      );
     }
 
     // Check mentions
     final mentions = extractMentions(content);
     if (mentions.length > SocialConstants.maxMentionsPerPost) {
-      errors.add('Too many mentions (max ${SocialConstants.maxMentionsPerPost})');
+      errors.add(
+        'Too many mentions (max ${SocialConstants.maxMentionsPerPost})',
+      );
     }
 
     // Check hashtags
     final hashtags = extractHashtags(content);
     if (hashtags.length > SocialConstants.maxHashtagsPerPost) {
-      warnings.add('Many hashtags may reduce visibility (${hashtags.length}/${SocialConstants.maxHashtagsPerPost})');
+      warnings.add(
+        'Many hashtags may reduce visibility (${hashtags.length}/${SocialConstants.maxHashtagsPerPost})',
+      );
     }
 
     // Check for URLs
@@ -110,7 +137,10 @@ class SocialHelpers {
     }
 
     // Check for excessive caps
-    final capsCount = content.split('').where((c) => c == c.toUpperCase() && c != c.toLowerCase()).length;
+    final capsCount = content
+        .split('')
+        .where((c) => c == c.toUpperCase() && c != c.toLowerCase())
+        .length;
     final capsPercentage = capsCount / content.length;
     if (capsPercentage > 0.7 && content.length > 10) {
       warnings.add('Excessive capitalization may reduce engagement');
@@ -128,14 +158,19 @@ class SocialHelpers {
   }
 
   /// Generate trending score based on engagement and time
-  static double calculateTrendingScore(int likes, int comments, int shares, DateTime postTime) {
+  static double calculateTrendingScore(
+    int likes,
+    int comments,
+    int shares,
+    DateTime postTime,
+  ) {
     final now = DateTime.now();
     final ageInHours = now.difference(postTime).inHours.toDouble();
-    
+
     // Engagement weight decreases over time
     final timeDecay = math.exp(-ageInHours / 24); // Half-life of 24 hours
     final engagementScore = (likes * 1.0) + (comments * 2.0) + (shares * 3.0);
-    
+
     return engagementScore * timeDecay;
   }
 
@@ -145,20 +180,20 @@ class SocialHelpers {
     // For now, just basic checks
     final inappropriateWords = ['spam', 'scam', 'fake', 'hate'];
     final lowerContent = content.toLowerCase();
-    
+
     return inappropriateWords.any((word) => lowerContent.contains(word));
   }
 
   /// Generate content preview for notifications/sharing
   static String generateContentPreview(String content, {int maxLength = 100}) {
     if (content.length <= maxLength) return content;
-    
+
     // Try to cut at word boundary
     final cutPoint = content.lastIndexOf(' ', maxLength);
     if (cutPoint > maxLength * 0.7) {
       return '${content.substring(0, cutPoint)}...';
     }
-    
+
     return '${content.substring(0, maxLength)}...';
   }
 
@@ -167,7 +202,7 @@ class SocialHelpers {
     const wordsPerMinute = 200;
     final wordCount = _countWords(content);
     final minutes = (wordCount / wordsPerMinute).ceil();
-    
+
     if (minutes < 1) return 'Less than 1 min read';
     if (minutes == 1) return '1 min read';
     return '$minutes min read';
@@ -176,13 +211,33 @@ class SocialHelpers {
   /// Get content sentiment (positive, neutral, negative)
   static ContentSentiment analyzeSentiment(String content) {
     // Simple sentiment analysis - in production, use ML service
-    final positiveWords = ['great', 'awesome', 'love', 'amazing', 'fantastic', 'wonderful', 'excellent'];
-    final negativeWords = ['hate', 'terrible', 'awful', 'bad', 'worst', 'horrible', 'disgusting'];
-    
+    final positiveWords = [
+      'great',
+      'awesome',
+      'love',
+      'amazing',
+      'fantastic',
+      'wonderful',
+      'excellent',
+    ];
+    final negativeWords = [
+      'hate',
+      'terrible',
+      'awful',
+      'bad',
+      'worst',
+      'horrible',
+      'disgusting',
+    ];
+
     final lowerContent = content.toLowerCase();
-    final positiveCount = positiveWords.where((word) => lowerContent.contains(word)).length;
-    final negativeCount = negativeWords.where((word) => lowerContent.contains(word)).length;
-    
+    final positiveCount = positiveWords
+        .where((word) => lowerContent.contains(word))
+        .length;
+    final negativeCount = negativeWords
+        .where((word) => lowerContent.contains(word))
+        .length;
+
     if (positiveCount > negativeCount) return ContentSentiment.positive;
     if (negativeCount > positiveCount) return ContentSentiment.negative;
     return ContentSentiment.neutral;
@@ -225,18 +280,14 @@ class PostValidationResult {
 }
 
 /// Content sentiment analysis result
-enum ContentSentiment {
-  positive,
-  neutral,
-  negative,
-}
+enum ContentSentiment { positive, neutral, negative }
 
 /// Engagement level based on metrics
 enum EngagementLevel {
-  low,    // < 1%
+  low, // < 1%
   medium, // 1-5%
-  high,   // 5-10%
-  viral,  // > 10%
+  high, // 5-10%
+  viral, // > 10%
 }
 
 extension EngagementLevelExtension on EngagementLevel {

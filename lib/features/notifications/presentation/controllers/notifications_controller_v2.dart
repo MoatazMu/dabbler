@@ -51,49 +51,53 @@ class NotificationsController extends StateNotifier<NotificationsState> {
   NotificationsController({
     required NotificationsRepository repository,
     required String userId,
-  })  : _repository = repository,
-        _userId = userId,
-        super(const NotificationsState()) {
+  }) : _repository = repository,
+       _userId = userId,
+       super(const NotificationsState()) {
     _init();
   }
 
   void _init() {
     // Load initial notifications
     loadNotifications();
-    
+
     // Subscribe to realtime updates
-    _realtimeSub = _repository.subscribeUserNotifications(_userId).listen(
-      (notification) {
-        // Handle INSERT: prepend new notification
-        if (!state.notifications.any((item) => item.id == notification.id)) {
-          final updatedList = [notification, ...state.notifications];
-          final unreadCount = updatedList.where((n) => !n.isRead).length;
-          
-          state = state.copyWith(
-            notifications: updatedList,
-            unreadCount: unreadCount,
-          );
-        } else {
-          // Handle UPDATE: patch existing item
-          final index = state.notifications.indexWhere(
-            (item) => item.id == notification.id,
-          );
-          if (index != -1) {
-            final updatedList = [...state.notifications];
-            updatedList[index] = notification;
-            final unreadCount = updatedList.where((n) => !n.isRead).length;
-            
-            state = state.copyWith(
-              notifications: updatedList,
-              unreadCount: unreadCount,
-            );
-          }
-        }
-      },
-      onError: (error) {
-        state = state.copyWith(error: error.toString());
-      },
-    );
+    _realtimeSub = _repository
+        .subscribeUserNotifications(_userId)
+        .listen(
+          (notification) {
+            // Handle INSERT: prepend new notification
+            if (!state.notifications.any(
+              (item) => item.id == notification.id,
+            )) {
+              final updatedList = [notification, ...state.notifications];
+              final unreadCount = updatedList.where((n) => !n.isRead).length;
+
+              state = state.copyWith(
+                notifications: updatedList,
+                unreadCount: unreadCount,
+              );
+            } else {
+              // Handle UPDATE: patch existing item
+              final index = state.notifications.indexWhere(
+                (item) => item.id == notification.id,
+              );
+              if (index != -1) {
+                final updatedList = [...state.notifications];
+                updatedList[index] = notification;
+                final unreadCount = updatedList.where((n) => !n.isRead).length;
+
+                state = state.copyWith(
+                  notifications: updatedList,
+                  unreadCount: unreadCount,
+                );
+              }
+            }
+          },
+          onError: (error) {
+            state = state.copyWith(error: error.toString());
+          },
+        );
   }
 
   /// Load notifications (initial or refresh)
@@ -114,16 +118,13 @@ class NotificationsController extends StateNotifier<NotificationsState> {
       );
 
       if (notifications.isEmpty) {
-        state = state.copyWith(
-          isLoading: false,
-          hasMore: false,
-        );
+        state = state.copyWith(isLoading: false, hasMore: false);
       } else {
-        final updatedList = refresh 
-            ? notifications 
+        final updatedList = refresh
+            ? notifications
             : [...state.notifications, ...notifications];
         final unreadCount = updatedList.where((n) => !n.isRead).length;
-        
+
         state = state.copyWith(
           notifications: updatedList,
           cursor: notifications.last.cursor,
@@ -134,10 +135,7 @@ class NotificationsController extends StateNotifier<NotificationsState> {
         );
       }
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -176,13 +174,13 @@ class NotificationsController extends StateNotifier<NotificationsState> {
   Future<void> deleteNotification(String notificationId) async {
     try {
       await _repository.delete(notificationId: notificationId);
-      
+
       // Remove from local state
       final updatedList = state.notifications
           .where((n) => n.id != notificationId)
           .toList();
       final unreadCount = updatedList.where((n) => !n.isRead).length;
-      
+
       state = state.copyWith(
         notifications: updatedList,
         unreadCount: unreadCount,

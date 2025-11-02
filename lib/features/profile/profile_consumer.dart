@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/errors/failure.dart';
-import '../../data/models/profile.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/profile.dart';
 import 'providers.dart';
 
 class ProfileConsumer extends ConsumerWidget {

@@ -12,12 +12,12 @@ class SocialConstants {
   static const int maxMentionsPerPost = 10;
   static const int maxHashtagsPerPost = 10;
   static const int maxEmojisPerPost = 50;
-  
+
   static const List<String> allowedMediaTypes = [
     'image/jpeg',
     'image/png',
     'image/webp',
-    'video/mp4'
+    'video/mp4',
   ];
 
   // Comment constants
@@ -54,7 +54,7 @@ class SocialConstants {
     'celebrate',
     'support',
     'funny',
-    'wow'
+    'wow',
   ];
 
   // Search and pagination constants
@@ -82,7 +82,8 @@ class SocialConstants {
   static const double cardElevation = 2.0;
 
   // Feed constants
-  static const int feedRefreshThreshold = 10; // Load more when 10 items from bottom
+  static const int feedRefreshThreshold =
+      10; // Load more when 10 items from bottom
   static const Duration feedRefreshCooldown = Duration(minutes: 1);
   static const int maxFeedItems = 500; // Maximum items to keep in memory
 
@@ -107,7 +108,7 @@ class SocialConstants {
     'social',
     'gaming',
     'milestone',
-    'special'
+    'special',
   ];
 
   // Content moderation constants

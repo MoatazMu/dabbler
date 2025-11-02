@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/types/result.dart';
-import '../../data/models/profile.dart';
+import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/data/models/profile.dart';
 import '../../data/repositories/profiles_repository.dart';
 import '../../data/repositories/profiles_repository_impl.dart';
-import '../../services/supabase/supabase_service.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 
 final profilesRepositoryProvider = Provider<ProfilesRepository>((ref) {
   final svc = ref.watch(supabaseServiceProvider);

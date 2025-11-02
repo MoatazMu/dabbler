@@ -3,13 +3,7 @@ import '../../../../../themes/app_colors.dart';
 import '../../../../../themes/app_text_styles.dart';
 
 /// Message delivery status types
-enum MessageStatus {
-  sending,
-  sent,
-  delivered,
-  read,
-  failed,
-}
+enum MessageStatus { sending, sent, delivered, read, failed }
 
 /// A widget for displaying message status indicators
 /// including sent, delivered, read, and failed states
@@ -54,7 +48,7 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
   @override
   void didUpdateWidget(MessageStatusIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Start or stop animations based on status
     if (widget.status != oldWidget.status) {
       if (widget.status == 'sending' && widget.animateSending) {
@@ -71,22 +65,14 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.linear,
-    ));
 
-    _pulseAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    _rotationAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.linear),
+    );
+
+    _pulseAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
 
     // Start animation if status is sending
     if (widget.status == 'sending' && widget.animateSending) {
@@ -119,7 +105,7 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
 
   Color _getStatusColor() {
     if (widget.color != null) return widget.color!;
-    
+
     switch (_messageStatus) {
       case MessageStatus.sending:
         return AppColors.textSecondary;
@@ -163,10 +149,7 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
         builder: (context, child) {
           return Transform.rotate(
             angle: _rotationAnimation.value * 2 * 3.14159,
-            child: Transform.scale(
-              scale: _pulseAnimation.value,
-              child: icon,
-            ),
+            child: Transform.scale(scale: _pulseAnimation.value, child: icon),
           );
         },
       );
@@ -195,8 +178,8 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
       mainAxisSize: MainAxisSize.min,
       children: [
         _buildStatusIcon(),
-        if (widget.showReadCount && 
-            _messageStatus == MessageStatus.read && 
+        if (widget.showReadCount &&
+            _messageStatus == MessageStatus.read &&
             widget.readCount > 0) ...[
           const SizedBox(width: 4),
           _buildReadCount(),
@@ -215,19 +198,12 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
           decoration: BoxDecoration(
             color: Colors.red.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: Colors.red.withOpacity(0.3),
-              width: 1,
-            ),
+            border: Border.all(color: Colors.red.withOpacity(0.3), width: 1),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.error_outline,
-                size: widget.size,
-                color: Colors.red,
-              ),
+              Icon(Icons.error_outline, size: widget.size, color: Colors.red),
               const SizedBox(width: 4),
               Text(
                 'Retry',
@@ -306,13 +282,12 @@ class DetailedMessageStatusIndicator extends StatefulWidget {
   });
 
   @override
-  State<DetailedMessageStatusIndicator> createState() => 
+  State<DetailedMessageStatusIndicator> createState() =>
       _DetailedMessageStatusIndicatorState();
 }
 
-class _DetailedMessageStatusIndicatorState 
+class _DetailedMessageStatusIndicatorState
     extends State<DetailedMessageStatusIndicator> {
-
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -335,12 +310,15 @@ class _DetailedMessageStatusIndicatorState
   Widget _buildReadByAvatars() {
     final visibleAvatars = widget.readByAvatars.take(3).toList();
     final remainingCount = widget.readByAvatars.length - 3;
-    
+
     return GestureDetector(
       onTap: widget.onViewReadBy,
       child: SizedBox(
         height: widget.size + 4,
-        width: _calculateAvatarStackWidth(visibleAvatars.length, remainingCount > 0),
+        width: _calculateAvatarStackWidth(
+          visibleAvatars.length,
+          remainingCount > 0,
+        ),
         child: Stack(
           children: [
             // Stack avatars
@@ -348,7 +326,7 @@ class _DetailedMessageStatusIndicatorState
               final index = entry.key;
               final avatarUrl = entry.value;
               final leftOffset = index * (widget.size * 0.7);
-              
+
               return Positioned(
                 left: leftOffset,
                 child: Container(
@@ -363,11 +341,11 @@ class _DetailedMessageStatusIndicatorState
                   ),
                   child: CircleAvatar(
                     radius: widget.size / 2,
-                    backgroundImage: avatarUrl.isNotEmpty 
-                        ? NetworkImage(avatarUrl) 
+                    backgroundImage: avatarUrl.isNotEmpty
+                        ? NetworkImage(avatarUrl)
                         : null,
                     backgroundColor: AppColors.surfaceVariant,
-                    child: avatarUrl.isEmpty 
+                    child: avatarUrl.isEmpty
                         ? Icon(
                             Icons.person,
                             size: widget.size * 0.6,
@@ -378,7 +356,7 @@ class _DetailedMessageStatusIndicatorState
                 ),
               );
             }),
-            
+
             // "+X more" indicator
             if (remainingCount > 0)
               Positioned(
@@ -450,15 +428,15 @@ class TooltipMessageStatusIndicator extends StatelessWidget {
       case 'sending':
         return 'Sending message...';
       case 'sent':
-        return sentAt != null 
+        return sentAt != null
             ? 'Sent at ${_formatTime(sentAt!)}'
             : 'Message sent';
       case 'delivered':
-        return deliveredAt != null 
+        return deliveredAt != null
             ? 'Delivered at ${_formatTime(deliveredAt!)}'
             : 'Message delivered';
       case 'read':
-        String text = readAt != null 
+        String text = readAt != null
             ? 'Read at ${_formatTime(readAt!)}'
             : 'Message read';
         if (readByUsers.isNotEmpty) {
@@ -475,7 +453,7 @@ class TooltipMessageStatusIndicator extends StatelessWidget {
   String _formatTime(DateTime time) {
     final now = DateTime.now();
     final difference = now.difference(time);
-    
+
     if (difference.inMinutes < 1) {
       return 'just now';
     } else if (difference.inHours < 1) {
@@ -519,11 +497,11 @@ class AnimatedMessageStatusIndicator extends StatefulWidget {
   });
 
   @override
-  State<AnimatedMessageStatusIndicator> createState() => 
+  State<AnimatedMessageStatusIndicator> createState() =>
       _AnimatedMessageStatusIndicatorState();
 }
 
-class _AnimatedMessageStatusIndicatorState 
+class _AnimatedMessageStatusIndicatorState
     extends State<AnimatedMessageStatusIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
@@ -536,22 +514,19 @@ class _AnimatedMessageStatusIndicatorState
       duration: widget.transitionDuration,
       vsync: this,
     );
-    
+
     _scaleAnimation = Tween<double>(
       begin: 0.5,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.elasticOut,
-    ));
-    
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+
     _controller.forward();
   }
 
   @override
   void didUpdateWidget(AnimatedMessageStatusIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Animate when status changes
     if (widget.status != oldWidget.status) {
       _controller.reset();

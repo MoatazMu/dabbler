@@ -36,14 +36,17 @@ class LocationService extends ChangeNotifier {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
       }
-      if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) {
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
         _permissionDenied = true;
         _isLoading = false;
         notifyListeners();
         return;
       }
       _permissionDenied = false;
-      _currentPosition = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      _currentPosition = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high,
+      );
       await _reverseGeocode(_currentPosition!);
       await _cacheLocation(_currentPosition!, _currentArea);
     } catch (e) {
@@ -57,16 +60,19 @@ class LocationService extends ChangeNotifier {
 
   Future<void> _reverseGeocode(Position position) async {
     try {
-      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      List<Placemark> placemarks = await placemarkFromCoordinates(
+        position.latitude,
+        position.longitude,
+      );
       if (placemarks.isNotEmpty) {
         final placemark = placemarks.first;
         _currentArea = placemark.subLocality?.isNotEmpty == true
             ? placemark.subLocality
             : placemark.locality?.isNotEmpty == true
-                ? placemark.locality
-                : placemark.administrativeArea?.isNotEmpty == true
-                    ? placemark.administrativeArea
-                    : placemark.country;
+            ? placemark.locality
+            : placemark.administrativeArea?.isNotEmpty == true
+            ? placemark.administrativeArea
+            : placemark.country;
       } else {
         _currentArea = null;
       }
@@ -115,7 +121,8 @@ class LocationService extends ChangeNotifier {
 
   Future<void> setManualLocation(String area) async {
     _currentArea = area;
-    _permissionDenied = false; // Reset permission denied if user sets location manually
+    _permissionDenied =
+        false; // Reset permission denied if user sets location manually
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_cachedAreaKey, area);
     notifyListeners();
@@ -130,4 +137,4 @@ class LocationService extends ChangeNotifier {
     _currentPosition = null;
     notifyListeners();
   }
-} 
+}

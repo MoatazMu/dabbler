@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../utils/enums/social_enums.dart'; // For MessageType enum
-import '../../domain/entities/post.dart';
-import '../../data/models/conversation_model.dart';
-import '../../data/models/chat_message_model.dart';
+import 'package:dabbler/data/models/social/post.dart';
+import 'package:dabbler/data/models/social/conversation_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
 
 /// State for chat management
 class ChatState {
@@ -61,7 +61,8 @@ class ChatState {
       .toList();
 
   /// Total unread count across all conversations
-  int get totalUnreadCount => unreadCounts.values.fold(0, (sum, count) => sum + count);
+  int get totalUnreadCount =>
+      unreadCounts.values.fold(0, (sum, count) => sum + count);
 
   ChatState copyWith({
     List<ConversationModel>? conversations,
@@ -83,18 +84,23 @@ class ChatState {
   }) {
     return ChatState(
       conversations: conversations ?? this.conversations,
-      filteredConversations: filteredConversations ?? this.filteredConversations,
+      filteredConversations:
+          filteredConversations ?? this.filteredConversations,
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
-      isLoadingConversations: isLoadingConversations ?? this.isLoadingConversations,
+      isLoadingConversations:
+          isLoadingConversations ?? this.isLoadingConversations,
       isLoadingMessages: isLoadingMessages ?? this.isLoadingMessages,
-      isLoadingMoreMessages: isLoadingMoreMessages ?? this.isLoadingMoreMessages,
+      isLoadingMoreMessages:
+          isLoadingMoreMessages ?? this.isLoadingMoreMessages,
       isSendingMessage: isSendingMessage ?? this.isSendingMessage,
       error: error ?? this.error,
       searchQuery: searchQuery ?? this.searchQuery,
       unreadCounts: unreadCounts ?? this.unreadCounts,
-      pinnedConversationIds: pinnedConversationIds ?? this.pinnedConversationIds,
-      archivedConversationIds: archivedConversationIds ?? this.archivedConversationIds,
+      pinnedConversationIds:
+          pinnedConversationIds ?? this.pinnedConversationIds,
+      archivedConversationIds:
+          archivedConversationIds ?? this.archivedConversationIds,
       activeConversation: activeConversation ?? this.activeConversation,
       isTypingSomeone: isTypingSomeone ?? this.isTypingSomeone,
       typingUsers: typingUsers ?? this.typingUsers,
@@ -132,13 +138,7 @@ class TypingIndicator {
 }
 
 /// Message delivery status
-enum MessageDeliveryStatus {
-  sending,
-  sent,
-  delivered,
-  read,
-  failed,
-}
+enum MessageDeliveryStatus { sending, sent, delivered, read, failed }
 
 /// Controller for managing chat state and operations
 class ChatController extends StateNotifier<ChatState> {
@@ -153,7 +153,7 @@ class ChatController extends StateNotifier<ChatState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Mock conversations for now
       final conversations = _generateMockConversations();
       final unreadCounts = _generateMockUnreadCounts(conversations);
@@ -169,10 +169,7 @@ class ChatController extends StateNotifier<ChatState> {
         archivedConversationIds: archivedIds,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -185,19 +182,13 @@ class ChatController extends StateNotifier<ChatState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Mock messages for now
       final messages = _generateMockMessages(conversationId);
-      
-      state = state.copyWith(
-        messages: messages,
-        isLoadingMessages: false,
-      );
+
+      state = state.copyWith(messages: messages, isLoadingMessages: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoadingMessages: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoadingMessages: false, error: e.toString());
     }
   }
 
@@ -210,20 +201,17 @@ class ChatController extends StateNotifier<ChatState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Mock older messages for now
       final olderMessages = _generateMockOlderMessages(conversationId);
       final allMessages = [...olderMessages, ...state.messages];
-      
+
       state = state.copyWith(
         messages: allMessages,
         isLoadingMoreMessages: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoadingMoreMessages: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoadingMoreMessages: false, error: e.toString());
     }
   }
 
@@ -239,7 +227,7 @@ class ChatController extends StateNotifier<ChatState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
       // Create new message
       final newMessage = ChatMessageModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -248,27 +236,26 @@ class ChatController extends StateNotifier<ChatState> {
         content: content,
         sentAt: DateTime.now(),
         messageType: MessageType.text,
-        replyTo: replyToId != null ? ReplyReference(
-          messageId: replyToId,
-          senderId: 'current_user',
-          senderName: 'Current User',
-          content: 'Reply to message',
-          messageType: MessageType.text,
-        ) : null,
+        replyTo: replyToId != null
+            ? ReplyReference(
+                messageId: replyToId,
+                senderId: 'current_user',
+                senderName: 'Current User',
+                content: 'Reply to message',
+                messageType: MessageType.text,
+              )
+            : null,
       );
-      
+
       // Add to messages list
       final updatedMessages = [newMessage, ...state.messages];
-      
+
       state = state.copyWith(
         messages: updatedMessages,
         isSendingMessage: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isSendingMessage: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isSendingMessage: false, error: e.toString());
     }
   }
 
@@ -284,7 +271,7 @@ class ChatController extends StateNotifier<ChatState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
       // Create new voice message
       final newMessage = ChatMessageModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -293,13 +280,15 @@ class ChatController extends StateNotifier<ChatState> {
         content: 'Voice message',
         sentAt: DateTime.now(),
         messageType: MessageType.audio,
-        replyTo: replyToId != null ? ReplyReference(
-          messageId: replyToId,
-          senderId: 'current_user',
-          senderName: 'Current User',
-          content: 'Reply to message',
-          messageType: MessageType.text,
-        ) : null,
+        replyTo: replyToId != null
+            ? ReplyReference(
+                messageId: replyToId,
+                senderId: 'current_user',
+                senderName: 'Current User',
+                content: 'Reply to message',
+                messageType: MessageType.text,
+              )
+            : null,
         mediaAttachments: [
           MediaAttachment(
             id: DateTime.now().millisecondsSinceEpoch.toString(),
@@ -311,19 +300,16 @@ class ChatController extends StateNotifier<ChatState> {
           ),
         ],
       );
-      
+
       // Add to messages list
       final updatedMessages = [newMessage, ...state.messages];
-      
+
       state = state.copyWith(
         messages: updatedMessages,
         isSendingMessage: false,
       );
     } catch (e) {
-      state = state.copyWith(
-        isSendingMessage: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isSendingMessage: false, error: e.toString());
     }
   }
 
@@ -394,7 +380,9 @@ class ChatController extends StateNotifier<ChatState> {
 
   /// Delete a message
   void deleteMessage(String messageId) {
-    final updatedMessages = state.messages.where((m) => m.id != messageId).toList();
+    final updatedMessages = state.messages
+        .where((m) => m.id != messageId)
+        .toList();
     state = state.copyWith(messages: updatedMessages);
   }
 
@@ -418,21 +406,18 @@ class ChatController extends StateNotifier<ChatState> {
     final filtered = state.conversations.where((conv) {
       final searchLower = query.toLowerCase();
       return (conv.name?.toLowerCase().contains(searchLower) ?? false) ||
-             conv.participants.any((user) => 
-               user.name.toLowerCase().contains(searchLower)
-             );
+          conv.participants.any(
+            (user) => user.name.toLowerCase().contains(searchLower),
+          );
     }).toList();
 
-    state = state.copyWith(
-      searchQuery: query,
-      filteredConversations: filtered,
-    );
+    state = state.copyWith(searchQuery: query, filteredConversations: filtered);
   }
 
   /// Pin/unpin conversation
   void togglePinConversation(String conversationId) {
     final pinnedIds = List<String>.from(state.pinnedConversationIds);
-    
+
     if (pinnedIds.contains(conversationId)) {
       pinnedIds.remove(conversationId);
     } else {
@@ -445,7 +430,7 @@ class ChatController extends StateNotifier<ChatState> {
   /// Archive/unarchive conversation
   void toggleArchiveConversation(String conversationId) {
     final archivedIds = List<String>.from(state.archivedConversationIds);
-    
+
     if (archivedIds.contains(conversationId)) {
       archivedIds.remove(conversationId);
     } else {
@@ -541,7 +526,7 @@ class ChatController extends StateNotifier<ChatState> {
       (conv) => conv.id == conversationId,
       orElse: () => throw Exception('Conversation not found'),
     );
-    
+
     state = state.copyWith(activeConversation: conversation);
   }
 
@@ -552,43 +537,58 @@ class ChatController extends StateNotifier<ChatState> {
   }
 
   /// Update conversation name
-  Future<void> updateConversationName(String conversationId, String name) async {
+  Future<void> updateConversationName(
+    String conversationId,
+    String name,
+  ) async {
     final conversations = state.conversations.map((conv) {
       if (conv.id == conversationId) {
         return conv.copyWith(name: name);
       }
       return conv;
     }).toList();
-    
+
     state = state.copyWith(conversations: conversations);
   }
 
   /// Update conversation description
-  Future<void> updateConversationDescription(String conversationId, String description) async {
+  Future<void> updateConversationDescription(
+    String conversationId,
+    String description,
+  ) async {
     final conversations = state.conversations.map((conv) {
       if (conv.id == conversationId) {
         return conv.copyWith(description: description);
       }
       return conv;
     }).toList();
-    
+
     state = state.copyWith(conversations: conversations);
   }
 
   /// Make participant admin
-  Future<void> makeParticipantAdmin(String conversationId, String participantId) async {
+  Future<void> makeParticipantAdmin(
+    String conversationId,
+    String participantId,
+  ) async {
     // Stub implementation
     // This would update participant roles in the conversation
   }
 
   /// Remove participant admin
-  Future<void> removeParticipantAdmin(String conversationId, String participantId) async {
+  Future<void> removeParticipantAdmin(
+    String conversationId,
+    String participantId,
+  ) async {
     // Stub implementation
     // This would update participant roles in the conversation
   }
 
   /// Remove participant
-  Future<void> removeParticipant(String conversationId, String participantId) async {
+  Future<void> removeParticipant(
+    String conversationId,
+    String participantId,
+  ) async {
     // Stub implementation
     // This would remove participant from the conversation
   }
@@ -606,13 +606,19 @@ class ChatController extends StateNotifier<ChatState> {
   }
 
   /// Update read receipts enabled
-  Future<void> updateReadReceiptsEnabled(String conversationId, bool enabled) async {
+  Future<void> updateReadReceiptsEnabled(
+    String conversationId,
+    bool enabled,
+  ) async {
     // Stub implementation
     // This would update conversation settings
   }
 
   /// Update member invites enabled
-  Future<void> updateMemberInvitesEnabled(String conversationId, bool enabled) async {
+  Future<void> updateMemberInvitesEnabled(
+    String conversationId,
+    bool enabled,
+  ) async {
     // Stub implementation
     // This would update conversation settings
   }
@@ -629,7 +635,7 @@ class ChatController extends StateNotifier<ChatState> {
     final conversations = state.conversations
         .where((conv) => conv.id != conversationId)
         .toList();
-    
+
     state = state.copyWith(conversations: conversations);
   }
 
@@ -638,7 +644,7 @@ class ChatController extends StateNotifier<ChatState> {
     final conversations = state.conversations
         .where((conv) => conv.id != conversationId)
         .toList();
-    
+
     state = state.copyWith(conversations: conversations);
   }
 
@@ -663,7 +669,8 @@ class ChatController extends StateNotifier<ChatState> {
         id: 'msg_${index + 1}',
         conversationId: conversationId,
         senderId: participants.first.id,
-        content: 'This is the last message in conversation ${index + 1}. It contains some sample text to demonstrate the chat functionality.',
+        content:
+            'This is the last message in conversation ${index + 1}. It contains some sample text to demonstrate the chat functionality.',
         sentAt: DateTime.now().subtract(Duration(hours: index)),
         messageType: MessageType.text,
       );
@@ -686,13 +693,15 @@ class ChatController extends StateNotifier<ChatState> {
   }
 
   /// Generate mock unread counts for conversations
-  Map<String, int> _generateMockUnreadCounts(List<ConversationModel> conversations) {
+  Map<String, int> _generateMockUnreadCounts(
+    List<ConversationModel> conversations,
+  ) {
     final unreadCounts = <String, int>{};
-    
+
     for (final conv in conversations) {
       unreadCounts[conv.id] = conv.unreadCount;
     }
-    
+
     return unreadCounts;
   }
 
@@ -701,12 +710,13 @@ class ChatController extends StateNotifier<ChatState> {
     return List.generate(20, (index) {
       final isCurrentUser = index % 2 == 0;
       final senderId = isCurrentUser ? 'current_user' : 'other_user';
-      
+
       return ChatMessageModel(
         id: 'msg_${conversationId}_$index',
         conversationId: conversationId,
         senderId: senderId,
-        content: 'This is message ${index + 1} in conversation $conversationId. It contains some sample text to demonstrate the chat functionality.',
+        content:
+            'This is message ${index + 1} in conversation $conversationId. It contains some sample text to demonstrate the chat functionality.',
         sentAt: DateTime.now().subtract(Duration(minutes: index * 5)),
         messageType: MessageType.text,
       );
@@ -718,12 +728,13 @@ class ChatController extends StateNotifier<ChatState> {
     return List.generate(10, (index) {
       final isCurrentUser = index % 2 == 0;
       final senderId = isCurrentUser ? 'current_user' : 'other_user';
-      
+
       return ChatMessageModel(
         id: 'msg_${conversationId}_old_$index',
         conversationId: conversationId,
         senderId: senderId,
-        content: 'This is older message ${index + 1} in conversation $conversationId.',
+        content:
+            'This is older message ${index + 1} in conversation $conversationId.',
         sentAt: DateTime.now().subtract(Duration(hours: index + 1)),
         messageType: MessageType.text,
       );

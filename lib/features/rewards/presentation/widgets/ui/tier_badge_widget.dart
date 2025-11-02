@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 
 /// A simple tier badge widget for displaying user tiers
 class TierBadgeWidget extends StatelessWidget {
@@ -26,10 +26,7 @@ class TierBadgeWidget extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: _getTierGradient(tier),
           shape: BoxShape.circle,
-          border: Border.all(
-            color: _getTierBorderColor(tier),
-            width: 2,
-          ),
+          border: Border.all(color: _getTierBorderColor(tier), width: 2),
           boxShadow: [
             BoxShadow(
               color: _getTierColor(tier).withOpacity(0.3),
@@ -41,11 +38,7 @@ class TierBadgeWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              _getTierIcon(tier),
-              color: Colors.white,
-              size: size * 0.5,
-            ),
+            Icon(_getTierIcon(tier), color: Colors.white, size: size * 0.5),
             if (showLabel) ...[
               const SizedBox(height: 4),
               Text(

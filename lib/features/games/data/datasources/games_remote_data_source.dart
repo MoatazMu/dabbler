@@ -1,11 +1,11 @@
-import '../models/game_model.dart';
-import '../models/player_model.dart';
+import 'package:dabbler/data/models/games/game_model.dart';
+import 'package:dabbler/data/models/games/player_model.dart';
 
 // Custom exceptions for game operations
 class GameServerException implements Exception {
   final String message;
   GameServerException(this.message);
-  
+
   @override
   String toString() => message;
 }
@@ -13,7 +13,7 @@ class GameServerException implements Exception {
 class GameNotFoundException implements Exception {
   final String message;
   GameNotFoundException(this.message);
-  
+
   @override
   String toString() => message;
 }
@@ -21,7 +21,7 @@ class GameNotFoundException implements Exception {
 class GameFullException implements Exception {
   final String message;
   GameFullException(this.message);
-  
+
   @override
   String toString() => message;
 }
@@ -29,7 +29,7 @@ class GameFullException implements Exception {
 class InsufficientPlayersException implements Exception {
   final String message;
   InsufficientPlayersException(this.message);
-  
+
   @override
   String toString() => message;
 }
@@ -37,7 +37,7 @@ class InsufficientPlayersException implements Exception {
 class GameAlreadyStartedException implements Exception {
   final String message;
   GameAlreadyStartedException(this.message);
-  
+
   @override
   String toString() => message;
 }
@@ -110,10 +110,7 @@ abstract class GamesRemoteDataSource {
   });
 
   /// Gets popular/trending games
-  Future<List<GameModel>> getTrendingGames({
-    int page = 1,
-    int limit = 20,
-  });
+  Future<List<GameModel>> getTrendingGames({int page = 1, int limit = 20});
 
   /// Gets games recommended for a user
   Future<List<GameModel>> getRecommendedGames(

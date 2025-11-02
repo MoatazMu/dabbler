@@ -3,15 +3,12 @@ import 'package:flutter/material.dart';
 class SharePostBottomSheet extends StatelessWidget {
   final dynamic post;
 
-  const SharePostBottomSheet({
-    super.key,
-    this.post,
-  });
+  const SharePostBottomSheet({super.key, this.post});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -34,9 +31,9 @@ class SharePostBottomSheet extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Share options
           _buildShareOption(
             theme,
@@ -45,7 +42,7 @@ class SharePostBottomSheet extends StatelessWidget {
             subtitle: 'Copy the post link to clipboard',
             onTap: () => _copyLink(context),
           ),
-          
+
           _buildShareOption(
             theme,
             icon: Icons.share,
@@ -53,7 +50,7 @@ class SharePostBottomSheet extends StatelessWidget {
             subtitle: 'Share this post to your own feed',
             onTap: () => _shareToFeed(context),
           ),
-          
+
           _buildShareOption(
             theme,
             icon: Icons.message,
@@ -61,7 +58,7 @@ class SharePostBottomSheet extends StatelessWidget {
             subtitle: 'Send this post in a private message',
             onTap: () => _sendInMessage(context),
           ),
-          
+
           _buildShareOption(
             theme,
             icon: Icons.group,
@@ -69,7 +66,7 @@ class SharePostBottomSheet extends StatelessWidget {
             subtitle: 'Share this post to a group chat',
             onTap: () => _shareToGroup(context),
           ),
-          
+
           _buildShareOption(
             theme,
             icon: Icons.public,
@@ -77,9 +74,9 @@ class SharePostBottomSheet extends StatelessWidget {
             subtitle: 'Share to other apps',
             onTap: () => _shareExternally(context),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Cancel button
           SizedBox(
             width: double.infinity,
@@ -107,10 +104,7 @@ class SharePostBottomSheet extends StatelessWidget {
           color: theme.colorScheme.primaryContainer,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(
-          icon,
-          color: theme.colorScheme.onPrimaryContainer,
-        ),
+        child: Icon(icon, color: theme.colorScheme.onPrimaryContainer),
       ),
       title: Text(title),
       subtitle: Text(
@@ -126,16 +120,16 @@ class SharePostBottomSheet extends StatelessWidget {
 
   void _copyLink(BuildContext context) {
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Link copied to clipboard')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Link copied to clipboard')));
   }
 
   void _shareToFeed(BuildContext context) {
     Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Post shared to your feed')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Post shared to your feed')));
   }
 
   void _sendInMessage(BuildContext context) {

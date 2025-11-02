@@ -1,7 +1,7 @@
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/either.dart';
-import '../entities/user_settings.dart';
-import '../entities/privacy_settings.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/data/models/profile/user_settings.dart';
+import 'package:dabbler/data/models/profile/privacy_settings.dart';
 
 /// Repository interface for user settings and privacy preferences
 /// Handles both local storage for quick access and remote sync
@@ -90,9 +90,7 @@ abstract class SettingsRepository {
 
   /// Gets theme and display settings
   /// Returns theme configuration on success or [Failure] on error
-  Future<Either<Failure, Map<String, dynamic>>> getThemeSettings(
-    String userId,
-  );
+  Future<Either<Failure, Map<String, dynamic>>> getThemeSettings(String userId);
 
   /// Updates theme and display settings
   /// [themeSettings] - Map of theme configuration
@@ -187,10 +185,7 @@ abstract class SettingsRepository {
   /// Restores settings from cloud backup
   /// [backupId] - Identifier of the backup to restore
   /// Returns [void] on success or [Failure] on error
-  Future<Either<Failure, void>> restoreSettings(
-    String userId,
-    String backupId,
-  );
+  Future<Either<Failure, void>> restoreSettings(String userId, String backupId);
 
   /// Lists available setting backups for a user
   /// Returns list of backup metadata on success or [Failure] on error

@@ -1,23 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/user_progress.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// Progress milestone types
 enum MilestoneType {
   quarterway, // 25%
-  halfway,    // 50%
+  halfway, // 50%
   threeQuarter, // 75%
   nearCompletion, // 90%
-  completed,  // 100%
+  completed, // 100%
 }
 
 /// Progress tracking period for analytics
-enum ProgressPeriod {
-  daily,
-  weekly,
-  monthly,
-  allTime,
-}
+enum ProgressPeriod { daily, weekly, monthly, allTime }
 
 /// Progress milestone information
 class ProgressMilestone {
@@ -129,7 +124,9 @@ class ProgressTrackingState {
       // Search filter - would need achievement names for this
       if (searchQuery.isNotEmpty) {
         // For now, we'll filter by achievement ID containing search query
-        if (!progress.achievementId.toLowerCase().contains(searchQuery.toLowerCase())) {
+        if (!progress.achievementId.toLowerCase().contains(
+          searchQuery.toLowerCase(),
+        )) {
           return false;
         }
       }
@@ -142,7 +139,9 @@ class ProgressTrackingState {
 
   /// Get progress that's close to completion (>= 80%)
   List<UserProgress> get nearCompletionProgress {
-    return activeProgress.where((progress) => progress.calculateProgress() >= 80.0).toList();
+    return activeProgress
+        .where((progress) => progress.calculateProgress() >= 80.0)
+        .toList();
   }
 
   /// Get recently started progress (< 25%)
@@ -157,8 +156,11 @@ class ProgressTrackingState {
   Map<String, dynamic> get progressAnalytics {
     final totalActive = activeProgress.length;
     final totalCompleted = completedProgress.length;
-    final averageProgress = totalActive > 0 
-        ? activeProgress.map((p) => p.calculateProgress()).reduce((a, b) => a + b) / totalActive
+    final averageProgress = totalActive > 0
+        ? activeProgress
+                  .map((p) => p.calculateProgress())
+                  .reduce((a, b) => a + b) /
+              totalActive
         : 0.0;
 
     final completionRate = (totalActive + totalCompleted) > 0
@@ -180,17 +182,17 @@ class ProgressTrackingState {
 
   String _getMostActiveCategory() {
     if (progressByCategory.isEmpty) return 'None';
-    
+
     String mostActiveCategory = '';
     int maxProgress = 0;
-    
+
     progressByCategory.forEach((category, progressList) {
       if (progressList.length > maxProgress) {
         maxProgress = progressList.length;
         mostActiveCategory = category;
       }
     });
-    
+
     return mostActiveCategory.isNotEmpty ? mostActiveCategory : 'None';
   }
 
@@ -198,11 +200,11 @@ class ProgressTrackingState {
     // Calculate progress made per day based on recent milestones
     final now = DateTime.now();
     final weekAgo = now.subtract(const Duration(days: 7));
-    
+
     final recentMilestoneCount = recentMilestones
         .where((milestone) => milestone.reachedAt.isAfter(weekAgo))
         .length;
-        
+
     return recentMilestoneCount / 7.0; // Milestones per day
   }
 }
@@ -212,7 +214,8 @@ class ProgressTrackingController extends StateNotifier<ProgressTrackingState> {
   final RewardsRepository _repository;
   final String userId;
 
-  ProgressTrackingController(this._repository, this.userId) : super(const ProgressTrackingState()) {
+  ProgressTrackingController(this._repository, this.userId)
+    : super(const ProgressTrackingState()) {
     _initialize();
   }
 
@@ -227,10 +230,8 @@ class ProgressTrackingController extends StateNotifier<ProgressTrackingState> {
     final result = await _repository.getUserProgress(userId);
 
     result.fold(
-      (failure) => state = state.copyWith(
-        error: failure.toString(),
-        isLoading: false,
-      ),
+      (failure) =>
+          state = state.copyWith(error: failure.toString(), isLoading: false),
       (progressList) {
         final active = <UserProgress>[];
         final completed = <UserProgress>[];
@@ -276,19 +277,22 @@ class ProgressTrackingController extends StateNotifier<ProgressTrackingState> {
 
   /// Loads progress for specific achievements
   Future<void> loadProgressForAchievements(List<String> achievementIds) async {
-    final result = await _repository.getUserProgress(userId, achievementIds: achievementIds);
+    final result = await _repository.getUserProgress(
+      userId,
+      achievementIds: achievementIds,
+    );
 
     result.fold(
       (failure) => state = state.copyWith(error: failure.toString()),
       (progressList) {
         // Update existing progress with new data
         final updatedProgress = List<UserProgress>.from(state.allProgress);
-        
+
         for (final newProgress in progressList) {
           final existingIndex = updatedProgress.indexWhere(
             (p) => p.achievementId == newProgress.achievementId,
           );
-          
+
           if (existingIndex != -1) {
             updatedProgress[existingIndex] = newProgress;
           } else {
@@ -303,7 +307,10 @@ class ProgressTrackingController extends StateNotifier<ProgressTrackingState> {
   }
 
   /// Tracks a specific event that may update progress
-  Future<void> trackEvent(EventType eventType, Map<String, dynamic> eventData) async {
+  Future<void> trackEvent(
+    EventType eventType,
+    Map<String, dynamic> eventData,
+  ) async {
     final result = await _repository.trackEvent(eventType, eventData, userId);
 
     result.fold(
@@ -360,14 +367,20 @@ class ProgressTrackingController extends StateNotifier<ProgressTrackingState> {
     // Analyze near completion achievements
     final nearCompletion = state.nearCompletionProgress;
     if (nearCompletion.isNotEmpty) {
-      insights.add('You have ${nearCompletion.length} achievements almost complete!');
-      recommendations.add('Focus on completing your near-finished achievements first');
+      insights.add(
+        'You have ${nearCompletion.length} achievements almost complete!',
+      );
+      recommendations.add(
+        'Focus on completing your near-finished achievements first',
+      );
     }
 
     // Analyze recently started
     final recentlyStarted = state.recentlyStartedProgress;
     if (recentlyStarted.length > 5) {
-      insights.add('You\'ve started ${recentlyStarted.length} new achievements recently');
+      insights.add(
+        'You\'ve started ${recentlyStarted.length} new achievements recently',
+      );
       recommendations.add('Consider focusing on fewer achievements at a time');
     }
 
@@ -410,66 +423,83 @@ class ProgressTrackingController extends StateNotifier<ProgressTrackingState> {
     // This would typically use achievement data to determine category
     // For now, we'll use a simple heuristic based on achievement ID
     final id = progress.achievementId.toLowerCase();
-    
+
     if (id.contains('game') || id.contains('match') || id.contains('play')) {
       return 'Games';
-    } else if (id.contains('social') || id.contains('friend') || id.contains('chat')) {
+    } else if (id.contains('social') ||
+        id.contains('friend') ||
+        id.contains('chat')) {
       return 'Social';
-    } else if (id.contains('skill') || id.contains('level') || id.contains('rank')) {
+    } else if (id.contains('skill') ||
+        id.contains('level') ||
+        id.contains('rank')) {
       return 'Skills';
-    } else if (id.contains('daily') || id.contains('weekly') || id.contains('login')) {
+    } else if (id.contains('daily') ||
+        id.contains('weekly') ||
+        id.contains('login')) {
       return 'Daily';
     } else {
       return 'General';
     }
   }
 
-  Map<String, double> _calculateProgressStreaks(List<UserProgress> progressList) {
+  Map<String, double> _calculateProgressStreaks(
+    List<UserProgress> progressList,
+  ) {
     final streaks = <String, double>{};
-    
+
     // This would calculate actual streaks based on historical data
     // For now, we'll return empty streaks
     return streaks;
   }
 
-  List<ProgressMilestone> _generateRecentMilestones(List<UserProgress> progressList) {
+  List<ProgressMilestone> _generateRecentMilestones(
+    List<UserProgress> progressList,
+  ) {
     final milestones = <ProgressMilestone>[];
     final now = DateTime.now();
-    
+
     // Generate milestones based on current progress
     for (final progress in progressList) {
       final percentage = progress.calculateProgress();
-      
+
       if (percentage >= 100.0 && progress.status == ProgressStatus.completed) {
-        milestones.add(ProgressMilestone(
-          achievementId: progress.achievementId,
-          achievementName: 'Achievement ${progress.achievementId}', // Would get from achievement
-          type: MilestoneType.completed,
-          percentage: 100.0,
-          reachedAt: progress.completedAt ?? now,
-        ));
+        milestones.add(
+          ProgressMilestone(
+            achievementId: progress.achievementId,
+            achievementName:
+                'Achievement ${progress.achievementId}', // Would get from achievement
+            type: MilestoneType.completed,
+            percentage: 100.0,
+            reachedAt: progress.completedAt ?? now,
+          ),
+        );
       } else if (percentage >= 90.0) {
-        milestones.add(ProgressMilestone(
-          achievementId: progress.achievementId,
-          achievementName: 'Achievement ${progress.achievementId}',
-          type: MilestoneType.nearCompletion,
-          percentage: percentage,
-          reachedAt: progress.updatedAt,
-        ));
+        milestones.add(
+          ProgressMilestone(
+            achievementId: progress.achievementId,
+            achievementName: 'Achievement ${progress.achievementId}',
+            type: MilestoneType.nearCompletion,
+            percentage: percentage,
+            reachedAt: progress.updatedAt,
+          ),
+        );
       } else if (percentage >= 75.0) {
-        milestones.add(ProgressMilestone(
-          achievementId: progress.achievementId,
-          achievementName: 'Achievement ${progress.achievementId}',
-          type: MilestoneType.threeQuarter,
-          percentage: percentage,
-          reachedAt: progress.updatedAt,
-        ));
+        milestones.add(
+          ProgressMilestone(
+            achievementId: progress.achievementId,
+            achievementName: 'Achievement ${progress.achievementId}',
+            type: MilestoneType.threeQuarter,
+            percentage: percentage,
+            reachedAt: progress.updatedAt,
+          ),
+        );
       }
     }
-    
+
     // Sort by most recent first
     milestones.sort((a, b) => b.reachedAt.compareTo(a.reachedAt));
-    
+
     return milestones.take(20).toList(); // Return last 20 milestones
   }
 
@@ -478,8 +508,11 @@ class ProgressTrackingController extends StateNotifier<ProgressTrackingState> {
     // For now, return basic analytics
     return {
       'total_progress_entries': progressList.length,
-      'average_completion': progressList.isNotEmpty 
-          ? progressList.map((p) => p.calculateProgress()).reduce((a, b) => a + b) / progressList.length
+      'average_completion': progressList.isNotEmpty
+          ? progressList
+                    .map((p) => p.calculateProgress())
+                    .reduce((a, b) => a + b) /
+                progressList.length
           : 0.0,
     };
   }
@@ -523,21 +556,23 @@ class ProgressTrackingController extends StateNotifier<ProgressTrackingState> {
 
   List<String> _getFocusAreas() {
     final focusAreas = <String>[];
-    
+
     // Analyze progress patterns to suggest focus areas
     if (state.nearCompletionProgress.isNotEmpty) {
       focusAreas.add('Complete nearly finished achievements');
     }
-    
-    if (state.recentlyStartedProgress.length > state.nearCompletionProgress.length) {
+
+    if (state.recentlyStartedProgress.length >
+        state.nearCompletionProgress.length) {
       focusAreas.add('Focus on fewer achievements at once');
     }
-    
-    final mostActiveCategory = state.progressAnalytics['most_active_category'] as String;
+
+    final mostActiveCategory =
+        state.progressAnalytics['most_active_category'] as String;
     if (mostActiveCategory != 'None') {
       focusAreas.add('Continue excelling in $mostActiveCategory');
     }
-    
+
     return focusAreas;
   }
 
@@ -545,7 +580,7 @@ class ProgressTrackingController extends StateNotifier<ProgressTrackingState> {
     final analytics = state.progressAnalytics;
     final totalActive = analytics['total_active'] as int;
     final completionRate = analytics['completion_rate'] as int;
-    
+
     if (completionRate >= 80) {
       return '🏆 Amazing! You\'re a completion champion!';
     } else if (completionRate >= 60) {

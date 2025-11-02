@@ -1,22 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/widgets/custom_avatar.dart';
+import 'package:dabbler/core/widgets/custom_avatar.dart';
 import '../../../../../themes/app_colors.dart';
 import '../../../../../themes/app_text_styles.dart';
 import '../../../../../utils/formatters/time_formatter.dart';
 import '../../../../../utils/enums/social_enums.dart'; // For MessageType
 // Removed broken image/video widget imports
-import '../../../data/models/chat_message_model.dart';
-import '../../../../../core/models/user_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
+import 'package:dabbler/data/models/authentication/user_model.dart';
 import 'message_status_indicator.dart';
 
 /// Message bubble types
-enum MessageBubbleType {
-  sent,
-  received,
-  system,
-}
+enum MessageBubbleType { sent, received, system }
 
 /// A reusable chat bubble widget for displaying messages
 /// with different styling for sent/received messages
@@ -70,24 +66,20 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
 
-    _slideAnimation = Tween<Offset>(
-      begin: widget.message.senderId == 'current_user' 
-          ? const Offset(0.3, 0) 
-          : const Offset(-0.3, 0),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
+    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
+
+    _slideAnimation =
+        Tween<Offset>(
+          begin: widget.message.senderId == 'current_user'
+              ? const Offset(0.3, 0)
+              : const Offset(-0.3, 0),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+        );
 
     _animationController.forward();
   }
@@ -99,9 +91,11 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
   }
 
   MessageBubbleType get _bubbleType {
-    if (widget.message.messageType == MessageType.system) return MessageBubbleType.system;
-    return widget.message.senderId == 'current_user' 
-        ? MessageBubbleType.sent 
+    if (widget.message.messageType == MessageType.system) {
+      return MessageBubbleType.system;
+    }
+    return widget.message.senderId == 'current_user'
+        ? MessageBubbleType.sent
         : MessageBubbleType.received;
   }
 
@@ -202,10 +196,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
   }) {
     return ListTile(
       leading: Icon(icon, color: color),
-      title: Text(
-        title,
-        style: TextStyle(color: color),
-      ),
+      title: Text(title, style: TextStyle(color: color)),
       onTap: onTap,
     );
   }
@@ -248,10 +239,12 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
           child: ScaleTransition(
             scale: _scaleAnimation,
             child: Container(
-              margin: widget.margin ?? EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: widget.isConsecutive ? 2 : 8,
-              ),
+              margin:
+                  widget.margin ??
+                  EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: widget.isConsecutive ? 2 : 8,
+                  ),
               child: Row(
                 mainAxisAlignment: _bubbleType == MessageBubbleType.sent
                     ? MainAxisAlignment.end
@@ -292,10 +285,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
       return SizedBox(width: 32); // Placeholder for alignment
     }
 
-    return CustomAvatar(
-      imageUrl: widget.sender?.profileImageUrl,
-      radius: 16,
-    );
+    return CustomAvatar(imageUrl: widget.sender?.profileImageUrl, radius: 16);
   }
 
   Widget _buildMessageBubble() {
@@ -329,11 +319,9 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
 
   BoxDecoration _buildBubbleDecoration() {
     final isSent = _bubbleType == MessageBubbleType.sent;
-    
+
     return BoxDecoration(
-      color: isSent 
-          ? AppColors.primary 
-          : Theme.of(context).cardColor,
+      color: isSent ? AppColors.primary : Theme.of(context).cardColor,
       borderRadius: BorderRadius.only(
         topLeft: const Radius.circular(18),
         topRight: const Radius.circular(18),
@@ -350,18 +338,22 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
     );
   }
 
-
   Widget _buildMessageContent() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.message.messageType == MessageType.text) _buildTextContent(),
-          if (widget.message.messageType == MessageType.image) _buildImageContent(),
-          if (widget.message.messageType == MessageType.video) _buildVideoContent(),
-          if (widget.message.messageType == MessageType.file) _buildFileContent(),
-          if (widget.message.messageType == MessageType.audio) _buildVoiceContent(),
+          if (widget.message.messageType == MessageType.text)
+            _buildTextContent(),
+          if (widget.message.messageType == MessageType.image)
+            _buildImageContent(),
+          if (widget.message.messageType == MessageType.video)
+            _buildVideoContent(),
+          if (widget.message.messageType == MessageType.file)
+            _buildFileContent(),
+          if (widget.message.messageType == MessageType.audio)
+            _buildVoiceContent(),
           if (_hasLinks()) _buildLinkPreview(),
         ],
       ),
@@ -388,9 +380,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
               width: 200,
               height: 200,
               color: Colors.grey[300],
-              child: const Center(
-                child: Icon(Icons.image, size: 48),
-              ),
+              child: const Center(child: Icon(Icons.image, size: 48)),
             )
           : const SizedBox.shrink(),
     );
@@ -471,9 +461,11 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
             child: Container(
               height: 2,
               decoration: BoxDecoration(
-                color: (_bubbleType == MessageBubbleType.sent
-                    ? Colors.white
-                    : AppColors.primary).withOpacity(0.3),
+                color:
+                    (_bubbleType == MessageBubbleType.sent
+                            ? Colors.white
+                            : AppColors.primary)
+                        .withOpacity(0.3),
                 borderRadius: BorderRadius.circular(1),
               ),
             ),
@@ -493,7 +485,9 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
   }
 
   bool _hasLinks() {
-    final urlRegex = RegExp(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+');
+    final urlRegex = RegExp(
+      r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+',
+    );
     return urlRegex.hasMatch(widget.message.content);
   }
 
@@ -545,7 +539,6 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
     );
   }
 
-
   Widget _buildMessageInfo() {
     return Padding(
       padding: const EdgeInsets.only(top: 4, left: 8, right: 8),
@@ -560,7 +553,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
                 fontSize: 11,
               ),
             ),
-          if (widget.showReadReceipts && 
+          if (widget.showReadReceipts &&
               _bubbleType == MessageBubbleType.sent) ...[
             const SizedBox(width: 4),
             Text(
@@ -595,7 +588,9 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest.withOpacity(0.5),
+            color: Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest.withOpacity(0.5),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
@@ -624,11 +619,7 @@ class CompactChatBubble extends StatelessWidget {
   final ChatMessageModel message;
   final UserModel? sender;
 
-  const CompactChatBubble({
-    super.key,
-    required this.message,
-    this.sender,
-  });
+  const CompactChatBubble({super.key, required this.message, this.sender});
 
   @override
   Widget build(BuildContext context) {

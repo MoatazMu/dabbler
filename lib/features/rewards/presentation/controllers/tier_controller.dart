@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/tier.dart';
+import 'package:dabbler/data/models/rewards/tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// State for tier management
@@ -59,7 +59,8 @@ class TierState {
       nextBenefits: nextBenefits ?? this.nextBenefits,
       unlockedBenefits: unlockedBenefits ?? this.unlockedBenefits,
       history: history ?? this.history,
-      projectedNextTierDate: projectedNextTierDate ?? this.projectedNextTierDate,
+      projectedNextTierDate:
+          projectedNextTierDate ?? this.projectedNextTierDate,
       activePrivileges: activePrivileges ?? this.activePrivileges,
       isLoading: isLoading ?? this.isLoading,
       error: error,
@@ -100,17 +101,19 @@ class TierState {
 
   List<TierBenefit> _getBenefitsToUnlock() {
     if (nextTier == null) return [];
-    
+
     final currentBenefitIds = currentBenefits.map((b) => b.id).toSet();
-    return nextBenefits.where((benefit) => !currentBenefitIds.contains(benefit.id)).toList();
+    return nextBenefits
+        .where((benefit) => !currentBenefitIds.contains(benefit.id))
+        .toList();
   }
 
   Map<String, bool> _getPrivilegesToUnlock() {
     if (nextTier == null || currentTier == null) return {};
-    
+
     final nextPrivileges = _generatePrivilegesForTier(nextTier!);
     final currentPrivilegeIds = activePrivileges.keys.toSet();
-    
+
     final newPrivileges = <String, bool>{};
     for (final entry in nextPrivileges.entries) {
       if (!currentPrivilegeIds.contains(entry.key)) {
@@ -139,11 +142,9 @@ class TierController extends StateNotifier<TierState> {
   final RewardsRepository _repository;
   final String userId;
 
-  TierController({
-    required RewardsRepository repository,
-    required this.userId,
-  }) : _repository = repository,
-       super(const TierState());
+  TierController({required RewardsRepository repository, required this.userId})
+    : _repository = repository,
+      super(const TierState());
 
   /// Initialize tier data
   Future<void> initialize() async {
@@ -155,16 +156,10 @@ class TierController extends StateNotifier<TierState> {
       await _loadCurrentTier();
       await _loadTierHistory();
       _calculateProjections();
-      
-      state = state.copyWith(
-        isLoading: false,
-        lastUpdated: DateTime.now(),
-      );
+
+      state = state.copyWith(isLoading: false, lastUpdated: DateTime.now());
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -178,7 +173,8 @@ class TierController extends StateNotifier<TierState> {
     final result = await _repository.getUserTier(userId);
 
     result.fold(
-      (failure) => throw Exception('Failed to load user tier: ${failure.message}'),
+      (failure) =>
+          throw Exception('Failed to load user tier: ${failure.message}'),
       (userTier) {
         final nextTier = userTier?.getNextTier();
         final progressToNext = userTier?.calculateProgress() ?? 0.0;
@@ -210,85 +206,101 @@ class TierController extends StateNotifier<TierState> {
     if (tierLevel == null) return [];
 
     final benefits = <TierBenefit>[];
-    
+
     // Daily bonus benefit
-    benefits.add(TierBenefit(
-      id: 'daily_bonus',
-      name: 'Daily Point Bonus',
-      description: '+${(tierLevel.level * 5).clamp(5, 75)} daily bonus points',
-      value: (tierLevel.level * 5).clamp(5, 75),
-      type: BenefitType.pointsBonus,
-      isActive: true,
-    ));
+    benefits.add(
+      TierBenefit(
+        id: 'daily_bonus',
+        name: 'Daily Point Bonus',
+        description:
+            '+${(tierLevel.level * 5).clamp(5, 75)} daily bonus points',
+        value: (tierLevel.level * 5).clamp(5, 75),
+        type: BenefitType.pointsBonus,
+        isActive: true,
+      ),
+    );
 
     // Achievement multiplier
-    benefits.add(TierBenefit(
-      id: 'achievement_multiplier',
-      name: 'Achievement Multiplier',
-      description: '${(1.0 + (tierLevel.level - 1) * 0.05).toStringAsFixed(2)}x achievement points',
-      value: 1.0 + (tierLevel.level - 1) * 0.05,
-      type: BenefitType.multiplier,
-      isActive: true,
-    ));
+    benefits.add(
+      TierBenefit(
+        id: 'achievement_multiplier',
+        name: 'Achievement Multiplier',
+        description:
+            '${(1.0 + (tierLevel.level - 1) * 0.05).toStringAsFixed(2)}x achievement points',
+        value: 1.0 + (tierLevel.level - 1) * 0.05,
+        type: BenefitType.multiplier,
+        isActive: true,
+      ),
+    );
 
     // Profile customization slots
     if (tierLevel.level >= 3) {
-      benefits.add(TierBenefit(
-        id: 'profile_slots',
-        name: 'Profile Customization Slots',
-        description: '${(tierLevel.level / 3).ceil()} customization slots',
-        value: (tierLevel.level / 3).ceil(),
-        type: BenefitType.feature,
-        isActive: true,
-      ));
+      benefits.add(
+        TierBenefit(
+          id: 'profile_slots',
+          name: 'Profile Customization Slots',
+          description: '${(tierLevel.level / 3).ceil()} customization slots',
+          value: (tierLevel.level / 3).ceil(),
+          type: BenefitType.feature,
+          isActive: true,
+        ),
+      );
     }
 
     // Monthly exclusive rewards
     if (tierLevel.level >= 5) {
-      benefits.add(TierBenefit(
-        id: 'monthly_rewards',
-        name: 'Monthly Exclusive Rewards',
-        description: 'Access to exclusive monthly rewards',
-        value: 1,
-        type: BenefitType.feature,
-        isActive: true,
-      ));
+      benefits.add(
+        TierBenefit(
+          id: 'monthly_rewards',
+          name: 'Monthly Exclusive Rewards',
+          description: 'Access to exclusive monthly rewards',
+          value: 1,
+          type: BenefitType.feature,
+          isActive: true,
+        ),
+      );
     }
 
     // Tournament seed bonus
     if (tierLevel.level >= 7) {
-      benefits.add(TierBenefit(
-        id: 'tournament_bonus',
-        name: 'Tournament Seed Bonus',
-        description: 'Better tournament seeding',
-        value: 1,
-        type: BenefitType.feature,
-        isActive: true,
-      ));
+      benefits.add(
+        TierBenefit(
+          id: 'tournament_bonus',
+          name: 'Tournament Seed Bonus',
+          description: 'Better tournament seeding',
+          value: 1,
+          type: BenefitType.feature,
+          isActive: true,
+        ),
+      );
     }
 
     // Mentor program access
     if (tierLevel.level >= 11) {
-      benefits.add(TierBenefit(
-        id: 'mentor_program',
-        name: 'Mentor Program Access',
-        description: 'Access to mentor program',
-        value: 1,
-        type: BenefitType.feature,
-        isActive: true,
-      ));
+      benefits.add(
+        TierBenefit(
+          id: 'mentor_program',
+          name: 'Mentor Program Access',
+          description: 'Access to mentor program',
+          value: 1,
+          type: BenefitType.feature,
+          isActive: true,
+        ),
+      );
     }
 
     // Legend-only competitions
     if (tierLevel.level >= 13) {
-      benefits.add(TierBenefit(
-        id: 'legend_competitions',
-        name: 'Legend-Only Competitions',
-        description: 'Access to exclusive legend competitions',
-        value: 1,
-        type: BenefitType.feature,
-        isActive: true,
-      ));
+      benefits.add(
+        TierBenefit(
+          id: 'legend_competitions',
+          name: 'Legend-Only Competitions',
+          description: 'Access to exclusive legend competitions',
+          value: 1,
+          type: BenefitType.feature,
+          isActive: true,
+        ),
+      );
     }
 
     return benefits;
@@ -297,7 +309,7 @@ class TierController extends StateNotifier<TierState> {
   /// Generate active privileges for tier
   Map<String, bool> _generateActivePrivileges(TierLevel? tierLevel) {
     if (tierLevel == null) return {};
-    
+
     return {
       'create_private_tournaments': tierLevel.level >= 6,
       'invite_friends_to_events': tierLevel.level >= 4,
@@ -323,17 +335,19 @@ class TierController extends StateNotifier<TierState> {
         (t) => t.level == i,
         orElse: () => TierLevel.freshPlayer,
       );
-      
+
       // Estimate when each tier was achieved (going backwards from now)
       final daysAgo = (currentLevel - i) * 30; // Assume 30 days between tiers
       final achievedAt = now.subtract(Duration(days: daysAgo));
-      
-      history.add(TierHistoryEntry(
-        tierLevel: tierLevel,
-        achievedAt: achievedAt,
-        pointsAtAchievement: tierLevel.minPoints,
-        benefitsUnlocked: _generateBenefitsForTier(tierLevel).length,
-      ));
+
+      history.add(
+        TierHistoryEntry(
+          tierLevel: tierLevel,
+          achievedAt: achievedAt,
+          pointsAtAchievement: tierLevel.minPoints,
+          benefitsUnlocked: _generateBenefitsForTier(tierLevel).length,
+        ),
+      );
     }
 
     return history.reversed.toList(); // Most recent first
@@ -385,7 +399,6 @@ class TierController extends StateNotifier<TierState> {
   void clearError() {
     state = state.copyWith(error: null);
   }
-
 }
 
 /// Tier benefit model
@@ -417,13 +430,7 @@ class TierBenefit {
 }
 
 /// Types of tier benefits
-enum BenefitType {
-  pointsBonus,
-  multiplier,
-  feature,
-  access,
-  cosmetic,
-}
+enum BenefitType { pointsBonus, multiplier, feature, access, cosmetic }
 
 /// Tier history entry
 class TierHistoryEntry {

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/widgets/custom_avatar.dart';
+import 'package:dabbler/core/widgets/custom_avatar.dart';
 import '../../../../../themes/app_colors.dart';
 import '../../../../../themes/app_text_styles.dart';
 import '../../../../../utils/extensions/context_extensions.dart';
-import '../../../../../core/widgets/shimmer_loading.dart';
+import 'package:dabbler/core/widgets/shimmer_loading.dart';
 import '../../controllers/friends_controller.dart';
 import '../../providers/social_providers.dart';
 import '../../../../../core/models/user_model.dart';

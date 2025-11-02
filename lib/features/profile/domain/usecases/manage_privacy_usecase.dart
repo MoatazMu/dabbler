@@ -1,6 +1,6 @@
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/either.dart';
-import '../entities/privacy_settings.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/data/models/profile/privacy_settings.dart';
 import '../repositories/settings_repository.dart';
 
 /// Parameters for managing privacy settings
@@ -35,7 +35,8 @@ class ManagePrivacyParams {
     this.allowedContactsOnly,
   });
 
-  bool get hasUpdates => profileVisibility != null ||
+  bool get hasUpdates =>
+      profileVisibility != null ||
       showEmail != null ||
       showPhoneNumber != null ||
       showLocation != null ||
@@ -70,7 +71,9 @@ class ManagePrivacyUseCase {
 
   ManagePrivacyUseCase(this._settingsRepository);
 
-  Future<Either<Failure, ManagePrivacyResult>> call(ManagePrivacyParams params) async {
+  Future<Either<Failure, ManagePrivacyResult>> call(
+    ManagePrivacyParams params,
+  ) async {
     try {
       // Validate input parameters
       final validationResult = _validateParams(params);
@@ -79,11 +82,12 @@ class ManagePrivacyUseCase {
       }
 
       // Get current privacy settings for comparison
-      final currentSettingsResult = await _settingsRepository.getPrivacySettings(params.userId);
+      final currentSettingsResult = await _settingsRepository
+          .getPrivacySettings(params.userId);
       if (currentSettingsResult.isLeft) {
         return Left(currentSettingsResult.leftOrNull()!);
       }
-      
+
       final currentSettings = currentSettingsResult.rightOrNull()!;
 
       // Apply business rules and security constraints
@@ -96,8 +100,10 @@ class ManagePrivacyUseCase {
 
       // Create updated privacy settings with new values
       final updatedSettings = currentSettings.copyWith(
-        profileVisibility: finalParams.profileVisibility != null 
-            ? (finalParams.profileVisibility! ? ProfileVisibility.public : ProfileVisibility.private)
+        profileVisibility: finalParams.profileVisibility != null
+            ? (finalParams.profileVisibility!
+                  ? ProfileVisibility.public
+                  : ProfileVisibility.private)
             : null,
         showEmail: finalParams.showEmail,
         showPhone: finalParams.showPhoneNumber,
@@ -105,17 +111,24 @@ class ManagePrivacyUseCase {
         showAge: finalParams.showAge,
         showStats: finalParams.showStatistics,
         messagePreference: finalParams.allowDirectMessages != null
-            ? (finalParams.allowDirectMessages! ? CommunicationPreference.anyone : CommunicationPreference.none)
+            ? (finalParams.allowDirectMessages!
+                  ? CommunicationPreference.anyone
+                  : CommunicationPreference.none)
             : null,
         gameInvitePreference: finalParams.allowGameInvitations != null
-            ? (finalParams.allowGameInvitations! ? CommunicationPreference.anyone : CommunicationPreference.none)
+            ? (finalParams.allowGameInvitations!
+                  ? CommunicationPreference.anyone
+                  : CommunicationPreference.none)
             : null,
         allowDataAnalytics: finalParams.allowAnalytics,
         blockedUsers: finalParams.blockedUsers,
       );
 
       // Perform the privacy settings update
-      final updateResult = await _settingsRepository.updatePrivacySettings(params.userId, updatedSettings);
+      final updateResult = await _settingsRepository.updatePrivacySettings(
+        params.userId,
+        updatedSettings,
+      );
       if (updateResult.isLeft) {
         return Left(updateResult.leftOrNull()!);
       }
@@ -123,7 +136,10 @@ class ManagePrivacyUseCase {
       final finalUpdatedSettings = updateResult.rightOrNull()!;
 
       // Calculate changed settings
-      final changedSettings = _calculateChangedSettings(currentSettings, finalUpdatedSettings);
+      final changedSettings = _calculateChangedSettings(
+        currentSettings,
+        finalUpdatedSettings,
+      );
 
       // Calculate privacy score
       final privacyScore = _calculatePrivacyScore(finalUpdatedSettings);
@@ -131,13 +147,14 @@ class ManagePrivacyUseCase {
       // Generate warnings
       final warnings = _generateWarnings(finalUpdatedSettings, changedSettings);
 
-      return Right(ManagePrivacyResult(
-        updatedSettings: finalUpdatedSettings,
-        warnings: warnings,
-        changedSettings: changedSettings,
-        privacyScore: privacyScore,
-      ));
-
+      return Right(
+        ManagePrivacyResult(
+          updatedSettings: finalUpdatedSettings,
+          warnings: warnings,
+          changedSettings: changedSettings,
+          privacyScore: privacyScore,
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Privacy settings update failed: $e'));
     }
@@ -152,7 +169,7 @@ class ManagePrivacyUseCase {
       if (params.blockedUsers!.length > 1000) {
         errors.add('Blocked users list cannot exceed 1000 entries');
       }
-      
+
       // Check for self-blocking
       if (params.blockedUsers!.contains(params.userId)) {
         errors.add('Cannot block yourself');
@@ -191,7 +208,9 @@ class ManagePrivacyUseCase {
         showAge: params.showAge ?? false,
         showStatistics: params.showStatistics ?? false,
         allowDirectMessages: params.allowDirectMessages ?? false,
-        allowGameInvitations: params.allowGameInvitations ?? true, // Keep game invitations enabled
+        allowGameInvitations:
+            params.allowGameInvitations ??
+            true, // Keep game invitations enabled
         shareDataWithPartners: false,
         allowAnalytics: params.allowAnalytics,
         blockedUsers: params.blockedUsers,
@@ -200,7 +219,8 @@ class ManagePrivacyUseCase {
     }
 
     // Security Rule: If data sharing is disabled, disable analytics
-    if (params.shareDataWithPartners == false && params.allowAnalytics == null) {
+    if (params.shareDataWithPartners == false &&
+        params.allowAnalytics == null) {
       processedParams = ManagePrivacyParams(
         userId: processedParams.userId,
         profileVisibility: processedParams.profileVisibility,
@@ -222,7 +242,10 @@ class ManagePrivacyUseCase {
   }
 
   /// Calculate which settings have changed
-  Map<String, dynamic> _calculateChangedSettings(PrivacySettings current, PrivacySettings updated) {
+  Map<String, dynamic> _calculateChangedSettings(
+    PrivacySettings current,
+    PrivacySettings updated,
+  ) {
     final changes = <String, dynamic>{};
 
     if (current.profileVisibility != updated.profileVisibility) {
@@ -254,10 +277,7 @@ class ManagePrivacyUseCase {
     }
 
     if (current.showAge != updated.showAge) {
-      changes['show_age'] = {
-        'old': current.showAge,
-        'new': updated.showAge,
-      };
+      changes['show_age'] = {'old': current.showAge, 'new': updated.showAge};
     }
 
     if (current.showStats != updated.showStats) {
@@ -311,20 +331,22 @@ class ManagePrivacyUseCase {
 
     // Profile visibility
     if (settings.profileVisibility == ProfileVisibility.private) score += 20;
-    
+
     // Contact information visibility
     if (!settings.showEmail) score += 15;
     if (!settings.showPhone) score += 15;
     if (!settings.showLocation) score += 10;
     if (!settings.showAge) score += 5;
-    
+
     // Statistics visibility
     if (!settings.showStats) score += 5;
-    
+
     // Communication settings
     if (settings.messagePreference == CommunicationPreference.none) score += 10;
-    if (settings.gameInvitePreference == CommunicationPreference.none) score += 5;
-    
+    if (settings.gameInvitePreference == CommunicationPreference.none) {
+      score += 5;
+    }
+
     // Data sharing
     if (settings.dataSharingLevel == DataSharingLevel.minimal) score += 10;
     if (!settings.allowDataAnalytics) score += 5;
@@ -333,38 +355,53 @@ class ManagePrivacyUseCase {
   }
 
   /// Generate warnings for the user
-  List<String> _generateWarnings(PrivacySettings settings, Map<String, dynamic> changedSettings) {
+  List<String> _generateWarnings(
+    PrivacySettings settings,
+    Map<String, dynamic> changedSettings,
+  ) {
     final warnings = <String>[];
 
     // Warning: Very private settings may limit functionality
     final privacyScore = _calculatePrivacyScore(settings);
     if (privacyScore > 80) {
-      warnings.add('High privacy settings may limit game opportunities and social features.');
+      warnings.add(
+        'High privacy settings may limit game opportunities and social features.',
+      );
     }
 
     // Warning: Profile completely hidden
     if (settings.profileVisibility == ProfileVisibility.private) {
-      warnings.add('Hidden profile may prevent others from finding and inviting you to games.');
+      warnings.add(
+        'Hidden profile may prevent others from finding and inviting you to games.',
+      );
     }
 
     // Warning: Direct messages disabled
     if (settings.messagePreference == CommunicationPreference.none) {
-      warnings.add('Disabled direct messages may prevent important game communications.');
+      warnings.add(
+        'Disabled direct messages may prevent important game communications.',
+      );
     }
 
     // Warning: Game invitations disabled
     if (settings.gameInvitePreference == CommunicationPreference.none) {
-      warnings.add('Disabled game invitations will prevent others from inviting you to games.');
+      warnings.add(
+        'Disabled game invitations will prevent others from inviting you to games.',
+      );
     }
 
     // Warning: No contact information visible
     if (!settings.showEmail && !settings.showPhone) {
-      warnings.add('No visible contact information may make communication difficult.');
+      warnings.add(
+        'No visible contact information may make communication difficult.',
+      );
     }
 
     // Warning: Analytics disabled
     if (!settings.allowDataAnalytics) {
-      warnings.add('Disabled analytics may prevent personalized recommendations.');
+      warnings.add(
+        'Disabled analytics may prevent personalized recommendations.',
+      );
     }
 
     // Warning: Many blocked users
@@ -374,7 +411,9 @@ class ManagePrivacyUseCase {
 
     // Warning: Data sharing changes
     if (changedSettings.containsKey('share_data_with_partners')) {
-      warnings.add('Data sharing changes may affect app functionality and features.');
+      warnings.add(
+        'Data sharing changes may affect app functionality and features.',
+      );
     }
 
     return warnings;

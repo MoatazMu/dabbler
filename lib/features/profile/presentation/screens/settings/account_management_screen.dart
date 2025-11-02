@@ -7,20 +7,24 @@ class AccountManagementScreen extends ConsumerStatefulWidget {
   const AccountManagementScreen({super.key});
 
   @override
-  ConsumerState<AccountManagementScreen> createState() => _AccountManagementScreenState();
+  ConsumerState<AccountManagementScreen> createState() =>
+      _AccountManagementScreenState();
 }
 
-class _AccountManagementScreenState extends ConsumerState<AccountManagementScreen>
+class _AccountManagementScreenState
+    extends ConsumerState<AccountManagementScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _currentPasswordController = TextEditingController();
+  final TextEditingController _currentPasswordController =
+      TextEditingController();
   final TextEditingController _newPasswordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
-  
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+
   bool _isLoading = false;
   bool _isTwoFactorEnabled = false;
   bool _isPasswordVisible = false;
@@ -41,13 +45,13 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -58,7 +62,7 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
     });
 
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     setState(() {
       _emailController.text = 'user@example.com';
       _isTwoFactorEnabled = false;
@@ -121,9 +125,9 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
           children: [
             Text(
               'Email Address',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -155,9 +159,9 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
           children: [
             Text(
               'Change Password',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             TextField(
@@ -167,7 +171,11 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.lock),
                 suffixIcon: IconButton(
-                  icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility),
+                  icon: Icon(
+                    _isPasswordVisible
+                        ? Icons.visibility_off
+                        : Icons.visibility,
+                  ),
                   onPressed: () {
                     setState(() {
                       _isPasswordVisible = !_isPasswordVisible;
@@ -217,14 +225,16 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
           children: [
             Text(
               'Security Settings',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             SwitchListTile(
               title: const Text('Two-Factor Authentication'),
-              subtitle: const Text('Add an extra layer of security to your account'),
+              subtitle: const Text(
+                'Add an extra layer of security to your account',
+              ),
               value: _isTwoFactorEnabled,
               onChanged: (value) {
                 setState(() {
@@ -273,7 +283,9 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
             ListTile(
               leading: const Icon(Icons.delete_forever, color: Colors.red),
               title: const Text('Delete Account'),
-              subtitle: const Text('Permanently delete your account and all data'),
+              subtitle: const Text(
+                'Permanently delete your account and all data',
+              ),
               trailing: const Icon(Icons.arrow_forward_ios),
               onTap: _showDeleteAccountDialog,
             ),
@@ -301,16 +313,19 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Password change functionality coming soon')),
+      const SnackBar(
+        content: Text('Password change functionality coming soon'),
+      ),
     );
   }
 
   void _toggleTwoFactor(bool enabled) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(enabled 
-            ? 'Two-factor authentication enabled' 
-            : 'Two-factor authentication disabled'
+        content: Text(
+          enabled
+              ? 'Two-factor authentication enabled'
+              : 'Two-factor authentication disabled',
         ),
       ),
     );
@@ -323,9 +338,9 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
   }
 
   void _viewLoginHistory() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Login history coming soon')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Login history coming soon')));
   }
 
   void _showDeleteAccountDialog() {
@@ -345,7 +360,9 @@ class _AccountManagementScreenState extends ConsumerState<AccountManagementScree
             onPressed: () {
               Navigator.of(context).pop();
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Account deletion functionality coming soon')),
+                const SnackBar(
+                  content: Text('Account deletion functionality coming soon'),
+                ),
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),

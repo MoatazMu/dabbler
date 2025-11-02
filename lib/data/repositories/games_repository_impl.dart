@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failure.dart';
-import '../models/game.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/games/game_model.dart';
+import 'package:dabbler/data/models/games/game.dart' as domain;
 import 'base_repository.dart';
 import 'games_repository.dart';
 
@@ -14,7 +15,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   static const String table = 'games';
 
   @override
-  Future<Result<Game>> createGame({
+  Future<Result<domain.Game>> createGame({
     required String gameType,
     required String sport,
     String? title,
@@ -92,7 +93,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
         return left(const UnexpectedFailure(message: 'Failed to create game'));
       }
 
-      return right(Game.fromJson(response));
+      return right(GameModel.fromJson(response));
     } catch (error, stackTrace) {
       return left(svc.mapGeneric(error, stackTrace));
     }
@@ -224,7 +225,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   }
 
   @override
-  Future<Result<Game>> getGameById(String gameId) async {
+  Future<Result<domain.Game>> getGameById(String gameId) async {
     try {
       final response = await svc.maybeSingle(
         svc.from(table).select().eq('id', gameId),
@@ -234,14 +235,14 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
         return left(const NotFoundFailure(message: 'Game not found'));
       }
 
-      return right(Game.fromJson(response));
+      return right(GameModel.fromJson(response));
     } catch (error, stackTrace) {
       return left(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Future<Result<List<Game>>> listDiscoverableGames({
+  Future<Result<List<domain.Game>>> listDiscoverableGames({
     String? sport,
     DateTime? from,
     DateTime? to,
@@ -279,7 +280,9 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
             .range(offset, offset + limit - 1),
       );
 
-      final games = rows.map(Game.fromJson).toList();
+      final games = rows
+          .map((row) => GameModel.fromJson(row) as domain.Game)
+          .toList();
       return right(games);
     } catch (error, stackTrace) {
       return left(svc.mapGeneric(error, stackTrace));
@@ -287,7 +290,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   }
 
   @override
-  Future<Result<List<Game>>> listMyHostedGames({
+  Future<Result<List<domain.Game>>> listMyHostedGames({
     DateTime? from,
     DateTime? to,
     bool includeCancelled = false,
@@ -318,7 +321,9 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
             .range(offset, offset + limit - 1),
       );
 
-      final games = rows.map(Game.fromJson).toList();
+      final games = rows
+          .map((row) => GameModel.fromJson(row) as domain.Game)
+          .toList();
       return right(games);
     } catch (error, stackTrace) {
       return left(svc.mapGeneric(error, stackTrace));
@@ -326,8 +331,8 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   }
 
   @override
-  Stream<Result<Game>> watchGame(String gameId) {
-    final controller = StreamController<Result<Game>>.broadcast();
+  Stream<Result<domain.Game>> watchGame(String gameId) {
+    final controller = StreamController<Result<domain.Game>>.broadcast();
     RealtimeChannel? channel;
 
     Future<void> emitCurrent() async {

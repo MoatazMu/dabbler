@@ -3,13 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 enum CompetitionLevel { casual, recreational, competitive, professional }
+
 enum GameDuration { short, medium, long, flexible }
 
 class GamePreferencesScreen extends ConsumerStatefulWidget {
   const GamePreferencesScreen({super.key});
 
   @override
-  ConsumerState<GamePreferencesScreen> createState() => _GamePreferencesScreenState();
+  ConsumerState<GamePreferencesScreen> createState() =>
+      _GamePreferencesScreenState();
 }
 
 class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
@@ -24,7 +26,7 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
     'tournaments',
     'practice_sessions',
   };
-  
+
   final Map<String, Map<String, dynamic>> _gameTypes = {
     'pickup_games': {
       'title': 'Pickup Games',
@@ -80,10 +82,7 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
   bool _hasOwnEquipment = true;
   bool _canProvideEquipment = false;
   bool _needsEquipmentProvided = false;
-  final Set<String> _equipmentTypes = {
-    'ball',
-    'protective_gear',
-  };
+  final Set<String> _equipmentTypes = {'ball', 'protective_gear'};
 
   // Referee preferences
   bool _preferReferee = false;
@@ -93,7 +92,7 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
   @override
   void initState() {
     super.initState();
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -102,13 +101,13 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -158,18 +157,15 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           'Game Preferences',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         centerTitle: false,
         titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
       ),
       actions: [
-        TextButton(
-          onPressed: _saveSettings,
-          child: const Text('Save'),
-        ),
+        TextButton(onPressed: _saveSettings, child: const Text('Save')),
         const SizedBox(width: 8),
       ],
     );
@@ -196,7 +192,7 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
             final key = entry.key;
             final data = entry.value;
             final isSelected = _preferredGameTypes.contains(key);
-            
+
             return _buildGameTypeCard(context, key, data, isSelected);
           },
         ),
@@ -204,7 +200,12 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
     );
   }
 
-  Widget _buildGameTypeCard(BuildContext context, String key, Map<String, dynamic> data, bool isSelected) {
+  Widget _buildGameTypeCard(
+    BuildContext context,
+    String key,
+    Map<String, dynamic> data,
+    bool isSelected,
+  ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -223,10 +224,14 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300]!,
+              color: isSelected
+                  ? Theme.of(context).primaryColor
+                  : Colors.grey[300]!,
               width: isSelected ? 2 : 1,
             ),
-            color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.05) : null,
+            color: isSelected
+                ? Theme.of(context).primaryColor.withOpacity(0.05)
+                : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -240,7 +245,9 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                 ),
                 child: Icon(
                   data['icon'],
-                  color: isSelected ? Theme.of(context).primaryColor : data['color'],
+                  color: isSelected
+                      ? Theme.of(context).primaryColor
+                      : data['color'],
                   size: 20,
                 ),
               ),
@@ -256,9 +263,9 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
               const SizedBox(height: 4),
               Text(
                 data['description'],
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
               if (isSelected) ...[
@@ -296,9 +303,13 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300]!,
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : Colors.grey[300]!,
                     ),
-                    color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.05) : null,
+                    color: isSelected
+                        ? Theme.of(context).primaryColor.withOpacity(0.05)
+                        : null,
                   ),
                   child: Row(
                     children: [
@@ -307,9 +318,13 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                         height: 12,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+                          color: isSelected
+                              ? Theme.of(context).primaryColor
+                              : Colors.transparent,
                           border: Border.all(
-                            color: isSelected ? Theme.of(context).primaryColor : Colors.grey[400]!,
+                            color: isSelected
+                                ? Theme.of(context).primaryColor
+                                : Colors.grey[400]!,
                             width: 2,
                           ),
                         ),
@@ -321,17 +336,19 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                           children: [
                             Text(
                               _getDurationTitle(duration),
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: isSelected ? Theme.of(context).primaryColor : null,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? Theme.of(context).primaryColor
+                                        : null,
+                                  ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               _getDurationDescription(duration),
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -347,9 +364,9 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
           const SizedBox(height: 16),
           Text(
             'Custom Duration Range',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           Row(
@@ -376,25 +393,30 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
     );
   }
 
-  Widget _buildDurationInput(String label, int value, ValueChanged<int> onChanged) {
+  Widget _buildDurationInput(
+    String label,
+    int value,
+    ValueChanged<int> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         TextField(
           decoration: InputDecoration(
             hintText: '$value min',
             suffixText: 'min',
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           ),
           keyboardType: TextInputType.number,
           onChanged: (text) {
@@ -425,9 +447,9 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
           const SizedBox(height: 16),
           Text(
             'Preferred Team Size: ${_teamSizeRange.start.round()} - ${_teamSizeRange.end.round()} players',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           RangeSlider(
@@ -446,15 +468,15 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
             children: [
               Text(
                 '2 players',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
               Text(
                 '22 players',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
             ],
           ),
@@ -472,7 +494,7 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
         ...CompetitionLevel.values.map((level) {
           final isSelected = _preferredCompetitionLevel == level;
           final levelData = _getCompetitionLevelData(level);
-          
+
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             child: Material(
@@ -485,9 +507,13 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSelected ? Theme.of(context).primaryColor : Colors.grey[300]!,
+                      color: isSelected
+                          ? Theme.of(context).primaryColor
+                          : Colors.grey[300]!,
                     ),
-                    color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.05) : null,
+                    color: isSelected
+                        ? Theme.of(context).primaryColor.withOpacity(0.05)
+                        : null,
                   ),
                   child: Row(
                     children: [
@@ -496,9 +522,13 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                         height: 12,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          color: isSelected ? Theme.of(context).primaryColor : Colors.transparent,
+                          color: isSelected
+                              ? Theme.of(context).primaryColor
+                              : Colors.transparent,
                           border: Border.all(
-                            color: isSelected ? Theme.of(context).primaryColor : Colors.grey[400]!,
+                            color: isSelected
+                                ? Theme.of(context).primaryColor
+                                : Colors.grey[400]!,
                             width: 2,
                           ),
                         ),
@@ -514,7 +544,9 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                         child: Icon(
                           levelData['icon'],
                           size: 16,
-                          color: isSelected ? Theme.of(context).primaryColor : levelData['color'],
+                          color: isSelected
+                              ? Theme.of(context).primaryColor
+                              : levelData['color'],
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -524,17 +556,19 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                           children: [
                             Text(
                               levelData['title'],
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: isSelected ? Theme.of(context).primaryColor : null,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected
+                                        ? Theme.of(context).primaryColor
+                                        : null,
+                                  ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               levelData['description'],
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -581,39 +615,42 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
           const SizedBox(height: 16),
           Text(
             'Equipment Types',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: [
-              'ball',
-              'protective_gear',
-              'uniforms',
-              'goals',
-              'nets',
-              'markers',
-            ].map((equipment) {
-              final isSelected = _equipmentTypes.contains(equipment);
-              return FilterChip(
-                label: Text(_getEquipmentName(equipment)),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    if (selected) {
-                      _equipmentTypes.add(equipment);
-                    } else {
-                      _equipmentTypes.remove(equipment);
-                    }
-                  });
-                },
-                selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
-                checkmarkColor: Theme.of(context).primaryColor,
-              );
-            }).toList(),
+            children:
+                [
+                  'ball',
+                  'protective_gear',
+                  'uniforms',
+                  'goals',
+                  'nets',
+                  'markers',
+                ].map((equipment) {
+                  final isSelected = _equipmentTypes.contains(equipment);
+                  return FilterChip(
+                    label: Text(_getEquipmentName(equipment)),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setState(() {
+                        if (selected) {
+                          _equipmentTypes.add(equipment);
+                        } else {
+                          _equipmentTypes.remove(equipment);
+                        }
+                      });
+                    },
+                    selectedColor: Theme.of(
+                      context,
+                    ).primaryColor.withOpacity(0.2),
+                    checkmarkColor: Theme.of(context).primaryColor,
+                  );
+                }).toList(),
           ),
         ],
       ],
@@ -651,14 +688,17 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, String description, List<Widget> children) {
+  Widget _buildSection(
+    BuildContext context,
+    String title,
+    String description,
+    List<Widget> children,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Card(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -666,16 +706,16 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(height: 16),
               ...children,
@@ -712,7 +752,7 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: value 
+                    color: value
                         ? Theme.of(context).primaryColor.withOpacity(0.1)
                         : Colors.grey[100],
                     borderRadius: BorderRadius.circular(8),
@@ -720,7 +760,9 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
                   child: Icon(
                     icon,
                     size: 16,
-                    color: value ? Theme.of(context).primaryColor : Colors.grey[600],
+                    color: value
+                        ? Theme.of(context).primaryColor
+                        : Colors.grey[600],
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -849,9 +891,7 @@ class _GamePreferencesScreenState extends ConsumerState<GamePreferencesScreen>
         ),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

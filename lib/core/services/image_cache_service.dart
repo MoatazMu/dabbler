@@ -7,5 +7,3 @@ class ImageCacheService {
     } catch (_) {}
   }
 }
-
-

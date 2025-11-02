@@ -27,24 +27,29 @@ class AvatarWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = _getInitials(name);
-    
+
     Widget avatar = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: backgroundColor ?? const Color(0xFF1890FF).withValues(alpha: 0.15),
+        color:
+            backgroundColor ?? const Color(0xFF1890FF).withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(size / 2),
-        border: showBorder ? Border.all(
-          color: const Color(0xFF1890FF).withValues(alpha: 0.2),
-          width: 2,
-        ) : null,
-        boxShadow: showShadow ? [
-          BoxShadow(
-            color: const Color(0xFF000000).withValues(alpha: 0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ] : null,
+        border: showBorder
+            ? Border.all(
+                color: const Color(0xFF1890FF).withValues(alpha: 0.2),
+                width: 2,
+              )
+            : null,
+        boxShadow: showShadow
+            ? [
+                BoxShadow(
+                  color: const Color(0xFF000000).withValues(alpha: 0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
       ),
       child: imageUrl != null && imageUrl!.isNotEmpty
           ? ClipRRect(
@@ -55,18 +60,17 @@ class AvatarWidget extends StatelessWidget {
                 height: size,
                 fit: BoxFit.cover,
                 fadeInDuration: const Duration(milliseconds: 150),
-                placeholder: (context, url) => _buildInitialsFallback(context, initials),
-                errorWidget: (context, url, error) => _buildInitialsFallback(context, initials),
+                placeholder: (context, url) =>
+                    _buildInitialsFallback(context, initials),
+                errorWidget: (context, url, error) =>
+                    _buildInitialsFallback(context, initials),
               ),
             )
           : _buildInitialsFallback(context, initials),
     );
 
     if (onTap != null) {
-      avatar = GestureDetector(
-        onTap: onTap,
-        child: avatar,
-      );
+      avatar = GestureDetector(onTap: onTap, child: avatar);
     }
 
     return avatar;
@@ -83,7 +87,7 @@ class AvatarWidget extends StatelessWidget {
         ),
       );
     }
-    
+
     return Center(
       child: Text(
         initials,
@@ -99,18 +103,21 @@ class AvatarWidget extends StatelessWidget {
 
   String _getInitials(String name) {
     if (name.isEmpty) return '';
-    
+
     // Handle display name specifically
     final displayName = name.trim();
     if (displayName.isEmpty) return '';
-    
-    final nameParts = displayName.split(' ').where((part) => part.isNotEmpty).toList();
-    
+
+    final nameParts = displayName
+        .split(' ')
+        .where((part) => part.isNotEmpty)
+        .toList();
+
     if (nameParts.isEmpty) return '';
     if (nameParts.length == 1) {
       return nameParts[0][0].toUpperCase();
     }
-    
+
     // For display names, take first letter of first two words
     return '${nameParts[0][0]}${nameParts[1][0]}'.toUpperCase();
   }

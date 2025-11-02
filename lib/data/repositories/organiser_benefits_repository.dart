@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/benefit.dart';
 
 abstract class OrganiserBenefitsRepository {
@@ -46,4 +46,3 @@ abstract class OrganiserBenefitsRepository {
   /// Delete a benefit (RLS-protected).
   Future<Result<void>> delete(String id);
 }
-

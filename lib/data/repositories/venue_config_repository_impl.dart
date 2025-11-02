@@ -1,8 +1,8 @@
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/types/result.dart';
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/core/utils/json.dart';
 import '../models/venue_space.dart';
 import 'base_repository.dart';
 import 'venue_config_repository.dart';

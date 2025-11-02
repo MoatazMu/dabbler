@@ -1,5 +1,6 @@
 /// Privacy level enum definitions with access control logic
 library;
+
 import 'package:flutter/material.dart';
 
 /// Enum representing different privacy levels for user content and profile visibility
@@ -103,11 +104,7 @@ enum PrivacyLevel {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  icon,
-                  color: selected ? color : Colors.grey,
-                  size: 20,
-                ),
+                Icon(icon, color: selected ? color : Colors.grey, size: 20),
                 const SizedBox(width: 8),
                 Text(
                   displayName,
@@ -122,10 +119,7 @@ enum PrivacyLevel {
               const SizedBox(height: 4),
               Text(
                 description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -279,11 +273,7 @@ enum PrivacyCategory {
           'marketing_communications',
         ];
       case PrivacyCategory.analytics:
-        return [
-          'usage_analytics',
-          'performance_tracking',
-          'crash_reporting',
-        ];
+        return ['usage_analytics', 'performance_tracking', 'crash_reporting'];
     }
   }
 }

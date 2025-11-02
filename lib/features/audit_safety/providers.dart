@@ -1,12 +1,12 @@
 import 'package:riverpod/riverpod.dart';
 
-import '../../data/models/abuse_flag.dart';
-import '../../data/models/ban_term.dart';
-import '../../data/models/moderation_action.dart';
-import '../../data/models/moderation_ticket.dart';
+import 'package:dabbler/data/models/abuse_flag.dart';
+import 'package:dabbler/data/models/ban_term.dart';
+import 'package:dabbler/data/models/moderation_action.dart';
+import 'package:dabbler/data/models/moderation_ticket.dart';
 import '../../data/repositories/audit_safety_repository.dart';
 import '../../data/repositories/audit_safety_repository_impl.dart';
-import '../../services/supabase/supabase_service.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 
 final auditSafetyRepositoryProvider = Provider<AuditSafetyRepository>((ref) {
   final service = ref.watch(supabaseServiceProvider);
@@ -40,8 +40,10 @@ class FlagsArgs {
   int get hashCode => Object.hash(status, subjectType, limit, before);
 }
 
-final flagsProvider =
-    FutureProvider.family<List<AbuseFlag>, FlagsArgs>((ref, args) async {
+final flagsProvider = FutureProvider.family<List<AbuseFlag>, FlagsArgs>((
+  ref,
+  args,
+) async {
   final repo = ref.watch(auditSafetyRepositoryProvider);
   final result = await repo.listFlags(
     status: args.status,
@@ -50,18 +52,11 @@ final flagsProvider =
     before: args.before,
   );
 
-  return result.match(
-    (failure) => throw failure,
-    (flags) => flags,
-  );
+  return result.match((failure) => throw failure, (flags) => flags);
 });
 
 class TicketsArgs {
-  const TicketsArgs({
-    this.status,
-    this.limit = 50,
-    this.before,
-  });
+  const TicketsArgs({this.status, this.limit = 50, this.before});
 
   final String? status;
   final int limit;
@@ -81,19 +76,19 @@ class TicketsArgs {
 }
 
 final ticketsProvider =
-    FutureProvider.family<List<ModerationTicket>, TicketsArgs>((ref, args) async {
-  final repo = ref.watch(auditSafetyRepositoryProvider);
-  final result = await repo.listTickets(
-    status: args.status,
-    limit: args.limit,
-    before: args.before,
-  );
+    FutureProvider.family<List<ModerationTicket>, TicketsArgs>((
+      ref,
+      args,
+    ) async {
+      final repo = ref.watch(auditSafetyRepositoryProvider);
+      final result = await repo.listTickets(
+        status: args.status,
+        limit: args.limit,
+        before: args.before,
+      );
 
-  return result.match(
-    (failure) => throw failure,
-    (tickets) => tickets,
-  );
-});
+      return result.match((failure) => throw failure, (tickets) => tickets);
+    });
 
 class ActionsArgs {
   const ActionsArgs({
@@ -122,29 +117,28 @@ class ActionsArgs {
   int get hashCode => Object.hash(subjectType, subjectId, limit, before);
 }
 
-final actionsProvider = FutureProvider.family<List<ModerationAction>, ActionsArgs>(
-    (ref, args) async {
-  final repo = ref.watch(auditSafetyRepositoryProvider);
-  final result = await repo.listActions(
-    subjectType: args.subjectType,
-    subjectId: args.subjectId,
-    limit: args.limit,
-    before: args.before,
-  );
+final actionsProvider =
+    FutureProvider.family<List<ModerationAction>, ActionsArgs>((
+      ref,
+      args,
+    ) async {
+      final repo = ref.watch(auditSafetyRepositoryProvider);
+      final result = await repo.listActions(
+        subjectType: args.subjectType,
+        subjectId: args.subjectId,
+        limit: args.limit,
+        before: args.before,
+      );
 
-  return result.match(
-    (failure) => throw failure,
-    (actions) => actions,
-  );
-});
+      return result.match((failure) => throw failure, (actions) => actions);
+    });
 
-final banTermsProvider =
-    FutureProvider.family<List<BanTerm>, bool?>((ref, enabled) async {
+final banTermsProvider = FutureProvider.family<List<BanTerm>, bool?>((
+  ref,
+  enabled,
+) async {
   final repo = ref.watch(auditSafetyRepositoryProvider);
   final result = await repo.listBanTerms(enabled: enabled);
 
-  return result.match(
-    (failure) => throw failure,
-    (terms) => terms,
-  );
+  return result.match((failure) => throw failure, (terms) => terms);
 });

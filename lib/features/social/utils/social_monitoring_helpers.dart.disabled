@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../../../core/utils/either.dart';
+import 'package:dabbler/core/utils/either.dart';
 import '../services/social_health_monitoring_service.dart';
 import '../services/social_performance_monitoring_service.dart';
 import '../services/social_error_tracking_service.dart';

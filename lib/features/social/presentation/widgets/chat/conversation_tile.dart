@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../data/models/conversation_model.dart';
-import '../../../data/models/chat_message_model.dart';
+import 'package:dabbler/data/models/social/conversation_model.dart';
+import 'package:dabbler/data/models/social/chat_message_model.dart';
 
 class ConversationTile extends StatelessWidget {
   final ConversationModel conversation;
@@ -33,7 +33,7 @@ class ConversationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Dismissible(
       key: Key(conversation.id),
       direction: DismissDirection.endToStart,
@@ -99,7 +99,7 @@ class ConversationTile extends StatelessWidget {
             conversation.name ?? 'Unnamed Chat',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.normal,
-              color: isMuted 
+              color: isMuted
                   ? theme.colorScheme.onSurfaceVariant
                   : theme.colorScheme.onSurface,
             ),
@@ -144,7 +144,7 @@ class ConversationTile extends StatelessWidget {
           child: Text(
             lastMessage!.previewText,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: unreadCount > 0 
+              color: unreadCount > 0
                   ? theme.colorScheme.onSurface
                   : theme.colorScheme.onSurfaceVariant,
               fontWeight: unreadCount > 0 ? FontWeight.w500 : FontWeight.normal,
@@ -196,11 +196,7 @@ class ConversationTile extends StatelessWidget {
         color: Colors.red,
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Icon(
-        Icons.delete,
-        color: Colors.white,
-        size: 24,
-      ),
+      child: const Icon(Icons.delete, color: Colors.white, size: 24),
     );
   }
 
@@ -234,9 +230,7 @@ class ConversationTile extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),
           ),
         ],

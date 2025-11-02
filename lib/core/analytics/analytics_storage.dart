@@ -18,14 +18,17 @@ class AnalyticsStorage {
     try {
       final prefs = await SharedPreferences.getInstance();
       final existingEvents = await getStoredEvents();
-      
+
       existingEvents.add(event);
-      
+
       // Limit stored events to prevent excessive memory usage
       if (existingEvents.length > AnalyticsConfig.maxLocalEvents) {
-        existingEvents.removeRange(0, existingEvents.length - AnalyticsConfig.maxLocalEvents);
+        existingEvents.removeRange(
+          0,
+          existingEvents.length - AnalyticsConfig.maxLocalEvents,
+        );
       }
-      
+
       final eventsJson = existingEvents.map((e) => e.toJson()).toList();
       await prefs.setString(_eventsKey, jsonEncode(eventsJson));
     } catch (e) {
@@ -38,13 +41,11 @@ class AnalyticsStorage {
     try {
       final prefs = await SharedPreferences.getInstance();
       final eventsString = prefs.getString(_eventsKey);
-      
+
       if (eventsString == null) return [];
-      
+
       final eventsJson = jsonDecode(eventsString) as List;
-      return eventsJson
-          .map((json) => AnalyticsEvent.fromJson(json))
-          .toList();
+      return eventsJson.map((json) => AnalyticsEvent.fromJson(json)).toList();
     } catch (e) {
       debugPrint('Error retrieving analytics events: $e');
       return [];
@@ -66,12 +67,12 @@ class AnalyticsStorage {
     try {
       final allEvents = await getStoredEvents();
       final remainingEvents = allEvents.where((event) {
-        return !eventsToRemove.any((remove) => 
-          remove.timestamp == event.timestamp && 
-          remove.name == event.name
+        return !eventsToRemove.any(
+          (remove) =>
+              remove.timestamp == event.timestamp && remove.name == event.name,
         );
       }).toList();
-      
+
       final prefs = await SharedPreferences.getInstance();
       final eventsJson = remainingEvents.map((e) => e.toJson()).toList();
       await prefs.setString(_eventsKey, jsonEncode(eventsJson));
@@ -95,9 +96,9 @@ class AnalyticsStorage {
     try {
       final prefs = await SharedPreferences.getInstance();
       final sessionString = prefs.getString(_sessionKey);
-      
+
       if (sessionString == null) return null;
-      
+
       final sessionJson = jsonDecode(sessionString);
       return AnalyticsSession(
         sessionId: sessionJson['session_id'],
@@ -112,7 +113,9 @@ class AnalyticsStorage {
   }
 
   /// Store user properties
-  static Future<void> storeUserProperties(Map<String, dynamic> properties) async {
+  static Future<void> storeUserProperties(
+    Map<String, dynamic> properties,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_userPropertiesKey, jsonEncode(properties));
@@ -126,9 +129,9 @@ class AnalyticsStorage {
     try {
       final prefs = await SharedPreferences.getInstance();
       final propertiesString = prefs.getString(_userPropertiesKey);
-      
+
       if (propertiesString == null) return {};
-      
+
       return Map<String, dynamic>.from(jsonDecode(propertiesString));
     } catch (e) {
       debugPrint('Error retrieving user properties: $e');
@@ -141,12 +144,12 @@ class AnalyticsStorage {
     try {
       final prefs = await SharedPreferences.getInstance();
       String? deviceId = prefs.getString(_deviceIdKey);
-      
+
       if (deviceId == null) {
         deviceId = const Uuid().v4();
         await prefs.setString(_deviceIdKey, deviceId);
       }
-      
+
       return deviceId;
     } catch (e) {
       debugPrint('Error getting device ID: $e');
@@ -173,15 +176,15 @@ class AnalyticsStorage {
       final events = await getStoredEvents();
       final userProperties = await getUserProperties();
       final session = await getStoredSession();
-      
+
       return {
         'stored_events_count': events.length,
         'user_properties_count': userProperties.length,
         'has_active_session': session != null && !session.isExpired,
-        'oldest_event_timestamp': events.isNotEmpty 
+        'oldest_event_timestamp': events.isNotEmpty
             ? events.first.timestamp.toIso8601String()
             : null,
-        'newest_event_timestamp': events.isNotEmpty 
+        'newest_event_timestamp': events.isNotEmpty
             ? events.last.timestamp.toIso8601String()
             : null,
       };
@@ -200,23 +203,20 @@ class AnalyticsSessionManager {
   /// Start a new session
   static Future<AnalyticsSession> startSession({String? userId}) async {
     await endCurrentSession();
-    
+
     final sessionId = const Uuid().v4();
     final deviceId = await AnalyticsStorage.getDeviceId();
-    
+
     _currentSession = AnalyticsSession(
       sessionId: sessionId,
       startTime: DateTime.now(),
       userId: userId,
-      properties: {
-        'device_id': deviceId,
-        'platform': 'flutter',
-      },
+      properties: {'device_id': deviceId, 'platform': 'flutter'},
     );
-    
+
     await AnalyticsStorage.storeSession(_currentSession!);
     _startSessionTimer();
-    
+
     return _currentSession!;
   }
 
@@ -224,7 +224,7 @@ class AnalyticsSessionManager {
   static Future<AnalyticsSession> getOrCreateSession({String? userId}) async {
     // Try to restore existing session
     final storedSession = await AnalyticsStorage.getStoredSession();
-    
+
     if (storedSession != null && !storedSession.isExpired) {
       _currentSession = storedSession;
       _currentSession!.updateActivity();
@@ -232,7 +232,7 @@ class AnalyticsSessionManager {
       _startSessionTimer();
       return _currentSession!;
     }
-    
+
     // Start new session if none exists or expired
     return await startSession(userId: userId);
   }
@@ -250,7 +250,7 @@ class AnalyticsSessionManager {
     if (_currentSession != null) {
       // Store final session data
       await AnalyticsStorage.storeSession(_currentSession!);
-      
+
       // Track session end event
       final sessionEvent = AnalyticsEvent(
         name: 'session_ended',
@@ -260,10 +260,10 @@ class AnalyticsSessionManager {
         },
         priority: AnalyticsEventPriority.medium,
       );
-      
+
       await AnalyticsStorage.storeEvent(sessionEvent);
     }
-    
+
     _currentSession = null;
     _sessionTimer?.cancel();
   }
@@ -272,21 +272,18 @@ class AnalyticsSessionManager {
   static AnalyticsSession? get currentSession => _currentSession;
 
   /// Check if session is active
-  static bool get hasActiveSession => 
+  static bool get hasActiveSession =>
       _currentSession != null && !_currentSession!.isExpired;
 
   /// Start session timeout timer
   static void _startSessionTimer() {
     _sessionTimer?.cancel();
-    
-    _sessionTimer = Timer.periodic(
-      const Duration(minutes: 1),
-      (_) async {
-        if (_currentSession?.isExpired == true) {
-          await endCurrentSession();
-        }
-      },
-    );
+
+    _sessionTimer = Timer.periodic(const Duration(minutes: 1), (_) async {
+      if (_currentSession?.isExpired == true) {
+        await endCurrentSession();
+      }
+    });
   }
 
   /// Get session statistics
@@ -294,7 +291,7 @@ class AnalyticsSessionManager {
     if (_currentSession == null) {
       return {'has_session': false};
     }
-    
+
     return {
       'has_session': true,
       'session_id': _currentSession!.sessionId,
@@ -318,7 +315,7 @@ class AnalyticsEventQueue {
   /// Add event to queue
   static Future<void> addEvent(AnalyticsEvent event) async {
     await AnalyticsStorage.storeEvent(event);
-    
+
     // Immediately upload critical events
     if (event.priority == AnalyticsEventPriority.critical) {
       _uploadEvents();
@@ -328,7 +325,7 @@ class AnalyticsEventQueue {
   /// Start periodic upload timer
   static void _startUploadTimer() {
     _uploadTimer?.cancel();
-    
+
     _uploadTimer = Timer.periodic(
       Duration(seconds: AnalyticsConfig.uploadIntervalSeconds),
       (_) => _uploadEvents(),
@@ -338,13 +335,13 @@ class AnalyticsEventQueue {
   /// Upload queued events
   static Future<void> _uploadEvents() async {
     if (_isUploading) return;
-    
+
     try {
       _isUploading = true;
       final events = await AnalyticsStorage.getStoredEvents();
-      
+
       if (events.isEmpty) return;
-      
+
       // Group events by priority
       final criticalEvents = events
           .where((e) => e.priority == AnalyticsEventPriority.critical)
@@ -358,21 +355,20 @@ class AnalyticsEventQueue {
       final lowPriorityEvents = events
           .where((e) => e.priority == AnalyticsEventPriority.low)
           .toList();
-      
+
       // Upload in priority order
       await _uploadEventBatch(criticalEvents);
       await _uploadEventBatch(highPriorityEvents);
-      
+
       // Apply sampling for performance metrics
       final sampledMediumEvents = _sampleEvents(mediumPriorityEvents);
       final sampledLowEvents = _sampleEvents(lowPriorityEvents);
-      
+
       await _uploadEventBatch(sampledMediumEvents);
       await _uploadEventBatch(sampledLowEvents);
-      
+
       // Clear uploaded events
       await AnalyticsStorage.clearEvents();
-      
     } catch (e) {
       debugPrint('Error uploading analytics events: $e');
     } finally {
@@ -383,16 +379,16 @@ class AnalyticsEventQueue {
   /// Upload a batch of events
   static Future<void> _uploadEventBatch(List<AnalyticsEvent> events) async {
     if (events.isEmpty) return;
-    
+
     // Split into smaller batches
     for (int i = 0; i < events.length; i += AnalyticsConfig.eventBatchSize) {
       final end = math.min(i + AnalyticsConfig.eventBatchSize, events.length);
       final batch = events.sublist(i, end);
-      
+
       // Simulate API call
       // In a real implementation, you would send this to your analytics service
       debugPrint('Uploading ${batch.length} analytics events');
-      
+
       // Add delay to simulate network call
       await Future.delayed(const Duration(milliseconds: 100));
     }
@@ -403,7 +399,7 @@ class AnalyticsEventQueue {
     if (AnalyticsConfig.performanceSampleRate >= 1.0) {
       return events;
     }
-    
+
     final random = math.Random();
     return events.where((_) {
       return random.nextDouble() < AnalyticsConfig.performanceSampleRate;
@@ -426,14 +422,14 @@ class AnalyticsEventQueue {
   /// Get queue statistics
   static Future<Map<String, dynamic>> getQueueStats() async {
     final events = await AnalyticsStorage.getStoredEvents();
-    
+
     final priorityCounts = <String, int>{};
     for (final priority in AnalyticsEventPriority.values) {
       priorityCounts[priority.name] = events
           .where((e) => e.priority == priority)
           .length;
     }
-    
+
     return {
       'total_queued_events': events.length,
       'priority_breakdown': priorityCounts,

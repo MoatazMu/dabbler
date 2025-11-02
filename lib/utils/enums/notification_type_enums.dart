@@ -1,5 +1,6 @@
 /// Notification type enum definitions with configuration and preferences
 library;
+
 import 'package:flutter/material.dart';
 
 /// Enum representing different types of notifications in the app
@@ -191,19 +192,16 @@ enum NotificationType {
   }
 
   /// Get all notification types that are essential
-  static List<NotificationType> get essentialTypes => NotificationType.values
-      .where((type) => !type.canBeDisabled)
-      .toList();
+  static List<NotificationType> get essentialTypes =>
+      NotificationType.values.where((type) => !type.canBeDisabled).toList();
 
   /// Get all notification types that can be customized
-  static List<NotificationType> get customizableTypes => NotificationType.values
-      .where((type) => type.canBeDisabled)
-      .toList();
+  static List<NotificationType> get customizableTypes =>
+      NotificationType.values.where((type) => type.canBeDisabled).toList();
 
   /// Get default enabled notification types
-  static List<NotificationType> get defaultEnabledTypes => NotificationType.values
-      .where((type) => type.defaultEnabled)
-      .toList();
+  static List<NotificationType> get defaultEnabledTypes =>
+      NotificationType.values.where((type) => type.defaultEnabled).toList();
 }
 
 /// Enum representing notification priority levels
@@ -330,9 +328,7 @@ enum NotificationCategory {
     NotificationType.gameInvite,
     NotificationType.gameReminder,
   ]),
-  system('system', 'System', Icons.settings, [
-    NotificationType.systemUpdate,
-  ]),
+  system('system', 'System', Icons.settings, [NotificationType.systemUpdate]),
   promotional('promotional', 'Promotional', Icons.local_offer, [
     NotificationType.marketing,
   ]);
@@ -341,7 +337,12 @@ enum NotificationCategory {
   final String displayName;
   final IconData icon;
   final List<NotificationType> types;
-  const NotificationCategory(this.value, this.displayName, this.icon, this.types);
+  const NotificationCategory(
+    this.value,
+    this.displayName,
+    this.icon,
+    this.types,
+  );
 
   /// Get color for this category
   Color get color {

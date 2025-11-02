@@ -1,5 +1,8 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/failure.dart';
 import '../models/venue.dart';
+
+typedef Result<T> = core.Result<T, Failure>;
 
 abstract class GeoRepository {
   /// Returns venues within ~radiusMeters, sorted by distance ASC.

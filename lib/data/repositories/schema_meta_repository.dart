@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/schema_meta.dart';
 
 abstract class SchemaMetaRepository {
@@ -12,7 +12,5 @@ abstract class SchemaMetaRepository {
   Future<Result<String?>> getAppSchemaHash();
 
   /// Compares app vs DB; optional allowlist of accepted DB hashes.
-  Future<Result<bool>> isCompatible({
-    List<String> acceptedDbHashes = const [],
-  });
+  Future<Result<bool>> isCompatible({List<String> acceptedDbHashes = const []});
 }

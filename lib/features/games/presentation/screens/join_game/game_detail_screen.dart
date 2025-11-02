@@ -2,21 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../providers/games_providers.dart';
-import '../../../../../core/services/auth_service.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 
 class GameDetailScreen extends ConsumerStatefulWidget {
   final String gameId;
-  
-  const GameDetailScreen({
-    super.key,
-    required this.gameId,
-  });
+
+  const GameDetailScreen({super.key, required this.gameId});
 
   @override
   ConsumerState<GameDetailScreen> createState() => _GameDetailScreenState();
 }
 
-class _GameDetailScreenState extends ConsumerState<GameDetailScreen> 
+class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     with TickerProviderStateMixin {
   late AnimationController _heroAnimationController;
   late ScrollController _scrollController;
@@ -54,28 +51,23 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   Widget build(BuildContext context) {
     final authService = AuthService();
     final currentUserId = authService.getCurrentUserId();
-    
+
     if (currentUserId == null) {
       return const Scaffold(
         body: Center(child: Text('Please log in to view game details')),
       );
     }
-    
+
     final detailState = ref.watch(
       gameDetailControllerProvider(
-        GameDetailParams(
-          gameId: widget.gameId,
-          currentUserId: currentUserId,
-        ),
+        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
       ),
     );
-    
+
     if (detailState.isLoading || !detailState.hasGame) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    
+
     if (detailState.error != null) {
       return Scaffold(
         body: Center(
@@ -94,9 +86,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         ),
       );
     }
-    
+
     final game = detailState.game!;
-    
+
     return Scaffold(
       body: CustomScrollView(
         controller: _scrollController,
@@ -131,34 +123,24 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                   gradient: LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
-                    colors: [
-                      Colors.blue[400]!,
-                      Colors.blue[600]!,
-                    ],
+                    colors: [Colors.blue[400]!, Colors.blue[600]!],
                   ),
                 ),
-                child: const Icon(
-                  Icons.sports,
-                  size: 80,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.sports, size: 80, color: Colors.white),
               ),
             ),
-            
+
             // Gradient Overlay
             Container(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.7),
-                  ],
+                  colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
                 ),
               ),
             ),
-            
+
             // Game Info Overlay
             Positioned(
               bottom: 16,
@@ -224,10 +206,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
         ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.share),
-          onPressed: _shareGame,
-        ),
+        IconButton(icon: const Icon(Icons.share), onPressed: _shareGame),
         IconButton(
           icon: const Icon(Icons.more_vert),
           onPressed: _showMoreOptions,
@@ -255,15 +234,17 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   Widget _buildQuickInfo(dynamic game) {
     final dateFormat = DateFormat('EEEE, MMM dd');
     final formattedDate = dateFormat.format(game.scheduledDate);
-    
+
     return Consumer(
       builder: (context, ref, child) {
-        final detailState = ref.watch(gameDetailControllerProvider(
-          GameDetailParams(gameId: widget.gameId, currentUserId: null)
-        ));
-        
+        final detailState = ref.watch(
+          gameDetailControllerProvider(
+            GameDetailParams(gameId: widget.gameId, currentUserId: null),
+          ),
+        );
+
         final venue = detailState.venue;
-        
+
         return Container(
           margin: const EdgeInsets.all(16),
           child: Card(
@@ -281,7 +262,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                           color: Colors.blue[100],
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.calendar_today, color: Colors.blue),
+                        child: const Icon(
+                          Icons.calendar_today,
+                          color: Colors.blue,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -308,7 +292,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Location
                   Row(
                     children: [
@@ -319,7 +303,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                           color: Colors.green[100],
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.location_on, color: Colors.green),
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Colors.green,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -334,9 +321,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                               ),
                             ),
                             Text(
-                              venue != null 
-                                ? '${venue.addressLine1}, ${venue.city}' 
-                                : 'Address not available',
+                              venue != null
+                                  ? '${venue.addressLine1}, ${venue.city}'
+                                  : 'Address not available',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 14,
@@ -352,7 +339,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                     ],
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Price
                   Row(
                     children: [
@@ -363,7 +350,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                           color: Colors.purple[100],
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.monetization_on, color: Colors.purple),
+                        child: const Icon(
+                          Icons.monetization_on,
+                          color: Colors.purple,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -371,18 +361,18 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              game.pricePerPlayer > 0 
-                                ? '${game.currency} ${game.pricePerPlayer.toStringAsFixed(0)}' 
-                                : 'Free to Play',
+                              game.pricePerPlayer > 0
+                                  ? '${game.currency} ${game.pricePerPlayer.toStringAsFixed(0)}'
+                                  : 'Free to Play',
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
-                              game.pricePerPlayer > 0 
-                                ? 'Per player' 
-                                : 'No cost per player',
+                              game.pricePerPlayer > 0
+                                  ? 'Per player'
+                                  : 'No cost per player',
                               style: TextStyle(
                                 color: Colors.grey[600],
                                 fontSize: 14,
@@ -405,13 +395,15 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   Widget _buildGameDescription() {
     return Consumer(
       builder: (context, ref, child) {
-        final detailState = ref.watch(gameDetailControllerProvider(
-          GameDetailParams(gameId: widget.gameId, currentUserId: null)
-        ));
-        
+        final detailState = ref.watch(
+          gameDetailControllerProvider(
+            GameDetailParams(gameId: widget.gameId, currentUserId: null),
+          ),
+        );
+
         final game = detailState.game;
         if (game == null) return const SizedBox.shrink();
-        
+
         return Container(
           margin: const EdgeInsets.symmetric(horizontal: 16),
           child: Card(
@@ -439,7 +431,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                     style: const TextStyle(fontSize: 14, height: 1.5),
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // Game Rules/Requirements
                   Container(
                     padding: const EdgeInsets.all(12),
@@ -453,7 +445,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.info, color: Colors.orange[700], size: 16),
+                            Icon(
+                              Icons.info,
+                              color: Colors.orange[700],
+                              size: 16,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               'Game Requirements',
@@ -481,13 +477,15 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   Widget _buildPlayersSection() {
     return Consumer(
       builder: (context, ref, child) {
-        final detailState = ref.watch(gameDetailControllerProvider(
-          GameDetailParams(gameId: widget.gameId, currentUserId: null)
-        ));
-        
+        final detailState = ref.watch(
+          gameDetailControllerProvider(
+            GameDetailParams(gameId: widget.gameId, currentUserId: null),
+          ),
+        );
+
         final game = detailState.game;
         if (game == null) return const SizedBox.shrink();
-        
+
         return Container(
           margin: const EdgeInsets.all(16),
           child: Card(
@@ -519,7 +517,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                     ],
                   ),
                   const SizedBox(height: 12),
-                  
+
                   // Players List Preview
                   ...List.generate(
                     4,
@@ -538,7 +536,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                               children: [
                                 Text(
                                   'Player ${index + 1}',
-                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                                 Text(
                                   'Intermediate • ${20 + index * 5} games played',
@@ -573,8 +573,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                       ),
                     ),
                   ),
-                  
-                  if (game.currentPlayers < game.maxPlayers) // Still spots available
+
+                  if (game.currentPlayers <
+                      game.maxPlayers) // Still spots available
                     Container(
                       margin: const EdgeInsets.only(top: 8),
                       padding: const EdgeInsets.all(12),
@@ -638,7 +639,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               // Venue Image
               Container(
                 height: 120,
@@ -651,13 +652,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                 ),
               ),
               const SizedBox(height: 12),
-              
+
               const Text(
                 'Central Park Basketball Court',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 4),
               Text(
@@ -665,7 +663,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                 style: TextStyle(color: Colors.grey[600]),
               ),
               const SizedBox(height: 8),
-              
+
               // Venue Features
               Wrap(
                 spacing: 8,
@@ -706,15 +704,12 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                   SizedBox(width: 8),
                   Text(
                     'Organizer',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               Row(
                 children: [
                   CircleAvatar(
@@ -747,7 +742,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                               (index) => Icon(
                                 Icons.star,
                                 size: 16,
-                                color: index < 4 ? Colors.amber : Colors.grey[300],
+                                color: index < 4
+                                    ? Colors.amber
+                                    : Colors.grey[300],
                               ),
                             ),
                             const SizedBox(width: 4),
@@ -812,7 +809,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                 ],
               ),
               const SizedBox(height: 12),
-              
+
               // Sample Comments
               ...List.generate(
                 2,
@@ -835,7 +832,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                               children: [
                                 Text(
                                   'User ${index + 1}',
-                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
@@ -849,9 +848,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              index == 0 
-                                ? 'Looking forward to this game! Should be fun.'
-                                : 'Will there be extra balls available?',
+                              index == 0
+                                  ? 'Looking forward to this game! Should be fun.'
+                                  : 'Will there be extra balls available?',
                             ),
                           ],
                         ),
@@ -891,22 +890,16 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
                 children: [
                   const Text(
                     'Free to Play',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
                     'Tomorrow at 6:00 PM',
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
                 ],
               ),
             ),
-            
+
             // Join/Leave Button
             SizedBox(
               width: 120,
@@ -935,9 +928,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   }
 
   void _shareGame() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Sharing game...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Sharing game...')));
   }
 
   void _showMoreOptions() {
@@ -967,9 +960,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   }
 
   void _showDirections() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening directions...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Opening directions...')));
   }
 
   void _viewAllPlayers() {
@@ -981,9 +974,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
   }
 
   void _messageOrganizer() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Opening message...')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Opening message...')));
   }
 
   void _viewOrganizerProfile() {

@@ -22,7 +22,7 @@ class PostPreviewWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -31,9 +31,7 @@ class PostPreviewWidget extends StatelessWidget {
           // Header
           Row(
             children: [
-              CircleAvatar(
-                child: const Icon(Icons.person),
-              ),
+              CircleAvatar(child: const Icon(Icons.person)),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -61,16 +59,13 @@ class PostPreviewWidget extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Content
           if (content.isNotEmpty)
-            Text(
-              content,
-              style: theme.textTheme.bodyLarge,
-            ),
-          
+            Text(content, style: theme.textTheme.bodyLarge),
+
           // Media preview
           if (selectedMedia.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -85,7 +80,7 @@ class PostPreviewWidget extends StatelessWidget {
               ),
             ),
           ],
-          
+
           // Sports tags
           if (selectedSports.isNotEmpty) ...[
             const SizedBox(height: 16),
@@ -96,12 +91,14 @@ class PostPreviewWidget extends StatelessWidget {
                 return Chip(
                   label: Text(sport),
                   backgroundColor: theme.colorScheme.primaryContainer,
-                  labelStyle: TextStyle(color: theme.colorScheme.onPrimaryContainer),
+                  labelStyle: TextStyle(
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
                 );
               }).toList(),
             ),
           ],
-          
+
           // Location
           if (selectedLocation != null) ...[
             const SizedBox(height: 16),
@@ -122,7 +119,7 @@ class PostPreviewWidget extends StatelessWidget {
               ],
             ),
           ],
-          
+
           // Scheduled time
           if (scheduledTime != null) ...[
             const SizedBox(height: 16),
@@ -164,7 +161,7 @@ class PostPreviewWidget extends StatelessWidget {
   String _formatScheduledTime(DateTime time) {
     final now = DateTime.now();
     final difference = time.difference(now);
-    
+
     if (difference.inDays > 0) {
       return '${difference.inDays}d ${difference.inHours % 24}h';
     } else if (difference.inHours > 0) {

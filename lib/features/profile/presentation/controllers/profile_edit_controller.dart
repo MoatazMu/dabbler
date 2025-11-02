@@ -2,10 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../domain/entities/user_profile.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
 import '../../domain/usecases/update_profile_usecase.dart';
 import '../../domain/usecases/upload_avatar_usecase.dart';
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 /// State for profile editing form
 class ProfileEditState {
@@ -60,7 +60,7 @@ class ProfileEditState {
 class ProfileEditController extends StateNotifier<ProfileEditState> {
   final UpdateProfileUseCase? _updateProfileUseCase;
   final UploadAvatarUseCase? _uploadAvatarUseCase;
-  
+
   UserProfile? _originalProfile;
   final Map<String, TextEditingController> _textControllers = {};
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
@@ -68,9 +68,9 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
   ProfileEditController({
     UpdateProfileUseCase? updateProfileUseCase,
     UploadAvatarUseCase? uploadAvatarUseCase,
-  })  : _updateProfileUseCase = updateProfileUseCase,
-        _uploadAvatarUseCase = uploadAvatarUseCase,
-        super(const ProfileEditState());
+  }) : _updateProfileUseCase = updateProfileUseCase,
+       _uploadAvatarUseCase = uploadAvatarUseCase,
+       super(const ProfileEditState());
 
   /// Form key for validation
   GlobalKey<FormState> get formKey => _formKey;
@@ -78,7 +78,7 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
   /// Initialize the form with existing profile data
   void initialize(UserProfile? profile) {
     _originalProfile = profile;
-    
+
     if (profile != null) {
       final formData = {
         'display_name': profile.displayName,
@@ -106,15 +106,26 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
   /// Initialize text controllers with current values
   void _initializeTextControllers(Map<String, dynamic> formData) {
     _disposeControllers();
-    
-    final fields = ['display_name', 'first_name', 'last_name', 'bio', 'email', 'phone_number', 'location', 'gender'];
-    
+
+    final fields = [
+      'display_name',
+      'first_name',
+      'last_name',
+      'bio',
+      'email',
+      'phone_number',
+      'location',
+      'gender',
+    ];
+
     for (final field in fields) {
       final value = formData[field]?.toString() ?? '';
       _textControllers[field] = TextEditingController(text: value);
-      
+
       // Add listeners for real-time validation
-      _textControllers[field]?.addListener(() => _onFieldChanged(field, _textControllers[field]!.text));
+      _textControllers[field]?.addListener(
+        () => _onFieldChanged(field, _textControllers[field]!.text),
+      );
     }
   }
 
@@ -160,10 +171,7 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
 
     final hasChanges = _hasFormChanges(updatedFormData);
 
-    state = state.copyWith(
-      formData: updatedFormData,
-      hasChanges: hasChanges,
-    );
+    state = state.copyWith(formData: updatedFormData, hasChanges: hasChanges);
   }
 
   /// Update date of birth
@@ -211,7 +219,7 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
         (uploadResult) {
           // Update form data with new avatar URL
           updateField('avatar_url', uploadResult.avatarUrl);
-          
+
           state = state.copyWith(
             isUploadingAvatar: false,
             avatarUploadProgress: 100.0,
@@ -219,8 +227,7 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
           );
 
           // Show warnings if any
-          if (uploadResult.warnings.isNotEmpty) {
-          }
+          if (uploadResult.warnings.isNotEmpty) {}
 
           return true;
         },
@@ -263,9 +270,7 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
       );
 
       if (_updateProfileUseCase == null) {
-        state = state.copyWith(
-          isSaving: false,
-        );
+        state = state.copyWith(isSaving: false);
         return true;
       }
 
@@ -281,7 +286,7 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
         },
         (updateResult) {
           _originalProfile = updateResult.updatedProfile;
-          
+
           state = state.copyWith(
             isSaving: false,
             hasChanges: false,
@@ -289,8 +294,7 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
           );
 
           // Show warnings if any
-          if (updateResult.warnings.isNotEmpty) {
-          }
+          if (updateResult.warnings.isNotEmpty) {}
 
           return true;
         },
@@ -339,7 +343,10 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
       case 'phone_number':
         if (value != null && value.toString().trim().isNotEmpty) {
           final phoneRegex = RegExp(r'^\+?[1-9]\d{1,14}$');
-          final cleanPhone = value.toString().replaceAll(RegExp(r'[\s\-()]'), '');
+          final cleanPhone = value.toString().replaceAll(
+            RegExp(r'[\s\-()]'),
+            '',
+          );
           if (!phoneRegex.hasMatch(cleanPhone)) {
             return 'Please enter a valid phone number';
           }
@@ -367,7 +374,13 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
 
       case 'gender':
         if (value != null && value.toString().isNotEmpty) {
-          const validGenders = ['male', 'female', 'non-binary', 'prefer_not_to_say', 'other'];
+          const validGenders = [
+            'male',
+            'female',
+            'non-binary',
+            'prefer_not_to_say',
+            'other',
+          ];
           if (!validGenders.contains(value.toString().toLowerCase())) {
             return 'Please select a valid gender option';
           }
@@ -380,14 +393,14 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
   /// Validate all form fields
   Map<String, String?> _validateAllFields() {
     final errors = <String, String?>{};
-    
+
     for (final entry in state.formData.entries) {
       final error = _validateField(entry.key, entry.value);
       if (error != null) {
         errors[entry.key] = error;
       }
     }
-    
+
     return errors;
   }
 
@@ -396,14 +409,14 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
     if (_originalProfile == null) return false;
 
     return formData['display_name'] != _originalProfile!.displayName ||
-           formData['first_name'] != (_originalProfile!.firstName ?? '') ||
-           formData['last_name'] != (_originalProfile!.lastName ?? '') ||
-           formData['bio'] != (_originalProfile!.bio ?? '') ||
-           formData['email'] != _originalProfile!.email ||
-           formData['phone_number'] != (_originalProfile!.phoneNumber ?? '') ||
-           formData['location'] != (_originalProfile!.location ?? '') ||
-           formData['gender'] != (_originalProfile!.gender ?? '') ||
-           formData['date_of_birth'] != _originalProfile!.dateOfBirth;
+        formData['first_name'] != (_originalProfile!.firstName ?? '') ||
+        formData['last_name'] != (_originalProfile!.lastName ?? '') ||
+        formData['bio'] != (_originalProfile!.bio ?? '') ||
+        formData['email'] != _originalProfile!.email ||
+        formData['phone_number'] != (_originalProfile!.phoneNumber ?? '') ||
+        formData['location'] != (_originalProfile!.location ?? '') ||
+        formData['gender'] != (_originalProfile!.gender ?? '') ||
+        formData['date_of_birth'] != _originalProfile!.dateOfBirth;
   }
 
   /// Get field validation status
@@ -417,20 +430,35 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
   }
 
   /// Check if form can be saved
-  bool get canSave => state.hasChanges && !state.isSaving && state.fieldErrors.isEmpty;
+  bool get canSave =>
+      state.hasChanges && !state.isSaving && state.fieldErrors.isEmpty;
 
   /// Get form completion percentage
   double get completionPercentage {
     final totalFields = 8; // Major fields
     var completedFields = 0;
 
-    if (state.formData['display_name']?.toString().trim().isNotEmpty == true) completedFields++;
-    if (state.formData['email']?.toString().trim().isNotEmpty == true) completedFields++;
-    if (state.formData['bio']?.toString().trim().isNotEmpty == true) completedFields++;
-    if (state.formData['location']?.toString().trim().isNotEmpty == true) completedFields++;
-    if (state.formData['first_name']?.toString().trim().isNotEmpty == true) completedFields++;
-    if (state.formData['last_name']?.toString().trim().isNotEmpty == true) completedFields++;
-    if (state.formData['phone_number']?.toString().trim().isNotEmpty == true) completedFields++;
+    if (state.formData['display_name']?.toString().trim().isNotEmpty == true) {
+      completedFields++;
+    }
+    if (state.formData['email']?.toString().trim().isNotEmpty == true) {
+      completedFields++;
+    }
+    if (state.formData['bio']?.toString().trim().isNotEmpty == true) {
+      completedFields++;
+    }
+    if (state.formData['location']?.toString().trim().isNotEmpty == true) {
+      completedFields++;
+    }
+    if (state.formData['first_name']?.toString().trim().isNotEmpty == true) {
+      completedFields++;
+    }
+    if (state.formData['last_name']?.toString().trim().isNotEmpty == true) {
+      completedFields++;
+    }
+    if (state.formData['phone_number']?.toString().trim().isNotEmpty == true) {
+      completedFields++;
+    }
     if (state.formData['date_of_birth'] != null) completedFields++;
 
     return (completedFields / totalFields * 100).clamp(0.0, 100.0);
@@ -475,7 +503,11 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
 
 /// Extension to add title case functionality
 extension StringExtension on String {
-  String get titleCase => split(' ').map((word) => 
-    word.isEmpty ? word : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}'
-  ).join(' ');
+  String get titleCase => split(' ')
+      .map(
+        (word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+      )
+      .join(' ');
 }

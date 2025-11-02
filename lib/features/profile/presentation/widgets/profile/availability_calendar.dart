@@ -58,7 +58,7 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
 
   Widget _buildHeader() {
     final currentMonth = DateTime.now().add(Duration(days: _currentPage * 30));
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -68,9 +68,9 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
         ),
         Text(
           DateFormat('MMMM yyyy').format(currentMonth),
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
         ),
         IconButton(
           onPressed: _currentPage < widget.monthsToShow - 1 ? _nextMonth : null,
@@ -134,15 +134,15 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
     final firstDayOfMonth = DateTime(month.year, month.month, 1);
     final lastDayOfMonth = DateTime(month.year, month.month + 1, 0);
     final firstDayOfWeek = firstDayOfMonth.weekday % 7;
-    
+
     // Generate all days for the month view (including padding days)
     final days = <DateTime?>[];
-    
+
     // Add empty days for padding
     for (int i = 0; i < firstDayOfWeek; i++) {
       days.add(null);
     }
-    
+
     // Add actual days of the month
     for (int day = 1; day <= lastDayOfMonth.day; day++) {
       days.add(DateTime(month.year, month.month, day));
@@ -156,21 +156,25 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-                .map((day) => Expanded(
-                      child: Center(
-                        child: Text(
-                          day,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.6),
-                          ),
+                .map(
+                  (day) => Expanded(
+                    child: Center(
+                      child: Text(
+                        day,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(
+                            context,
+                          ).textTheme.bodySmall?.color?.withOpacity(0.6),
                         ),
                       ),
-                    ))
+                    ),
+                  ),
+                )
                 .toList(),
           ),
           const SizedBox(height: 8),
-          
+
           // Calendar grid
           Expanded(
             child: GridView.builder(
@@ -186,7 +190,7 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
                 if (date == null) {
                   return const SizedBox.shrink();
                 }
-                
+
                 return _buildDayCell(date);
               },
             ),
@@ -198,11 +202,13 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
 
   Widget _buildDayCell(DateTime date) {
     final availability = widget.availability[date] ?? AvailabilityStatus.notSet;
-    final isSelected = widget.selectedDate != null &&
+    final isSelected =
+        widget.selectedDate != null &&
         date.year == widget.selectedDate!.year &&
         date.month == widget.selectedDate!.month &&
         date.day == widget.selectedDate!.day;
-    final isToday = DateTime.now().year == date.year &&
+    final isToday =
+        DateTime.now().year == date.year &&
         DateTime.now().month == date.month &&
         DateTime.now().day == date.day;
 
@@ -221,8 +227,8 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
             color: isSelected
                 ? Theme.of(context).primaryColor
                 : isToday
-                    ? Theme.of(context).primaryColor.withOpacity(0.5)
-                    : Colors.transparent,
+                ? Theme.of(context).primaryColor.withOpacity(0.5)
+                : Colors.transparent,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -260,9 +266,9 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
         children: [
           Text(
             formattedDate,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           Row(
@@ -347,30 +353,32 @@ class _AvailabilityCalendarState extends State<AvailabilityCalendar> {
               style: Theme.of(context).textTheme.bodyLarge,
             ),
             const SizedBox(height: 16),
-            ...AvailabilityStatus.values.map((status) => RadioListTile(
-                  title: Row(
-                    children: [
-                      Container(
-                        width: 16,
-                        height: 16,
-                        decoration: BoxDecoration(
-                          color: _getAvailabilityColor(status),
-                          shape: BoxShape.circle,
-                        ),
+            ...AvailabilityStatus.values.map(
+              (status) => RadioListTile(
+                title: Row(
+                  children: [
+                    Container(
+                      width: 16,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: _getAvailabilityColor(status),
+                        shape: BoxShape.circle,
                       ),
-                      const SizedBox(width: 8),
-                      Text(_getAvailabilityLabel(status)),
-                    ],
-                  ),
-                  value: status,
-                  groupValue: current,
-                  onChanged: (value) {
-                    if (value != null) {
-                      widget.onAvailabilityChanged?.call(date, value);
-                      Navigator.of(context).pop();
-                    }
-                  },
-                )),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(_getAvailabilityLabel(status)),
+                  ],
+                ),
+                value: status,
+                groupValue: current,
+                onChanged: (value) {
+                  if (value != null) {
+                    widget.onAvailabilityChanged?.call(date, value);
+                    Navigator.of(context).pop();
+                  }
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -415,27 +423,16 @@ class _LegendItem extends StatelessWidget {
         Container(
           width: 12,
           height: 12,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
-          ),
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
 }
 
-enum AvailabilityStatus {
-  available,
-  maybe,
-  busy,
-  notSet,
-}
+enum AvailabilityStatus { available, maybe, busy, notSet }
 
 // Compact weekly view for smaller spaces
 class WeeklyAvailabilityView extends StatefulWidget {
@@ -481,28 +478,32 @@ class _WeeklyAvailabilityViewState extends State<WeeklyAvailabilityView> {
 
   Widget _buildWeekHeader() {
     final weekEnd = _currentWeekStart.add(const Duration(days: 6));
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
           onPressed: () {
             setState(() {
-              _currentWeekStart = _currentWeekStart.subtract(const Duration(days: 7));
+              _currentWeekStart = _currentWeekStart.subtract(
+                const Duration(days: 7),
+              );
             });
           },
           icon: const Icon(Icons.chevron_left),
         ),
         Text(
           '${DateFormat('MMM d').format(_currentWeekStart)} - ${DateFormat('MMM d').format(weekEnd)}',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         IconButton(
           onPressed: () {
             setState(() {
-              _currentWeekStart = _currentWeekStart.add(const Duration(days: 7));
+              _currentWeekStart = _currentWeekStart.add(
+                const Duration(days: 7),
+              );
             });
           },
           icon: const Icon(Icons.chevron_right),
@@ -515,8 +516,10 @@ class _WeeklyAvailabilityViewState extends State<WeeklyAvailabilityView> {
     return Row(
       children: List.generate(7, (index) {
         final date = _currentWeekStart.add(Duration(days: index));
-        final availability = widget.availability[date] ?? AvailabilityStatus.notSet;
-        final isToday = DateTime.now().year == date.year &&
+        final availability =
+            widget.availability[date] ?? AvailabilityStatus.notSet;
+        final isToday =
+            DateTime.now().year == date.year &&
             DateTime.now().month == date.month &&
             DateTime.now().day == date.day;
 
@@ -566,7 +569,10 @@ class _WeeklyAvailabilityViewState extends State<WeeklyAvailabilityView> {
     );
   }
 
-  void _showQuickAvailabilitySelector(DateTime date, AvailabilityStatus current) {
+  void _showQuickAvailabilitySelector(
+    DateTime date,
+    AvailabilityStatus current,
+  ) {
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -603,10 +609,7 @@ class _WeeklyAvailabilityViewState extends State<WeeklyAvailabilityView> {
                               : null,
                         ),
                         child: current == status
-                            ? const Icon(
-                                Icons.check,
-                                color: Colors.white,
-                              )
+                            ? const Icon(Icons.check, color: Colors.white)
                             : null,
                       ),
                       const SizedBox(height: 8),

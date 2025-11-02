@@ -1,12 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/game.dart';
+import 'package:dabbler/data/models/games/game.dart';
 import '../../domain/usecases/find_games_usecase.dart';
 
-enum GameListType {
-  upcoming,
-  nearby,
-  all,
-}
+enum GameListType { upcoming, nearby, all }
 
 class GameFilters {
   final String? sport;
@@ -117,7 +113,8 @@ class GamesState {
 
   bool get isLoading => isLoadingUpcoming || isLoadingNearby || isLoadingAll;
   bool get hasError => error != null;
-  bool get hasGames => upcomingGames.isNotEmpty || nearbyGames.isNotEmpty || allGames.isNotEmpty;
+  bool get hasGames =>
+      upcomingGames.isNotEmpty || nearbyGames.isNotEmpty || allGames.isNotEmpty;
 
   GamesState copyWith({
     List<Game>? upcomingGames,
@@ -153,10 +150,9 @@ class GamesController extends StateNotifier<GamesState> {
   static const int _pageSize = 20;
   static const Duration _cacheValidity = Duration(minutes: 5);
 
-  GamesController({
-    required FindGamesUseCase findGamesUseCase,
-  })  : _findGamesUseCase = findGamesUseCase,
-        super(const GamesState());
+  GamesController({required FindGamesUseCase findGamesUseCase})
+    : _findGamesUseCase = findGamesUseCase,
+      super(const GamesState());
 
   /// Load games with current filters
   Future<void> loadGames({
@@ -184,23 +180,26 @@ class GamesController extends StateNotifier<GamesState> {
 
     try {
       final filters = _buildFiltersForType(type);
-      final result = await _findGamesUseCase(FindGamesParams(
-        sport: filters.sport,
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-        skillLevel: filters.skillLevel,
-        maxPricePerPlayer: filters.maxPricePerPlayer,
-        userLatitude: filters.userLatitude,
-        userLongitude: filters.userLongitude,
-        radiusKm: filters.radiusKm,
-        includeWaitlistGames: filters.includeWaitlisted,
-        page: page,
-        limit: _pageSize,
-      ));
+      final result = await _findGamesUseCase(
+        FindGamesParams(
+          sport: filters.sport,
+          startDate: filters.startDate,
+          endDate: filters.endDate,
+          skillLevel: filters.skillLevel,
+          maxPricePerPlayer: filters.maxPricePerPlayer,
+          userLatitude: filters.userLatitude,
+          userLongitude: filters.userLongitude,
+          radiusKm: filters.radiusKm,
+          includeWaitlistGames: filters.includeWaitlisted,
+          page: page,
+          limit: _pageSize,
+        ),
+      );
 
       result.fold(
         (failure) => _handleError(failure.message),
-        (gamesWithDistance) => _handleGamesLoaded(gamesWithDistance, type, page, append),
+        (gamesWithDistance) =>
+            _handleGamesLoaded(gamesWithDistance, type, page, append),
       );
     } catch (e) {
       _handleError('Failed to load games: $e');
@@ -210,7 +209,7 @@ class GamesController extends StateNotifier<GamesState> {
   /// Refresh all game lists
   Future<void> refreshGames() async {
     state = state.copyWith(isRefreshing: true, error: null);
-    
+
     try {
       // Load all types concurrently
       await Future.wait([
@@ -257,7 +256,7 @@ class GamesController extends StateNotifier<GamesState> {
       userLongitude: longitude,
       radiusKm: state.filters.radiusKm ?? 10.0, // Default 10km radius
     );
-    
+
     state = state.copyWith(filters: newFilters);
     await loadGames(type: GameListType.nearby);
   }
@@ -277,19 +276,17 @@ class GamesController extends StateNotifier<GamesState> {
 
   GameFilters _buildFiltersForType(GameListType type) {
     final baseFilters = state.filters;
-    
+
     switch (type) {
       case GameListType.upcoming:
         return baseFilters.copyWith(
           startDate: DateTime.now(),
           endDate: DateTime.now().add(const Duration(days: 7)),
         );
-      
+
       case GameListType.nearby:
-        return baseFilters.copyWith(
-          radiusKm: baseFilters.radiusKm ?? 10.0,
-        );
-      
+        return baseFilters.copyWith(radiusKm: baseFilters.radiusKm ?? 10.0);
+
       case GameListType.all:
         return baseFilters;
     }
@@ -300,10 +297,15 @@ class GamesController extends StateNotifier<GamesState> {
     return DateTime.now().difference(state.lastUpdated!) > _cacheValidity;
   }
 
-  void _handleGamesLoaded(List<GameWithDistance> gamesWithDistance, GameListType type, int page, bool append) {
+  void _handleGamesLoaded(
+    List<GameWithDistance> gamesWithDistance,
+    GameListType type,
+    int page,
+    bool append,
+  ) {
     final currentTime = DateTime.now();
     final games = gamesWithDistance.map((gwd) => gwd.game).toList();
-    
+
     // Calculate pagination info
     final paginationInfo = PaginationInfo(
       currentPage: page,
@@ -315,18 +317,23 @@ class GamesController extends StateNotifier<GamesState> {
 
     switch (type) {
       case GameListType.upcoming:
-        final filteredGames = games.where((game) => 
-          game.scheduledDate.isAfter(currentTime) && 
-          game.status == GameStatus.upcoming
-        ).toList();
-        
+        final filteredGames = games
+            .where(
+              (game) =>
+                  game.scheduledDate.isAfter(currentTime) &&
+                  game.status == GameStatus.upcoming,
+            )
+            .toList();
+
         state = state.copyWith(
-          upcomingGames: append ? [...state.upcomingGames, ...filteredGames] : filteredGames,
+          upcomingGames: append
+              ? [...state.upcomingGames, ...filteredGames]
+              : filteredGames,
           isLoadingUpcoming: false,
           lastUpdated: currentTime,
         );
         break;
-        
+
       case GameListType.nearby:
         state = state.copyWith(
           nearbyGames: append ? [...state.nearbyGames, ...games] : games,
@@ -334,7 +341,7 @@ class GamesController extends StateNotifier<GamesState> {
           lastUpdated: currentTime,
         );
         break;
-        
+
       case GameListType.all:
         state = state.copyWith(
           allGames: append ? [...state.allGames, ...games] : games,

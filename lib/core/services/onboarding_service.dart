@@ -33,7 +33,7 @@ class OnboardingService {
 
     // Check current onboarding step
     final currentStep = await _getOnboardingStep();
-    
+
     if (currentStep == null) {
       // First time user - start with profile
       return '/create-user-info';
@@ -73,10 +73,10 @@ class OnboardingService {
     try {
       // Clear onboarding progress
       await _clearOnboardingProgress();
-      
+
       // Clear user data
       await _userService.clearUserData();
-      
+
       // Debug logging removed for production
     } catch (e) {
       // Error handling without print statements
@@ -96,15 +96,15 @@ class OnboardingService {
   /// Get onboarding progress percentage (0.0 to 1.0)
   Future<double> getOnboardingProgress() async {
     final currentStep = await _getOnboardingStep();
-    
+
     if (currentStep == null) return 0.0;
     if (await _isOnboardingCompleted()) return 1.0;
-    
+
     switch (currentStep) {
       case onboardingStepProfile:
         return 0.25; // 1 of 4 steps
       case onboardingStepSports:
-        return 0.5;  // 2 of 4 steps
+        return 0.5; // 2 of 4 steps
       case onboardingStepIntent:
         return 0.75; // 3 of 4 steps
       default:
@@ -115,10 +115,10 @@ class OnboardingService {
   /// Get the step number for display (1-4)
   Future<int> getCurrentStepNumber() async {
     final currentStep = await _getOnboardingStep();
-    
+
     if (currentStep == null) return 1;
     if (await _isOnboardingCompleted()) return 4;
-    
+
     switch (currentStep) {
       case onboardingStepProfile:
         return 2;
@@ -134,7 +134,7 @@ class OnboardingService {
   /// Get step title for display
   Future<String> getCurrentStepTitle() async {
     final stepNumber = await getCurrentStepNumber();
-    
+
     switch (stepNumber) {
       case 1:
         return 'Profile Information';
@@ -196,4 +196,4 @@ class OnboardingService {
       // Error handling without print statements
     }
   }
-} 
+}

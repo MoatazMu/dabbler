@@ -6,10 +6,12 @@ class AvailabilityPreferencesScreen extends ConsumerStatefulWidget {
   const AvailabilityPreferencesScreen({super.key});
 
   @override
-  ConsumerState<AvailabilityPreferencesScreen> createState() => _AvailabilityPreferencesScreenState();
+  ConsumerState<AvailabilityPreferencesScreen> createState() =>
+      _AvailabilityPreferencesScreenState();
 }
 
-class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPreferencesScreen>
+class _AvailabilityPreferencesScreenState
+    extends ConsumerState<AvailabilityPreferencesScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -41,11 +43,36 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
       name: 'Weekday Evenings',
       description: 'Monday to Friday, 6:00 PM - 10:00 PM',
       schedule: {
-        'monday': [TimeSlot(start: TimeOfDay(hour: 18, minute: 0), end: TimeOfDay(hour: 22, minute: 0))],
-        'tuesday': [TimeSlot(start: TimeOfDay(hour: 18, minute: 0), end: TimeOfDay(hour: 22, minute: 0))],
-        'wednesday': [TimeSlot(start: TimeOfDay(hour: 18, minute: 0), end: TimeOfDay(hour: 22, minute: 0))],
-        'thursday': [TimeSlot(start: TimeOfDay(hour: 18, minute: 0), end: TimeOfDay(hour: 22, minute: 0))],
-        'friday': [TimeSlot(start: TimeOfDay(hour: 18, minute: 0), end: TimeOfDay(hour: 22, minute: 0))],
+        'monday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 18, minute: 0),
+            end: TimeOfDay(hour: 22, minute: 0),
+          ),
+        ],
+        'tuesday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 18, minute: 0),
+            end: TimeOfDay(hour: 22, minute: 0),
+          ),
+        ],
+        'wednesday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 18, minute: 0),
+            end: TimeOfDay(hour: 22, minute: 0),
+          ),
+        ],
+        'thursday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 18, minute: 0),
+            end: TimeOfDay(hour: 22, minute: 0),
+          ),
+        ],
+        'friday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 18, minute: 0),
+            end: TimeOfDay(hour: 22, minute: 0),
+          ),
+        ],
         'saturday': [],
         'sunday': [],
       },
@@ -59,21 +86,66 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
         'wednesday': [],
         'thursday': [],
         'friday': [],
-        'saturday': [TimeSlot(start: TimeOfDay(hour: 9, minute: 0), end: TimeOfDay(hour: 18, minute: 0))],
-        'sunday': [TimeSlot(start: TimeOfDay(hour: 9, minute: 0), end: TimeOfDay(hour: 18, minute: 0))],
+        'saturday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 9, minute: 0),
+            end: TimeOfDay(hour: 18, minute: 0),
+          ),
+        ],
+        'sunday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 9, minute: 0),
+            end: TimeOfDay(hour: 18, minute: 0),
+          ),
+        ],
       },
     ),
     AvailabilityTemplate(
       name: 'Morning Person',
       description: 'Every day, 6:00 AM - 10:00 AM',
       schedule: {
-        'monday': [TimeSlot(start: TimeOfDay(hour: 6, minute: 0), end: TimeOfDay(hour: 10, minute: 0))],
-        'tuesday': [TimeSlot(start: TimeOfDay(hour: 6, minute: 0), end: TimeOfDay(hour: 10, minute: 0))],
-        'wednesday': [TimeSlot(start: TimeOfDay(hour: 6, minute: 0), end: TimeOfDay(hour: 10, minute: 0))],
-        'thursday': [TimeSlot(start: TimeOfDay(hour: 6, minute: 0), end: TimeOfDay(hour: 10, minute: 0))],
-        'friday': [TimeSlot(start: TimeOfDay(hour: 6, minute: 0), end: TimeOfDay(hour: 10, minute: 0))],
-        'saturday': [TimeSlot(start: TimeOfDay(hour: 6, minute: 0), end: TimeOfDay(hour: 10, minute: 0))],
-        'sunday': [TimeSlot(start: TimeOfDay(hour: 6, minute: 0), end: TimeOfDay(hour: 10, minute: 0))],
+        'monday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 6, minute: 0),
+            end: TimeOfDay(hour: 10, minute: 0),
+          ),
+        ],
+        'tuesday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 6, minute: 0),
+            end: TimeOfDay(hour: 10, minute: 0),
+          ),
+        ],
+        'wednesday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 6, minute: 0),
+            end: TimeOfDay(hour: 10, minute: 0),
+          ),
+        ],
+        'thursday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 6, minute: 0),
+            end: TimeOfDay(hour: 10, minute: 0),
+          ),
+        ],
+        'friday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 6, minute: 0),
+            end: TimeOfDay(hour: 10, minute: 0),
+          ),
+        ],
+        'saturday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 6, minute: 0),
+            end: TimeOfDay(hour: 10, minute: 0),
+          ),
+        ],
+        'sunday': [
+          TimeSlot(
+            start: TimeOfDay(hour: 6, minute: 0),
+            end: TimeOfDay(hour: 10, minute: 0),
+          ),
+        ],
       },
     ),
   ];
@@ -81,15 +153,21 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize with some default availability
     _weeklySchedule['saturday']!.add(
-      TimeSlot(start: const TimeOfDay(hour: 10, minute: 0), end: const TimeOfDay(hour: 16, minute: 0))
+      TimeSlot(
+        start: const TimeOfDay(hour: 10, minute: 0),
+        end: const TimeOfDay(hour: 16, minute: 0),
+      ),
     );
     _weeklySchedule['sunday']!.add(
-      TimeSlot(start: const TimeOfDay(hour: 14, minute: 0), end: const TimeOfDay(hour: 18, minute: 0))
+      TimeSlot(
+        start: const TimeOfDay(hour: 14, minute: 0),
+        end: const TimeOfDay(hour: 18, minute: 0),
+      ),
     );
-    
+
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
@@ -98,13 +176,13 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -153,18 +231,15 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
       flexibleSpace: FlexibleSpaceBar(
         title: Text(
           'Availability',
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         centerTitle: false,
         titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
       ),
       actions: [
-        TextButton(
-          onPressed: _saveSettings,
-          child: const Text('Save'),
-        ),
+        TextButton(onPressed: _saveSettings, child: const Text('Save')),
         const SizedBox(width: 8),
       ],
     );
@@ -199,7 +274,13 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
     );
   }
 
-  Widget _buildQuickAction(String title, String subtitle, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildQuickAction(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -235,9 +316,9 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
               const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                 textAlign: TextAlign.center,
               ),
             ],
@@ -262,9 +343,13 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
     );
   }
 
-  Widget _buildDaySchedule(BuildContext context, String day, List<TimeSlot> timeSlots) {
+  Widget _buildDaySchedule(
+    BuildContext context,
+    String day,
+    List<TimeSlot> timeSlots,
+  ) {
     final dayName = _getDayName(day);
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(16),
@@ -280,16 +365,19 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
             children: [
               Text(
                 dayName,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               TextButton.icon(
                 onPressed: () => _addTimeSlot(day),
                 icon: const Icon(Icons.add, size: 16),
                 label: const Text('Add Time'),
                 style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 4,
+                  ),
                 ),
               ),
             ],
@@ -308,9 +396,9 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
                   const SizedBox(width: 8),
                   Text(
                     'No availability set',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey[600],
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
                   ),
                 ],
               ),
@@ -326,7 +414,12 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
     );
   }
 
-  Widget _buildTimeSlotCard(BuildContext context, String day, int index, TimeSlot timeSlot) {
+  Widget _buildTimeSlotCard(
+    BuildContext context,
+    String day,
+    int index,
+    TimeSlot timeSlot,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.all(12),
@@ -385,9 +478,11 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
       [
         SwitchListTile(
           title: const Text('Enable Vacation Mode'),
-          subtitle: Text(_vacationMode 
-              ? 'Your availability is currently paused'
-              : 'Set vacation dates to pause availability'),
+          subtitle: Text(
+            _vacationMode
+                ? 'Your availability is currently paused'
+                : 'Set vacation dates to pause availability',
+          ),
           value: _vacationMode,
           onChanged: (value) => setState(() => _vacationMode = value),
           contentPadding: EdgeInsets.zero,
@@ -424,7 +519,11 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                  const Icon(
+                    Icons.info_outline,
+                    color: Colors.orange,
+                    size: 20,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -451,9 +550,11 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
       [
         SwitchListTile(
           title: const Text('Accept Last-Minute Invites'),
-          subtitle: Text(_lastMinuteAvailability 
-              ? 'You can be invited up to $_lastMinuteHours hours before games'
-              : 'You won\'t receive last-minute invitations'),
+          subtitle: Text(
+            _lastMinuteAvailability
+                ? 'You can be invited up to $_lastMinuteHours hours before games'
+                : 'You won\'t receive last-minute invitations',
+          ),
           value: _lastMinuteAvailability,
           onChanged: (value) => setState(() => _lastMinuteAvailability = value),
           contentPadding: EdgeInsets.zero,
@@ -462,9 +563,9 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
           const SizedBox(height: 16),
           Text(
             'Minimum notice required: $_lastMinuteHours hours',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
           Slider(
@@ -473,22 +574,23 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
             max: 24,
             divisions: 23,
             label: '$_lastMinuteHours hours',
-            onChanged: (value) => setState(() => _lastMinuteHours = value.round()),
+            onChanged: (value) =>
+                setState(() => _lastMinuteHours = value.round()),
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 '1 hour',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
               Text(
                 '24 hours',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
               ),
             ],
           ),
@@ -523,7 +625,9 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor.withOpacity(0.1),
+                          color: Theme.of(
+                            context,
+                          ).primaryColor.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -539,16 +643,14 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
                           children: [
                             Text(
                               template.name,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 4),
                             Text(
                               template.description,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -569,14 +671,17 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
     );
   }
 
-  Widget _buildSection(BuildContext context, String title, String description, List<Widget> children) {
+  Widget _buildSection(
+    BuildContext context,
+    String title,
+    String description,
+    List<Widget> children,
+  ) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
       child: Card(
         elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -584,16 +689,16 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
             children: [
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               ),
               const SizedBox(height: 16),
               ...children,
@@ -604,15 +709,19 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
     );
   }
 
-  Widget _buildDateSelector(String label, DateTime? date, ValueChanged<DateTime> onChanged) {
+  Widget _buildDateSelector(
+    String label,
+    DateTime? date,
+    ValueChanged<DateTime> onChanged,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Material(
@@ -647,7 +756,11 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
                       color: date != null ? null : Colors.grey[600],
                     ),
                   ),
-                  const Icon(Icons.calendar_today, size: 20, color: Colors.grey),
+                  const Icon(
+                    Icons.calendar_today,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
                 ],
               ),
             ),
@@ -680,8 +793,19 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
 
   String _formatDate(DateTime date) {
     final months = [
-      '', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      '',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month]} ${date.day}, ${date.year}';
   }
@@ -692,7 +816,9 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
       setState(() {
         _weeklySchedule[day]!.add(result);
         // Sort time slots by start time
-        _weeklySchedule[day]!.sort((a, b) => _compareTimeOfDay(a.start, b.start));
+        _weeklySchedule[day]!.sort(
+          (a, b) => _compareTimeOfDay(a.start, b.start),
+        );
       });
     }
   }
@@ -703,7 +829,9 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
       setState(() {
         _weeklySchedule[day]![index] = result;
         // Sort time slots by start time
-        _weeklySchedule[day]!.sort((a, b) => _compareTimeOfDay(a.start, b.start));
+        _weeklySchedule[day]!.sort(
+          (a, b) => _compareTimeOfDay(a.start, b.start),
+        );
       });
     }
   }
@@ -719,7 +847,9 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Clear All Availability'),
-        content: const Text('Are you sure you want to remove all your availability? This action cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to remove all your availability? This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -760,7 +890,7 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
         );
       }
     });
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Full week availability set (9 AM - 5 PM)'),
@@ -774,7 +904,9 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Apply ${template.name}'),
-        content: Text('This will replace your current availability with the ${template.name} template. Continue?'),
+        content: Text(
+          'This will replace your current availability with the ${template.name} template. Continue?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -803,9 +935,14 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
     );
   }
 
-  Future<TimeSlot?> _showTimeSlotDialog(BuildContext context, {TimeSlot? currentSlot}) async {
-    TimeOfDay startTime = currentSlot?.start ?? const TimeOfDay(hour: 9, minute: 0);
-    TimeOfDay endTime = currentSlot?.end ?? const TimeOfDay(hour: 17, minute: 0);
+  Future<TimeSlot?> _showTimeSlotDialog(
+    BuildContext context, {
+    TimeSlot? currentSlot,
+  }) async {
+    TimeOfDay startTime =
+        currentSlot?.start ?? const TimeOfDay(hour: 9, minute: 0);
+    TimeOfDay endTime =
+        currentSlot?.end ?? const TimeOfDay(hour: 17, minute: 0);
 
     return await showDialog<TimeSlot>(
       context: context,
@@ -820,7 +957,10 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
                 subtitle: Text(startTime.format(context)),
                 trailing: const Icon(Icons.schedule),
                 onTap: () async {
-                  final time = await showTimePicker(context: context, initialTime: startTime);
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: startTime,
+                  );
                   if (time != null) {
                     setDialogState(() => startTime = time);
                   }
@@ -831,7 +971,10 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
                 subtitle: Text(endTime.format(context)),
                 trailing: const Icon(Icons.schedule),
                 onTap: () async {
-                  final time = await showTimePicker(context: context, initialTime: endTime);
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: endTime,
+                  );
                   if (time != null) {
                     setDialogState(() => endTime = time);
                   }
@@ -847,7 +990,9 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
             TextButton(
               onPressed: () {
                 if (_compareTimeOfDay(startTime, endTime) < 0) {
-                  Navigator.of(context).pop(TimeSlot(start: startTime, end: endTime));
+                  Navigator.of(
+                    context,
+                  ).pop(TimeSlot(start: startTime, end: endTime));
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -884,9 +1029,7 @@ class _AvailabilityPreferencesScreenState extends ConsumerState<AvailabilityPref
         ),
         backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

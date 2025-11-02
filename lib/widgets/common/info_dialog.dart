@@ -24,10 +24,7 @@ class InfoDialog extends StatelessWidget {
     return AlertDialog(
       title: Row(
         children: [
-          Icon(
-            _getIconForType(type),
-            color: _getColorForType(type),
-          ),
+          Icon(_getIconForType(type), color: _getColorForType(type)),
           const SizedBox(width: 8),
           Expanded(child: Text(title)),
         ],

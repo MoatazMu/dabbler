@@ -10,12 +10,14 @@ import 'onboarding_welcome_screen.dart'; // For providers
 class OnboardingCompletionScreen extends ConsumerStatefulWidget {
   const OnboardingCompletionScreen({super.key});
 
-    @override
-    ConsumerState<OnboardingCompletionScreen> createState() => _OnboardingCompletionScreenState();
-  }
-  
-  class _OnboardingCompletionScreenState extends ConsumerState<OnboardingCompletionScreen>
-      with TickerProviderStateMixin {
+  @override
+  ConsumerState<OnboardingCompletionScreen> createState() =>
+      _OnboardingCompletionScreenState();
+}
+
+class _OnboardingCompletionScreenState
+    extends ConsumerState<OnboardingCompletionScreen>
+    with TickerProviderStateMixin {
   late AnimationController _scaleController;
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -23,70 +25,60 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late ConfettiController _confettiController;
-  
+
   bool _isLoading = false;
   gamification.CompletionCelebration? _celebration;
   List<gamification.Badge> _unlockedBadges = [];
   int _totalPoints = 0;
   double _profileStrength = 0.0;
   String _nextAction = '';
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     _scaleController = AnimationController(
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    
+
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    
+
     _slideController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
-    _scaleAnimation = Tween<double>(
-      begin: 0.5,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _scaleController,
-      curve: Curves.elasticOut,
-    ));
-    
+
+    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _scaleController, curve: Curves.elasticOut),
+    );
+
     _fadeAnimation = Tween<double>(
       begin: 0.0,
       end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeOut,
-    ));
-    
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
+
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOut,
-    ));
-    
+    ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOut));
+
     _confettiController = ConfettiController(
       duration: const Duration(seconds: 3),
     );
-    
+
     _initializeCelebration();
   }
-  
+
   Future<void> _initializeCelebration() async {
     final controller = ref.read(onboardingControllerProvider);
     final gamification = ref.read(onboardingGamificationProvider);
     final variant = controller.currentVariant ?? 'control';
     final userId = controller.currentUserId;
-    
+
     if (userId != null) {
       // Get celebration data
       _celebration = await gamification.generateCompletionCelebration(userId);
@@ -94,26 +86,26 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       _totalPoints = await gamification.getUserPoints(userId);
       _profileStrength = await gamification.calculateProfileStrength(userId);
       _nextAction = await gamification.getNextSuggestedAction(userId);
-      
+
       setState(() {});
-      
+
       // Start animations
       if (variant == 'gamified') {
         _confettiController.play();
       }
-      
+
       _scaleController.forward();
-      
+
       Future.delayed(const Duration(milliseconds: 300), () {
         _fadeController.forward();
       });
-      
+
       Future.delayed(const Duration(milliseconds: 500), () {
         _slideController.forward();
       });
     }
   }
-  
+
   @override
   void dispose() {
     _scaleController.dispose();
@@ -122,12 +114,12 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
     _confettiController.dispose();
     super.dispose();
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.watch(onboardingControllerProvider);
     final variant = controller.currentVariant ?? 'control';
-    
+
     return Scaffold(
       backgroundColor: DesignSystem.colors.background,
       body: SafeArea(
@@ -151,7 +143,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
                   ],
                 ),
               ),
-            
+
             // Content
             _buildContent(context, variant),
           ],
@@ -159,7 +151,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       ),
     );
   }
-  
+
   Widget _buildContent(BuildContext context, String variant) {
     return Column(
       children: [
@@ -181,7 +173,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
                   ),
                 ),
               ),
-              
+
               // Statistics section
               SliverToBoxAdapter(
                 child: Padding(
@@ -197,7 +189,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
                   ),
                 ),
               ),
-              
+
               // Badges section (gamified only)
               if (variant == 'gamified')
                 SliverToBoxAdapter(
@@ -214,7 +206,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
                     ),
                   ),
                 ),
-              
+
               // Special offers (if available)
               if (_celebration?.specialOffer != null)
                 SliverToBoxAdapter(
@@ -231,7 +223,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
                     ),
                   ),
                 ),
-              
+
               // Next steps
               SliverToBoxAdapter(
                 child: Padding(
@@ -250,7 +242,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
             ],
           ),
         ),
-        
+
         // Action buttons
         Padding(
           padding: const EdgeInsets.all(24.0),
@@ -259,12 +251,12 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       ],
     );
   }
-  
+
   Widget _buildMainCelebration(String variant) {
     return Column(
       children: [
         const SizedBox(height: 32),
-        
+
         // Celebration icon/emoji
         Container(
           width: 120,
@@ -280,11 +272,11 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 24),
-        
+
         Text(
-          variant == 'gamified' 
+          variant == 'gamified'
               ? '🎉 Profile Complete!'
               : 'Welcome to Dabbler!',
           style: DesignSystem.typography.headlineLarge.copyWith(
@@ -293,9 +285,9 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
           ),
           textAlign: TextAlign.center,
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         Text(
           variant == 'gamified'
               ? 'Congratulations! You\'ve earned $_totalPoints points and unlocked ${_unlockedBadges.length} badges.'
@@ -308,7 +300,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       ],
     );
   }
-  
+
   Widget _buildStatistics(String variant) {
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
@@ -327,9 +319,9 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Profile strength indicator
           Row(
             children: [
@@ -370,10 +362,10 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
               ),
             ],
           ),
-          
+
           if (variant == 'gamified') ...[
             const SizedBox(height: 20),
-            
+
             // Points and badges
             Row(
               children: [
@@ -401,7 +393,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       ),
     );
   }
-  
+
   Widget _buildStatCard({
     required IconData icon,
     required String label,
@@ -417,11 +409,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            color: color,
-            size: 24,
-          ),
+          Icon(icon, color: color, size: 24),
           const SizedBox(height: 8),
           Text(
             value,
@@ -432,19 +420,17 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
           ),
           Text(
             label,
-            style: DesignSystem.typography.bodySmall.copyWith(
-              color: color,
-            ),
+            style: DesignSystem.typography.bodySmall.copyWith(color: color),
             textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildBadgesSection() {
     if (_unlockedBadges.isEmpty) return const SizedBox();
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -474,26 +460,30 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           Wrap(
             spacing: 12,
             runSpacing: 12,
-            children: _unlockedBadges.map((badge) => _buildBadgeItem(badge)).toList(),
+            children: _unlockedBadges
+                .map((badge) => _buildBadgeItem(badge))
+                .toList(),
           ),
         ],
       ),
     );
   }
-  
+
   Widget _buildBadgeItem(gamification.Badge badge) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: DesignSystem.colors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: DesignSystem.colors.success.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: DesignSystem.colors.success.withValues(alpha: 0.3),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -514,12 +504,12 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       ),
     );
   }
-  
+
   Widget _buildSpecialOffer() {
     if (_celebration?.specialOffer == null) return const SizedBox();
-    
+
     final offer = _celebration!.specialOffer!;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
@@ -558,38 +548,38 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           Text(
             offer.description,
             style: DesignSystem.typography.bodyMedium.copyWith(
               color: DesignSystem.colors.textSecondary,
             ),
           ),
-          
+
           ...[
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: DesignSystem.colors.warning.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Text(
-              'Expires ${_formatDate(offer.expiresAt)}',
-              style: DesignSystem.typography.bodySmall.copyWith(
-                color: DesignSystem.colors.warning,
-                fontWeight: FontWeight.w500,
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: DesignSystem.colors.warning.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                'Expires ${_formatDate(offer.expiresAt)}',
+                style: DesignSystem.typography.bodySmall.copyWith(
+                  color: DesignSystem.colors.warning,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
         ],
       ),
     );
   }
-  
+
   Widget _buildNextSteps(String variant) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -608,28 +598,28 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           _buildNextStepItem(
             icon: LucideIcons.search,
             title: 'Find Your First Game',
             subtitle: 'Browse nearby games and join your first match',
             isRecommended: true,
           ),
-          
+
           _buildNextStepItem(
             icon: LucideIcons.users,
             title: 'Connect with Players',
             subtitle: 'Follow interesting players and build your network',
           ),
-          
+
           _buildNextStepItem(
             icon: LucideIcons.calendar,
             title: 'Create a Game',
             subtitle: 'Host your own game and invite others to join',
           ),
-          
+
           if (variant == 'gamified' && _nextAction.isNotEmpty)
             _buildNextStepItem(
               icon: LucideIcons.target,
@@ -641,7 +631,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       ),
     );
   }
-  
+
   Widget _buildNextStepItem({
     required IconData icon,
     required String title,
@@ -650,17 +640,19 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
     Color? color,
   }) {
     final itemColor = color ?? DesignSystem.colors.textPrimary;
-    
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isRecommended 
+        color: isRecommended
             ? DesignSystem.colors.primary.withValues(alpha: 0.05)
             : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
-        border: isRecommended 
-            ? Border.all(color: DesignSystem.colors.primary.withValues(alpha: 0.2))
+        border: isRecommended
+            ? Border.all(
+                color: DesignSystem.colors.primary.withValues(alpha: 0.2),
+              )
             : null,
       ),
       child: Row(
@@ -671,15 +663,11 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
               color: itemColor.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              icon,
-              color: itemColor,
-              size: 20,
-            ),
+            child: Icon(icon, color: itemColor, size: 20),
           ),
-          
+
           const SizedBox(width: 12),
-          
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -697,7 +685,10 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
                     ),
                     if (isRecommended)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
                         decoration: BoxDecoration(
                           color: DesignSystem.colors.primary,
                           borderRadius: BorderRadius.circular(10),
@@ -722,7 +713,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
               ],
             ),
           ),
-          
+
           Icon(
             LucideIcons.chevronRight,
             color: DesignSystem.colors.textSecondary,
@@ -732,7 +723,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       ),
     );
   }
-  
+
   Widget _buildActionButtons(String variant) {
     return Column(
       children: [
@@ -768,9 +759,9 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
                   ),
           ),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Secondary action
         TextButton(
           onPressed: () => _goToProfile(),
@@ -784,38 +775,37 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       ],
     );
   }
-  
+
   Color _getStrengthColor(double strength) {
     if (strength >= 80) return DesignSystem.colors.success;
     if (strength >= 60) return DesignSystem.colors.warning;
     return DesignSystem.colors.error;
   }
-  
+
   String _formatDate(DateTime date) {
     final now = DateTime.now();
     final difference = date.difference(now).inDays;
-    
+
     if (difference == 0) return 'today';
     if (difference == 1) return 'tomorrow';
     return 'in $difference days';
   }
-  
+
   Future<void> _startExploring() async {
     setState(() {
       _isLoading = true;
     });
-    
+
     try {
       final controller = ref.read(onboardingControllerProvider);
-      
+
       // Mark onboarding as fully completed
       await controller.markOnboardingCompleted();
-      
+
       // Navigate to main app
       if (mounted) {
         context.go('/home');
       }
-      
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -831,7 +821,7 @@ class OnboardingCompletionScreen extends ConsumerStatefulWidget {
       });
     }
   }
-  
+
   void _goToProfile() {
     if (mounted) {
       context.go('/profile');

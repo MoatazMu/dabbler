@@ -15,7 +15,7 @@ class CommonInterestsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -37,9 +37,9 @@ class CommonInterestsSection extends StatelessWidget {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           if (interests.isEmpty)
             Center(
               child: Padding(
@@ -74,7 +74,9 @@ class CommonInterestsSection extends StatelessWidget {
             Wrap(
               spacing: 12,
               runSpacing: 12,
-              children: interests.map((interest) => _buildInterestChip(theme, interest)).toList(),
+              children: interests
+                  .map((interest) => _buildInterestChip(theme, interest))
+                  .toList(),
             ),
         ],
       ),
@@ -98,9 +100,7 @@ class CommonInterestsSection extends StatelessWidget {
         ),
       ),
       backgroundColor: theme.colorScheme.surface,
-      side: BorderSide(
-        color: theme.colorScheme.outline.withOpacity(0.3),
-      ),
+      side: BorderSide(color: theme.colorScheme.outline.withOpacity(0.3)),
       onPressed: () => onInterestTap(interest),
     );
   }

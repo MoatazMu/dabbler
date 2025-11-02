@@ -9,7 +9,8 @@ class FriendsScreen extends StatefulWidget {
   State<FriendsScreen> createState() => _FriendsScreenState();
 }
 
-class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateMixin {
+class _FriendsScreenState extends State<FriendsScreen>
+    with TickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -30,16 +31,8 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
       appBar: AppBar(
         title: const Text('Friends'),
         actions: [
-          IconButton(
-            icon: const Icon(LucideIcons.search),
-            onPressed: () {
-            },
-          ),
-          IconButton(
-            icon: const Icon(LucideIcons.userPlus),
-            onPressed: () {
-            },
-          ),
+          IconButton(icon: const Icon(LucideIcons.search), onPressed: () {}),
+          IconButton(icon: const Icon(LucideIcons.userPlus), onPressed: () {}),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -55,10 +48,10 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
         children: [
           // All Friends Tab
           _buildFriendsList(),
-          
+
           // Friend Requests Tab
           _buildFriendRequests(),
-          
+
           // Friend Suggestions Tab
           _buildFriendSuggestions(),
         ],
@@ -75,10 +68,7 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
         child: ListTile(
           leading: CircleAvatar(
             backgroundColor: Colors.grey[200],
-            child: Icon(
-              LucideIcons.user,
-              color: Colors.grey[600],
-            ),
+            child: Icon(LucideIcons.user, color: Colors.grey[600]),
           ),
           title: Text('Friend ${index + 1}'),
           subtitle: Text('${100 + index} mutual friends'),
@@ -115,11 +105,9 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
                 ),
               ),
             ],
-            onSelected: (value) {
-            },
+            onSelected: (value) {},
           ),
-          onTap: () {
-          },
+          onTap: () {},
         ),
       ),
     );
@@ -137,10 +125,7 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
             children: [
               CircleAvatar(
                 backgroundColor: Colors.grey[200],
-                child: Icon(
-                  LucideIcons.user,
-                  color: Colors.grey[600],
-                ),
+                child: Icon(LucideIcons.user, color: Colors.grey[600]),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -153,25 +138,23 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
                     ),
                     Text(
                       '${10 + index} mutual friends',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton(
-                            onPressed: () {
-                            },
+                            onPressed: () {},
                             child: const Text('Accept'),
                           ),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: () {
-                            },
+                            onPressed: () {},
                             child: const Text('Decline'),
                           ),
                         ),
@@ -199,10 +182,7 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
             children: [
               CircleAvatar(
                 backgroundColor: Colors.grey[200],
-                child: Icon(
-                  LucideIcons.user,
-                  color: Colors.grey[600],
-                ),
+                child: Icon(LucideIcons.user, color: Colors.grey[600]),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -215,25 +195,23 @@ class _FriendsScreenState extends State<FriendsScreen> with TickerProviderStateM
                     ),
                     Text(
                       '${5 + index} mutual friends',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey,
-                      ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodySmall?.copyWith(color: Colors.grey),
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         Expanded(
                           child: ElevatedButton.icon(
-                            onPressed: () {
-                            },
+                            onPressed: () {},
                             icon: const Icon(LucideIcons.userPlus, size: 16),
                             label: const Text('Add Friend'),
                           ),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
-                          onPressed: () {
-                          },
+                          onPressed: () {},
                           icon: const Icon(LucideIcons.x, size: 16),
                         ),
                       ],

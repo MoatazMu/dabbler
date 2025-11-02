@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../core/errors/failure.dart';
-import '../models/game.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/games/game.dart';
 
 typedef Result<T> = Either<Failure, T>;
 
@@ -28,19 +28,18 @@ abstract class GamesRepository {
   /// Update mutable fields. RLS: games_modify_owner.
   Future<Result<void>> updateGame(
     String gameId, {
-      String? title,
-      String? venueSpaceId,
-      DateTime? startAt,
-      DateTime? endAt,
-      int? capacity,
-      String? listingVisibility,
-      String? joinPolicy,
-      bool? allowSpectators,
-      int? minSkill,
-      int? maxSkill,
-      Map<String, dynamic>? rules,
-    }
-  );
+    String? title,
+    String? venueSpaceId,
+    DateTime? startAt,
+    DateTime? endAt,
+    int? capacity,
+    String? listingVisibility,
+    String? joinPolicy,
+    bool? allowSpectators,
+    int? minSkill,
+    int? maxSkill,
+    Map<String, dynamic>? rules,
+  });
 
   /// Cancel a game. RLS: games_modify_owner.
   Future<Result<void>> cancelGame(String gameId, {String? reason});

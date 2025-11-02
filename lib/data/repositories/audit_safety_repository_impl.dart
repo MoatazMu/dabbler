@@ -1,8 +1,8 @@
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/types/result.dart';
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/core/utils/json.dart';
 import '../models/abuse_flag.dart';
 import 'audit_safety_repository.dart';
 import 'base_repository.dart';

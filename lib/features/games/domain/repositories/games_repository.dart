@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failure.dart';
-import '../entities/game.dart';
-import '../entities/player.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/games/game.dart';
+import 'package:dabbler/data/models/games/player.dart';
 
 abstract class GamesRepository {
   /// Creates a new game with the provided data
@@ -10,7 +10,10 @@ abstract class GamesRepository {
 
   /// Updates an existing game with new data
   /// Returns the updated Game on success, or a Failure on error
-  Future<Either<Failure, Game>> updateGame(String gameId, Map<String, dynamic> updates);
+  Future<Either<Failure, Game>> updateGame(
+    String gameId,
+    Map<String, dynamic> updates,
+  );
 
   /// Retrieves a single game by its ID
   /// Returns the Game on success, or a Failure on error
@@ -88,7 +91,10 @@ abstract class GamesRepository {
   });
 
   /// Updates game status (e.g., from scheduled to in-progress)
-  Future<Either<Failure, bool>> updateGameStatus(String gameId, GameStatus status);
+  Future<Either<Failure, bool>> updateGameStatus(
+    String gameId,
+    GameStatus status,
+  );
 
   /// Invites players to a game
   Future<Either<Failure, bool>> invitePlayersToGame(
@@ -115,7 +121,10 @@ abstract class GamesRepository {
   );
 
   /// Marks a game as favorite for a user
-  Future<Either<Failure, bool>> toggleGameFavorite(String gameId, String userId);
+  Future<Either<Failure, bool>> toggleGameFavorite(
+    String gameId,
+    String userId,
+  );
 
   /// Gets user's favorite games
   Future<Either<Failure, List<Game>>> getFavoriteGames(

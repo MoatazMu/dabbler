@@ -5,16 +5,16 @@ import 'dart:math';
 // removed unused dart:collection import
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
-import '../../../core/utils/either.dart';
+import 'package:dabbler/core/utils/either.dart';
 import '../../../utils/enums/social_enums.dart'; // For MessageType and MessageStatus enums
-import '../../../core/services/storage_service.dart';
-import '../../../core/services/media_upload_service.dart';
-import '../../../core/services/notification_service.dart';
+import 'package:dabbler/core/services/storage_service.dart';
+import 'package:dabbler/core/services/media_upload_service.dart';
+import 'package:dabbler/core/services/notification_service.dart';
 import '../../../core/models/notification_model.dart';
-import '../data/models/message_model.dart';
-import '../../../core/analytics/analytics_service.dart';
+import 'package:dabbler/data/models/message_model.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import '../domain/repositories/chat_repository.dart';
-import '../data/models/chat_message_model.dart';
+import 'package:dabbler/data/models/chat_message_model.dart';
 // ...existing code...
 import 'real_time_service.dart';
 

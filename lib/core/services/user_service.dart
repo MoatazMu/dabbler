@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/user_model.dart';
+import 'package:dabbler/data/models/core/user_model.dart';
 import 'auth_service.dart';
 import 'profile_cache_service.dart';
 
@@ -44,11 +44,26 @@ class UserService extends ChangeNotifier {
       // Prefer cached basic profile first for fast startup
       final cache = ProfileCacheService();
       final basic = await cache.getOwnProfile(
-        fields: const ['id','name','email','avatar_url','updated_at'],
+        fields: const ['id', 'name', 'email', 'avatar_url', 'updated_at'],
         preferCache: true,
         revalidate: true,
       );
-      final userProfile = basic ?? await _authService.getUserProfile(fields: ['id','name','email','avatar_url','updated_at','age','gender','sports','intent','phone']);
+      final userProfile =
+          basic ??
+          await _authService.getUserProfile(
+            fields: [
+              'id',
+              'name',
+              'email',
+              'avatar_url',
+              'updated_at',
+              'age',
+              'gender',
+              'sports',
+              'intent',
+              'phone',
+            ],
+          );
       if (userProfile != null) {
         _currentUser = UserModel.fromSupabaseJson(userProfile);
         await _saveUserToStorage(); // Cache locally
@@ -67,7 +82,7 @@ class UserService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userJson = prefs.getString(_userKey);
-      
+
       if (userJson != null) {
         final userMap = json.decode(userJson) as Map<String, dynamic>;
         _currentUser = UserModel.fromJson(userMap);
@@ -94,7 +109,7 @@ class UserService extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _cachedGreeting = prefs.getString(_greetingCacheKey);
-      
+
       final lastUpdateString = prefs.getString(_lastGreetingUpdateKey);
       if (lastUpdateString != null) {
         _lastGreetingUpdate = DateTime.parse(lastUpdateString);
@@ -104,10 +119,6 @@ class UserService extends ChangeNotifier {
       _lastGreetingUpdate = null;
     }
   }
-
-
-
-  
 
   // Update user profile
   Future<void> updateUser(UserModel updatedUser) async {
@@ -122,7 +133,6 @@ class UserService extends ChangeNotifier {
       );
       _currentUser = updatedUser;
 
-      
       await _saveUserToStorage();
       // Update cache selectively
       final userId = updatedUser.id;
@@ -135,10 +145,10 @@ class UserService extends ChangeNotifier {
         'email': updatedUser.email,
         'avatar_url': updatedUser.profileImageUrl,
       });
-      
+
       // Clear greeting cache when user info changes
       await _clearGreetingCache();
-      
+
       notifyListeners();
     } catch (e) {
       // Fallback to local update only
@@ -179,7 +189,7 @@ class UserService extends ChangeNotifier {
           language: language,
           updatedAt: DateTime.now(),
         );
-        
+
         // Update in Supabase using updateUserProfile
         await _authService.updateUserProfile(
           displayName: displayName,
@@ -187,9 +197,9 @@ class UserService extends ChangeNotifier {
           phone: phone,
           language: language,
         );
-        
+
         _currentUser = updatedUser;
-        
+
         await _saveUserToStorage();
         await ProfileCacheService().updateProfilePartial(updatedUser.id, {
           'name': displayName,
@@ -232,7 +242,7 @@ class UserService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_greetingCacheKey);
       await prefs.remove(_lastGreetingUpdateKey);
-      
+
       _cachedGreeting = null;
       _lastGreetingUpdate = null;
     } catch (e) {
@@ -262,7 +272,7 @@ class UserService extends ChangeNotifier {
   Future<void> refreshUserData() async {
     // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 500));
-    
+
     // In a real app, this would fetch from an API
     // For now, we'll just notify listeners to trigger a refresh
     notifyListeners();
@@ -275,11 +285,11 @@ class UserService extends ChangeNotifier {
       await prefs.remove(_userKey);
       await prefs.remove(_greetingCacheKey);
       await prefs.remove(_lastGreetingUpdateKey);
-      
+
       _currentUser = null;
       _cachedGreeting = null;
       _lastGreetingUpdate = null;
-      
+
       notifyListeners();
     } catch (e) {
       // Handle storage error
@@ -291,4 +301,4 @@ class UserService extends ChangeNotifier {
     print('🔄 [DEBUG] UserService: Clearing user data for new registration');
     await clearUserData();
   }
-} 
+}

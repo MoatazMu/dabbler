@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/wallet.dart';
 import '../models/payout.dart';
 
@@ -13,8 +13,5 @@ abstract class WalletRepository {
   });
 
   /// Current user's payout history, newest first.
-  Future<Result<List<Payout>>> getPayouts({
-    int limit = 50,
-    int offset = 0,
-  });
+  Future<Result<List<Payout>>> getPayouts({int limit = 50, int offset = 0});
 }

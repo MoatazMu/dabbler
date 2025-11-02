@@ -2,10 +2,7 @@ import 'package:equatable/equatable.dart';
 
 /// Arguments for launching the create game experience.
 class CreateGameRouteArgs extends Equatable {
-  const CreateGameRouteArgs({
-    this.draftId,
-    this.fromBooking,
-  });
+  const CreateGameRouteArgs({this.draftId, this.fromBooking});
 
   /// Identifier of an existing draft to restore.
   final String? draftId;
@@ -63,12 +60,12 @@ class BookingSeedData extends Equatable {
 
   @override
   List<Object?> get props => [
-        bookingId,
-        venueId,
-        venueName,
-        venueLocation,
-        date,
-        timeLabel,
-        sport,
-      ];
+    bookingId,
+    venueId,
+    venueName,
+    venueLocation,
+    date,
+    timeLabel,
+    sport,
+  ];
 }

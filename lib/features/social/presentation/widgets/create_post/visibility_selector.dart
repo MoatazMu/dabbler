@@ -29,15 +29,15 @@ class VisibilitySelector extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   'Visibility',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             Column(
               children: [
                 RadioListTile<PostVisibility>(

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../../domain/entities/achievement.dart';
-import '../../../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 
 /// User data for leaderboard display
 class LeaderboardUser {
@@ -71,12 +71,7 @@ class LeaderboardUser {
   }
 }
 
-enum RankMovement {
-  up,
-  down,
-  same,
-  new_entry,
-}
+enum RankMovement { up, down, same, new_entry }
 
 /// Interactive leaderboard item widget
 class LeaderboardItem extends StatefulWidget {
@@ -158,21 +153,13 @@ class _LeaderboardItemState extends State<LeaderboardItem>
       curve: Curves.elasticOut,
     );
 
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.03,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.03).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
 
-    _shimmerAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _shimmerController,
-      curve: Curves.easeInOut,
-    ));
+    _shimmerAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _shimmerController, curve: Curves.easeInOut),
+    );
 
     _expansionAnimation = CurvedAnimation(
       parent: _expansionController,
@@ -313,7 +300,7 @@ class _LeaderboardItemState extends State<LeaderboardItem>
     // Simple country flag representation using emoji flags
     final countryCode = widget.user.countryCode!.toUpperCase();
     String flag = '';
-    
+
     // Convert country code to flag emoji
     for (int i = 0; i < countryCode.length; i++) {
       flag += String.fromCharCode(0x1F1E6 + countryCode.codeUnitAt(i) - 65);
@@ -321,10 +308,7 @@ class _LeaderboardItemState extends State<LeaderboardItem>
 
     return Container(
       margin: const EdgeInsets.only(right: 8),
-      child: Text(
-        flag,
-        style: const TextStyle(fontSize: 16),
-      ),
+      child: Text(flag, style: const TextStyle(fontSize: 16)),
     );
   }
 
@@ -334,12 +318,12 @@ class _LeaderboardItemState extends State<LeaderboardItem>
     final rankColor = _getRankColor();
 
     return AnimatedBuilder(
-      animation: widget.user.isCurrentUser ? _pulseAnimation : _movementAnimation,
+      animation: widget.user.isCurrentUser
+          ? _pulseAnimation
+          : _movementAnimation,
       builder: (context, child) {
         return Transform.scale(
-          scale: widget.user.isCurrentUser 
-              ? _pulseAnimation.value
-              : 1.0,
+          scale: widget.user.isCurrentUser ? _pulseAnimation.value : 1.0,
           child: Container(
             margin: widget.padding ?? const EdgeInsets.symmetric(vertical: 4),
             decoration: BoxDecoration(
@@ -477,11 +461,7 @@ class _LeaderboardItemState extends State<LeaderboardItem>
           color: Colors.grey[200],
           borderRadius: BorderRadius.circular(10),
         ),
-        child: Icon(
-          movementIcon,
-          size: 12,
-          color: Colors.grey[600],
-        ),
+        child: Icon(movementIcon, size: 12, color: Colors.grey[600]),
       );
     }
 
@@ -499,11 +479,7 @@ class _LeaderboardItemState extends State<LeaderboardItem>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  movementIcon,
-                  size: 12,
-                  color: movementColor,
-                ),
+                Icon(movementIcon, size: 12, color: movementColor),
                 if (widget.user.movementAmount > 0) ...[
                   const SizedBox(width: 2),
                   Text(
@@ -561,11 +537,7 @@ class _LeaderboardItemState extends State<LeaderboardItem>
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.white, width: 2),
               ),
-              child: const Icon(
-                Icons.people,
-                size: 12,
-                color: Colors.white,
-              ),
+              child: const Icon(Icons.people, size: 12, color: Colors.white),
             ),
           ),
       ],
@@ -577,10 +549,7 @@ class _LeaderboardItemState extends State<LeaderboardItem>
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            tierColor.withOpacity(0.3),
-            tierColor.withOpacity(0.1),
-          ],
+          colors: [tierColor.withOpacity(0.3), tierColor.withOpacity(0.1)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -687,9 +656,7 @@ class _LeaderboardItemState extends State<LeaderboardItem>
         const SizedBox(height: 2),
         Text(
           'points',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: Colors.grey[600],
-          ),
+          style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
         ),
         if (widget.enableExpansion &&
             (widget.showAchievements && widget.user.achievements.isNotEmpty))
@@ -760,19 +727,9 @@ class _LeaderboardItemState extends State<LeaderboardItem>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 20,
-            color: Colors.grey[600],
-          ),
+          Icon(icon, size: 20, color: Colors.grey[600]),
           const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-            ),
-          ),
+          Text(label, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
         ],
       ),
     );
@@ -806,15 +763,16 @@ class _LeaderboardItemState extends State<LeaderboardItem>
               const SizedBox(width: 8),
               Text(
                 'Recent Achievements',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          ...displayedAchievements.map((achievement) =>
-              _buildAchievementItem(achievement)),
+          ...displayedAchievements.map(
+            (achievement) => _buildAchievementItem(achievement),
+          ),
           if (widget.user.achievements.length >
               (widget.maxDisplayedAchievements ?? 3)) ...[
             const SizedBox(height: 8),
@@ -852,11 +810,7 @@ class _LeaderboardItemState extends State<LeaderboardItem>
               color: tierColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Icon(
-              Icons.emoji_events,
-              size: 16,
-              color: tierColor,
-            ),
+            child: Icon(Icons.emoji_events, size: 16, color: tierColor),
           ),
           const SizedBox(width: 8),
           Expanded(
@@ -865,9 +819,9 @@ class _LeaderboardItemState extends State<LeaderboardItem>
               children: [
                 Text(
                   achievement.name,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.bold),
                 ),
                 Text(
                   '${achievement.points} points',

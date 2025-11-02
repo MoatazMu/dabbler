@@ -1,10 +1,10 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/errors/failure.dart';
-import '../../domain/entities/booking.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/games/booking.dart';
 import '../../domain/repositories/bookings_repository.dart';
 import '../datasources/bookings_remote_data_source.dart';
-import '../models/booking_model.dart';
+import 'package:dabbler/data/models/games/booking_model.dart';
 
 // Custom exceptions for bookings
 class BookingServerException implements Exception {
@@ -35,32 +35,32 @@ class PaymentException implements Exception {
 // Custom failure types for bookings
 class BookingServerFailure extends Failure {
   const BookingServerFailure([String? message])
-      : super(message: message ?? 'Booking server error');
+    : super(message: message ?? 'Booking server error');
 }
 
 class BookingCacheFailure extends Failure {
   const BookingCacheFailure([String? message])
-      : super(message: message ?? 'Booking cache error');
+    : super(message: message ?? 'Booking cache error');
 }
 
 class BookingNotFoundFailure extends Failure {
   const BookingNotFoundFailure([String? message])
-      : super(message: message ?? 'Booking not found');
+    : super(message: message ?? 'Booking not found');
 }
 
 class BookingConflictFailure extends Failure {
   const BookingConflictFailure([String? message])
-      : super(message: message ?? 'Booking conflict');
+    : super(message: message ?? 'Booking conflict');
 }
 
 class PaymentFailure extends Failure {
   const PaymentFailure([String? message])
-      : super(message: message ?? 'Payment error');
+    : super(message: message ?? 'Payment error');
 }
 
 class UnknownFailure extends Failure {
   const UnknownFailure([String? message])
-      : super(message: message ?? 'Unknown error');
+    : super(message: message ?? 'Unknown error');
 }
 
 class BookingsRepositoryImpl implements BookingsRepository {
@@ -78,12 +78,12 @@ class BookingsRepositoryImpl implements BookingsRepository {
   static const Duration _availabilityCacheDuration = Duration(minutes: 2);
   static const Duration _bookingCacheDuration = Duration(minutes: 10);
 
-  BookingsRepositoryImpl({
-    required this.remoteDataSource,
-  });
+  BookingsRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<Either<Failure, Booking>> createBooking(Map<String, dynamic> bookingData) async {
+  Future<Either<Failure, Booking>> createBooking(
+    Map<String, dynamic> bookingData,
+  ) async {
     try {
       // Extract data from the map
       final userId = bookingData['userId'] as String;
@@ -168,7 +168,10 @@ class BookingsRepositoryImpl implements BookingsRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> cancelBooking(String bookingId, String reason) async {
+  Future<Either<Failure, bool>> cancelBooking(
+    String bookingId,
+    String reason,
+  ) async {
     try {
       // Cancel booking
       final bookingModel = await remoteDataSource.cancelBooking(
@@ -183,7 +186,10 @@ class BookingsRepositoryImpl implements BookingsRepository {
 
       // Clear related cache entries
       _clearUserBookingsCache(bookingModel.bookedBy);
-      _clearAvailabilityCache(bookingModel.venueId, bookingModel.bookingDate.toIso8601String());
+      _clearAvailabilityCache(
+        bookingModel.venueId,
+        bookingModel.bookingDate.toIso8601String(),
+      );
 
       return Right(true);
     } on BookingServerException catch (e) {
@@ -247,7 +253,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
     } on BookingServerException catch (e) {
       return Left(BookingServerFailure(e.message));
     } catch (e) {
-      return Left(UnknownFailure('Failed to get user bookings: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get user bookings: ${e.toString()}'),
+      );
     }
   }
 
@@ -262,7 +270,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
       // For now, return empty list
       return Right([]);
     } catch (e) {
-      return Left(UnknownFailure('Failed to get venue bookings: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get venue bookings: ${e.toString()}'),
+      );
     }
   }
 
@@ -281,7 +291,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
       await remoteDataSource.updateBooking(bookingId, updates);
       return Right(true);
     } catch (e) {
-      return Left(UnknownFailure('Failed to update booking status: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to update booking status: ${e.toString()}'),
+      );
     }
   }
 
@@ -300,7 +312,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
       await remoteDataSource.updateBooking(bookingId, updates);
       return Right(true);
     } catch (e) {
-      return Left(UnknownFailure('Failed to update payment status: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to update payment status: ${e.toString()}'),
+      );
     }
   }
 
@@ -347,7 +361,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
     } on BookingServerException catch (e) {
       return Left(BookingServerFailure(e.message));
     } catch (e) {
-      return Left(UnknownFailure('Failed to check availability: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to check availability: ${e.toString()}'),
+      );
     }
   }
 
@@ -388,11 +404,15 @@ class BookingsRepositoryImpl implements BookingsRepository {
       _conflictsCache[cacheKey] = conflictingBookings;
       _cacheTimestamps[cacheKey] = DateTime.now();
 
-      return Right(conflictingBookings.map((model) => model.toEntity()).toList());
+      return Right(
+        conflictingBookings.map((model) => model.toEntity()).toList(),
+      );
     } on BookingServerException catch (e) {
       return Left(BookingServerFailure(e.message));
     } catch (e) {
-      return Left(UnknownFailure('Failed to get conflicting bookings: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get conflicting bookings: ${e.toString()}'),
+      );
     }
   }
 
@@ -410,15 +430,23 @@ class BookingsRepositoryImpl implements BookingsRepository {
         'end_time': newEndTime,
       };
 
-      final bookingModel = await remoteDataSource.updateBooking(bookingId, updates);
+      final bookingModel = await remoteDataSource.updateBooking(
+        bookingId,
+        updates,
+      );
       return Right(bookingModel.toEntity());
     } catch (e) {
-      return Left(UnknownFailure('Failed to reschedule booking: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to reschedule booking: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> checkInBooking(String bookingId, String? checkedInBy) async {
+  Future<Either<Failure, bool>> checkInBooking(
+    String bookingId,
+    String? checkedInBy,
+  ) async {
     try {
       final updates = <String, dynamic>{
         'checked_in_at': DateTime.now().toIso8601String(),
@@ -428,33 +456,45 @@ class BookingsRepositoryImpl implements BookingsRepository {
       await remoteDataSource.updateBooking(bookingId, updates);
       return Right(true);
     } catch (e) {
-      return Left(UnknownFailure('Failed to check in booking: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to check in booking: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> checkOutBooking(String bookingId, String? actualUsageDuration) async {
+  Future<Either<Failure, bool>> checkOutBooking(
+    String bookingId,
+    String? actualUsageDuration,
+  ) async {
     try {
       final updates = <String, dynamic>{
         'checked_out_at': DateTime.now().toIso8601String(),
-        if (actualUsageDuration != null) 'actual_usage_duration': actualUsageDuration,
+        if (actualUsageDuration != null)
+          'actual_usage_duration': actualUsageDuration,
       };
 
       await remoteDataSource.updateBooking(bookingId, updates);
       return Right(true);
     } catch (e) {
-      return Left(UnknownFailure('Failed to check out booking: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to check out booking: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getUserBookingStats(String userId) async {
+  Future<Either<Failure, Map<String, dynamic>>> getUserBookingStats(
+    String userId,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return empty stats
       return Right({});
     } catch (e) {
-      return Left(UnknownFailure('Failed to get user booking stats: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get user booking stats: ${e.toString()}'),
+      );
     }
   }
 
@@ -469,12 +509,18 @@ class BookingsRepositoryImpl implements BookingsRepository {
       // For now, return empty stats
       return Right({});
     } catch (e) {
-      return Left(UnknownFailure('Failed to get venue booking stats: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get venue booking stats: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> requestRefund(String bookingId, String reason, double? refundAmount) async {
+  Future<Either<Failure, bool>> requestRefund(
+    String bookingId,
+    String reason,
+    double? refundAmount,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return success
@@ -485,7 +531,11 @@ class BookingsRepositoryImpl implements BookingsRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> processRefund(String bookingId, double refundAmount, String? transactionId) async {
+  Future<Either<Failure, bool>> processRefund(
+    String bookingId,
+    double refundAmount,
+    String? transactionId,
+  ) async {
     try {
       await remoteDataSource.processRefund(
         bookingId,
@@ -549,7 +599,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
     } on BookingServerException catch (e) {
       return Left(BookingServerFailure(e.message));
     } catch (e) {
-      return Left(UnknownFailure('Failed to get upcoming bookings: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get upcoming bookings: ${e.toString()}'),
+      );
     }
   }
 
@@ -589,7 +641,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
     } on BookingServerException catch (e) {
       return Left(BookingServerFailure(e.message));
     } catch (e) {
-      return Left(UnknownFailure('Failed to get past bookings: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get past bookings: ${e.toString()}'),
+      );
     }
   }
 
@@ -600,23 +654,34 @@ class BookingsRepositoryImpl implements BookingsRepository {
       // For now, return empty list
       return Right([]);
     } catch (e) {
-      return Left(UnknownFailure('Failed to get today bookings: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get today bookings: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> sendBookingConfirmation(String bookingId, String method) async {
+  Future<Either<Failure, bool>> sendBookingConfirmation(
+    String bookingId,
+    String method,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return success
       return Right(true);
     } catch (e) {
-      return Left(UnknownFailure('Failed to send booking confirmation: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to send booking confirmation: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> sendBookingReminder(String bookingId, String method, int minutesBefore) async {
+  Future<Either<Failure, bool>> sendBookingReminder(
+    String bookingId,
+    String method,
+    int minutesBefore,
+  ) async {
     try {
       final success = await remoteDataSource.sendBookingReminder(bookingId);
       return Right(success);
@@ -625,34 +690,50 @@ class BookingsRepositoryImpl implements BookingsRepository {
     } on BookingNotFoundException catch (e) {
       return Left(BookingNotFoundFailure(e.message));
     } catch (e) {
-      return Left(UnknownFailure('Failed to send booking reminder: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to send booking reminder: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getBookingReminders(String userId, {bool activeOnly = true}) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> getBookingReminders(
+    String userId, {
+    bool activeOnly = true,
+  }) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return empty list
       return Right([]);
     } catch (e) {
-      return Left(UnknownFailure('Failed to get booking reminders: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get booking reminders: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> setupBookingReminders(String bookingId, List<int> minutesBefore, List<String> methods) async {
+  Future<Either<Failure, bool>> setupBookingReminders(
+    String bookingId,
+    List<int> minutesBefore,
+    List<String> methods,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return success
       return Right(true);
     } catch (e) {
-      return Left(UnknownFailure('Failed to setup booking reminders: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to setup booking reminders: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, Booking>> extendBooking(String bookingId, int additionalMinutes) async {
+  Future<Either<Failure, Booking>> extendBooking(
+    String bookingId,
+    int additionalMinutes,
+  ) async {
     try {
       final bookingModel = await remoteDataSource.extendBooking(
         bookingId,
@@ -665,7 +746,10 @@ class BookingsRepositoryImpl implements BookingsRepository {
 
       // Clear related cache entries
       _clearUserBookingsCache(bookingModel.bookedBy);
-      _clearAvailabilityCache(bookingModel.venueId, bookingModel.bookingDate.toIso8601String());
+      _clearAvailabilityCache(
+        bookingModel.venueId,
+        bookingModel.bookingDate.toIso8601String(),
+      );
 
       return Right(bookingModel.toEntity());
     } on BookingServerException catch (e) {
@@ -680,68 +764,92 @@ class BookingsRepositoryImpl implements BookingsRepository {
   }
 
   @override
-  Future<Either<Failure, int>> getAvailableExtensionTime(String bookingId) async {
+  Future<Either<Failure, int>> getAvailableExtensionTime(
+    String bookingId,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return 0
       return Right(0);
     } catch (e) {
-      return Left(UnknownFailure('Failed to get available extension time: ${e.toString()}'));
+      return Left(
+        UnknownFailure(
+          'Failed to get available extension time: ${e.toString()}',
+        ),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> addBookingSpecialRequests(String bookingId, String requests) async {
+  Future<Either<Failure, bool>> addBookingSpecialRequests(
+    String bookingId,
+    String requests,
+  ) async {
     try {
-      final updates = <String, dynamic>{
-        'special_requests': requests,
-      };
+      final updates = <String, dynamic>{'special_requests': requests};
 
       await remoteDataSource.updateBooking(bookingId, updates);
       return Right(true);
     } catch (e) {
-      return Left(UnknownFailure('Failed to add special requests: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to add special requests: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> updatePaymentMethod(String bookingId, String paymentMethod) async {
+  Future<Either<Failure, bool>> updatePaymentMethod(
+    String bookingId,
+    String paymentMethod,
+  ) async {
     try {
-      final updates = <String, dynamic>{
-        'payment_method': paymentMethod,
-      };
+      final updates = <String, dynamic>{'payment_method': paymentMethod};
 
       await remoteDataSource.updateBooking(bookingId, updates);
       return Right(true);
     } catch (e) {
-      return Left(UnknownFailure('Failed to update payment method: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to update payment method: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getBookingReceipt(String bookingId) async {
+  Future<Either<Failure, Map<String, dynamic>>> getBookingReceipt(
+    String bookingId,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return empty receipt
       return Right({});
     } catch (e) {
-      return Left(UnknownFailure('Failed to get booking receipt: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get booking receipt: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, String>> downloadBookingReceiptPdf(String bookingId) async {
+  Future<Either<Failure, String>> downloadBookingReceiptPdf(
+    String bookingId,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return empty string
       return Right('');
     } catch (e) {
-      return Left(UnknownFailure('Failed to download booking receipt: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to download booking receipt: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> shareBooking(String bookingId, String method, List<String> recipients) async {
+  Future<Either<Failure, bool>> shareBooking(
+    String bookingId,
+    String method,
+    List<String> recipients,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return success
@@ -775,7 +883,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
     } on BookingNotFoundException catch (e) {
       return Left(BookingNotFoundFailure(e.message));
     } catch (e) {
-      return Left(UnknownFailure('Failed to get booking QR code: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get booking QR code: ${e.toString()}'),
+      );
     }
   }
 
@@ -786,7 +896,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
       // For now, return error
       return Left(UnknownFailure('QR code validation not implemented'));
     } catch (e) {
-      return Left(UnknownFailure('Failed to validate QR code: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to validate QR code: ${e.toString()}'),
+      );
     }
   }
 
@@ -803,23 +915,33 @@ class BookingsRepositoryImpl implements BookingsRepository {
       // For now, return empty breakdown
       return Right({});
     } catch (e) {
-      return Left(UnknownFailure('Failed to get price breakdown: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get price breakdown: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> applyPromoCode(String bookingId, String promoCode) async {
+  Future<Either<Failure, Map<String, dynamic>>> applyPromoCode(
+    String bookingId,
+    String promoCode,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return empty result
       return Right({});
     } catch (e) {
-      return Left(UnknownFailure('Failed to apply promo code: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to apply promo code: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, List<Map<String, dynamic>>>> getAvailablePromoCodes(String userId, String? venueId) async {
+  Future<Either<Failure, List<Map<String, dynamic>>>> getAvailablePromoCodes(
+    String userId,
+    String? venueId,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return empty list
@@ -830,7 +952,11 @@ class BookingsRepositoryImpl implements BookingsRepository {
   }
 
   @override
-  Future<Either<Failure, bool>> rateBooking(String bookingId, double rating, String? review) async {
+  Future<Either<Failure, bool>> rateBooking(
+    String bookingId,
+    double rating,
+    String? review,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return success
@@ -841,18 +967,26 @@ class BookingsRepositoryImpl implements BookingsRepository {
   }
 
   @override
-  Future<Either<Failure, Map<String, dynamic>>> getBookingReviews(String bookingId) async {
+  Future<Either<Failure, Map<String, dynamic>>> getBookingReviews(
+    String bookingId,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return empty reviews
       return Right({});
     } catch (e) {
-      return Left(UnknownFailure('Failed to get booking reviews: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get booking reviews: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> reportBookingIssue(String bookingId, String issueType, String description) async {
+  Future<Either<Failure, bool>> reportBookingIssue(
+    String bookingId,
+    String issueType,
+    String description,
+  ) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return success
@@ -874,23 +1008,34 @@ class BookingsRepositoryImpl implements BookingsRepository {
       // For now, return empty analytics
       return Right({});
     } catch (e) {
-      return Left(UnknownFailure('Failed to get booking analytics: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get booking analytics: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, double>> getNoShowRate(String venueId, {DateTime? startDate, DateTime? endDate}) async {
+  Future<Either<Failure, double>> getNoShowRate(
+    String venueId, {
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
     try {
       // This would need to be implemented in the remote data source
       // For now, return 0.0
       return Right(0.0);
     } catch (e) {
-      return Left(UnknownFailure('Failed to get no-show rate: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get no-show rate: ${e.toString()}'),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, bool>> markAsNoShow(String bookingId, String? reason) async {
+  Future<Either<Failure, bool>> markAsNoShow(
+    String bookingId,
+    String? reason,
+  ) async {
     try {
       final updates = <String, dynamic>{
         'status': 'noShow',
@@ -915,7 +1060,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
       // For now, return empty analytics
       return Right({});
     } catch (e) {
-      return Left(UnknownFailure('Failed to get cancellation analytics: ${e.toString()}'));
+      return Left(
+        UnknownFailure('Failed to get cancellation analytics: ${e.toString()}'),
+      );
     }
   }
 
@@ -958,9 +1105,7 @@ class BookingsRepositoryImpl implements BookingsRepository {
   // Cache key generation
   String _generateListCacheKey(String prefix, Map<String, dynamic> params) {
     final sortedKeys = params.keys.toList()..sort();
-    final keyParts = sortedKeys
-        .map((key) => '$key:${params[key]}')
-        .join('|');
+    final keyParts = sortedKeys.map((key) => '$key:${params[key]}').join('|');
     return '${prefix}_$keyParts';
   }
 
@@ -991,8 +1136,10 @@ class BookingsRepositoryImpl implements BookingsRepository {
   void _clearUserBookingsCache(String userId) {
     final keysToRemove = <String>[];
     for (final key in _cacheTimestamps.keys) {
-      if (key.contains(userId) || key.contains('user_bookings') || 
-          key.contains('upcoming') || key.contains('past')) {
+      if (key.contains(userId) ||
+          key.contains('user_bookings') ||
+          key.contains('upcoming') ||
+          key.contains('past')) {
         keysToRemove.add(key);
       }
     }
@@ -1006,7 +1153,9 @@ class BookingsRepositoryImpl implements BookingsRepository {
   void _clearAvailabilityCache(String venueId, String date) {
     final keysToRemove = <String>[];
     for (final key in _cacheTimestamps.keys) {
-      if (key.contains('availability') && key.contains(venueId) && key.contains(date)) {
+      if (key.contains('availability') &&
+          key.contains(venueId) &&
+          key.contains(date)) {
         keysToRemove.add(key);
       }
     }

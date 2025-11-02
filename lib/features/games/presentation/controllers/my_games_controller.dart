@@ -1,24 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
-import '../../domain/entities/game.dart';
+import 'package:dabbler/data/models/games/game.dart';
 import '../../domain/usecases/cancel_game_usecase.dart';
 import '../../domain/repositories/games_repository.dart';
 
-enum MyGameType {
-  upcoming,
-  past,
-  organized,
-  joined,
-}
+enum MyGameType { upcoming, past, organized, joined }
 
-enum QuickAction {
-  share,
-  cancel,
-  checkIn,
-  viewDetails,
-  invite,
-  rate,
-}
+enum QuickAction { share, cancel, checkIn, viewDetails, invite, rate }
 
 class GameStatistics {
   final int totalGamesPlayed;
@@ -81,7 +69,8 @@ class CheckInReminder {
 
   Duration get timeUntilGame => scheduledTime.difference(DateTime.now());
   bool get isUpcoming => timeUntilGame.inMinutes > 0;
-  bool get shouldShowReminder => timeUntilGame.inHours <= 2 && timeUntilGame.inMinutes > 0;
+  bool get shouldShowReminder =>
+      timeUntilGame.inHours <= 2 && timeUntilGame.inMinutes > 0;
 }
 
 class MyGamesState {
@@ -117,32 +106,44 @@ class MyGamesState {
     this.reminderTimer,
   });
 
-  bool get isLoading => isLoadingUpcoming || isLoadingPast || isLoadingOrganized || isLoadingJoined;
+  bool get isLoading =>
+      isLoadingUpcoming ||
+      isLoadingPast ||
+      isLoadingOrganized ||
+      isLoadingJoined;
   bool get hasError => error != null;
   bool get hasUpcomingGames => upcomingGames.isNotEmpty;
   bool get hasPastGames => pastGames.isNotEmpty;
   bool get hasStatistics => statistics != null;
-  bool get hasActiveReminders => checkInReminders.any((r) => r.isActive && r.shouldShowReminder);
+  bool get hasActiveReminders =>
+      checkInReminders.any((r) => r.isActive && r.shouldShowReminder);
 
   int get totalGames => upcomingGames.length + pastGames.length;
-  
+
   List<Game> get todayGames {
     final today = DateTime.now();
-    return upcomingGames.where((game) => 
-      game.scheduledDate.year == today.year &&
-      game.scheduledDate.month == today.month &&
-      game.scheduledDate.day == today.day
-    ).toList();
+    return upcomingGames
+        .where(
+          (game) =>
+              game.scheduledDate.year == today.year &&
+              game.scheduledDate.month == today.month &&
+              game.scheduledDate.day == today.day,
+        )
+        .toList();
   }
 
   List<Game> get thisWeekGames {
     final now = DateTime.now();
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
     final weekEnd = weekStart.add(const Duration(days: 7));
-    
-    return upcomingGames.where((game) => 
-      game.scheduledDate.isAfter(weekStart) && game.scheduledDate.isBefore(weekEnd)
-    ).toList();
+
+    return upcomingGames
+        .where(
+          (game) =>
+              game.scheduledDate.isAfter(weekStart) &&
+              game.scheduledDate.isBefore(weekEnd),
+        )
+        .toList();
   }
 
   MyGamesState copyWith({
@@ -184,7 +185,7 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   final CancelGameUseCase? _cancelGameUseCase;
   final GamesRepository _gamesRepository;
   final String userId;
-  
+
   static const Duration _cacheValidity = Duration(minutes: 5);
   static const Duration _reminderCheckInterval = Duration(minutes: 1);
 
@@ -192,9 +193,9 @@ class MyGamesController extends StateNotifier<MyGamesState> {
     required CancelGameUseCase? cancelGameUseCase,
     required GamesRepository gamesRepository,
     required this.userId,
-  })  : _cancelGameUseCase = cancelGameUseCase,
-        _gamesRepository = gamesRepository,
-        super(const MyGamesState()) {
+  }) : _cancelGameUseCase = cancelGameUseCase,
+       _gamesRepository = gamesRepository,
+       super(const MyGamesState()) {
     _initializeMyGames();
     _startReminderTimer();
   }
@@ -211,9 +212,9 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   /// Load upcoming games for user
   Future<void> loadUpcomingGames() async {
     if (!_shouldRefresh()) return;
-    
+
     state = state.copyWith(isLoadingUpcoming: true, error: null);
-    
+
     try {
       // Fetch upcoming games from repository
       final result = await _gamesRepository.getMyGames(
@@ -236,12 +237,11 @@ class MyGamesController extends StateNotifier<MyGamesState> {
             isLoadingUpcoming: false,
             lastUpdated: DateTime.now(),
           );
-          
+
           // Update check-in reminders
           _updateCheckInReminders();
         },
       );
-      
     } catch (e) {
       state = state.copyWith(
         isLoadingUpcoming: false,
@@ -253,7 +253,7 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   /// Load past games for user
   Future<void> loadPastGames() async {
     state = state.copyWith(isLoadingPast: true, error: null);
-    
+
     try {
       // Fetch past games from repository
       final result = await _gamesRepository.getMyGames(
@@ -265,19 +265,12 @@ class MyGamesController extends StateNotifier<MyGamesState> {
 
       result.fold(
         (failure) {
-          state = state.copyWith(
-            isLoadingPast: false,
-            error: failure.message,
-          );
+          state = state.copyWith(isLoadingPast: false, error: failure.message);
         },
         (games) {
-          state = state.copyWith(
-            pastGames: games,
-            isLoadingPast: false,
-          );
+          state = state.copyWith(pastGames: games, isLoadingPast: false);
         },
       );
-      
     } catch (e) {
       state = state.copyWith(
         isLoadingPast: false,
@@ -289,18 +282,17 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   /// Load organized games
   Future<void> loadOrganizedGames() async {
     state = state.copyWith(isLoadingOrganized: true, error: null);
-    
+
     try {
       final organizedGames = [
         ...state.upcomingGames.where((g) => g.organizerId == userId),
         ...state.pastGames.where((g) => g.organizerId == userId),
       ];
-      
+
       state = state.copyWith(
         organizedGames: organizedGames,
         isLoadingOrganized: false,
       );
-      
     } catch (e) {
       state = state.copyWith(
         isLoadingOrganized: false,
@@ -312,18 +304,14 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   /// Load joined games (not organized by user)
   Future<void> loadJoinedGames() async {
     state = state.copyWith(isLoadingJoined: true, error: null);
-    
+
     try {
       final joinedGames = [
         ...state.upcomingGames.where((g) => g.organizerId != userId),
         ...state.pastGames.where((g) => g.organizerId != userId),
       ];
-      
-      state = state.copyWith(
-        joinedGames: joinedGames,
-        isLoadingJoined: false,
-      );
-      
+
+      state = state.copyWith(joinedGames: joinedGames, isLoadingJoined: false);
     } catch (e) {
       state = state.copyWith(
         isLoadingJoined: false,
@@ -335,18 +323,21 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   /// Load game statistics
   Future<void> loadGameStatistics() async {
     state = state.copyWith(isLoadingStatistics: true);
-    
+
     try {
       // Calculate statistics from actual games data
       final allGames = [...state.upcomingGames, ...state.pastGames];
       final now = DateTime.now();
       final thisMonth = allGames.where((game) {
-        return game.scheduledDate.year == now.year && game.scheduledDate.month == now.month;
+        return game.scheduledDate.year == now.year &&
+            game.scheduledDate.month == now.month;
       }).length;
-      
-      final organized = allGames.where((game) => game.organizerId == userId).length;
+
+      final organized = allGames
+          .where((game) => game.organizerId == userId)
+          .length;
       final played = state.pastGames.length;
-      
+
       final statistics = GameStatistics(
         totalGamesPlayed: played,
         totalGamesOrganized: organized,
@@ -357,12 +348,11 @@ class MyGamesController extends StateNotifier<MyGamesState> {
         cancelledGames: 0,
         attendanceRate: played > 0 ? 1.0 : 0.0,
       );
-      
+
       state = state.copyWith(
         statistics: statistics,
         isLoadingStatistics: false,
       );
-      
     } catch (e) {
       state = state.copyWith(
         isLoadingStatistics: false,
@@ -384,16 +374,18 @@ class MyGamesController extends StateNotifier<MyGamesState> {
       state = state.copyWith(error: 'Cancel game feature not yet available');
       return;
     }
-    
+
     try {
-      final result = await _cancelGameUseCase(CancelGameParams(
-        gameId: gameId,
-        userId: userId,
-        reason: reason,
-        processRefunds: true,
-        notifyPlayers: true,
-      ));
-      
+      final result = await _cancelGameUseCase(
+        CancelGameParams(
+          gameId: gameId,
+          userId: userId,
+          reason: reason,
+          processRefunds: true,
+          notifyPlayers: true,
+        ),
+      );
+
       result.fold(
         (failure) {
           state = state.copyWith(error: failure.message);
@@ -403,17 +395,13 @@ class MyGamesController extends StateNotifier<MyGamesState> {
           final updatedUpcoming = state.upcomingGames
               .where((game) => game.id != gameId)
               .toList();
-          
-          state = state.copyWith(
-            upcomingGames: updatedUpcoming,
-            error: null,
-          );
-          
+
+          state = state.copyWith(upcomingGames: updatedUpcoming, error: null);
+
           // Update organized games
           loadOrganizedGames();
         },
       );
-      
     } catch (e) {
       state = state.copyWith(error: 'Failed to cancel game: $e');
     }
@@ -426,12 +414,11 @@ class MyGamesController extends StateNotifier<MyGamesState> {
       if (game == null) {
         throw Exception('Game not found');
       }
-      
+
       final shareText = _generateShareText(game);
-      
+
       // For now, just return the share text
       return shareText;
-      
     } catch (e) {
       state = state.copyWith(error: 'Failed to share game: $e');
       return '';
@@ -442,10 +429,9 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   Future<void> checkInToGame(String gameId) async {
     try {
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Update game status or refresh data
       await loadUpcomingGames();
-      
     } catch (e) {
       state = state.copyWith(error: 'Failed to check in: $e');
     }
@@ -454,15 +440,15 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   /// Get available quick actions for a game
   List<QuickAction> getAvailableActions(Game game) {
     final actions = <QuickAction>[];
-    
+
     // Always available
     actions.add(QuickAction.viewDetails);
     actions.add(QuickAction.share);
-    
+
     final now = DateTime.now();
     final gameDateTime = _combineDateTime(game.scheduledDate, game.startTime);
     final timeUntilGame = gameDateTime.difference(now);
-    
+
     if (game.status == GameStatus.upcoming) {
       // Game is upcoming
       if (game.organizerId == userId) {
@@ -472,7 +458,7 @@ class MyGamesController extends StateNotifier<MyGamesState> {
         }
         actions.add(QuickAction.invite);
       }
-      
+
       // Check-in available 30 minutes before game
       if (timeUntilGame.inMinutes <= 30 && timeUntilGame.inMinutes > -15) {
         actions.add(QuickAction.checkIn);
@@ -481,7 +467,7 @@ class MyGamesController extends StateNotifier<MyGamesState> {
       // Game is completed
       actions.add(QuickAction.rate);
     }
-    
+
     return actions;
   }
 
@@ -529,30 +515,32 @@ class MyGamesController extends StateNotifier<MyGamesState> {
         timer.cancel();
       }
     });
-    
+
     state = state.copyWith(reminderTimer: timer);
   }
 
   void _updateCheckInReminders() {
     final now = DateTime.now();
     final reminders = <CheckInReminder>[];
-    
+
     for (final game in state.upcomingGames) {
       final gameDateTime = _combineDateTime(game.scheduledDate, game.startTime);
       final timeUntilGame = gameDateTime.difference(now);
-      
+
       // Create reminder for games starting within 2 hours
       if (timeUntilGame.inMinutes > 0 && timeUntilGame.inHours <= 2) {
-        reminders.add(CheckInReminder(
-          gameId: game.id,
-          gameTitle: game.title,
-          scheduledTime: gameDateTime,
-          venue: game.venueId ?? 'TBD',
-          isActive: true,
-        ));
+        reminders.add(
+          CheckInReminder(
+            gameId: game.id,
+            gameTitle: game.title,
+            scheduledTime: gameDateTime,
+            venue: game.venueId ?? 'TBD',
+            isActive: true,
+          ),
+        );
       }
     }
-    
+
     state = state.copyWith(checkInReminders: reminders);
   }
 
@@ -581,20 +569,34 @@ class MyGamesController extends StateNotifier<MyGamesState> {
     buffer.writeln('🗓️ ${_formatDate(game.scheduledDate)}');
     buffer.writeln('🕐 ${game.startTime} - ${game.endTime}');
     buffer.writeln('👥 ${game.currentPlayers}/${game.maxPlayers} players');
-    
+
     if (game.pricePerPlayer > 0) {
-      buffer.writeln('💰 \$${game.pricePerPlayer.toStringAsFixed(2)} per player');
+      buffer.writeln(
+        '💰 \$${game.pricePerPlayer.toStringAsFixed(2)} per player',
+      );
     }
-    
+
     buffer.writeln('\nJoin us on Dabbler! 🎯');
     return buffer.toString();
   }
 
   String _formatDate(DateTime date) {
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
+    final months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
     return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
   }
 

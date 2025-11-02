@@ -1,16 +1,15 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../domain/entities/achievement.dart';
-import '../../domain/entities/user_progress.dart';
-import '../../domain/entities/point_transaction.dart';
-import '../../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/user_progress.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
-import '../models/achievement_model.dart';
-import '../models/user_progress_model.dart';
-import '../models/badge_model.dart';
-import '../models/tier_model.dart';
-import '../models/leaderboard_model.dart';
+import 'package:dabbler/data/models/rewards/achievement_model.dart';
+import 'package:dabbler/data/models/rewards/user_progress_model.dart';
+import 'package:dabbler/data/models/rewards/badge_model.dart';
+import 'package:dabbler/data/models/rewards/tier_model.dart';
+import 'package:dabbler/data/models/rewards/leaderboard_model.dart';
 
 /// Supabase data source for rewards system
 /// Handles all remote operations for achievements, points, leaderboards, and progress tracking
@@ -23,16 +22,16 @@ class SupabaseRewardsDataSource {
   final String _userBadgesTable = 'user_badges';
   final String _userTiersTable = 'user_tiers';
   final String _eventQueueTable = 'event_queue';
-  
+
   // Retry configuration
   static const int _maxRetries = 3;
   static const Duration _baseRetryDelay = Duration(seconds: 1);
-  
+
   // Cache for real-time subscriptions
   final Map<String, StreamSubscription> _subscriptions = {};
-  final StreamController<UserProgressModel> _progressController = 
+  final StreamController<UserProgressModel> _progressController =
       StreamController<UserProgressModel>.broadcast();
-  final StreamController<List<Map<String, dynamic>>> _leaderboardController = 
+  final StreamController<List<Map<String, dynamic>>> _leaderboardController =
       StreamController<List<Map<String, dynamic>>>.broadcast();
 
   SupabaseRewardsDataSource(this._client);
@@ -65,7 +64,7 @@ class SupabaseRewardsDataSource {
       if (category != null) {
         query = query.eq('category', category.name);
       }
-      
+
       if (!includeHidden) {
         query = query.eq('is_hidden', false);
       }
@@ -74,7 +73,7 @@ class SupabaseRewardsDataSource {
       // For now, we'll do a simple query and handle user filtering in a separate call
 
       final response = await query;
-      
+
       return (response as List)
           .map((json) => AchievementModel.fromSupabase(json))
           .toList();
@@ -103,12 +102,15 @@ class SupabaseRewardsDataSource {
     return _withRetry(() async {
       try {
         // Call Supabase function for event processing
-        final response = await _client.rpc('process_achievement_event', params: {
-          'event_type': eventType.name,
-          'event_data': eventData,
-          'user_id': userId,
-          'timestamp': DateTime.now().toIso8601String(),
-        });
+        final response = await _client.rpc(
+          'process_achievement_event',
+          params: {
+            'event_type': eventType.name,
+            'event_data': eventData,
+            'user_id': userId,
+            'timestamp': DateTime.now().toIso8601String(),
+          },
+        );
 
         // Return list of updated achievements
         return (response as List)
@@ -128,11 +130,14 @@ class SupabaseRewardsDataSource {
     Map<String, Map<String, dynamic>> progressUpdates,
   ) async {
     return _withRetry(() async {
-      final response = await _client.rpc('batch_update_progress', params: {
-        'user_id': userId,
-        'progress_updates': progressUpdates,
-        'timestamp': DateTime.now().toIso8601String(),
-      });
+      final response = await _client.rpc(
+        'batch_update_progress',
+        params: {
+          'user_id': userId,
+          'progress_updates': progressUpdates,
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+      );
 
       return (response as List)
           .map((json) => AchievementModel.fromSupabase(json))
@@ -199,15 +204,18 @@ class SupabaseRewardsDataSource {
     Map<String, dynamic>? metadata,
   }) async {
     return _withRetry(() async {
-      final response = await _client.rpc('award_points', params: {
-        'user_id': userId,
-        'base_points': basePoints,
-        'transaction_type': type.name,
-        'source_id': sourceId,
-        'multiplier': multiplier,
-        'metadata': metadata ?? {},
-        'timestamp': DateTime.now().toIso8601String(),
-      });
+      final response = await _client.rpc(
+        'award_points',
+        params: {
+          'user_id': userId,
+          'base_points': basePoints,
+          'transaction_type': type.name,
+          'source_id': sourceId,
+          'multiplier': multiplier,
+          'metadata': metadata ?? {},
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+      );
 
       return response as Map<String, dynamic>;
     });
@@ -234,20 +242,22 @@ class SupabaseRewardsDataSource {
       final response = await orderedQuery.range(offset, offset + limit - 1);
 
       return (response as List)
-          .map((json) => PointTransaction(
-            id: json['id'],
-            userId: json['user_id'],
-            basePoints: json['base_points'] ?? json['amount'] ?? 0,
-            finalPoints: json['final_points'] ?? json['amount'] ?? 0,
-            runningBalance: json['running_balance'] ?? 0,
-            type: TransactionType.values.firstWhere(
-              (e) => e.name == json['type'],
-              orElse: () => TransactionType.achievement,
+          .map(
+            (json) => PointTransaction(
+              id: json['id'],
+              userId: json['user_id'],
+              basePoints: json['base_points'] ?? json['amount'] ?? 0,
+              finalPoints: json['final_points'] ?? json['amount'] ?? 0,
+              runningBalance: json['running_balance'] ?? 0,
+              type: TransactionType.values.firstWhere(
+                (e) => e.name == json['type'],
+                orElse: () => TransactionType.achievement,
+              ),
+              description: json['description'] ?? '',
+              createdAt: DateTime.parse(json['created_at']),
+              metadata: json['metadata'] ?? {},
             ),
-            description: json['description'] ?? '',
-            createdAt: DateTime.parse(json['created_at']),
-            metadata: json['metadata'] ?? {},
-          ))
+          )
           .toList();
     });
   }
@@ -255,9 +265,10 @@ class SupabaseRewardsDataSource {
   /// Get user's current point balance
   Future<int> getUserPointBalance(String userId) async {
     return _withRetry(() async {
-      final response = await _client.rpc('get_user_point_balance', params: {
-        'user_id': userId,
-      });
+      final response = await _client.rpc(
+        'get_user_point_balance',
+        params: {'user_id': userId},
+      );
 
       return response as int;
     });
@@ -276,13 +287,16 @@ class SupabaseRewardsDataSource {
     String? sportFilter,
   }) async {
     return _withRetry(() async {
-      final response = await _client.rpc('get_leaderboard', params: {
-        'leaderboard_type': type.name,
-        'time_frame': timeframe.name,
-        'page_number': page,
-        'page_size': pageSize,
-        'sport_filter': sportFilter,
-      });
+      final response = await _client.rpc(
+        'get_leaderboard',
+        params: {
+          'leaderboard_type': type.name,
+          'time_frame': timeframe.name,
+          'page_number': page,
+          'page_size': pageSize,
+          'sport_filter': sportFilter,
+        },
+      );
 
       return LeaderboardModel.fromJson(response);
     });
@@ -296,12 +310,15 @@ class SupabaseRewardsDataSource {
     String? sportFilter,
   }) async {
     return _withRetry(() async {
-      final response = await _client.rpc('get_user_rank', params: {
-        'user_id': userId,
-        'leaderboard_type': leaderboardType.name,
-        'time_frame': timeframe.name,
-        'sport_filter': sportFilter,
-      });
+      final response = await _client.rpc(
+        'get_user_rank',
+        params: {
+          'user_id': userId,
+          'leaderboard_type': leaderboardType.name,
+          'time_frame': timeframe.name,
+          'sport_filter': sportFilter,
+        },
+      );
 
       return response as int?;
     });
@@ -313,10 +330,10 @@ class SupabaseRewardsDataSource {
     TimeFrame timeframe,
   ) async {
     return _withRetry(() async {
-      final response = await _client.rpc('get_leaderboard_stats', params: {
-        'leaderboard_type': type.name,
-        'time_frame': timeframe.name,
-      });
+      final response = await _client.rpc(
+        'get_leaderboard_stats',
+        params: {'leaderboard_type': type.name, 'time_frame': timeframe.name},
+      );
 
       return response as Map<String, dynamic>;
     });
@@ -362,11 +379,15 @@ class SupabaseRewardsDataSource {
     int? showcaseOrder,
   }) async {
     return _withRetry(() async {
-      await _client.from(_userBadgesTable).update({
-        'is_showcased': isShowcased,
-        'showcase_order': showcaseOrder,
-        'updated_at': DateTime.now().toIso8601String(),
-      }).eq('user_id', userId).eq('badge_id', badgeId);
+      await _client
+          .from(_userBadgesTable)
+          .update({
+            'is_showcased': isShowcased,
+            'showcase_order': showcaseOrder,
+            'updated_at': DateTime.now().toIso8601String(),
+          })
+          .eq('user_id', userId)
+          .eq('badge_id', badgeId);
     });
   }
 
@@ -379,7 +400,9 @@ class SupabaseRewardsDataSource {
           .eq('user_id', userId)
           .maybeSingle();
 
-      return response != null ? TierModel.fromSupabase(response['tiers']) : null;
+      return response != null
+          ? TierModel.fromSupabase(response['tiers'])
+          : null;
     });
   }
 
@@ -394,11 +417,14 @@ class SupabaseRewardsDataSource {
     AchievementCategory? category,
   }) async {
     return _withRetry(() async {
-      final response = await _client.rpc('search_achievements', params: {
-        'search_query': query,
-        'user_id': userId,
-        'category_filter': category?.name,
-      });
+      final response = await _client.rpc(
+        'search_achievements',
+        params: {
+          'search_query': query,
+          'user_id': userId,
+          'category_filter': category?.name,
+        },
+      );
 
       return (response as List)
           .map((json) => AchievementModel.fromSupabase(json))
@@ -412,10 +438,10 @@ class SupabaseRewardsDataSource {
     int limit = 10,
   }) async {
     return _withRetry(() async {
-      final response = await _client.rpc('get_trending_achievements', params: {
-        'time_frame': timeframe.name,
-        'limit_count': limit,
-      });
+      final response = await _client.rpc(
+        'get_trending_achievements',
+        params: {'time_frame': timeframe.name, 'limit_count': limit},
+      );
 
       return (response as List)
           .map((json) => AchievementModel.fromSupabase(json))
@@ -429,10 +455,10 @@ class SupabaseRewardsDataSource {
     int limit = 5,
   }) async {
     return _withRetry(() async {
-      final response = await _client.rpc('get_recommended_achievements', params: {
-        'user_id': userId,
-        'limit_count': limit,
-      });
+      final response = await _client.rpc(
+        'get_recommended_achievements',
+        params: {'user_id': userId, 'limit_count': limit},
+      );
 
       return (response as List)
           .map((json) => AchievementModel.fromSupabase(json))
@@ -447,23 +473,24 @@ class SupabaseRewardsDataSource {
   /// Subscribe to progress updates for a user
   Stream<UserProgressModel> subscribeToProgressUpdates(String userId) {
     final subscriptionKey = 'progress_$userId';
-    
+
     // Cancel existing subscription if any
     _subscriptions[subscriptionKey]?.cancel();
-    
+
     _subscriptions[subscriptionKey] = _client
         .from(_userProgressTable)
         .stream(primaryKey: ['id'])
         .eq('user_id', userId)
         .listen((data) {
-      for (final item in data) {
-        final progress = UserProgressModel.fromSupabase(item);
-        _progressController.add(progress);
-      }
-    });
+          for (final item in data) {
+            final progress = UserProgressModel.fromSupabase(item);
+            _progressController.add(progress);
+          }
+        });
 
-    return _progressController.stream.where((progress) => 
-        progress.userId == userId);
+    return _progressController.stream.where(
+      (progress) => progress.userId == userId,
+    );
   }
 
   /// Subscribe to leaderboard updates
@@ -472,16 +499,16 @@ class SupabaseRewardsDataSource {
     TimeFrame timeframe,
   ) {
     final subscriptionKey = 'leaderboard_${type.name}_${timeframe.name}';
-    
+
     // Cancel existing subscription if any
     _subscriptions[subscriptionKey]?.cancel();
-    
+
     _subscriptions[subscriptionKey] = _client
         .from(_leaderboardTable)
         .stream(primaryKey: ['id'])
         .listen((data) async {
-      _leaderboardController.add(data);
-    });
+          _leaderboardController.add(data);
+        });
 
     return _leaderboardController.stream;
   }
@@ -497,12 +524,15 @@ class SupabaseRewardsDataSource {
     String userId,
   ) async {
     return _withRetry(() async {
-      final response = await _client.rpc('claim_reward', params: {
-        'reward_id': rewardId,
-        'reward_type': rewardType.name,
-        'user_id': userId,
-        'timestamp': DateTime.now().toIso8601String(),
-      });
+      final response = await _client.rpc(
+        'claim_reward',
+        params: {
+          'reward_id': rewardId,
+          'reward_type': rewardType.name,
+          'user_id': userId,
+          'timestamp': DateTime.now().toIso8601String(),
+        },
+      );
 
       return response as Map<String, dynamic>;
     });
@@ -515,11 +545,14 @@ class SupabaseRewardsDataSource {
     RewardType rewardType,
   ) async {
     return _withRetry(() async {
-      final response = await _client.rpc('can_claim_reward', params: {
-        'user_id': userId,
-        'reward_id': rewardId,
-        'reward_type': rewardType.name,
-      });
+      final response = await _client.rpc(
+        'can_claim_reward',
+        params: {
+          'user_id': userId,
+          'reward_id': rewardId,
+          'reward_type': rewardType.name,
+        },
+      );
 
       return response as bool;
     });
@@ -528,9 +561,10 @@ class SupabaseRewardsDataSource {
   /// Get achievement statistics for user
   Future<Map<String, dynamic>> getAchievementStats(String userId) async {
     return _withRetry(() async {
-      final response = await _client.rpc('get_achievement_stats', params: {
-        'user_id': userId,
-      });
+      final response = await _client.rpc(
+        'get_achievement_stats',
+        params: {'user_id': userId},
+      );
 
       return response as Map<String, dynamic>;
     });
@@ -543,11 +577,14 @@ class SupabaseRewardsDataSource {
     int limit = 50,
   }) async {
     return _withRetry(() async {
-      final response = await _client.rpc('get_reward_claim_history', params: {
-        'user_id': userId,
-        'reward_type_filter': rewardType?.name,
-        'limit_count': limit,
-      });
+      final response = await _client.rpc(
+        'get_reward_claim_history',
+        params: {
+          'user_id': userId,
+          'reward_type_filter': rewardType?.name,
+          'limit_count': limit,
+        },
+      );
 
       return List<Map<String, dynamic>>.from(response as List);
     });
@@ -590,13 +627,13 @@ class SupabaseRewardsDataSource {
   /// Generic retry wrapper with exponential backoff
   Future<T> _withRetry<T>(Future<T> Function() operation) async {
     int attempts = 0;
-    
+
     while (attempts < _maxRetries) {
       try {
         return await operation();
       } catch (e) {
         attempts++;
-        
+
         if (attempts >= _maxRetries) {
           if (e is PostgrestException) {
             throw Exception('Server error: ${e.message}');
@@ -606,13 +643,13 @@ class SupabaseRewardsDataSource {
             throw Exception(e.toString());
           }
         }
-        
+
         // Exponential backoff
         final delay = _baseRetryDelay * (1 << (attempts - 1));
         await Future.delayed(delay);
       }
     }
-    
+
     throw Exception('Max retry attempts exceeded');
   }
 
@@ -633,7 +670,7 @@ class SupabaseRewardsDataSource {
           .from(_eventQueueTable)
           .select('*')
           .eq('status', 'pending');
-      
+
       return response.length;
     });
   }

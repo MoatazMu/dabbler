@@ -1,5 +1,8 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/failure.dart';
 import '../models/profile.dart';
+
+typedef Result<T> = core.Result<T, Failure>;
 
 /// Username operations over the `profiles` table (citext unique).
 ///

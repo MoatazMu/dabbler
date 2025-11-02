@@ -1,9 +1,12 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/venue_space.dart';
 
 abstract class VenueConfigRepository {
   /// List active spaces; optionally filter by venue.
-  Future<Result<List<VenueSpace>>> listActiveSpaces({String? venueId, int limit = 100});
+  Future<Result<List<VenueSpace>>> listActiveSpaces({
+    String? venueId,
+    int limit = 100,
+  });
 
   /// Get opening hours for a space.
   Future<Result<List<OpeningHour>>> getOpeningHours(String venueSpaceId);
@@ -26,4 +29,3 @@ abstract class VenueConfigRepository {
     required bool isActive,
   });
 }
-

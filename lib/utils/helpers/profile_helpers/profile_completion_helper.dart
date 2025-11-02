@@ -1,5 +1,6 @@
 /// Helper class for calculating and managing profile completion
 library;
+
 import 'dart:math';
 import '../../enums/profile_enums.dart';
 import '../../constants/profile_constants.dart';
@@ -16,7 +17,7 @@ class UserProfile {
   final String? username;
   final List<SportProfile> sportsProfiles;
   final bool hasPreferences;
-  
+
   const UserProfile({
     this.fullName,
     this.avatarUrl,
@@ -37,7 +38,7 @@ class SportProfile {
   final int yearsPlaying;
   final bool isPrimarySport;
   final SportCategory category;
-  
+
   const SportProfile({
     required this.sport,
     required this.skillLevel,
@@ -52,7 +53,7 @@ class ProfileCompletionHelper {
   /// Calculate the overall completion percentage of a user profile
   static int calculateCompletion(UserProfile profile) {
     int completion = 0;
-    
+
     // Basic info section (40% total weight)
     if (profile.fullName?.isNotEmpty ?? false) {
       completion += ProfileCompletionWeights.basicInfoWeight ~/ 4; // 10%
@@ -66,29 +67,29 @@ class ProfileCompletionHelper {
     if (profile.phoneNumber?.isNotEmpty ?? false) {
       completion += ProfileCompletionWeights.basicInfoWeight ~/ 4; // 10%
     }
-    
+
     // Sports profiles section (30% total weight)
     if (profile.sportsProfiles.isNotEmpty) {
       // Award points based on number of sports, max 30%
       final sportsPoints = min(
-        profile.sportsProfiles.length * 10, 
+        profile.sportsProfiles.length * 10,
         ProfileCompletionWeights.sportsProfileWeight,
       );
       completion += sportsPoints;
     }
-    
+
     // Preferences section (30% total weight)
     if (profile.hasPreferences) {
       completion += ProfileCompletionWeights.preferencesWeight;
     }
-    
+
     return min(completion, 100); // Cap at 100%
   }
 
   /// Calculate completion for individual profile sections
   static Map<String, int> calculateSectionCompletion(UserProfile profile) {
     final sections = <String, int>{};
-    
+
     // Basic info completion
     int basicCompletion = 0;
     final basicFields = [
@@ -99,64 +100,76 @@ class ProfileCompletionHelper {
       profile.dateOfBirth != null,
       profile.gender?.isNotEmpty ?? false,
     ];
-    basicCompletion = (basicFields.where((field) => field).length / basicFields.length * 100).round();
+    basicCompletion =
+        (basicFields.where((field) => field).length / basicFields.length * 100)
+            .round();
     sections['basic_info'] = basicCompletion;
-    
+
     // Sports profile completion
     int sportsCompletion = 0;
     if (profile.sportsProfiles.isNotEmpty) {
-      final completedSports = profile.sportsProfiles.where((sport) => 
-        sport.sport.isNotEmpty && 
-        sport.skillLevel > 0 &&
-        sport.yearsPlaying >= 0
-      ).length;
-      sportsCompletion = min((completedSports / max(profile.sportsProfiles.length, 1) * 100).round(), 100);
+      final completedSports = profile.sportsProfiles
+          .where(
+            (sport) =>
+                sport.sport.isNotEmpty &&
+                sport.skillLevel > 0 &&
+                sport.yearsPlaying >= 0,
+          )
+          .length;
+      sportsCompletion = min(
+        (completedSports / max(profile.sportsProfiles.length, 1) * 100).round(),
+        100,
+      );
     }
     sections['sports'] = sportsCompletion;
-    
+
     // Preferences completion
     sections['preferences'] = profile.hasPreferences ? 100 : 0;
-    
+
     // Contact info completion
     int contactCompletion = 0;
     final contactFields = [
       profile.email?.isNotEmpty ?? false,
       profile.phoneNumber?.isNotEmpty ?? false,
     ];
-    contactCompletion = (contactFields.where((field) => field).length / contactFields.length * 100).round();
+    contactCompletion =
+        (contactFields.where((field) => field).length /
+                contactFields.length *
+                100)
+            .round();
     sections['contact'] = contactCompletion;
-    
+
     return sections;
   }
 
   /// Get a list of missing or incomplete profile fields
   static List<String> getMissingFields(UserProfile profile) {
     final missing = <String>[];
-    
+
     // Check basic required fields
     if (profile.fullName?.isEmpty ?? true) missing.add('Full name');
     if (profile.avatarUrl?.isEmpty ?? true) missing.add('Profile photo');
     if (profile.bio?.isEmpty ?? true) missing.add('Bio');
     if (profile.phoneNumber?.isEmpty ?? true) missing.add('Phone number');
     if (profile.dateOfBirth == null) missing.add('Date of birth');
-    
+
     // Check sports profiles
     if (profile.sportsProfiles.isEmpty) {
       missing.add('Sports interests');
     } else {
-      final incompleteSports = profile.sportsProfiles.where((sport) =>
-        sport.sport.isEmpty || sport.skillLevel == 0
-      ).length;
+      final incompleteSports = profile.sportsProfiles
+          .where((sport) => sport.sport.isEmpty || sport.skillLevel == 0)
+          .length;
       if (incompleteSports > 0) {
         missing.add('Complete sports profiles');
       }
     }
-    
+
     // Check preferences
     if (!profile.hasPreferences) {
       missing.add('Game preferences');
     }
-    
+
     return missing;
   }
 
@@ -164,9 +177,9 @@ class ProfileCompletionHelper {
   static List<String> getSuggestedNextSteps(UserProfile profile) {
     final suggestions = <String>[];
     final missing = getMissingFields(profile);
-    
+
     if (missing.isEmpty) return ['Your profile is complete!'];
-    
+
     // Prioritize based on importance and user experience
     final priorityOrder = [
       'Profile photo',
@@ -178,36 +191,36 @@ class ProfileCompletionHelper {
       'Date of birth',
       'Complete sports profiles',
     ];
-    
+
     for (final priority in priorityOrder) {
       if (missing.contains(priority)) {
         suggestions.add(priority);
       }
     }
-    
+
     // Add any remaining missing fields
     for (final field in missing) {
       if (!suggestions.contains(field)) {
         suggestions.add(field);
       }
     }
-    
+
     return suggestions;
   }
 
   /// Get the next step message with actionable guidance
   static String getNextStepMessage(UserProfile profile) {
     final missing = getMissingFields(profile);
-    
+
     if (missing.isEmpty) {
       return 'Your profile is complete! You\'re ready to start playing.';
     }
-    
+
     final suggestions = getSuggestedNextSteps(profile);
     if (suggestions.isNotEmpty) {
       return 'Next: Add ${suggestions.first.toLowerCase()} to improve your profile';
     }
-    
+
     return 'Complete your profile to unlock all features';
   }
 
@@ -231,13 +244,13 @@ class ProfileCompletionHelper {
   static bool canJoinCompetitiveGames(UserProfile profile) {
     final completion = calculateCompletion(profile);
     return completion >= 85 && // 85% minimum for competitive play
-           profile.sportsProfiles.isNotEmpty;
+        profile.sportsProfiles.isNotEmpty;
   }
 
   /// Get feature unlock status and requirements
   static Map<String, dynamic> getFeatureUnlockStatus(UserProfile profile) {
     final completion = calculateCompletion(profile);
-    
+
     return {
       'current_completion': completion,
       'features': {
@@ -263,7 +276,7 @@ class ProfileCompletionHelper {
   /// Get completion rewards and milestones
   static List<String> getCompletionRewards(int completionPercentage) {
     final rewards = <String>[];
-    
+
     if (completionPercentage >= 25) {
       rewards.add('Profile searchable by other players');
     }
@@ -279,7 +292,7 @@ class ProfileCompletionHelper {
     if (completionPercentage >= 100) {
       rewards.add('Profile badge and priority in search results');
     }
-    
+
     return rewards;
   }
 
@@ -287,38 +300,48 @@ class ProfileCompletionHelper {
   static List<String> getCompletionTips(UserProfile profile) {
     final tips = <String>[];
     final missing = getMissingFields(profile);
-    
+
     if (missing.contains('Profile photo')) {
-      tips.add('A profile photo increases your chances of getting game invites by 70%');
+      tips.add(
+        'A profile photo increases your chances of getting game invites by 70%',
+      );
     }
     if (missing.contains('Bio')) {
-      tips.add('Tell others about yourself - a good bio helps you find compatible teammates');
+      tips.add(
+        'Tell others about yourself - a good bio helps you find compatible teammates',
+      );
     }
     if (missing.contains('Sports interests')) {
-      tips.add('Add your favorite sports to get personalized game recommendations');
+      tips.add(
+        'Add your favorite sports to get personalized game recommendations',
+      );
     }
     if (profile.sportsProfiles.length == 1) {
-      tips.add('Add more sports to discover new activities and meet more players');
+      tips.add(
+        'Add more sports to discover new activities and meet more players',
+      );
     }
     if (missing.contains('Game preferences')) {
-      tips.add('Set your preferences to get better matched with suitable games');
+      tips.add(
+        'Set your preferences to get better matched with suitable games',
+      );
     }
-    
+
     // General tips for low completion
     final completion = calculateCompletion(profile);
     if (completion < 50) {
       tips.add('Complete profiles get 3x more game invitations');
     }
-    
+
     return tips.take(3).toList(); // Limit to 3 tips to avoid overwhelming
   }
 
   /// Calculate estimated time to complete profile
   static String getEstimatedCompletionTime(UserProfile profile) {
     final missing = getMissingFields(profile);
-    
+
     if (missing.isEmpty) return 'Complete!';
-    
+
     // Estimate time based on missing fields (rough estimates)
     final timeEstimates = {
       'Profile photo': 2,
@@ -330,12 +353,12 @@ class ProfileCompletionHelper {
       'Date of birth': 1,
       'Complete sports profiles': 4,
     };
-    
+
     int totalMinutes = 0;
     for (final field in missing) {
       totalMinutes += timeEstimates[field] ?? 2;
     }
-    
+
     if (totalMinutes < 5) return 'Less than 5 minutes';
     if (totalMinutes < 15) return 'About 10 minutes';
     if (totalMinutes < 30) return 'About 20 minutes';

@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failure.dart';
-import '../entities/venue.dart';
-import '../entities/sport_config.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/games/venue.dart';
+import 'package:dabbler/data/models/games/sport_config.dart';
 
 /// Time slot model for availability checking
 class TimeSlot {
@@ -143,7 +143,9 @@ abstract class VenuesRepository {
   Future<Either<Failure, List<String>>> getVenuePhotos(String venueId);
 
   /// Gets venue operating hours
-  Future<Either<Failure, Map<String, dynamic>>> getVenueOperatingHours(String venueId);
+  Future<Either<Failure, Map<String, dynamic>>> getVenueOperatingHours(
+    String venueId,
+  );
 
   /// Gets pricing information for a venue
   Future<Either<Failure, Map<String, dynamic>>> getVenuePricing(
@@ -159,7 +161,9 @@ abstract class VenuesRepository {
   );
 
   /// Gets venue contact information
-  Future<Either<Failure, Map<String, dynamic>>> getVenueContactInfo(String venueId);
+  Future<Either<Failure, Map<String, dynamic>>> getVenueContactInfo(
+    String venueId,
+  );
 
   /// Gets venues owned/managed by a user
   Future<Either<Failure, List<Venue>>> getUserVenues(
@@ -176,7 +180,10 @@ abstract class VenuesRepository {
   );
 
   /// Marks venue as favorite for a user
-  Future<Either<Failure, bool>> toggleVenueFavorite(String venueId, String userId);
+  Future<Either<Failure, bool>> toggleVenueFavorite(
+    String venueId,
+    String userId,
+  );
 
   /// Gets user's favorite venues
   Future<Either<Failure, List<Venue>>> getFavoriteVenues(
@@ -211,7 +218,9 @@ abstract class VenuesRepository {
   });
 
   /// Gets venue peak and off-peak hours
-  Future<Either<Failure, Map<String, dynamic>>> getVenuePeakHours(String venueId);
+  Future<Either<Failure, Map<String, dynamic>>> getVenuePeakHours(
+    String venueId,
+  );
 
   /// Checks venue capacity for a specific time
   Future<Either<Failure, Map<String, dynamic>>> checkVenueCapacity(
@@ -221,7 +230,9 @@ abstract class VenuesRepository {
   );
 
   /// Gets venue weather suitability info
-  Future<Either<Failure, Map<String, dynamic>>> getVenueWeatherSuitability(String venueId);
+  Future<Either<Failure, Map<String, dynamic>>> getVenueWeatherSuitability(
+    String venueId,
+  );
 
   /// Gets venues with current promotions/discounts
   Future<Either<Failure, List<Venue>>> getVenuesWithPromotions({

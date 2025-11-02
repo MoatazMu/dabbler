@@ -16,5 +16,6 @@ class SquadJoinRequest with _$SquadJoinRequest {
     @JsonKey(name: 'decided_at') DateTime? decidedAt,
   }) = _SquadJoinRequest;
 
-  factory SquadJoinRequest.fromJson(Map<String, dynamic> json) => _$SquadJoinRequestFromJson(json);
+  factory SquadJoinRequest.fromJson(Map<String, dynamic> json) =>
+      _$SquadJoinRequestFromJson(json);
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/widgets/loading_widget.dart';
+import 'package:dabbler/core/widgets/loading_widget.dart';
 import '../../providers/social_providers.dart';
 import '../../controllers/social_feed_controller.dart';
 

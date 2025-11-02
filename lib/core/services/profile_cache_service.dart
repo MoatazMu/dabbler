@@ -30,18 +30,40 @@ class ProfileCacheService {
 
   // Public API
   Future<Map<String, dynamic>?> getOwnProfile({
-    List<String> fields = const ['id','name','email','avatar_url','updated_at','age','gender','sports','intent'],
+    List<String> fields = const [
+      'id',
+      'name',
+      'email',
+      'avatar_url',
+      'updated_at',
+      'age',
+      'gender',
+      'sports',
+      'intent',
+    ],
     bool preferCache = true,
     bool revalidate = true,
   }) async {
     final userId = _supabase.auth.currentUser?.id;
     if (userId == null) return null;
-    return getProfileById(userId, fields: fields, cacheKeyOverride: _ownProfileKey, preferCache: preferCache, revalidate: revalidate);
+    return getProfileById(
+      userId,
+      fields: fields,
+      cacheKeyOverride: _ownProfileKey,
+      preferCache: preferCache,
+      revalidate: revalidate,
+    );
   }
 
   Future<Map<String, dynamic>?> getProfileById(
     String userId, {
-    List<String> fields = const ['id','name','email','avatar_url','updated_at'],
+    List<String> fields = const [
+      'id',
+      'name',
+      'email',
+      'avatar_url',
+      'updated_at',
+    ],
     String? cacheKeyOverride,
     bool preferCache = true,
     bool revalidate = true,
@@ -65,7 +87,11 @@ class ProfileCacheService {
     _inFlight[cacheKey] = completer.future;
 
     try {
-      final fresh = await _fetchAndUpdate(userId, fields: fields, cacheKey: cacheKey);
+      final fresh = await _fetchAndUpdate(
+        userId,
+        fields: fields,
+        cacheKey: cacheKey,
+      );
       completer.complete(fresh);
     } catch (e) {
       // On failure, fall back to cache
@@ -80,25 +106,43 @@ class ProfileCacheService {
     return completer.future;
   }
 
-  Future<void> updateProfilePartial(String userId, Map<String, dynamic> partial, {String? cacheKeyOverride}) async {
-    final cacheKey = cacheKeyOverride ?? (userId == _supabase.auth.currentUser?.id ? _ownProfileKey : 'profile:$userId');
+  Future<void> updateProfilePartial(
+    String userId,
+    Map<String, dynamic> partial, {
+    String? cacheKeyOverride,
+  }) async {
+    final cacheKey =
+        cacheKeyOverride ??
+        (userId == _supabase.auth.currentUser?.id
+            ? _ownProfileKey
+            : 'profile:$userId');
     final cached = await _readCache(cacheKey);
-    final currentData = (cached != null ? Map<String, dynamic>.from(cached['data'] as Map) : <String, dynamic>{});
+    final currentData = (cached != null
+        ? Map<String, dynamic>.from(cached['data'] as Map)
+        : <String, dynamic>{});
     // Track avatar change to purge image cache
     final prevAvatar = currentData['avatar_url'];
     currentData.addAll(partial);
     final now = DateTime.now().toIso8601String();
-    final meta = {
-      'fetched_at': now,
-    };
+    final meta = {'fetched_at': now};
     await _writeCache(cacheKey, currentData, meta: meta);
-    if (partial.containsKey('avatar_url') && partial['avatar_url'] != prevAvatar && prevAvatar is String && prevAvatar.isNotEmpty) {
+    if (partial.containsKey('avatar_url') &&
+        partial['avatar_url'] != prevAvatar &&
+        prevAvatar is String &&
+        prevAvatar.isNotEmpty) {
       await ImageCacheService.invalidateUrl(prevAvatar);
     }
   }
 
-  Future<void> invalidateProfile(String userId, {String? cacheKeyOverride}) async {
-    final cacheKey = cacheKeyOverride ?? (userId == _supabase.auth.currentUser?.id ? _ownProfileKey : 'profile:$userId');
+  Future<void> invalidateProfile(
+    String userId, {
+    String? cacheKeyOverride,
+  }) async {
+    final cacheKey =
+        cacheKeyOverride ??
+        (userId == _supabase.auth.currentUser?.id
+            ? _ownProfileKey
+            : 'profile:$userId');
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(cacheKey);
   }
@@ -132,7 +176,11 @@ class ProfileCacheService {
     }
   }
 
-  Future<void> _writeCache(String key, Map<String, dynamic> data, {Map<String, dynamic>? meta}) async {
+  Future<void> _writeCache(
+    String key,
+    Map<String, dynamic> data, {
+    Map<String, dynamic>? meta,
+  }) async {
     final prefs = await SharedPreferences.getInstance();
     final payload = {
       'data': data,
@@ -141,7 +189,11 @@ class ProfileCacheService {
     await prefs.setString(key, json.encode(payload));
   }
 
-  Future<Map<String, dynamic>?> _fetchAndUpdate(String userId, {required List<String> fields, required String cacheKey}) async {
+  Future<Map<String, dynamic>?> _fetchAndUpdate(
+    String userId, {
+    required List<String> fields,
+    required String cacheKey,
+  }) async {
     final select = fields.join(',');
     final response = await _supabase
         .from(SupabaseConfig.usersTable)
@@ -154,11 +206,16 @@ class ProfileCacheService {
     return response;
   }
 
-  Future<void> _rememberRecent(String cacheKey, Map<String, dynamic> cached) async {
+  Future<void> _rememberRecent(
+    String cacheKey,
+    Map<String, dynamic> cached,
+  ) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_recentProfilesKey);
-      final list = raw != null ? (json.decode(raw) as List).cast<Map<String, dynamic>>() : <Map<String, dynamic>>[];
+      final list = raw != null
+          ? (json.decode(raw) as List).cast<Map<String, dynamic>>()
+          : <Map<String, dynamic>>[];
       final data = Map<String, dynamic>.from(cached['data'] as Map);
       data['cache_key'] = cacheKey;
       // Remove existing entry for same id
@@ -180,7 +237,23 @@ class ProfileCacheService {
     // Sync own profile in background
     final userId = _supabase.auth.currentUser?.id;
     if (userId != null) {
-      unawaited(_fetchAndUpdate(userId, fields: const ['id','name','email','avatar_url','updated_at','age','gender','sports','intent'], cacheKey: _ownProfileKey));
+      unawaited(
+        _fetchAndUpdate(
+          userId,
+          fields: const [
+            'id',
+            'name',
+            'email',
+            'avatar_url',
+            'updated_at',
+            'age',
+            'gender',
+            'sports',
+            'intent',
+          ],
+          cacheKey: _ownProfileKey,
+        ),
+      );
     }
   }
 
@@ -188,5 +261,3 @@ class ProfileCacheService {
     await _connectivitySub.cancel();
   }
 }
-
-

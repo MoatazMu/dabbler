@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../../core/widgets/custom_avatar.dart';
+import 'package:dabbler/core/widgets/custom_avatar.dart';
 import '../../../../../themes/app_colors.dart';
 import '../../../../../themes/app_text_styles.dart';
 import '../../../../../utils/formatters/time_formatter.dart';
-import '../../../../../core/widgets/shimmer_loading.dart';
-import '../../../data/models/friend_request_model.dart';
+import 'package:dabbler/core/widgets/shimmer_loading.dart';
+import 'package:dabbler/data/models/friend_request_model.dart';
 import 'mutual_friends_widget.dart';
 
 /// A card widget for displaying friend requests with user info,

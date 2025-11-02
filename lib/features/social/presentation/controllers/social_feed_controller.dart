@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../data/models/post_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
 import '../../../../utils/enums/social_enums.dart';
 import '../widgets/trending/trending_filter_bar.dart';
 
@@ -72,7 +72,7 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Mock posts for now
       final posts = _generateMockPosts(1, _pageSize);
 
@@ -84,10 +84,7 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       );
       _currentPage = 1;
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -100,7 +97,7 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       final nextPage = _currentPage + 1;
       final morePosts = _generateMockPosts(nextPage, _pageSize);
 
@@ -114,16 +111,10 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
         );
         _currentPage = nextPage;
       } else {
-        state = state.copyWith(
-          isLoading: false,
-          hasMore: false,
-        );
+        state = state.copyWith(isLoading: false, hasMore: false);
       }
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -192,13 +183,13 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       if (postIndex == -1) return;
 
       final post = state.posts[postIndex];
-      
+
       // Update post optimistically
       final updatedPost = post.copyWith(
         isLiked: !post.isLiked,
         likesCount: post.isLiked ? post.likesCount - 1 : post.likesCount + 1,
       );
-      
+
       final updatedPosts = List<PostModel>.from(state.posts);
       updatedPosts[postIndex] = updatedPost;
 
@@ -207,8 +198,9 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
         filteredPosts: _applyFilter(updatedPosts, state.filter),
       );
 
-      await Future.delayed(const Duration(milliseconds: 500)); // Simulate API call
-      
+      await Future.delayed(
+        const Duration(milliseconds: 500),
+      ); // Simulate API call
     } catch (e) {
       // Revert optimistic update on failure
       state = state.copyWith(error: e.toString());
@@ -221,9 +213,13 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       case 'all':
         return posts;
       case 'friends':
-        return posts.where((post) => post.visibility == PostVisibility.friends).toList();
+        return posts
+            .where((post) => post.visibility == PostVisibility.friends)
+            .toList();
       case 'public':
-        return posts.where((post) => post.visibility == PostVisibility.public).toList();
+        return posts
+            .where((post) => post.visibility == PostVisibility.public)
+            .toList();
       case 'game':
         return posts.where((post) => post.gameId != null).toList();
       default:
@@ -240,14 +236,19 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
         authorId: 'user_${index % 5}',
         authorName: 'User ${index % 5}',
         authorAvatar: 'https://example.com/avatar_${index % 5}.jpg',
-        content: 'This is post content for post $postId. It contains some sample text to demonstrate the feed functionality.',
-        mediaUrls: index % 3 == 0 ? ['https://example.com/image_$index.jpg'] : [],
+        content:
+            'This is post content for post $postId. It contains some sample text to demonstrate the feed functionality.',
+        mediaUrls: index % 3 == 0
+            ? ['https://example.com/image_$index.jpg']
+            : [],
         createdAt: DateTime.now().subtract(Duration(hours: index)),
         updatedAt: DateTime.now().subtract(Duration(hours: index)),
         likesCount: index * 2,
         commentsCount: index,
         sharesCount: index ~/ 2,
-        visibility: index % 2 == 0 ? PostVisibility.friends : PostVisibility.public,
+        visibility: index % 2 == 0
+            ? PostVisibility.friends
+            : PostVisibility.public,
         tags: index % 4 == 0 ? ['football', 'basketball'] : [],
         gameId: index % 5 == 0 ? 'game_$index' : null,
       );
@@ -288,9 +289,7 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       if (postIndex == -1) return;
 
       final post = state.posts[postIndex];
-      final updatedPost = post.copyWith(
-        isBookmarked: !post.isBookmarked,
-      );
+      final updatedPost = post.copyWith(isBookmarked: !post.isBookmarked);
 
       final updatedPosts = List<PostModel>.from(state.posts);
       updatedPosts[postIndex] = updatedPost;
@@ -310,8 +309,10 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
   /// Hide a post from the feed
   Future<void> hidePost(String postId) async {
     try {
-      final updatedPosts = state.posts.where((post) => post.id != postId).toList();
-      
+      final updatedPosts = state.posts
+          .where((post) => post.id != postId)
+          .toList();
+
       state = state.copyWith(
         posts: updatedPosts,
         filteredPosts: _applyFilter(updatedPosts, state.filter),
@@ -332,7 +333,7 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
       // Check if post exists in current state
       final postExists = state.posts.any((post) => post.id == postId);
       if (!postExists) {
@@ -354,10 +355,10 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // In a real implementation, this would send the comment to the API
       // and then update the local state with the new comment
-      
+
       // For now, just return success
       return true;
     } catch (e) {
@@ -371,15 +372,15 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Remove post from state
       final newPosts = state.posts.where((post) => post.id != postId).toList();
-      
+
       state = state.copyWith(
         posts: newPosts,
         filteredPosts: _applyFilter(newPosts, state.filter),
       );
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(error: e.toString());
@@ -393,15 +394,15 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     TrendingTimeRange timeRange = TrendingTimeRange.today,
   }) async {
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // For now, return the same posts as trending
       // In a real implementation, this would call a service to get trending posts
       final trendingPosts = <PostModel>[];
-      
+
       state = state.copyWith(
         trendingPosts: trendingPosts,
         isLoading: false,
@@ -415,17 +416,17 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
   /// Load more trending posts
   Future<void> loadMoreTrendingPosts() async {
     if (!state.hasMoreTrending || state.isLoading) return;
-    
+
     state = state.copyWith(isLoading: true);
-    
+
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // For now, just return empty list
       // In a real implementation, this would call a service to get more trending posts
       final morePosts = <PostModel>[];
-      
+
       state = state.copyWith(
         trendingPosts: [...state.trendingPosts, ...morePosts],
         isLoading: false,
@@ -454,7 +455,7 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 1000));
-      
+
       // Create new post
       final newPost = PostModel(
         id: 'post_${DateTime.now().millisecondsSinceEpoch}',
@@ -472,10 +473,10 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
         tags: tags,
         gameId: gameId,
       );
-      
+
       // Add to feed
       addOptimisticPost(newPost);
-      
+
       return true;
     } catch (e) {
       state = state.copyWith(error: e.toString());
@@ -494,7 +495,7 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // For now, just return success
       return true;
     } catch (e) {
@@ -508,7 +509,7 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
       // For now, return empty list
       return [];
     } catch (e) {
@@ -522,7 +523,7 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 300));
-      
+
       // For now, just return success
       return true;
     } catch (e) {
@@ -536,9 +537,11 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     try {
       // Simulate API call delay
       await Future.delayed(const Duration(milliseconds: 2000));
-      
+
       // For now, return mock URLs
-      return filePaths.map((path) => 'https://example.com/media/${path.split('/').last}').toList();
+      return filePaths
+          .map((path) => 'https://example.com/media/${path.split('/').last}')
+          .toList();
     } catch (e) {
       state = state.copyWith(error: e.toString());
       return [];

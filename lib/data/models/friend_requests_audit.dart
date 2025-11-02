@@ -14,5 +14,6 @@ class FriendRequestAudit with _$FriendRequestAudit {
     @JsonKey(name: 'created_at') required DateTime createdAt,
   }) = _FriendRequestAudit;
 
-  factory FriendRequestAudit.fromJson(Map<String, dynamic> json) => _$FriendRequestAuditFromJson(json);
+  factory FriendRequestAudit.fromJson(Map<String, dynamic> json) =>
+      _$FriendRequestAuditFromJson(json);
 }

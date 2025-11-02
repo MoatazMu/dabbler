@@ -1,15 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/badge.dart';
-import '../../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/badge.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import '../../domain/repositories/rewards_repository.dart';
 
 /// Badge collection sorting options
-enum BadgeSortBy { 
-  name, 
-  rarity, 
-  tier,
-  unlockMessage,
-}
+enum BadgeSortBy { name, rarity, tier, unlockMessage }
 
 /// Badge filtering options
 enum BadgeFilter {
@@ -90,7 +85,9 @@ class BadgeState {
       // Search filter
       if (searchQuery.isNotEmpty) {
         if (!badge.name.toLowerCase().contains(searchQuery.toLowerCase()) &&
-            !badge.unlockMessage.toLowerCase().contains(searchQuery.toLowerCase())) {
+            !badge.unlockMessage.toLowerCase().contains(
+              searchQuery.toLowerCase(),
+            )) {
           return false;
         }
       }
@@ -129,7 +126,7 @@ class BadgeState {
     // Sort badges
     filtered.sort((a, b) {
       int comparison = 0;
-      
+
       switch (sortBy) {
         case BadgeSortBy.name:
           comparison = a.name.compareTo(b.name);
@@ -144,7 +141,7 @@ class BadgeState {
           comparison = a.unlockMessage.compareTo(b.unlockMessage);
           break;
       }
-      
+
       return isAscending ? comparison : -comparison;
     });
 
@@ -162,7 +159,9 @@ class BadgeState {
   /// Get collection stats
   Map<String, dynamic> get collectionStats {
     final total = userBadges.length;
-    if (total == 0) return {'total': 0, 'by_rarity': {}, 'completion_rate': 0.0};
+    if (total == 0) {
+      return {'total': 0, 'by_rarity': {}, 'completion_rate': 0.0};
+    }
 
     final rarityCount = <String, int>{};
     for (final badge in userBadges) {
@@ -192,16 +191,20 @@ class BadgeState {
 
   Badge? _getRarestBadge() {
     if (userBadges.isEmpty) return null;
-    
-    return userBadges.reduce((current, next) => 
-        current.rarityScore > next.rarityScore ? current : next);
+
+    return userBadges.reduce(
+      (current, next) =>
+          current.rarityScore > next.rarityScore ? current : next,
+    );
   }
 
   Badge? _getMostRecentBadge() {
     if (userBadges.isEmpty) return null;
-    
-    return userBadges.reduce((current, next) => 
-        current.createdAt.isAfter(next.createdAt) ? current : next);
+
+    return userBadges.reduce(
+      (current, next) =>
+          current.createdAt.isAfter(next.createdAt) ? current : next,
+    );
   }
 }
 
@@ -222,20 +225,23 @@ class BadgeController extends StateNotifier<BadgeState> {
 
   Future<void> _loadUserBadges() async {
     final result = await _repository.getUserBadges(userId);
-    
+
     result.fold(
-      (failure) => state = state.copyWith(
-        error: failure.toString(),
-        isLoading: false,
-      ),
+      (failure) =>
+          state = state.copyWith(error: failure.toString(), isLoading: false),
       (badges) {
         // Get showcased badges by filtering badges with showcaseOnly = true
-        final showcaseResult = _repository.getUserBadges(userId, showcaseOnly: true);
+        final showcaseResult = _repository.getUserBadges(
+          userId,
+          showcaseOnly: true,
+        );
         showcaseResult.then((showcaseResult) {
           showcaseResult.fold(
             (failure) => {}, // Ignore showcase errors
             (showcaseBadges) {
-              final showcasedIds = showcaseBadges.map((badge) => badge.id).toList();
+              final showcasedIds = showcaseBadges
+                  .map((badge) => badge.id)
+                  .toList();
               state = state.copyWith(
                 userBadges: badges,
                 showcasedBadgeIds: showcasedIds,
@@ -291,33 +297,31 @@ class BadgeController extends StateNotifier<BadgeState> {
     }
 
     final result = await _repository.updateBadgeShowcase(userId, badgeId, true);
-    
+
     result.fold(
       (failure) => state = state.copyWith(error: failure.toString()),
       (_) {
         final updatedIds = [...state.showcasedBadgeIds, badgeId];
-        state = state.copyWith(
-          showcasedBadgeIds: updatedIds,
-          error: null,
-        );
+        state = state.copyWith(showcasedBadgeIds: updatedIds, error: null);
       },
     );
   }
 
   /// Removes a badge from showcase
   Future<void> removeFromShowcase(String badgeId) async {
-    final result = await _repository.updateBadgeShowcase(userId, badgeId, false);
-    
+    final result = await _repository.updateBadgeShowcase(
+      userId,
+      badgeId,
+      false,
+    );
+
     result.fold(
       (failure) => state = state.copyWith(error: failure.toString()),
       (_) {
         final updatedIds = state.showcasedBadgeIds
             .where((id) => id != badgeId)
             .toList();
-        state = state.copyWith(
-          showcasedBadgeIds: updatedIds,
-          error: null,
-        );
+        state = state.copyWith(showcasedBadgeIds: updatedIds, error: null);
       },
     );
   }
@@ -332,17 +336,14 @@ class BadgeController extends StateNotifier<BadgeState> {
     // Update each badge's showcase order
     for (int i = 0; i < newOrder.length; i++) {
       await _repository.updateBadgeShowcase(
-        userId, 
-        newOrder[i], 
-        true, 
+        userId,
+        newOrder[i],
+        true,
         showcaseOrder: i,
       );
     }
 
-    state = state.copyWith(
-      showcasedBadgeIds: newOrder,
-      error: null,
-    );
+    state = state.copyWith(showcasedBadgeIds: newOrder, error: null);
   }
 
   /// Refreshes badge data
@@ -352,7 +353,9 @@ class BadgeController extends StateNotifier<BadgeState> {
 
   /// Gets badges by rarity level
   List<Badge> getBadgesByRarity(String rarity) {
-    return state.userBadges.where((badge) => badge.getRarityLabel() == rarity).toList();
+    return state.userBadges
+        .where((badge) => badge.getRarityLabel() == rarity)
+        .toList();
   }
 
   /// Gets badges by tier
@@ -370,11 +373,12 @@ class BadgeController extends StateNotifier<BadgeState> {
     final stats = state.collectionStats;
     final rarityCount = stats['by_rarity'] as Map<String, int>;
     final total = stats['total'] as int;
-    
+
     if (total == 0) return {};
-    
-    return rarityCount.map((rarity, count) => 
-        MapEntry(rarity, (count / total) * 100));
+
+    return rarityCount.map(
+      (rarity, count) => MapEntry(rarity, (count / total) * 100),
+    );
   }
 
   /// Gets tier distribution
@@ -390,7 +394,10 @@ class BadgeController extends StateNotifier<BadgeState> {
 
   /// Gets collection value (based on rarity scores)
   int getCollectionValue() {
-    return state.userBadges.fold(0, (total, badge) => total + badge.rarityScore);
+    return state.userBadges.fold(
+      0,
+      (total, badge) => total + badge.rarityScore,
+    );
   }
 
   /// Clears any error state

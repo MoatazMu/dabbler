@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../../../features/authentication/domain/usecases/usecase.dart';
-import '../entities/game.dart';
+import 'package:dabbler/data/models/games/game.dart';
 import '../repositories/games_repository.dart';
 import '../repositories/bookings_repository.dart';
 
@@ -10,7 +10,8 @@ class GameFailure extends Failure {
   const GameFailure(String message) : super(message: message);
 }
 
-class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, CancelGameParams> {
+class CancelGameUseCase
+    extends UseCase<Either<Failure, CancelGameResult>, CancelGameParams> {
   final GamesRepository gamesRepository;
   final BookingsRepository bookingsRepository;
 
@@ -20,7 +21,9 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
   });
 
   @override
-  Future<Either<Failure, CancelGameResult>> call(CancelGameParams params) async {
+  Future<Either<Failure, CancelGameResult>> call(
+    CancelGameParams params,
+  ) async {
     // Validate parameters
     final validationResult = _validateCancellationParameters(params);
     if (validationResult != null) {
@@ -29,80 +32,90 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
 
     // Get game details
     final gameResult = await gamesRepository.getGame(params.gameId);
-    
-    return gameResult.fold(
-      (failure) => Left(failure),
-      (game) async {
-        // Verify user is authorized to cancel
-        final authResult = _verifyUserAuthorization(game, params.userId);
-        if (authResult != null) {
-          return Left(authResult);
-        }
 
-        // Check cancellation deadline
-        final deadlineResult = _checkCancellationDeadline(game);
-        if (deadlineResult != null) {
-          return Left(deadlineResult);
-        }
+    return gameResult.fold((failure) => Left(failure), (game) async {
+      // Verify user is authorized to cancel
+      final authResult = _verifyUserAuthorization(game, params.userId);
+      if (authResult != null) {
+        return Left(authResult);
+      }
 
-        // Get list of affected players for notifications
-        final playersResult = await _getAffectedPlayers(game);
-        final affectedPlayers = playersResult.fold(
-          (failure) => <String>[], // Continue even if we can't get players list
-          (players) => players,
+      // Check cancellation deadline
+      final deadlineResult = _checkCancellationDeadline(game);
+      if (deadlineResult != null) {
+        return Left(deadlineResult);
+      }
+
+      // Get list of affected players for notifications
+      final playersResult = await _getAffectedPlayers(game);
+      final affectedPlayers = playersResult.fold(
+        (failure) => <String>[], // Continue even if we can't get players list
+        (players) => players,
+      );
+
+      // Cancel associated bookings
+      final bookingCancellationResult = await _cancelAssociatedBookings(
+        game,
+        params,
+      );
+      final refundInfo = bookingCancellationResult.fold(
+        (failure) => null, // Continue even if booking cancellation fails
+        (refunds) => refunds,
+      );
+
+      // Cancel the game
+      final gameCancellationResult = await gamesRepository.cancelGame(
+        params.gameId,
+      );
+
+      return gameCancellationResult.fold((failure) => Left(failure), (
+        success,
+      ) async {
+        // Notify all players
+        await _notifyAllPlayers(game, affectedPlayers, params);
+
+        // Send cancellation notifications
+        await _sendCancellationNotifications(game, params);
+
+        return Right(
+          CancelGameResult(
+            success: true,
+            gameId: params.gameId,
+            cancelledAt: DateTime.now(),
+            reason: params.reason,
+            affectedPlayersCount: affectedPlayers.length,
+            refundsProcessed: refundInfo?.isNotEmpty ?? false,
+            refundAmount:
+                refundInfo?.fold<double>(
+                  0.0,
+                  (sum, refund) => sum + refund.amount,
+                ) ??
+                0.0,
+            message: _getCancellationMessage(game, affectedPlayers.length),
+          ),
         );
-
-        // Cancel associated bookings
-        final bookingCancellationResult = await _cancelAssociatedBookings(game, params);
-        final refundInfo = bookingCancellationResult.fold(
-          (failure) => null, // Continue even if booking cancellation fails
-          (refunds) => refunds,
-        );
-
-        // Cancel the game
-        final gameCancellationResult = await gamesRepository.cancelGame(params.gameId);
-        
-        return gameCancellationResult.fold(
-          (failure) => Left(failure),
-          (success) async {
-            // Notify all players
-            await _notifyAllPlayers(game, affectedPlayers, params);
-
-            // Send cancellation notifications
-            await _sendCancellationNotifications(game, params);
-
-            return Right(CancelGameResult(
-              success: true,
-              gameId: params.gameId,
-              cancelledAt: DateTime.now(),
-              reason: params.reason,
-              affectedPlayersCount: affectedPlayers.length,
-              refundsProcessed: refundInfo?.isNotEmpty ?? false,
-              refundAmount: refundInfo?.fold<double>(0.0, (sum, refund) => sum + refund.amount) ?? 0.0,
-              message: _getCancellationMessage(game, affectedPlayers.length),
-            ));
-          },
-        );
-      },
-    );
+      });
+    });
   }
 
   /// Validates cancellation parameters
   Failure? _validateCancellationParameters(CancelGameParams params) {
     if (params.gameId.trim().isEmpty) {
-      return const GameFailure( 'Game ID cannot be empty');
+      return const GameFailure('Game ID cannot be empty');
     }
 
     if (params.userId.trim().isEmpty) {
-      return const GameFailure( 'User ID cannot be empty');
+      return const GameFailure('User ID cannot be empty');
     }
 
     if (params.reason.trim().isEmpty) {
-      return const GameFailure( 'Cancellation reason is required');
+      return const GameFailure('Cancellation reason is required');
     }
 
     if (params.reason.length < 10) {
-      return const GameFailure( 'Cancellation reason must be at least 10 characters long');
+      return const GameFailure(
+        'Cancellation reason must be at least 10 characters long',
+      );
     }
 
     return null;
@@ -112,7 +125,7 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
   Failure? _verifyUserAuthorization(Game game, String userId) {
     // Only game organizer can cancel the game
     if (game.organizerId != userId) {
-      return const GameFailure( 'Only the game organizer can cancel this game');
+      return const GameFailure('Only the game organizer can cancel this game');
     }
 
     return null;
@@ -122,31 +135,37 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
   Failure? _checkCancellationDeadline(Game game) {
     // Check game status first
     if (game.status == GameStatus.cancelled) {
-      return const GameFailure( 'Game is already cancelled');
+      return const GameFailure('Game is already cancelled');
     }
 
     if (game.status == GameStatus.completed) {
-      return const GameFailure( 'Cannot cancel a completed game');
+      return const GameFailure('Cannot cancel a completed game');
     }
 
     if (game.status == GameStatus.inProgress) {
-      return const GameFailure( 'Cannot cancel a game that is already in progress');
+      return const GameFailure(
+        'Cannot cancel a game that is already in progress',
+      );
     }
 
     // Check if game can be cancelled based on timing rules
     if (!game.canCancel()) {
       final gameStartTime = game.getScheduledStartDateTime();
       final now = DateTime.now();
-      
+
       if (game.cancellationDeadline != null) {
-        final hoursUntilDeadline = game.cancellationDeadline!.difference(now).inHours;
+        final hoursUntilDeadline = game.cancellationDeadline!
+            .difference(now)
+            .inHours;
         if (hoursUntilDeadline < 0) {
-          return const GameFailure( 'Cancellation deadline has passed');
+          return const GameFailure('Cancellation deadline has passed');
         }
       } else {
         final hoursUntilGame = gameStartTime.difference(now).inHours;
         if (hoursUntilGame < 2) {
-          return const GameFailure( 'Games cannot be cancelled less than 2 hours before start time');
+          return const GameFailure(
+            'Games cannot be cancelled less than 2 hours before start time',
+          );
         }
       }
     }
@@ -158,25 +177,27 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
   Future<Either<Failure, List<String>>> _getAffectedPlayers(Game game) async {
     // This would typically get the list of registered players from the repository
     // Since we don't have a specific method for this, we'll simulate it
-    
+
     try {
       // In a real implementation, you would:
       // return await gamesRepository.getGamePlayers(game.id);
-      
+
       // For now, we'll return empty list and note this limitation
       return const Right(<String>[]);
     } catch (e) {
-      return Left(GameFailure( 'Failed to get affected players: ${e.toString()}'));
+      return Left(
+        GameFailure('Failed to get affected players: ${e.toString()}'),
+      );
     }
   }
 
   /// Cancels associated bookings and processes refunds
   Future<Either<Failure, List<RefundInfo>>> _cancelAssociatedBookings(
-    Game game, 
+    Game game,
     CancelGameParams params,
   ) async {
     final refunds = <RefundInfo>[];
-    
+
     try {
       // If game has associated venue booking
       if (game.venueId != null) {
@@ -188,15 +209,16 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
 
         await bookingsResult.fold(
           (failure) async {
-            print('Could not retrieve bookings for cancellation: ${failure.message}');
+            print(
+              'Could not retrieve bookings for cancellation: ${failure.message}',
+            );
           },
           (bookings) async {
             // Find bookings related to this game
             for (final booking in bookings) {
-              if (booking.gameId == game.id || 
-                  (booking.bookedBy == game.organizerId && 
-                   booking.bookingDate == game.scheduledDate)) {
-                
+              if (booking.gameId == game.id ||
+                  (booking.bookedBy == game.organizerId &&
+                      booking.bookingDate == game.scheduledDate)) {
                 // Cancel the booking
                 final cancelResult = await bookingsRepository.cancelBooking(
                   booking.id,
@@ -205,16 +227,20 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
 
                 await cancelResult.fold(
                   (failure) async {
-                    print('Failed to cancel booking ${booking.id}: ${failure.message}');
+                    print(
+                      'Failed to cancel booking ${booking.id}: ${failure.message}',
+                    );
                   },
                   (success) async {
                     // Process refund if needed
                     if (params.processRefunds && booking.totalAmount > 0) {
-                      refunds.add(RefundInfo(
-                        bookingId: booking.id,
-                        amount: booking.totalAmount,
-                        status: 'processed',
-                      ));
+                      refunds.add(
+                        RefundInfo(
+                          bookingId: booking.id,
+                          amount: booking.totalAmount,
+                          status: 'processed',
+                        ),
+                      );
                     }
                   },
                 );
@@ -226,14 +252,14 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
 
       return Right(refunds);
     } catch (e) {
-      return Left(GameFailure( 'Failed to cancel bookings: ${e.toString()}'));
+      return Left(GameFailure('Failed to cancel bookings: ${e.toString()}'));
     }
   }
 
   /// Notifies all players about the cancellation
   Future<void> _notifyAllPlayers(
-    Game game, 
-    List<String> playerIds, 
+    Game game,
+    List<String> playerIds,
     CancelGameParams params,
   ) async {
     try {
@@ -247,20 +273,21 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
 
   /// Sends cancellation notification to a specific player
   Future<void> _sendPlayerNotification(
-    String playerId, 
-    Game game, 
+    String playerId,
+    Game game,
     CancelGameParams params,
   ) async {
     try {
       // This would integrate with your notification service
       // Could be push notifications, email, SMS, or in-app notifications
-      
-      final message = 'Game "${game.title}" scheduled for '
+
+      final message =
+          'Game "${game.title}" scheduled for '
           '${game.scheduledDate.day}/${game.scheduledDate.month} '
           'has been cancelled. Reason: ${params.reason}';
-      
+
       print('Sending notification to player $playerId: $message');
-      
+
       // In a real implementation:
       // await notificationService.sendNotification(
       //   userId: playerId,
@@ -268,7 +295,6 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
       //   message: message,
       //   type: NotificationType.gameCancellation,
       // );
-      
     } catch (e) {
       print('Failed to notify player $playerId: $e');
     }
@@ -276,29 +302,34 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
 
   /// Sends additional cancellation notifications (email, etc.)
   Future<void> _sendCancellationNotifications(
-    Game game, 
+    Game game,
     CancelGameParams params,
   ) async {
     try {
       // Send email notifications
       await _sendEmailNotifications(game, params);
-      
+
       // Update game status in external systems if needed
       await _updateExternalSystems(game, params);
-      
     } catch (e) {
       print('Failed to send additional notifications: $e');
     }
   }
 
   /// Sends email notifications (stub)
-  Future<void> _sendEmailNotifications(Game game, CancelGameParams params) async {
+  Future<void> _sendEmailNotifications(
+    Game game,
+    CancelGameParams params,
+  ) async {
     // This would integrate with email service
     print('Sending email notifications for cancelled game: ${game.title}');
   }
 
   /// Updates external systems about the cancellation (stub)
-  Future<void> _updateExternalSystems(Game game, CancelGameParams params) async {
+  Future<void> _updateExternalSystems(
+    Game game,
+    CancelGameParams params,
+  ) async {
     // This could update calendar systems, social media, etc.
     print('Updating external systems for cancelled game: ${game.title}');
   }
@@ -306,8 +337,8 @@ class CancelGameUseCase extends UseCase<Either<Failure, CancelGameResult>, Cance
   /// Gets appropriate cancellation message
   String _getCancellationMessage(Game game, int affectedPlayersCount) {
     return 'Game "${game.title}" has been successfully cancelled. '
-           '$affectedPlayersCount player(s) have been notified. '
-           'Refunds (if applicable) will be processed within 3-5 business days.';
+        '$affectedPlayersCount player(s) have been notified. '
+        'Refunds (if applicable) will be processed within 3-5 business days.';
   }
 }
 
@@ -350,7 +381,8 @@ class CancelGameResult {
 
   // Convenience getters
   String get formattedRefundAmount => '\$${refundAmount.toStringAsFixed(2)}';
-  String get formattedCancelledAt => '${cancelledAt.day}/${cancelledAt.month}/${cancelledAt.year} at ${cancelledAt.hour}:${cancelledAt.minute.toString().padLeft(2, '0')}';
+  String get formattedCancelledAt =>
+      '${cancelledAt.day}/${cancelledAt.month}/${cancelledAt.year} at ${cancelledAt.hour}:${cancelledAt.minute.toString().padLeft(2, '0')}';
 }
 
 class RefundInfo {

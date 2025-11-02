@@ -14,5 +14,6 @@ class Friendship with _$Friendship {
     @JsonKey(name: 'updated_at') required DateTime updatedAt,
   }) = _Friendship;
 
-  factory Friendship.fromJson(Map<String, dynamic> json) => _$FriendshipFromJson(json);
+  factory Friendship.fromJson(Map<String, dynamic> json) =>
+      _$FriendshipFromJson(json);
 }

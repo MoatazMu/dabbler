@@ -1,7 +1,7 @@
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/either.dart';
-import '../entities/sports_profile.dart';
-import '../entities/user_profile.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/data/models/profile/sports_profile.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
 import '../repositories/profile_repository.dart';
 
 /// Parameters for managing sports profile
@@ -40,7 +40,8 @@ class ManageSportsProfileParams {
     this.action = 'update',
   });
 
-  bool get hasUpdates => sportName != null ||
+  bool get hasUpdates =>
+      sportName != null ||
       skillLevel != null ||
       yearsOfExperience != null ||
       gamesPlayed != null ||
@@ -77,7 +78,9 @@ class ManageSportsProfileUseCase {
 
   ManageSportsProfileUseCase(this._profileRepository);
 
-  Future<Either<Failure, ManageSportsProfileResult>> call(ManageSportsProfileParams params) async {
+  Future<Either<Failure, ManageSportsProfileResult>> call(
+    ManageSportsProfileParams params,
+  ) async {
     try {
       // Validate input parameters
       final validationResult = _validateParams(params);
@@ -86,16 +89,18 @@ class ManageSportsProfileUseCase {
       }
 
       // Get current profile
-      final currentProfileResult = await _profileRepository.getProfile(params.userId);
+      final currentProfileResult = await _profileRepository.getProfile(
+        params.userId,
+      );
       if (currentProfileResult.isLeft) {
         return Left(currentProfileResult.leftOrNull()!);
       }
-      
+
       final currentProfile = currentProfileResult.rightOrNull()!;
 
       // Process based on action type
       Either<Failure, ManageSportsProfileResult> result;
-      
+
       switch (params.action?.toLowerCase()) {
         case 'create':
           result = await _createSportProfile(params, currentProfile);
@@ -110,7 +115,6 @@ class ManageSportsProfileUseCase {
       }
 
       return result;
-
     } catch (e) {
       return Left(DataFailure(message: 'Sports profile management failed: $e'));
     }
@@ -122,25 +126,33 @@ class ManageSportsProfileUseCase {
     UserProfile currentProfile,
   ) async {
     if (params.sportId == null || params.sportName == null) {
-      return const Left(ValidationFailure(message: 'Sport ID and name are required for creation'));
+      return const Left(
+        ValidationFailure(
+          message: 'Sport ID and name are required for creation',
+        ),
+      );
     }
 
     // Check if sport profile already exists
-    final existingSport = currentProfile.sportsProfiles.cast<SportProfile?>().firstWhere(
-      (sport) => sport?.sportId == params.sportId,
-      orElse: () => null,
-    );
+    final existingSport = currentProfile.sportsProfiles
+        .cast<SportProfile?>()
+        .firstWhere(
+          (sport) => sport?.sportId == params.sportId,
+          orElse: () => null,
+        );
 
     if (existingSport != null) {
-      return const Left(ConflictFailure(message: 'Sport profile already exists'));
+      return const Left(
+        ConflictFailure(message: 'Sport profile already exists'),
+      );
     }
 
     // Parse skill level
     final skillLevel = _parseSkillLevel(params.skillLevel ?? 'beginner');
-    
+
     // Parse preferred positions
-    final preferredPositions = params.preferredPosition != null 
-        ? [params.preferredPosition!] 
+    final preferredPositions = params.preferredPosition != null
+        ? [params.preferredPosition!]
         : <String>[];
 
     // Create new sport profile with defaults
@@ -152,14 +164,18 @@ class ManageSportsProfileUseCase {
       preferredPositions: preferredPositions,
       certifications: [],
       achievements: params.achievements ?? [],
-      isPrimarySport: params.isPrimarySport ?? (currentProfile.sportsProfiles.isEmpty),
+      isPrimarySport:
+          params.isPrimarySport ?? (currentProfile.sportsProfiles.isEmpty),
       lastPlayed: DateTime.now(),
       gamesPlayed: params.gamesPlayed ?? 0,
       averageRating: params.averageRating ?? 0.0,
     );
 
     // Add to profile's sports list
-    final updatedSportProfiles = [...currentProfile.sportsProfiles, newSportProfile];
+    final updatedSportProfiles = [
+      ...currentProfile.sportsProfiles,
+      newSportProfile,
+    ];
     final updatedProfile = UserProfile(
       id: currentProfile.id,
       email: currentProfile.email,
@@ -194,13 +210,15 @@ class ManageSportsProfileUseCase {
     final performanceMetrics = _calculatePerformanceMetrics(newSportProfile);
     final warnings = _generateWarnings(newSportProfile, {});
 
-    return Right(ManageSportsProfileResult(
-      updatedProfile: finalProfile,
-      sportProfile: newSportProfile,
-      warnings: warnings,
-      changedFields: {'action': 'created'},
-      performanceMetrics: performanceMetrics,
-    ));
+    return Right(
+      ManageSportsProfileResult(
+        updatedProfile: finalProfile,
+        sportProfile: newSportProfile,
+        warnings: warnings,
+        changedFields: {'action': 'created'},
+        performanceMetrics: performanceMetrics,
+      ),
+    );
   }
 
   /// Update existing sport profile
@@ -209,7 +227,9 @@ class ManageSportsProfileUseCase {
     UserProfile currentProfile,
   ) async {
     if (params.sportId == null) {
-      return const Left(ValidationFailure(message: 'Sport ID is required for update'));
+      return const Left(
+        ValidationFailure(message: 'Sport ID is required for update'),
+      );
     }
 
     // Find existing sport profile
@@ -227,13 +247,13 @@ class ManageSportsProfileUseCase {
     _applyBusinessRules(params, existingSport);
 
     // Parse skill level
-    final skillLevel = params.skillLevel != null 
-        ? _parseSkillLevel(params.skillLevel!) 
+    final skillLevel = params.skillLevel != null
+        ? _parseSkillLevel(params.skillLevel!)
         : existingSport.skillLevel;
-    
+
     // Parse preferred positions
-    final preferredPositions = params.preferredPosition != null 
-        ? [params.preferredPosition!] 
+    final preferredPositions = params.preferredPosition != null
+        ? [params.preferredPosition!]
         : existingSport.preferredPositions;
 
     // Create updated sport profile
@@ -307,17 +327,24 @@ class ManageSportsProfileUseCase {
     }
 
     final finalProfile = updateResult.rightOrNull()!;
-    final changedFields = _calculateChangedFields(existingSport, updatedSportProfile);
-    final performanceMetrics = _calculatePerformanceMetrics(updatedSportProfile);
+    final changedFields = _calculateChangedFields(
+      existingSport,
+      updatedSportProfile,
+    );
+    final performanceMetrics = _calculatePerformanceMetrics(
+      updatedSportProfile,
+    );
     final warnings = _generateWarnings(updatedSportProfile, changedFields);
 
-    return Right(ManageSportsProfileResult(
-      updatedProfile: finalProfile,
-      sportProfile: updatedSportProfile,
-      warnings: warnings,
-      changedFields: changedFields,
-      performanceMetrics: performanceMetrics,
-    ));
+    return Right(
+      ManageSportsProfileResult(
+        updatedProfile: finalProfile,
+        sportProfile: updatedSportProfile,
+        warnings: warnings,
+        changedFields: changedFields,
+        performanceMetrics: performanceMetrics,
+      ),
+    );
   }
 
   /// Delete sport profile
@@ -326,7 +353,9 @@ class ManageSportsProfileUseCase {
     UserProfile currentProfile,
   ) async {
     if (params.sportId == null) {
-      return const Left(ValidationFailure(message: 'Sport ID is required for deletion'));
+      return const Left(
+        ValidationFailure(message: 'Sport ID is required for deletion'),
+      );
     }
 
     // Find existing sport profile
@@ -346,14 +375,17 @@ class ManageSportsProfileUseCase {
 
     // If this was the primary sport, make another sport primary
     if (sportToDelete.isPrimarySport && updatedSportProfiles.isNotEmpty) {
-      final newPrimaryIndex = updatedSportProfiles.indexWhere((sport) => sport.isActive());
+      final newPrimaryIndex = updatedSportProfiles.indexWhere(
+        (sport) => sport.isActive(),
+      );
       if (newPrimaryIndex != -1) {
         updatedSportProfiles[newPrimaryIndex] = SportProfile(
           sportId: updatedSportProfiles[newPrimaryIndex].sportId,
           sportName: updatedSportProfiles[newPrimaryIndex].sportName,
           skillLevel: updatedSportProfiles[newPrimaryIndex].skillLevel,
           yearsPlaying: updatedSportProfiles[newPrimaryIndex].yearsPlaying,
-          preferredPositions: updatedSportProfiles[newPrimaryIndex].preferredPositions,
+          preferredPositions:
+              updatedSportProfiles[newPrimaryIndex].preferredPositions,
           certifications: updatedSportProfiles[newPrimaryIndex].certifications,
           achievements: updatedSportProfiles[newPrimaryIndex].achievements,
           isPrimarySport: true,
@@ -397,16 +429,23 @@ class ManageSportsProfileUseCase {
     final finalProfile = updateResult.rightOrNull()!;
     final warnings = ['Sport profile deleted successfully'];
     if (updatedSportProfiles.isEmpty) {
-      warnings.add('Consider adding at least one sport to improve your profile.');
+      warnings.add(
+        'Consider adding at least one sport to improve your profile.',
+      );
     }
 
-    return Right(ManageSportsProfileResult(
-      updatedProfile: finalProfile,
-      sportProfile: null,
-      warnings: warnings,
-      changedFields: {'action': 'deleted', 'sport_name': sportToDelete.sportName},
-      performanceMetrics: {},
-    ));
+    return Right(
+      ManageSportsProfileResult(
+        updatedProfile: finalProfile,
+        sportProfile: null,
+        warnings: warnings,
+        changedFields: {
+          'action': 'deleted',
+          'sport_name': sportToDelete.sportName,
+        },
+        performanceMetrics: {},
+      ),
+    );
   }
 
   /// Validate input parameters
@@ -415,7 +454,12 @@ class ManageSportsProfileUseCase {
 
     // Validate skill level
     if (params.skillLevel != null) {
-      const validSkillLevels = ['beginner', 'intermediate', 'advanced', 'expert'];
+      const validSkillLevels = [
+        'beginner',
+        'intermediate',
+        'advanced',
+        'expert',
+      ];
       if (!validSkillLevels.contains(params.skillLevel!.toLowerCase())) {
         errors.add('Invalid skill level');
       }
@@ -438,12 +482,15 @@ class ManageSportsProfileUseCase {
       errors.add('Years of experience cannot be negative');
     }
 
-    if (params.averageRating != null && (params.averageRating! < 0 || params.averageRating! > 5)) {
+    if (params.averageRating != null &&
+        (params.averageRating! < 0 || params.averageRating! > 5)) {
       errors.add('Average rating must be between 0 and 5');
     }
 
     // Validate game statistics consistency
-    if (params.gamesPlayed != null && params.gamesWon != null && params.gamesLost != null) {
+    if (params.gamesPlayed != null &&
+        params.gamesWon != null &&
+        params.gamesLost != null) {
       if (params.gamesWon! + params.gamesLost! > params.gamesPlayed!) {
         errors.add('Total wins and losses cannot exceed games played');
       }
@@ -465,10 +512,13 @@ class ManageSportsProfileUseCase {
 
     // Business Rule: Update games played if wins/losses change
     if (params.gamesWon != null || params.gamesLost != null) {
-      final newWins = params.gamesWon ?? 0; // Note: gamesWon doesn't exist in SportProfile
-      final newLosses = params.gamesLost ?? 0; // Note: gamesLost doesn't exist in SportProfile
+      final newWins =
+          params.gamesWon ?? 0; // Note: gamesWon doesn't exist in SportProfile
+      final newLosses =
+          params.gamesLost ??
+          0; // Note: gamesLost doesn't exist in SportProfile
       final newGamesPlayed = params.gamesPlayed ?? existingSport.gamesPlayed;
-      
+
       if (newWins + newLosses > newGamesPlayed) {
         processedParams = ManageSportsProfileParams(
           userId: params.userId,
@@ -494,19 +544,31 @@ class ManageSportsProfileUseCase {
   }
 
   /// Calculate changed fields
-  Map<String, dynamic> _calculateChangedFields(SportProfile current, SportProfile updated) {
+  Map<String, dynamic> _calculateChangedFields(
+    SportProfile current,
+    SportProfile updated,
+  ) {
     final changes = <String, dynamic>{};
 
     if (current.skillLevel != updated.skillLevel) {
-      changes['skill_level'] = {'old': current.skillLevel, 'new': updated.skillLevel};
+      changes['skill_level'] = {
+        'old': current.skillLevel,
+        'new': updated.skillLevel,
+      };
     }
 
     if (current.gamesPlayed != updated.gamesPlayed) {
-      changes['games_played'] = {'old': current.gamesPlayed, 'new': updated.gamesPlayed};
+      changes['games_played'] = {
+        'old': current.gamesPlayed,
+        'new': updated.gamesPlayed,
+      };
     }
 
     if (current.isPrimarySport != updated.isPrimarySport) {
-      changes['is_primary_sport'] = {'old': current.isPrimarySport, 'new': updated.isPrimarySport};
+      changes['is_primary_sport'] = {
+        'old': current.isPrimarySport,
+        'new': updated.isPrimarySport,
+      };
     }
 
     return changes;
@@ -533,17 +595,20 @@ class ManageSportsProfileUseCase {
     metrics['rating_performance'] = (sportProfile.averageRating * 20);
 
     // Overall performance score
-    metrics['overall_score'] = (
-      (metrics['win_rate']! * 0.4) +
-      (metrics['experience_factor']! * 0.3) +
-      (metrics['rating_performance']! * 0.3)
-    ).clamp(0.0, 100.0);
+    metrics['overall_score'] =
+        ((metrics['win_rate']! * 0.4) +
+                (metrics['experience_factor']! * 0.3) +
+                (metrics['rating_performance']! * 0.3))
+            .clamp(0.0, 100.0);
 
     return metrics;
   }
 
   /// Generate warnings
-  List<String> _generateWarnings(SportProfile sportProfile, Map<String, dynamic> changedFields) {
+  List<String> _generateWarnings(
+    SportProfile sportProfile,
+    Map<String, dynamic> changedFields,
+  ) {
     final warnings = <String>[];
 
     // Low game activity
@@ -552,7 +617,7 @@ class ManageSportsProfileUseCase {
     }
 
     // Low win rate - note: SportProfile doesn't have gamesWon, so we'll skip this check
-    // final winRate = sportProfile.gamesPlayed > 0 ? 
+    // final winRate = sportProfile.gamesPlayed > 0 ?
     //     (sportProfile.gamesWon / sportProfile.gamesPlayed) : 0.0;
     // if (winRate < 0.3 && sportProfile.gamesPlayed > 10) {
     //   warnings.add('Consider practicing more or adjusting your skill level.');
@@ -560,7 +625,9 @@ class ManageSportsProfileUseCase {
 
     // No achievements
     if (sportProfile.achievements.isEmpty && sportProfile.gamesPlayed > 20) {
-      warnings.add('You may be eligible for achievements based on your game history.');
+      warnings.add(
+        'You may be eligible for achievements based on your game history.',
+      );
     }
 
     return warnings;

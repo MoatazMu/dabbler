@@ -51,18 +51,19 @@ class ThemeService extends ChangeNotifier {
   // Load preferences from shared preferences
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     // Load theme mode with validation
-    final themeModeIndex = prefs.getInt(_themeModeKey) ?? ThemeMode.system.index;
+    final themeModeIndex =
+        prefs.getInt(_themeModeKey) ?? ThemeMode.system.index;
     if (themeModeIndex >= 0 && themeModeIndex < ThemeMode.values.length) {
       _themeMode = ThemeMode.values[themeModeIndex];
     } else {
       _themeMode = ThemeMode.system; // Default for invalid values
     }
-    
+
     // Load auto theme setting
     _autoThemeEnabled = prefs.getBool(_autoThemeKey) ?? true;
-    
+
     // Load day start time with validation
     final dayStartMinutes = prefs.getInt(_dayStartTimeKey) ?? 360; // 6:00 AM
     final validatedDayStartMinutes = _validateTimeMinutes(dayStartMinutes, 360);
@@ -70,10 +71,14 @@ class ThemeService extends ChangeNotifier {
       hour: validatedDayStartMinutes ~/ 60,
       minute: validatedDayStartMinutes % 60,
     );
-    
+
     // Load night start time with validation
-    final nightStartMinutes = prefs.getInt(_nightStartTimeKey) ?? 1080; // 6:00 PM
-    final validatedNightStartMinutes = _validateTimeMinutes(nightStartMinutes, 1080);
+    final nightStartMinutes =
+        prefs.getInt(_nightStartTimeKey) ?? 1080; // 6:00 PM
+    final validatedNightStartMinutes = _validateTimeMinutes(
+      nightStartMinutes,
+      1080,
+    );
     _nightStartTime = TimeOfDay(
       hour: validatedNightStartMinutes ~/ 60,
       minute: validatedNightStartMinutes % 60,
@@ -82,7 +87,8 @@ class ThemeService extends ChangeNotifier {
 
   // Validate time minutes are within valid range (0-1439 minutes in a day)
   int _validateTimeMinutes(int minutes, int defaultValue) {
-    if (minutes < 0 || minutes >= 1440) { // 1440 minutes = 24 hours
+    if (minutes < 0 || minutes >= 1440) {
+      // 1440 minutes = 24 hours
       return defaultValue;
     }
     return minutes;
@@ -91,11 +97,17 @@ class ThemeService extends ChangeNotifier {
   // Save preferences to shared preferences
   Future<void> _savePreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    
+
     await prefs.setInt(_themeModeKey, _themeMode.index);
     await prefs.setBool(_autoThemeKey, _autoThemeEnabled);
-    await prefs.setInt(_dayStartTimeKey, _dayStartTime.hour * 60 + _dayStartTime.minute);
-    await prefs.setInt(_nightStartTimeKey, _nightStartTime.hour * 60 + _nightStartTime.minute);
+    await prefs.setInt(
+      _dayStartTimeKey,
+      _dayStartTime.hour * 60 + _dayStartTime.minute,
+    );
+    await prefs.setInt(
+      _nightStartTimeKey,
+      _nightStartTime.hour * 60 + _nightStartTime.minute,
+    );
   }
 
   // Set theme mode
@@ -138,22 +150,24 @@ class ThemeService extends ChangeNotifier {
   ThemeMode _getSystemThemeMode() {
     if (!_autoThemeEnabled) {
       // Use system settings
-      final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      final brightness =
+          WidgetsBinding.instance.platformDispatcher.platformBrightness;
       return brightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
     }
-    
+
     // Use time-based theme
     return _isNightTime() ? ThemeMode.dark : ThemeMode.light;
   }
 
   // Get system brightness
   Brightness _getSystemBrightness() {
-    final systemBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-    
+    final systemBrightness =
+        WidgetsBinding.instance.platformDispatcher.platformBrightness;
+
     if (_autoThemeEnabled) {
       return _isNightTime() ? Brightness.dark : Brightness.light;
     }
-    
+
     return systemBrightness;
   }
 
@@ -162,8 +176,9 @@ class ThemeService extends ChangeNotifier {
     final now = TimeOfDay.now();
     final nowMinutes = now.hour * 60 + now.minute;
     final dayStartMinutes = _dayStartTime.hour * 60 + _dayStartTime.minute;
-    final nightStartMinutes = _nightStartTime.hour * 60 + _nightStartTime.minute;
-    
+    final nightStartMinutes =
+        _nightStartTime.hour * 60 + _nightStartTime.minute;
+
     if (dayStartMinutes < nightStartMinutes) {
       // Normal day (e.g., 6:00 AM to 6:00 PM)
       return nowMinutes < dayStartMinutes || nowMinutes >= nightStartMinutes;
@@ -179,14 +194,15 @@ class ThemeService extends ChangeNotifier {
       final isDark = _isNightTime();
       return 'Auto (${isDark ? 'Dark' : 'Light'} mode)';
     }
-    
+
     switch (_themeMode) {
       case ThemeMode.light:
         return 'Light mode';
       case ThemeMode.dark:
         return 'Dark mode';
       case ThemeMode.system:
-        final brightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+        final brightness =
+            WidgetsBinding.instance.platformDispatcher.platformBrightness;
         return 'System (${brightness == Brightness.dark ? 'Dark' : 'Light'} mode)';
     }
   }
@@ -198,4 +214,4 @@ class ThemeService extends ChangeNotifier {
     final period = time.period == DayPeriod.am ? 'AM' : 'PM';
     return '$hour:$minute $period';
   }
-} 
+}

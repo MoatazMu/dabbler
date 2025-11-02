@@ -1,11 +1,11 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:riverpod/riverpod.dart';
 
-import '../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../models/profile_model.dart';
 import 'profile_repository.dart';
-import '../../services/supabase/supabase_error_mapper.dart';
-import '../../services/supabase/supabase_service.dart';
+import '../../features/misc/data/datasources/supabase_error_mapper.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 
 class SupabaseProfileRepository implements ProfileRepository {
   SupabaseProfileRepository({

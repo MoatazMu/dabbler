@@ -7,7 +7,8 @@ class PrivacyPolicyScreen extends ConsumerStatefulWidget {
   const PrivacyPolicyScreen({super.key});
 
   @override
-  ConsumerState<PrivacyPolicyScreen> createState() => _PrivacyPolicyScreenState();
+  ConsumerState<PrivacyPolicyScreen> createState() =>
+      _PrivacyPolicyScreenState();
 }
 
 class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
@@ -15,7 +16,7 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
 
@@ -35,13 +36,13 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.1),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutCubic,
+          ),
+        );
 
     _animationController.forward();
   }
@@ -111,25 +112,21 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Icon(
-              Icons.privacy_tip,
-              size: 48,
-              color: Colors.blue.shade700,
-            ),
+            Icon(Icons.privacy_tip, size: 48, color: Colors.blue.shade700),
             const SizedBox(height: 16),
             Text(
               'Privacy Policy',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Your privacy is important to us. This policy explains how we collect, use, and protect your information.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
               textAlign: TextAlign.center,
             ),
           ],
@@ -144,17 +141,13 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            Icon(
-              Icons.update,
-              color: Colors.grey[600],
-              size: 20,
-            ),
+            Icon(Icons.update, color: Colors.grey[600], size: 20),
             const SizedBox(width: 8),
             Text(
               'Last updated: January 25, 2025',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
             ),
           ],
         ),
@@ -168,17 +161,19 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
       children: [
         _buildSection(
           title: '1. Information We Collect',
-          content: 'We collect information you provide directly to us, such as:\n'
+          content:
+              'We collect information you provide directly to us, such as:\n'
               '• Personal information (name, email, phone number)\n'
               '• Profile information (bio, sports preferences, skill level)\n'
               '• Activity data (games played, locations, performance)\n'
               '• Communications with us and other users\n'
               '• Device information and usage data',
         ),
-        
+
         _buildSection(
           title: '2. How We Use Your Information',
-          content: 'We use your information to:\n'
+          content:
+              'We use your information to:\n'
               '• Provide and improve our services\n'
               '• Match you with other players and activities\n'
               '• Communicate with you about our services\n'
@@ -186,49 +181,54 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
               '• Ensure safety and security\n'
               '• Comply with legal obligations',
         ),
-        
+
         _buildSection(
           title: '3. Information Sharing',
-          content: 'We may share your information:\n'
+          content:
+              'We may share your information:\n'
               '• With other users as part of the service (profile information)\n'
               '• With service providers who assist us\n'
               '• When required by law or to protect rights and safety\n'
               '• In connection with business transfers\n'
               '• With your consent for other purposes',
         ),
-        
+
         _buildSection(
           title: '4. Location Information',
-          content: 'We collect location data to:\n'
+          content:
+              'We collect location data to:\n'
               '• Show nearby games and activities\n'
               '• Provide location-based recommendations\n'
               '• Improve our mapping and navigation features\n'
               'You can disable location sharing in your device settings at any time.',
         ),
-        
+
         _buildSection(
           title: '5. Data Security',
-          content: 'We implement appropriate security measures to protect your information, including:\n'
+          content:
+              'We implement appropriate security measures to protect your information, including:\n'
               '• Encryption of sensitive data\n'
               '• Secure data transmission\n'
               '• Regular security assessments\n'
               '• Access controls and authentication\n'
               'However, no method of transmission over the internet is 100% secure.',
         ),
-        
+
         _buildSection(
           title: '6. Data Retention',
-          content: 'We retain your information for as long as necessary to:\n'
+          content:
+              'We retain your information for as long as necessary to:\n'
               '• Provide our services\n'
               '• Comply with legal obligations\n'
               '• Resolve disputes\n'
               '• Enforce our agreements\n'
               'You can request deletion of your account and data at any time.',
         ),
-        
+
         _buildSection(
           title: '7. Your Privacy Rights',
-          content: 'You have the right to:\n'
+          content:
+              'You have the right to:\n'
               '• Access your personal information\n'
               '• Correct inaccurate information\n'
               '• Delete your account and data\n'
@@ -236,40 +236,45 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
               '• Export your data\n'
               '• Withdraw consent where applicable',
         ),
-        
+
         _buildSection(
           title: '8. Cookies and Tracking',
-          content: 'We use cookies and similar technologies to:\n'
+          content:
+              'We use cookies and similar technologies to:\n'
               '• Remember your preferences\n'
               '• Analyze usage patterns\n'
               '• Personalize content\n'
               '• Improve our services\n'
               'You can manage cookie preferences in your browser settings.',
         ),
-        
+
         _buildSection(
           title: '9. Third-Party Services',
-          content: 'Our app may integrate with third-party services such as:\n'
+          content:
+              'Our app may integrate with third-party services such as:\n'
               '• Social media platforms\n'
               '• Payment processors\n'
               '• Analytics providers\n'
               '• Map services\n'
               'These services have their own privacy policies that govern their use of your information.',
         ),
-        
+
         _buildSection(
           title: '10. Children\'s Privacy',
-          content: 'Our service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware that we have collected such information, we will take steps to delete it.',
+          content:
+              'Our service is not intended for children under 13 years of age. We do not knowingly collect personal information from children under 13. If we become aware that we have collected such information, we will take steps to delete it.',
         ),
-        
+
         _buildSection(
           title: '11. International Transfers',
-          content: 'Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your information in accordance with applicable privacy laws.',
+          content:
+              'Your information may be transferred to and processed in countries other than your own. We ensure appropriate safeguards are in place to protect your information in accordance with applicable privacy laws.',
         ),
-        
+
         _buildSection(
           title: '12. Changes to This Policy',
-          content: 'We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last updated" date. Your continued use constitutes acceptance of the changes.',
+          content:
+              'We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last updated" date. Your continued use constitutes acceptance of the changes.',
         ),
       ],
     );
@@ -293,9 +298,9 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
             const SizedBox(height: 12),
             Text(
               content,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                height: 1.6,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(height: 1.6),
             ),
           ],
         ),
@@ -313,10 +318,7 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
           children: [
             Row(
               children: [
-                Icon(
-                  Icons.contact_support,
-                  color: Colors.blue.shade700,
-                ),
+                Icon(Icons.contact_support, color: Colors.blue.shade700),
                 const SizedBox(width: 8),
                 Text(
                   'Privacy Questions?',
@@ -336,9 +338,9 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
               'Email: privacy@dabbler.com\n'
               'Address: [Company Address]\n'
               'Data Protection Officer: [DPO Contact]',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 16),
             Row(
@@ -356,7 +358,10 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue.shade700,
                     ),
-                    child: const Text('Privacy Settings', style: TextStyle(color: Colors.white)),
+                    child: const Text(
+                      'Privacy Settings',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ),
                 ),
               ],
@@ -375,7 +380,9 @@ class _PrivacyPolicyScreenState extends ConsumerState<PrivacyPolicyScreen>
 
   void _contactSupport() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Contact support functionality coming soon')),
+      const SnackBar(
+        content: Text('Contact support functionality coming soon'),
+      ),
     );
   }
 

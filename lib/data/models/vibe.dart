@@ -1,5 +1,4 @@
-
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 
 class Vibe {
   final String postId;
@@ -22,9 +21,8 @@ class Vibe {
   }
 
   Map<String, dynamic> toMap() => {
-        'post_id': postId,
-        'vibe': vibe,
-        'created_at': createdAt.toUtc().toIso8601String(),
-      };
+    'post_id': postId,
+    'vibe': vibe,
+    'created_at': createdAt.toUtc().toIso8601String(),
+  };
 }
-

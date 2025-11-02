@@ -1,4 +1,4 @@
-import '../../core/utils/json.dart';
+import 'package:dabbler/core/utils/json.dart';
 
 /// Keep the name distinct from platform classes.
 class AppNotification {
@@ -31,9 +31,11 @@ class AppNotification {
     return AppNotification(
       id: (m['id'] ?? m['notification_id']).toString(),
       userId: (m['user_id'] ?? m['uid']).toString(),
-      type: (m['type'] ?? m['notification_type'] ?? m['type_code'] ?? '').toString(),
+      type: (m['type'] ?? m['notification_type'] ?? m['type_code'] ?? '')
+          .toString(),
       payload: asMap(m['payload'] ?? m['data'] ?? m['meta']),
-      createdAt: asDateTime(m['created_at']) ?? DateTime.fromMillisecondsSinceEpoch(0),
+      createdAt:
+          asDateTime(m['created_at']) ?? DateTime.fromMillisecondsSinceEpoch(0),
       readAt: asDateTime(m['read_at']),
       seenAt: asDateTime(m['seen_at']),
       title: m['title']?.toString(),
@@ -63,4 +65,3 @@ class AppNotification {
     );
   }
 }
-

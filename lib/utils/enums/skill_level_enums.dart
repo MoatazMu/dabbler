@@ -1,5 +1,6 @@
 /// Skill level enum definitions with visual representations and utility methods
 library;
+
 import 'package:flutter/material.dart';
 
 /// Enum representing different skill levels with visual and functional properties
@@ -17,25 +18,24 @@ enum SkillLevel {
   const SkillLevel(this.value, this.name, this.description, this.color);
 
   /// Create SkillLevel from integer value
-  static SkillLevel fromValue(int value) =>
-      SkillLevel.values.firstWhere(
-        (e) => e.value == value,
-        orElse: () => SkillLevel.beginner,
-      );
+  static SkillLevel fromValue(int value) => SkillLevel.values.firstWhere(
+    (e) => e.value == value,
+    orElse: () => SkillLevel.beginner,
+  );
 
   /// Create SkillLevel from string name
-  static SkillLevel fromString(String name) =>
-      SkillLevel.values.firstWhere(
-        (e) => e.name.toLowerCase() == name.toLowerCase(),
-        orElse: () => SkillLevel.beginner,
-      );
+  static SkillLevel fromString(String name) => SkillLevel.values.firstWhere(
+    (e) => e.name.toLowerCase() == name.toLowerCase(),
+    orElse: () => SkillLevel.beginner,
+  );
 
   /// Generate a star rating widget representation of the skill level
   Widget toWidget({double size = 20}) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      children: List.generate(5, (index) =>
-        Icon(
+      children: List.generate(
+        5,
+        (index) => Icon(
           index < value ? Icons.star : Icons.star_border,
           color: color,
           size: size,
@@ -94,12 +94,9 @@ enum SkillLevel {
           ),
           if (showStars) ...[
             const SizedBox(width: 8),
-            ...List.generate(value, (index) =>
-              Icon(
-                Icons.star,
-                color: color,
-                size: 16,
-              ),
+            ...List.generate(
+              value,
+              (index) => Icon(Icons.star, color: color, size: 16),
             ),
           ],
         ],

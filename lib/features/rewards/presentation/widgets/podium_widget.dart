@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../domain/entities/leaderboard_entry.dart';
+import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
 
 class PodiumWidget extends StatefulWidget {
   final List<LeaderboardEntry> entries;
@@ -30,17 +30,17 @@ class _PodiumWidgetState extends State<PodiumWidget>
   late AnimationController _confettiController;
   late AnimationController _crownController;
   late List<AnimationController> _podiumControllers;
-  
+
   // Podium animations
   late List<Animation<double>> _podiumScaleAnimations;
   late List<Animation<double>> _podiumSlideAnimations;
   late List<Animation<double>> _podiumBounceAnimations;
-  
+
   // Confetti animations
   late Animation<double> _confettiAnimation;
   late List<Offset> _confettiPositions;
   late List<Color> _confettiColors;
-  
+
   // Crown animations
   late Animation<double> _crownBounceAnimation;
   late Animation<double> _crownRotateAnimation;
@@ -66,56 +66,53 @@ class _PodiumWidgetState extends State<PodiumWidget>
     );
 
     // Podium controllers (one for each podium position)
-    _podiumControllers = List.generate(3, (index) =>
-        AnimationController(
-          duration: Duration(milliseconds: 800 + index * 200),
-          vsync: this,
-        ));
+    _podiumControllers = List.generate(
+      3,
+      (index) => AnimationController(
+        duration: Duration(milliseconds: 800 + index * 200),
+        vsync: this,
+      ),
+    );
 
     // Podium animations
-    _podiumScaleAnimations = _podiumControllers.map((controller) =>
-        Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-          parent: controller,
-          curve: Curves.elasticOut,
-        ))).toList();
+    _podiumScaleAnimations = _podiumControllers
+        .map(
+          (controller) => Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(parent: controller, curve: Curves.elasticOut),
+          ),
+        )
+        .toList();
 
-    _podiumSlideAnimations = _podiumControllers.map((controller) =>
-        Tween<double>(begin: 100.0, end: 0.0).animate(CurvedAnimation(
-          parent: controller,
-          curve: Curves.easeOut,
-        ))).toList();
+    _podiumSlideAnimations = _podiumControllers
+        .map(
+          (controller) => Tween<double>(
+            begin: 100.0,
+            end: 0.0,
+          ).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
+        )
+        .toList();
 
-    _podiumBounceAnimations = _podiumControllers.map((controller) =>
-        Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(
-          parent: controller,
-          curve: Curves.bounceOut,
-        ))).toList();
+    _podiumBounceAnimations = _podiumControllers
+        .map(
+          (controller) => Tween<double>(begin: 0.0, end: 1.0).animate(
+            CurvedAnimation(parent: controller, curve: Curves.bounceOut),
+          ),
+        )
+        .toList();
 
     // Confetti animation
-    _confettiAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _confettiController,
-      curve: Curves.easeOut,
-    ));
+    _confettiAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _confettiController, curve: Curves.easeOut),
+    );
 
     // Crown animations
-    _crownBounceAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _crownController,
-      curve: Curves.elasticOut,
-    ));
+    _crownBounceAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _crownController, curve: Curves.elasticOut),
+    );
 
-    _crownRotateAnimation = Tween<double>(
-      begin: -0.1,
-      end: 0.1,
-    ).animate(CurvedAnimation(
-      parent: _crownController,
-      curve: Curves.easeInOut,
-    ));
+    _crownRotateAnimation = Tween<double>(begin: -0.1, end: 0.1).animate(
+      CurvedAnimation(parent: _crownController, curve: Curves.easeInOut),
+    );
 
     // Initialize confetti particles
     _initializeConfetti();
@@ -124,10 +121,7 @@ class _PodiumWidgetState extends State<PodiumWidget>
   void _initializeConfetti() {
     final random = math.Random();
     _confettiPositions = List.generate(20, (index) {
-      return Offset(
-        random.nextDouble() * 300,
-        random.nextDouble() * 100,
-      );
+      return Offset(random.nextDouble() * 300, random.nextDouble() * 100);
     });
 
     _confettiColors = [
@@ -142,7 +136,11 @@ class _PodiumWidgetState extends State<PodiumWidget>
 
   void _startAnimationSequence() {
     // Start podium animations with staggered delay
-    for (int i = 0; i < _podiumControllers.length && i < widget.entries.length; i++) {
+    for (
+      int i = 0;
+      i < _podiumControllers.length && i < widget.entries.length;
+      i++
+    ) {
       Future.delayed(Duration(milliseconds: i * 300), () {
         if (mounted) {
           _podiumControllers[i].forward();
@@ -249,10 +247,7 @@ class _PodiumWidgetState extends State<PodiumWidget>
             ),
             Text(
               'Be the first to claim the podium',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[500],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[500]),
             ),
           ],
         ),
@@ -288,11 +283,10 @@ class _PodiumWidgetState extends State<PodiumWidget>
           // Second place podium
           if (widget.entries.length >= 2)
             _buildPodiumBase(1, 80, const Color(0xFFC0C0C0)),
-          
+
           // First place podium (center)
-          if (widget.entries.isNotEmpty)
-            _buildPodiumBase(0, 120, Colors.amber),
-          
+          if (widget.entries.isNotEmpty) _buildPodiumBase(0, 120, Colors.amber),
+
           // Third place podium
           if (widget.entries.length >= 3)
             _buildPodiumBase(2, 60, const Color(0xFFCD7F32)),
@@ -303,7 +297,7 @@ class _PodiumWidgetState extends State<PodiumWidget>
 
   Widget _buildPodiumBase(int position, double height, Color color) {
     final animationIndex = position;
-    
+
     return AnimatedBuilder(
       animation: _podiumControllers[animationIndex],
       builder: (context, child) {
@@ -319,10 +313,7 @@ class _PodiumWidgetState extends State<PodiumWidget>
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    color,
-                    color.withOpacity(0.7),
-                  ],
+                  colors: [color, color.withOpacity(0.7)],
                 ),
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
@@ -383,18 +374,18 @@ class _PodiumWidgetState extends State<PodiumWidget>
           // Second place
           if (widget.entries.length >= 2)
             _buildWinnerCard(1, widget.entries[1]),
-          
+
           const SizedBox(width: 8),
-          
+
           // First place (center, higher)
           if (widget.entries.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: _buildWinnerCard(0, widget.entries[0]),
             ),
-          
+
           const SizedBox(width: 8),
-          
+
           // Third place
           if (widget.entries.length >= 3)
             _buildWinnerCard(2, widget.entries[2]),
@@ -405,7 +396,7 @@ class _PodiumWidgetState extends State<PodiumWidget>
 
   Widget _buildWinnerCard(int position, LeaderboardEntry entry) {
     final animationIndex = position;
-    
+
     return AnimatedBuilder(
       animation: _podiumControllers[animationIndex],
       builder: (context, child) {
@@ -457,9 +448,9 @@ class _PodiumWidgetState extends State<PodiumWidget>
                             : null,
                       ),
                     ),
-                    
+
                     const SizedBox(height: 4),
-                    
+
                     // Username
                     Text(
                       entry.username,
@@ -472,7 +463,7 @@ class _PodiumWidgetState extends State<PodiumWidget>
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.center,
                     ),
-                    
+
                     // Points
                     Text(
                       '${entry.periodPoints.toInt()}',
@@ -498,7 +489,7 @@ class _PodiumWidgetState extends State<PodiumWidget>
 
   Widget _buildCrowns() {
     if (widget.entries.isEmpty) return const SizedBox.shrink();
-    
+
     return Positioned(
       top: 0,
       left: 0,
@@ -508,23 +499,21 @@ class _PodiumWidgetState extends State<PodiumWidget>
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           // Second place crown
-          if (widget.entries.length >= 2)
-            _buildCrown(1),
-          
+          if (widget.entries.length >= 2) _buildCrown(1),
+
           const SizedBox(width: 88),
-          
+
           // First place crown (center, higher)
           if (widget.entries.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: _buildCrown(0),
             ),
-          
+
           const SizedBox(width: 88),
-          
+
           // Third place crown
-          if (widget.entries.length >= 3)
-            _buildCrown(2),
+          if (widget.entries.length >= 3) _buildCrown(2),
         ],
       ),
     );
@@ -532,26 +521,26 @@ class _PodiumWidgetState extends State<PodiumWidget>
 
   Widget _buildCrown(int position) {
     return AnimatedBuilder(
-      animation: _crownController,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: 0.8 + (_crownBounceAnimation.value * 0.2),
-          child: Transform.rotate(
-            angle: _crownRotateAnimation.value,
-            child: Icon(
-              Icons.workspace_premium,
-              size: position == 0 ? 32 : 24,
-              color: _getCrownColor(position),
-            ),
-          ),
+          animation: _crownController,
+          builder: (context, child) {
+            return Transform.scale(
+              scale: 0.8 + (_crownBounceAnimation.value * 0.2),
+              child: Transform.rotate(
+                angle: _crownRotateAnimation.value,
+                child: Icon(
+                  Icons.workspace_premium,
+                  size: position == 0 ? 32 : 24,
+                  color: _getCrownColor(position),
+                ),
+              ),
+            );
+          },
+        )
+        .animate(delay: Duration(milliseconds: 1000 + position * 200))
+        .scale(
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.elasticOut,
         );
-      },
-    ).animate(
-      delay: Duration(milliseconds: 1000 + position * 200),
-    ).scale(
-      duration: const Duration(milliseconds: 600),
-      curve: Curves.elasticOut,
-    );
   }
 
   Color _getPositionColor(int position) {
@@ -613,25 +602,22 @@ class ConfettiPainter extends CustomPainter {
     for (int i = 0; i < particles.length; i++) {
       final particle = particles[i];
       final color = colors[i % colors.length];
-      
+
       // Animate particle position
       final progress = (animation + (i / particles.length)) % 1.0;
       final x = particle.dx + (math.sin(progress * math.pi * 4) * 20);
       final y = particle.dy + (progress * size.height * 1.5);
-      
+
       // Skip if particle is out of bounds
       if (y > size.height) continue;
-      
+
       paint.color = color.withOpacity(0.8 * (1 - progress));
-      
+
       // Draw confetti piece (small rectangle with rotation)
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(progress * math.pi * 4);
-      canvas.drawRect(
-        const Rect.fromLTWH(-3, -1, 6, 2),
-        paint,
-      );
+      canvas.drawRect(const Rect.fromLTWH(-3, -1, 6, 2), paint);
       canvas.restore();
     }
   }

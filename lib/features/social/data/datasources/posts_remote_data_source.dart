@@ -1,6 +1,6 @@
-import '../models/post_model.dart';
-import '../models/social_feed_model.dart';
-import '../models/reaction_model.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/data/models/social/social_feed_model.dart';
+import 'package:dabbler/data/models/social/reaction_model.dart';
 import '../../../../utils/enums/social_enums.dart';
 
 /// Abstract interface for posts remote data source
@@ -131,10 +131,7 @@ abstract class PostsRemoteDataSource {
   Future<bool> removeBookmark(String postId);
 
   /// Get bookmarked posts
-  Future<List<PostModel>> getBookmarkedPosts({
-    int page = 1,
-    int limit = 20,
-  });
+  Future<List<PostModel>> getBookmarkedPosts({int page = 1, int limit = 20});
 
   /// Report a post
   Future<bool> reportPost({

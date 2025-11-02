@@ -7,7 +7,7 @@ class EmptyFeedWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -19,7 +19,9 @@ class EmptyFeedWidget extends StatelessWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+                color: theme.colorScheme.surfaceContainerHighest.withOpacity(
+                  0.3,
+                ),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -28,9 +30,9 @@ class EmptyFeedWidget extends StatelessWidget {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
-            
+
             const SizedBox(height: 24),
-            
+
             // Empty state title
             Text(
               'No Posts Yet',
@@ -40,9 +42,9 @@ class EmptyFeedWidget extends StatelessWidget {
               ),
               textAlign: TextAlign.center,
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Empty state description
             Text(
               'Be the first to share something! Create a post to start building your social feed.',
@@ -52,9 +54,9 @@ class EmptyFeedWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 3,
             ),
-            
+
             const SizedBox(height: 32),
-            
+
             // Call to action button
             ElevatedButton.icon(
               onPressed: () {
@@ -73,9 +75,9 @@ class EmptyFeedWidget extends StatelessWidget {
                 ),
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Alternative actions
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -84,16 +86,18 @@ class EmptyFeedWidget extends StatelessWidget {
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Discover people functionality coming soon!'),
+                        content: Text(
+                          'Discover people functionality coming soon!',
+                        ),
                       ),
                     );
                   },
                   icon: const Icon(Icons.people_outline),
                   label: const Text('Discover People'),
                 ),
-                
+
                 const SizedBox(width: 16),
-                
+
                 TextButton.icon(
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(

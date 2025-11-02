@@ -16,5 +16,6 @@ class SquadInvite with _$SquadInvite {
     @JsonKey(name: 'expires_at') DateTime? expiresAt,
   }) = _SquadInvite;
 
-  factory SquadInvite.fromJson(Map<String, dynamic> json) => _$SquadInviteFromJson(json);
+  factory SquadInvite.fromJson(Map<String, dynamic> json) =>
+      _$SquadInviteFromJson(json);
 }

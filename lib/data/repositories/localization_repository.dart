@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/localized_error.dart';
 
 abstract class LocalizationRepository {
@@ -22,4 +22,3 @@ abstract class LocalizationRepository {
   /// Clear cache; if [locale] provided, only that locale is cleared.
   void clearCache({String? locale});
 }
-

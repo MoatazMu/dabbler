@@ -1,6 +1,6 @@
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/either.dart';
-import '../entities/user_profile.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
 import '../repositories/profile_repository.dart';
 
 /// Parameters for updating profile
@@ -29,7 +29,8 @@ class UpdateProfileParams {
     this.dateOfBirth,
   });
 
-  bool get hasUpdates => displayName != null ||
+  bool get hasUpdates =>
+      displayName != null ||
       bio != null ||
       email != null ||
       phoneNumber != null ||
@@ -61,7 +62,9 @@ class UpdateProfileUseCase {
 
   UpdateProfileUseCase(this._profileRepository);
 
-  Future<Either<Failure, UpdateProfileResult>> call(UpdateProfileParams params) async {
+  Future<Either<Failure, UpdateProfileResult>> call(
+    UpdateProfileParams params,
+  ) async {
     try {
       // Validate input parameters
       final validationResult = _validateParams(params);
@@ -70,18 +73,23 @@ class UpdateProfileUseCase {
       }
 
       // Get current profile for comparison
-      final currentProfileResult = await _profileRepository.getProfile(params.userId);
+      final currentProfileResult = await _profileRepository.getProfile(
+        params.userId,
+      );
       if (currentProfileResult.isLeft) {
         return Left(currentProfileResult.leftOrNull()!);
       }
-      
+
       final currentProfile = currentProfileResult.rightOrNull()!;
 
       // Sanitize input data
       final sanitizedParams = _sanitizeParams(params);
-      
+
       // Apply business rules and constraints
-      final processedParams = _applyBusinessRules(sanitizedParams, currentProfile);
+      final processedParams = _applyBusinessRules(
+        sanitizedParams,
+        currentProfile,
+      );
       if (processedParams.isLeft) {
         return Left(processedParams.leftOrNull()!);
       }
@@ -114,7 +122,9 @@ class UpdateProfileUseCase {
       );
 
       // Perform the update
-      final updateResult = await _profileRepository.updateProfile(updatedProfile);
+      final updateResult = await _profileRepository.updateProfile(
+        updatedProfile,
+      );
       if (updateResult.isLeft) {
         return Left(updateResult.leftOrNull()!);
       }
@@ -122,21 +132,27 @@ class UpdateProfileUseCase {
       final finalUpdatedProfile = updateResult.rightOrNull()!;
 
       // Calculate changed fields
-      final changedFields = _calculateChangedFields(currentProfile, finalUpdatedProfile);
+      final changedFields = _calculateChangedFields(
+        currentProfile,
+        finalUpdatedProfile,
+      );
 
       // Calculate completion percentage
-      final completionPercentage = _calculateCompletionPercentage(finalUpdatedProfile);
+      final completionPercentage = _calculateCompletionPercentage(
+        finalUpdatedProfile,
+      );
 
       // Generate warnings
       final warnings = _generateWarnings(finalUpdatedProfile, changedFields);
 
-      return Right(UpdateProfileResult(
-        updatedProfile: finalUpdatedProfile,
-        warnings: warnings,
-        changedFields: changedFields,
-        completionPercentage: completionPercentage,
-      ));
-
+      return Right(
+        UpdateProfileResult(
+          updatedProfile: finalUpdatedProfile,
+          warnings: warnings,
+          changedFields: changedFields,
+          completionPercentage: completionPercentage,
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Profile update failed: $e'));
     }
@@ -195,7 +211,13 @@ class UpdateProfileUseCase {
 
     // Validate gender
     if (params.gender != null && params.gender!.isNotEmpty) {
-      const validGenders = ['male', 'female', 'non-binary', 'prefer_not_to_say', 'other'];
+      const validGenders = [
+        'male',
+        'female',
+        'non-binary',
+        'prefer_not_to_say',
+        'other',
+      ];
       if (!validGenders.contains(params.gender!.toLowerCase())) {
         errors.add('Invalid gender value');
       }
@@ -282,7 +304,10 @@ class UpdateProfileUseCase {
   }
 
   /// Calculate which fields have changed
-  Map<String, dynamic> _calculateChangedFields(UserProfile current, UserProfile updated) {
+  Map<String, dynamic> _calculateChangedFields(
+    UserProfile current,
+    UserProfile updated,
+  ) {
     final changes = <String, dynamic>{};
 
     if (current.displayName != updated.displayName) {
@@ -293,17 +318,11 @@ class UpdateProfileUseCase {
     }
 
     if (current.bio != updated.bio) {
-      changes['bio'] = {
-        'old': current.bio,
-        'new': updated.bio,
-      };
+      changes['bio'] = {'old': current.bio, 'new': updated.bio};
     }
 
     if (current.email != updated.email) {
-      changes['email'] = {
-        'old': current.email,
-        'new': updated.email,
-      };
+      changes['email'] = {'old': current.email, 'new': updated.email};
     }
 
     if (current.phoneNumber != updated.phoneNumber) {
@@ -314,10 +333,7 @@ class UpdateProfileUseCase {
     }
 
     if (current.location != updated.location) {
-      changes['location'] = {
-        'old': current.location,
-        'new': updated.location,
-      };
+      changes['location'] = {'old': current.location, 'new': updated.location};
     }
 
     if (current.firstName != updated.firstName) {
@@ -328,17 +344,11 @@ class UpdateProfileUseCase {
     }
 
     if (current.lastName != updated.lastName) {
-      changes['last_name'] = {
-        'old': current.lastName,
-        'new': updated.lastName,
-      };
+      changes['last_name'] = {'old': current.lastName, 'new': updated.lastName};
     }
 
     if (current.gender != updated.gender) {
-      changes['gender'] = {
-        'old': current.gender,
-        'new': updated.gender,
-      };
+      changes['gender'] = {'old': current.gender, 'new': updated.gender};
     }
 
     if (current.dateOfBirth != updated.dateOfBirth) {
@@ -374,30 +384,41 @@ class UpdateProfileUseCase {
     final completedOptional = optionalFields.where((field) => field).length;
 
     // Weight required fields more heavily
-    final totalPossible = (requiredFields.length * 0.8) + (optionalFields.length * 0.2);
-    final totalCompleted = (completedRequired * 0.8) + (completedOptional * 0.2);
+    final totalPossible =
+        (requiredFields.length * 0.8) + (optionalFields.length * 0.2);
+    final totalCompleted =
+        (completedRequired * 0.8) + (completedOptional * 0.2);
 
     return (totalCompleted / totalPossible * 100).clamp(0.0, 100.0);
   }
 
   /// Generate warnings for the user
-  List<String> _generateWarnings(UserProfile profile, Map<String, dynamic> changedFields) {
+  List<String> _generateWarnings(
+    UserProfile profile,
+    Map<String, dynamic> changedFields,
+  ) {
     final warnings = <String>[];
 
     // Warning: Profile completion
     final completion = _calculateCompletionPercentage(profile);
     if (completion < 80) {
-      warnings.add('Profile is ${completion.toStringAsFixed(0)}% complete. Consider adding more information.');
+      warnings.add(
+        'Profile is ${completion.toStringAsFixed(0)}% complete. Consider adding more information.',
+      );
     }
 
     // Warning: Missing avatar
     if (profile.avatarUrl == null || profile.avatarUrl!.isEmpty) {
-      warnings.add('Consider adding a profile photo to help others recognize you.');
+      warnings.add(
+        'Consider adding a profile photo to help others recognize you.',
+      );
     }
 
     // Warning: Short bio
     if (profile.bio != null && profile.bio!.length < 50) {
-      warnings.add('A longer bio helps others understand your interests better.');
+      warnings.add(
+        'A longer bio helps others understand your interests better.',
+      );
     }
 
     // Warning: No location
@@ -425,21 +446,27 @@ class UpdateProfileUseCase {
 
   bool _isValidPhoneNumber(String phone) {
     // Basic phone number validation (international format)
-    return RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(phone.replaceAll(RegExp(r'[\s\-()]'), ''));
+    return RegExp(
+      r'^\+?[1-9]\d{1,14}$',
+    ).hasMatch(phone.replaceAll(RegExp(r'[\s\-()]'), ''));
   }
 
   String _filterProfanity(String text) {
     // Simple profanity filter - in production, use a proper service
-    const profanityWords = ['spam', 'scam', 'fake']; // Add actual profanity list
+    const profanityWords = [
+      'spam',
+      'scam',
+      'fake',
+    ]; // Add actual profanity list
     var cleanText = text;
-    
+
     for (final word in profanityWords) {
       cleanText = cleanText.replaceAll(
         RegExp(word, caseSensitive: false),
         '*' * word.length,
       );
     }
-    
+
     return cleanText;
   }
 }

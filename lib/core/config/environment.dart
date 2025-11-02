@@ -22,7 +22,7 @@ class Environment {
       throw Exception('Missing environment variables: ${missing.join(', ')}');
     }
   }
-  
+
   static bool get isProduction => environment == 'production';
   static bool get isDevelopment => environment == 'development';
 }

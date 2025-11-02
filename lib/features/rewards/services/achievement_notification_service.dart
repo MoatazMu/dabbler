@@ -4,18 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:audioplayers/audioplayers.dart';
 
-import '../domain/entities/achievement.dart';
-import '../domain/entities/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/achievement.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import '../presentation/widgets/celebrations/achievement_notification.dart';
 import '../presentation/widgets/celebrations/confetti_animation.dart';
 
 /// Notification priority levels
-enum NotificationPriority {
-  low,
-  normal,
-  high,
-  critical,
-}
+enum NotificationPriority { low, normal, high, critical }
 
 /// Sound effect types
 enum SoundEffectType {
@@ -124,13 +119,13 @@ class ShareContent {
 /// Achievement notification service
 class AchievementNotificationService extends ChangeNotifier {
   final AudioPlayer _audioPlayer;
-  
+
   // Queue management
   final List<NotificationQueueItem> _notificationQueue = [];
   final List<String> _activeNotifications = [];
   Timer? _processingTimer;
   bool _isProcessing = false;
-  
+
   // Settings
   bool _soundEnabled = true;
   bool _vibrationsEnabled = true;
@@ -138,11 +133,11 @@ class AchievementNotificationService extends ChangeNotifier {
   double _soundVolume = 0.7;
   int _maxConcurrentNotifications = 3;
   Duration _notificationDisplayDuration = const Duration(seconds: 5);
-  
+
   // Analytics tracking
   final Map<String, int> _notificationCounts = {};
   final Map<String, DateTime> _lastNotificationTimes = {};
-  
+
   // Initialization state
   bool _isInitialized = false;
   String? _currentUserId;
@@ -164,21 +159,22 @@ class AchievementNotificationService extends ChangeNotifier {
 
     try {
       _currentUserId = userId;
-      
+
       // Load user preferences
       await _loadUserPreferences();
-      
+
       // Setup audio player
       await _setupAudioPlayer();
-      
+
       // Start processing timer
       _startProcessingTimer();
-      
+
       _isInitialized = true;
       notifyListeners();
-      
-      debugPrint('AchievementNotificationService initialized for user: $userId');
-      
+
+      debugPrint(
+        'AchievementNotificationService initialized for user: $userId',
+      );
     } catch (e) {
       debugPrint('Error initializing AchievementNotificationService: $e');
       rethrow;
@@ -208,7 +204,7 @@ class AchievementNotificationService extends ChangeNotifier {
     if (!_notificationsEnabled || userId != _currentUserId) return;
 
     final notificationId = _generateNotificationId();
-    
+
     final item = NotificationQueueItem(
       id: notificationId,
       priority: priority,
@@ -227,7 +223,7 @@ class AchievementNotificationService extends ChangeNotifier {
     );
 
     _addToQueue(item);
-    
+
     // Track analytics
     _trackNotificationQueued(NotificationType.achievement, achievement.id);
   }
@@ -245,7 +241,7 @@ class AchievementNotificationService extends ChangeNotifier {
     if (!_notificationsEnabled || userId != _currentUserId) return;
 
     final notificationId = _generateNotificationId();
-    
+
     final item = NotificationQueueItem(
       id: notificationId,
       priority: priority,
@@ -265,9 +261,12 @@ class AchievementNotificationService extends ChangeNotifier {
     );
 
     _addToQueue(item);
-    
+
     // Track analytics
-    _trackNotificationQueued(NotificationType.tierUpgrade, '${oldTier.name}_to_${newTier.name}');
+    _trackNotificationQueued(
+      NotificationType.tierUpgrade,
+      '${oldTier.name}_to_${newTier.name}',
+    );
   }
 
   /// Queue points earned notification
@@ -279,22 +278,20 @@ class AchievementNotificationService extends ChangeNotifier {
     Duration? delay,
     Map<String, dynamic>? metadata,
   }) async {
-    if (!_notificationsEnabled || userId != _currentUserId || points <= 0) return;
+    if (!_notificationsEnabled || userId != _currentUserId || points <= 0) {
+      return;
+    }
 
     // Don't spam notifications for small point amounts
     if (points < 10) return;
 
     final notificationId = _generateNotificationId();
-    
+
     final item = NotificationQueueItem(
       id: notificationId,
       priority: priority,
       type: NotificationType.pointsEarned,
-      data: {
-        'points': points,
-        'reason': reason,
-        'metadata': metadata,
-      },
+      data: {'points': points, 'reason': reason, 'metadata': metadata},
       createdAt: DateTime.now(),
       delay: delay,
       soundEffect: SoundEffectType.pointsEarned,
@@ -304,7 +301,7 @@ class AchievementNotificationService extends ChangeNotifier {
     );
 
     _addToQueue(item);
-    
+
     // Track analytics
     _trackNotificationQueued(NotificationType.pointsEarned, reason);
   }
@@ -321,7 +318,7 @@ class AchievementNotificationService extends ChangeNotifier {
     if (!_notificationsEnabled || userId != _currentUserId) return;
 
     final notificationId = _generateNotificationId();
-    
+
     final item = NotificationQueueItem(
       id: notificationId,
       priority: priority,
@@ -340,7 +337,7 @@ class AchievementNotificationService extends ChangeNotifier {
     );
 
     _addToQueue(item);
-    
+
     // Track analytics
     _trackNotificationQueued(NotificationType.milestone, milestone);
   }
@@ -361,16 +358,12 @@ class AchievementNotificationService extends ChangeNotifier {
     if (!_notificationsEnabled || userId != _currentUserId) return;
 
     final notificationId = _generateNotificationId();
-    
+
     final item = NotificationQueueItem(
       id: notificationId,
       priority: priority,
       type: NotificationType.custom,
-      data: {
-        'title': title,
-        'message': message,
-        'metadata': metadata,
-      },
+      data: {'title': title, 'message': message, 'metadata': metadata},
       createdAt: DateTime.now(),
       delay: delay,
       soundEffect: soundEffect,
@@ -380,7 +373,7 @@ class AchievementNotificationService extends ChangeNotifier {
     );
 
     _addToQueue(item);
-    
+
     // Track analytics
     _trackNotificationQueued(NotificationType.custom, title);
   }
@@ -418,7 +411,8 @@ class AchievementNotificationService extends ChangeNotifier {
       changed = true;
     }
 
-    if (notificationsEnabled != null && notificationsEnabled != _notificationsEnabled) {
+    if (notificationsEnabled != null &&
+        notificationsEnabled != _notificationsEnabled) {
       _notificationsEnabled = notificationsEnabled;
       changed = true;
     }
@@ -429,12 +423,14 @@ class AchievementNotificationService extends ChangeNotifier {
       changed = true;
     }
 
-    if (maxConcurrentNotifications != null && maxConcurrentNotifications != _maxConcurrentNotifications) {
+    if (maxConcurrentNotifications != null &&
+        maxConcurrentNotifications != _maxConcurrentNotifications) {
       _maxConcurrentNotifications = maxConcurrentNotifications.clamp(1, 10);
       changed = true;
     }
 
-    if (notificationDisplayDuration != null && notificationDisplayDuration != _notificationDisplayDuration) {
+    if (notificationDisplayDuration != null &&
+        notificationDisplayDuration != _notificationDisplayDuration) {
       _notificationDisplayDuration = notificationDisplayDuration;
       changed = true;
     }
@@ -449,7 +445,8 @@ class AchievementNotificationService extends ChangeNotifier {
   ShareContent generateAchievementShareContent(Achievement achievement) {
     return ShareContent(
       title: 'Achievement Unlocked!',
-      description: 'I just unlocked "${achievement.name}" in Dabbler! ${achievement.description}',
+      description:
+          'I just unlocked "${achievement.name}" in Dabbler! ${achievement.description}',
       imageUrl: '', // No iconUrl property available
       deepLinks: {
         'twitter': _generateTwitterShare(achievement),
@@ -468,12 +465,17 @@ class AchievementNotificationService extends ChangeNotifier {
   /// Get notification statistics
   Map<String, dynamic> getNotificationStatistics() {
     return {
-      'totalNotifications': _notificationCounts.values.fold<int>(0, (sum, count) => sum + count),
+      'totalNotifications': _notificationCounts.values.fold<int>(
+        0,
+        (sum, count) => sum + count,
+      ),
       'notificationsByType': Map<String, int>.from(_notificationCounts),
       'queueLength': _notificationQueue.length,
       'activeNotifications': _activeNotifications.length,
       'lastNotificationTimes': Map<String, String>.from(
-        _lastNotificationTimes.map((key, value) => MapEntry(key, value.toIso8601String())),
+        _lastNotificationTimes.map(
+          (key, value) => MapEntry(key, value.toIso8601String()),
+        ),
       ),
     };
   }
@@ -505,11 +507,13 @@ class AchievementNotificationService extends ChangeNotifier {
     _isProcessing = true;
 
     try {
-      final readyNotifications = _notificationQueue.where((item) => item.isReady).toList();
-      
+      final readyNotifications = _notificationQueue
+          .where((item) => item.isReady)
+          .toList();
+
       for (final item in readyNotifications) {
         if (_activeNotifications.length >= _maxConcurrentNotifications) break;
-        
+
         _notificationQueue.remove(item);
         _showNotification(item);
       }
@@ -520,21 +524,21 @@ class AchievementNotificationService extends ChangeNotifier {
 
   void _showNotification(NotificationQueueItem item) {
     _activeNotifications.add(item.id);
-    
+
     // Play sound effect
     if (_soundEnabled && item.soundEffect != null) {
       _playSoundEffect(item.soundEffect!);
     }
-    
+
     // Trigger vibration
     if (_vibrationsEnabled && item.vibrationPattern != null) {
       _triggerVibration(item.vibrationPattern!);
     }
-    
+
     // Show notification UI (this would be handled by the UI layer)
     // For now, we just track it
     _trackNotificationShown(item.type, item.id);
-    
+
     // Auto-dismiss after duration
     Timer(_notificationDisplayDuration, () {
       _dismissNotification(item.id);
@@ -548,10 +552,10 @@ class AchievementNotificationService extends ChangeNotifier {
 
   Future<void> _playSoundEffect(SoundEffectType type) async {
     if (!_soundEnabled) return;
-    
+
     try {
       String soundFile;
-      
+
       switch (type) {
         case SoundEffectType.achievement:
           soundFile = 'sounds/achievement.mp3';
@@ -578,7 +582,7 @@ class AchievementNotificationService extends ChangeNotifier {
           soundFile = 'sounds/chime.mp3';
           break;
       }
-      
+
       await _audioPlayer.play(AssetSource(soundFile));
     } catch (e) {
       debugPrint('Error playing sound effect: $e');
@@ -587,7 +591,7 @@ class AchievementNotificationService extends ChangeNotifier {
 
   Future<void> _triggerVibration(VibrationPattern pattern) async {
     if (!_vibrationsEnabled) return;
-    
+
     try {
       switch (pattern) {
         case VibrationPattern.light:
@@ -677,17 +681,23 @@ class AchievementNotificationService extends ChangeNotifier {
   }
 
   String _generateTwitterShare(Achievement achievement) {
-    final text = Uri.encodeComponent('Just unlocked "${achievement.name}" in Dabbler! 🏆 ${achievement.description}');
+    final text = Uri.encodeComponent(
+      'Just unlocked "${achievement.name}" in Dabbler! 🏆 ${achievement.description}',
+    );
     return 'https://twitter.com/intent/tweet?text=$text&hashtags=Dabbler,Achievement';
   }
 
   String _generateFacebookShare(Achievement achievement) {
-    final quote = Uri.encodeComponent('Just unlocked "${achievement.name}" in Dabbler!');
+    final quote = Uri.encodeComponent(
+      'Just unlocked "${achievement.name}" in Dabbler!',
+    );
     return 'https://www.facebook.com/sharer/sharer.php?quote=$quote';
   }
 
   String _generateWhatsAppShare(Achievement achievement) {
-    final text = Uri.encodeComponent('Just unlocked "${achievement.name}" in Dabbler! 🏆 ${achievement.description}');
+    final text = Uri.encodeComponent(
+      'Just unlocked "${achievement.name}" in Dabbler! 🏆 ${achievement.description}',
+    );
     return 'https://wa.me/?text=$text';
   }
 }

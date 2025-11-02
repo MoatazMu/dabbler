@@ -85,15 +85,15 @@ class ModerationAction {
 
   @override
   int get hashCode => Object.hash(
-        id,
-        ticketId,
-        subjectType,
-        subjectId,
-        action,
-        reason,
-        meta == null ? null : Object.hashAll(meta!.entries),
-        createdAt,
-      );
+    id,
+    ticketId,
+    subjectType,
+    subjectId,
+    action,
+    reason,
+    meta == null ? null : Object.hashAll(meta!.entries),
+    createdAt,
+  );
 
   static bool _mapEquals(Map<String, dynamic>? a, Map<String, dynamic>? b) {
     if (identical(a, b)) return true;

@@ -30,6 +30,7 @@ enum PlayerSource { contact, teammate, search }
 
 // --- Ant Design Button Helper ---
 enum AntdButtonType { primary, defaultType, ghost }
+
 enum AntdButtonSize { small, medium, large }
 
 class AntdButton extends StatelessWidget {
@@ -68,7 +69,9 @@ class AntdButton extends StatelessWidget {
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               padding: padding,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: onPressed,
             child: child,
@@ -80,7 +83,9 @@ class AntdButton extends StatelessWidget {
           child: OutlinedButton(
             style: OutlinedButton.styleFrom(
               padding: padding,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: onPressed,
             child: child,
@@ -92,7 +97,9 @@ class AntdButton extends StatelessWidget {
           child: TextButton(
             style: TextButton.styleFrom(
               padding: padding,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
             onPressed: onPressed,
             child: child,
@@ -128,7 +135,8 @@ class InvitationList extends StatefulWidget {
   State<InvitationList> createState() => _InvitationListState();
 }
 
-class _InvitationListState extends State<InvitationList> with TickerProviderStateMixin {
+class _InvitationListState extends State<InvitationList>
+    with TickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
@@ -159,7 +167,10 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
           child: Column(
             children: [
               _buildAntdTabBar(context),
-              Divider(height: 1, color: context.colors.outline.withValues(alpha: 0.08)),
+              Divider(
+                height: 1,
+                color: context.colors.outline.withValues(alpha: 0.08),
+              ),
             ],
           ),
         ),
@@ -192,7 +203,9 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
           Wrap(
             spacing: 8,
             runSpacing: 8,
-            children: widget.selectedPlayers.map((player) => _buildAntdPlayerTag(context, player)).toList(),
+            children: widget.selectedPlayers
+                .map((player) => _buildAntdPlayerTag(context, player))
+                .toList(),
           ),
           const SizedBox(height: 8),
           Align(
@@ -247,7 +260,10 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
 
   Widget _buildContactsTab(BuildContext context) {
     final filteredContacts = widget.contacts
-        .where((contact) => contact.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where(
+          (contact) =>
+              contact.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+        )
         .toList();
     return Column(
       children: [
@@ -256,10 +272,15 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
           child: TextField(
             decoration: InputDecoration(
               hintText: 'Search contacts...',
-              prefixIcon: Icon(LucideIcons.search, color: context.colors.onSurfaceVariant),
+              prefixIcon: Icon(
+                LucideIcons.search,
+                color: context.colors.onSurfaceVariant,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: context.colors.outline.withValues(alpha: 0.1)),
+                borderSide: BorderSide(
+                  color: context.colors.outline.withValues(alpha: 0.1),
+                ),
               ),
               filled: true,
               fillColor: context.violetWidgetBg,
@@ -274,10 +295,17 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
         const SizedBox(height: 8),
         Expanded(
           child: filteredContacts.isEmpty
-              ? _buildAntdEmptyState(context, 'No contacts found', LucideIcons.phone)
+              ? _buildAntdEmptyState(
+                  context,
+                  'No contacts found',
+                  LucideIcons.phone,
+                )
               : ListView.separated(
                   itemCount: filteredContacts.length,
-                  separatorBuilder: (_, __) => Divider(height: 1, color: context.colors.outline.withValues(alpha: 0.06)),
+                  separatorBuilder: (_, __) => Divider(
+                    height: 1,
+                    color: context.colors.outline.withValues(alpha: 0.06),
+                  ),
                   itemBuilder: (context, index) {
                     final contact = filteredContacts[index];
                     return _buildAntdPlayerTile(context, contact);
@@ -290,7 +318,10 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
 
   Widget _buildTeammatesTab(BuildContext context) {
     final filteredTeammates = widget.recentTeammates
-        .where((teammate) => teammate.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .where(
+          (teammate) =>
+              teammate.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+        )
         .toList();
     return Column(
       children: [
@@ -299,10 +330,15 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
           child: TextField(
             decoration: InputDecoration(
               hintText: 'Search recent teammates...',
-              prefixIcon: Icon(LucideIcons.search, color: context.colors.onSurfaceVariant),
+              prefixIcon: Icon(
+                LucideIcons.search,
+                color: context.colors.onSurfaceVariant,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: context.colors.outline.withValues(alpha: 0.1)),
+                borderSide: BorderSide(
+                  color: context.colors.outline.withValues(alpha: 0.1),
+                ),
               ),
               filled: true,
               fillColor: context.violetWidgetBg,
@@ -317,10 +353,17 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
         const SizedBox(height: 8),
         Expanded(
           child: filteredTeammates.isEmpty
-              ? _buildAntdEmptyState(context, 'No recent teammates found', LucideIcons.users)
+              ? _buildAntdEmptyState(
+                  context,
+                  'No recent teammates found',
+                  LucideIcons.users,
+                )
               : ListView.separated(
                   itemCount: filteredTeammates.length,
-                  separatorBuilder: (_, __) => Divider(height: 1, color: context.colors.outline.withValues(alpha: 0.06)),
+                  separatorBuilder: (_, __) => Divider(
+                    height: 1,
+                    color: context.colors.outline.withValues(alpha: 0.06),
+                  ),
                   itemBuilder: (context, index) {
                     final teammate = filteredTeammates[index];
                     return _buildAntdPlayerTile(context, teammate);
@@ -340,10 +383,15 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
             controller: _searchController,
             decoration: InputDecoration(
               hintText: 'Search players by name or email...',
-              prefixIcon: Icon(LucideIcons.search, color: context.colors.onSurfaceVariant),
+              prefixIcon: Icon(
+                LucideIcons.search,
+                color: context.colors.onSurfaceVariant,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(color: context.colors.outline.withValues(alpha: 0.1)),
+                borderSide: BorderSide(
+                  color: context.colors.outline.withValues(alpha: 0.1),
+                ),
               ),
               filled: true,
               fillColor: context.violetWidgetBg,
@@ -356,17 +404,28 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
           child: widget.isLoadingContacts
               ? const Center(child: CircularProgressIndicator())
               : _searchController.text.isEmpty
-                  ? _buildAntdEmptyState(context, 'Enter a name or email to search', LucideIcons.search)
-                  : widget.searchResults.isEmpty
-                      ? _buildAntdEmptyState(context, 'No players found', LucideIcons.userPlus)
-                      : ListView.separated(
-                          itemCount: widget.searchResults.length,
-                          separatorBuilder: (_, __) => Divider(height: 1, color: context.colors.outline.withValues(alpha: 0.06)),
-                          itemBuilder: (context, index) {
-                            final player = widget.searchResults[index];
-                            return _buildAntdPlayerTile(context, player);
-                          },
-                        ),
+              ? _buildAntdEmptyState(
+                  context,
+                  'Enter a name or email to search',
+                  LucideIcons.search,
+                )
+              : widget.searchResults.isEmpty
+              ? _buildAntdEmptyState(
+                  context,
+                  'No players found',
+                  LucideIcons.userPlus,
+                )
+              : ListView.separated(
+                  itemCount: widget.searchResults.length,
+                  separatorBuilder: (_, __) => Divider(
+                    height: 1,
+                    color: context.colors.outline.withValues(alpha: 0.06),
+                  ),
+                  itemBuilder: (context, index) {
+                    final player = widget.searchResults[index];
+                    return _buildAntdPlayerTile(context, player);
+                  },
+                ),
         ),
       ],
     );
@@ -376,13 +435,22 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
     final isSelected = widget.selectedPlayers.any((p) => p.id == player.id);
     return ListTile(
       leading: _buildPlayerAvatar(context, player, size: 36),
-      title: Text(player.displayName, style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600)),
-      subtitle: player.email != null ? Text(player.email!, style: context.textTheme.bodySmall) : null,
+      title: Text(
+        player.displayName,
+        style: context.textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: player.email != null
+          ? Text(player.email!, style: context.textTheme.bodySmall)
+          : null,
       trailing: AntdButton(
         type: isSelected ? AntdButtonType.primary : AntdButtonType.defaultType,
         size: AntdButtonSize.small,
         onPressed: () => widget.onPlayerToggle(player),
-        child: isSelected ? const Icon(LucideIcons.check, size: 16) : const Icon(LucideIcons.userPlus, size: 16),
+        child: isSelected
+            ? const Icon(LucideIcons.check, size: 16)
+            : const Icon(LucideIcons.userPlus, size: 16),
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
@@ -391,13 +459,19 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
           width: isSelected ? 2 : 1,
         ),
       ),
-      tileColor: isSelected ? context.colors.primary.withValues(alpha: 0.06) : context.colors.surface,
+      tileColor: isSelected
+          ? context.colors.primary.withValues(alpha: 0.06)
+          : context.colors.surface,
       onTap: () => widget.onPlayerToggle(player),
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
     );
   }
 
-  Widget _buildAntdEmptyState(BuildContext context, String title, IconData icon) {
+  Widget _buildAntdEmptyState(
+    BuildContext context,
+    String title,
+    IconData icon,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -413,14 +487,23 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
               child: Icon(icon, size: 40, color: context.colors.primary),
             ),
             const SizedBox(height: 20),
-            Text(title, style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            Text(
+              title,
+              style: context.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPlayerAvatar(BuildContext context, InvitePlayer player, {double size = 40}) {
+  Widget _buildPlayerAvatar(
+    BuildContext context,
+    InvitePlayer player, {
+    double size = 40,
+  }) {
     return Container(
       width: size,
       height: size,
@@ -439,15 +522,25 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
                 width: size,
                 height: size,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => _buildAvatarFallback(context, player, size),
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildAvatarFallback(context, player, size),
               ),
             )
           : _buildAvatarFallback(context, player, size),
     );
   }
 
-  Widget _buildAvatarFallback(BuildContext context, InvitePlayer player, double size) {
-    final initials = player.name.split(' ').map((n) => n.isNotEmpty ? n[0] : '').take(2).join('').toUpperCase();
+  Widget _buildAvatarFallback(
+    BuildContext context,
+    InvitePlayer player,
+    double size,
+  ) {
+    final initials = player.name
+        .split(' ')
+        .map((n) => n.isNotEmpty ? n[0] : '')
+        .take(2)
+        .join('')
+        .toUpperCase();
     return Center(
       child: Text(
         initials,
@@ -459,4 +552,4 @@ class _InvitationListState extends State<InvitationList> with TickerProviderStat
       ),
     );
   }
-} 
+}

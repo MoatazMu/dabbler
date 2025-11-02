@@ -1,25 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../core/components/dabbler_button.dart';
+import '../../../../widgets/app_button.dart';
 import '../../../../core/config/design_system/design_tokens/spacing.dart';
 import '../../../../core/config/design_system/design_tokens/typography.dart';
 
 class ErrorPage extends StatelessWidget {
   final String? message;
 
-  const ErrorPage({
-    super.key,
-    this.message,
-  });
+  const ErrorPage({super.key, this.message});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Error',
-          style: DabblerTypography.headline6(),
-        ),
+        title: Text('Error', style: DabblerTypography.headline6()),
       ),
       body: Padding(
         padding: DabblerSpacing.all24,
@@ -45,10 +39,7 @@ class ErrorPage extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: DabblerSpacing.spacing32),
-              DabblerButton(
-                text: 'Retry',
-                onPressed: () => context.pop(),
-              ),
+              AppButton(label: 'Retry', onPressed: () => context.pop()),
             ],
           ),
         ),

@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../data/models/notification.dart';
+import 'package:dabbler/data/models/notification.dart';
 import '../../data/repositories/notifications_repository.dart';
 import '../../data/repositories/notifications_repository_impl.dart';
-import '../../services/supabase/supabase_service.dart';
-import '../../core/types/result.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
+import 'package:dabbler/core/fp/result.dart';
 
 final notificationsRepositoryProvider = Provider<NotificationsRepository>((
   ref,

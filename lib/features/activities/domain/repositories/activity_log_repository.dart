@@ -1,11 +1,11 @@
-import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failure.dart';
-import '../entities/activity_log.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/data/models/activities/activity_log.dart';
 
 /// Repository interface for activity log operations
 abstract class ActivityLogRepository {
   /// Get all activities for a user with optional filtering
-  Future<Either<Failure, List<ActivityLog>>> getUserActivities({
+  Future<Result<List<ActivityLog>, Failure>> getUserActivities({
     required String userId,
     ActivityType? type,
     String? category,
@@ -16,14 +16,14 @@ abstract class ActivityLogRepository {
   });
 
   /// Get activity statistics for a user
-  Future<Either<Failure, Map<String, int>>> getUserActivityStats({
+  Future<Result<Map<String, int>, Failure>> getUserActivityStats({
     required String userId,
     DateTime? startDate,
     DateTime? endDate,
   });
 
   /// Create a new activity log entry
-  Future<Either<Failure, ActivityLog>> createActivity({
+  Future<Result<ActivityLog, Failure>> createActivity({
     required String userId,
     required ActivityType type,
     String? subType,
@@ -49,7 +49,7 @@ abstract class ActivityLogRepository {
   });
 
   /// Update an existing activity log
-  Future<Either<Failure, ActivityLog>> updateActivity({
+  Future<Result<ActivityLog, Failure>> updateActivity({
     required String activityId,
     ActivityStatus? status,
     String? description,
@@ -57,21 +57,22 @@ abstract class ActivityLogRepository {
   });
 
   /// Delete an activity log entry
-  Future<Either<Failure, bool>> deleteActivity(String activityId);
+  Future<Result<bool, Failure>> deleteActivity(String activityId);
 
   /// Get activities by date range
-  Future<Either<Failure, Map<String, List<ActivityLog>>>> getActivitiesByDateRange({
+  Future<Result<Map<String, List<ActivityLog>>, Failure>>
+  getActivitiesByDateRange({
     required String userId,
     required DateTime startDate,
     required DateTime endDate,
   });
 
   /// Get recent activities (last 7 days)
-  Future<Either<Failure, List<ActivityLog>>> getRecentActivities({
+  Future<Result<List<ActivityLog>, Failure>> getRecentActivities({
     required String userId,
     int days = 7,
   });
 
   /// Get activity count by category
-  Future<Either<Failure, Map<String, int>>> getCategoryStats(String userId);
+  Future<Result<Map<String, int>, Failure>> getCategoryStats(String userId);
 }

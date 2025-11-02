@@ -1,14 +1,11 @@
 import 'dart:io';
 
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/either.dart';
-import '../../domain/entities/user_profile.dart';
-import '../../domain/entities/sports_profile.dart';
-import '../../domain/entities/profile_statistics.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/either.dart';
 import '../../domain/repositories/profile_repository.dart' as domain;
 import '../datasources/profile_data_sources.dart' show ProfileLocalDataSource;
 import '../datasources/profile_remote_datasource.dart';
-import '../models/models.dart';
+import 'package:dabbler/data/models/models.dart';
 
 /// Implementation of ProfileRepository with caching and error handling
 class ProfileRepositoryImpl implements domain.ProfileRepository {

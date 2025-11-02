@@ -1,7 +1,7 @@
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/either.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/either.dart';
 import '../repositories/friends_repository.dart';
-import '../../data/models/block_record_model.dart';
+import 'package:dabbler/data/models/social/block_record_model.dart';
 
 /// Parameters for blocking a user
 class BlockUserParams {
@@ -46,11 +46,14 @@ class BlockUserParams {
       blockedUserId: blockedUserId ?? this.blockedUserId,
       reason: reason ?? this.reason,
       blockType: blockType ?? this.blockType,
-      removeExistingFriendship: removeExistingFriendship ?? this.removeExistingFriendship,
+      removeExistingFriendship:
+          removeExistingFriendship ?? this.removeExistingFriendship,
       clearConversations: clearConversations ?? this.clearConversations,
       hideSharedContent: hideSharedContent ?? this.hideSharedContent,
-      preventFutureRequests: preventFutureRequests ?? this.preventFutureRequests,
-      sendNotificationToBlocked: sendNotificationToBlocked ?? this.sendNotificationToBlocked,
+      preventFutureRequests:
+          preventFutureRequests ?? this.preventFutureRequests,
+      sendNotificationToBlocked:
+          sendNotificationToBlocked ?? this.sendNotificationToBlocked,
       metadata: metadata ?? this.metadata,
     );
   }
@@ -83,10 +86,10 @@ class BlockUserResult {
 
 /// Types of blocking
 enum BlockType {
-  full,        // Complete block - no interactions allowed
-  messaging,   // Block messaging only
-  content,     // Hide content only
-  requests,    // Block friend requests only
+  full, // Complete block - no interactions allowed
+  messaging, // Block messaging only
+  content, // Hide content only
+  requests, // Block friend requests only
 }
 
 /// Cleanup actions performed when blocking
@@ -136,22 +139,23 @@ class BlockUserUseCase {
       }
 
       // Perform the block operation using FriendsRepository
-      final blockResult = await _friendsRepository.blockUser(params.blockedUserId);
-      
-      return blockResult.fold(
-        (failure) => Left(failure),
-        (success) {
-          // Create a simple block record
-          final blockRecord = BlockRecordModel(
-            id: '${params.blockingUserId}_${params.blockedUserId}_${DateTime.now().millisecondsSinceEpoch}',
-            blockingUserId: params.blockingUserId,
-            blockedUserId: params.blockedUserId,
-            reason: params.reason,
-            blockType: params.blockType.name,
-            createdAt: DateTime.now(),
-          );
+      final blockResult = await _friendsRepository.blockUser(
+        params.blockedUserId,
+      );
 
-          return Right(BlockUserResult(
+      return blockResult.fold((failure) => Left(failure), (success) {
+        // Create a simple block record
+        final blockRecord = BlockRecordModel(
+          id: '${params.blockingUserId}_${params.blockedUserId}_${DateTime.now().millisecondsSinceEpoch}',
+          blockingUserId: params.blockingUserId,
+          blockedUserId: params.blockedUserId,
+          reason: params.reason,
+          blockType: params.blockType.name,
+          createdAt: DateTime.now(),
+        );
+
+        return Right(
+          BlockUserResult(
             blockRecord: blockRecord,
             completedCleanupActions: [CleanupAction.removeFriendship],
             failedCleanupActions: [],
@@ -159,11 +163,13 @@ class BlockUserUseCase {
             conversationsCleared: 0,
             sharedContentHidden: 0,
             notificationSent: false,
-          ));
-        },
-      );
+          ),
+        );
+      });
     } catch (e) {
-      return Left(ServerFailure(message: 'Failed to block user: ${e.toString()}'));
+      return Left(
+        ServerFailure(message: 'Failed to block user: ${e.toString()}'),
+      );
     }
   }
 }

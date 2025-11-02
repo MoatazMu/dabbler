@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failure.dart';
-import '../../core/types/result.dart';
-import '../../services/supabase/supabase_service.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import '../models/profile.dart';
 import 'bench_mode_repository.dart';
 

@@ -2,9 +2,8 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 
-import '../domain/entities/badge_tier.dart';
-import '../domain/entities/point_transaction.dart';
-import '../domain/entities/tier.dart';
+import 'package:dabbler/data/models/rewards/badge_tier.dart';
+import 'package:dabbler/data/models/rewards/tier.dart';
 import '../domain/repositories/rewards_repository.dart';
 
 /// Tier benefit data
@@ -30,7 +29,7 @@ class TierBenefit {
   });
 
   bool get isExpired => expiresAt != null && DateTime.now().isAfter(expiresAt!);
-  
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -55,10 +54,10 @@ class TierBenefit {
       ),
       config: Map<String, dynamic>.from(map['config']),
       isActive: map['isActive'] ?? true,
-      activatedAt: map['activatedAt'] != null 
+      activatedAt: map['activatedAt'] != null
           ? DateTime.parse(map['activatedAt'])
           : null,
-      expiresAt: map['expiresAt'] != null 
+      expiresAt: map['expiresAt'] != null
           ? DateTime.parse(map['expiresAt'])
           : null,
     );
@@ -165,7 +164,7 @@ class TierProjection {
 
   bool get canUpgrade => nextTier != null && pointsToNextTier <= 0;
   bool get isMaxTier => nextTier == null;
-  
+
   Map<String, dynamic> toMap() {
     return {
       'currentTier': currentTier.name,
@@ -186,7 +185,7 @@ class TierProjection {
 /// Tier calculation service
 class TierCalculationService extends ChangeNotifier {
   final RewardsRepository _repository;
-  
+
   // Tier requirements (points needed for each tier)
   static const Map<BadgeTier, int> _tierRequirements = {
     BadgeTier.bronze: 0,
@@ -236,7 +235,9 @@ class TierCalculationService extends ChangeNotifier {
         'name': 'Exclusive Content',
         'description': 'Access to gold-tier exclusive games',
         'type': 'exclusiveContent',
-        'config': {'contentIds': ['gold_game_1', 'gold_game_2']},
+        'config': {
+          'contentIds': ['gold_game_1', 'gold_game_2'],
+        },
       },
       {
         'id': 'gold_priority',
@@ -303,7 +304,9 @@ class TierCalculationService extends ChangeNotifier {
         'name': 'Exclusive Events',
         'description': 'Access to diamond-only events and tournaments',
         'type': 'exclusiveContent',
-        'config': {'eventTypes': ['tournaments', 'special_challenges']},
+        'config': {
+          'eventTypes': ['tournaments', 'special_challenges'],
+        },
       },
     ],
   };
@@ -312,14 +315,14 @@ class TierCalculationService extends ChangeNotifier {
   final Map<String, TierProjection> _projectionCache = {};
   final Map<String, List<TierBenefit>> _benefitsCache = {};
   final Map<String, List<TierUpgradeHistory>> _historyCache = {};
-  
+
   // State
   bool _isInitialized = false;
   String? _currentUserId;
   Timer? _calculationTimer;
 
   TierCalculationService({required RewardsRepository repository})
-      : _repository = repository;
+    : _repository = repository;
 
   // Getters
   bool get isInitialized => _isInitialized;
@@ -332,18 +335,17 @@ class TierCalculationService extends ChangeNotifier {
 
     try {
       _currentUserId = userId;
-      
+
       // Start periodic calculations
       _startCalculationTimer();
-      
+
       // Load initial data
       await _loadInitialData();
-      
+
       _isInitialized = true;
       notifyListeners();
-      
+
       debugPrint('TierCalculationService initialized for user: $userId');
-      
     } catch (e) {
       debugPrint('Error initializing TierCalculationService: $e');
       rethrow;
@@ -360,7 +362,7 @@ class TierCalculationService extends ChangeNotifier {
   /// Calculate current tier from points
   BadgeTier calculateTierFromPoints(int points) {
     BadgeTier currentTier = BadgeTier.bronze;
-    
+
     for (final entry in _tierRequirements.entries) {
       if (points >= entry.value) {
         currentTier = entry.key;
@@ -368,7 +370,7 @@ class TierCalculationService extends ChangeNotifier {
         break;
       }
     }
-    
+
     return currentTier;
   }
 
@@ -385,12 +387,12 @@ class TierCalculationService extends ChangeNotifier {
         (failure) => 0.0,
         (points) => points,
       );
-      
+
       final projection = _calculateProjection(currentPoints.toInt());
-      
+
       // Cache the result
       _projectionCache[userId] = projection;
-      
+
       return projection;
     } catch (e) {
       debugPrint('Error getting tier projection: $e');
@@ -411,16 +413,18 @@ class TierCalculationService extends ChangeNotifier {
         (failure) => null,
         (progressList) => progressList.isNotEmpty ? progressList.first : null,
       );
-      
+
       if (userProgress == null) {
         return [];
       }
-      
-      final benefits = await _getBenefitsForTier(BadgeTier.bronze); // Default tier
-      
+
+      final benefits = await _getBenefitsForTier(
+        BadgeTier.bronze,
+      ); // Default tier
+
       // Cache the result
       _benefitsCache[userId] = benefits;
-      
+
       return benefits;
     } catch (e) {
       debugPrint('Error getting user benefits: $e');
@@ -432,19 +436,18 @@ class TierCalculationService extends ChangeNotifier {
   Future<void> applyTierBenefits(String userId, BadgeTier tier) async {
     try {
       final benefits = await _getBenefitsForTier(tier);
-      
+
       for (final benefit in benefits) {
         await _applyBenefit(userId, benefit);
       }
-      
+
       // Clear cache
       _benefitsCache.remove(userId);
       _projectionCache.remove(userId);
-      
+
       notifyListeners();
-      
+
       debugPrint('Applied ${benefits.length} benefits for tier: ${tier.name}');
-      
     } catch (e) {
       debugPrint('Error applying tier benefits: $e');
       rethrow;
@@ -459,23 +462,28 @@ class TierCalculationService extends ChangeNotifier {
         (failure) => 0.0,
         (points) => points,
       );
-      
+
       final userProgressResult = await _repository.getUserProgress(userId);
       final userProgress = userProgressResult.fold(
         (failure) => null,
         (progressList) => progressList.isNotEmpty ? progressList.first : null,
       );
-      
+
       if (userProgress == null) return null;
-      
+
       final newTier = calculateTierFromPoints(currentPoints.toInt());
       final currentTier = BadgeTier.bronze; // Default tier
-      
+
       if (newTier != currentTier && _isHigherTier(newTier, currentTier)) {
-        await _processTierUpgrade(userId, currentTier, newTier, currentPoints.toInt());
+        await _processTierUpgrade(
+          userId,
+          currentTier,
+          newTier,
+          currentPoints.toInt(),
+        );
         return newTier;
       }
-      
+
       return null;
     } catch (e) {
       debugPrint('Error checking tier upgrade: $e');
@@ -496,12 +504,14 @@ class TierCalculationService extends ChangeNotifier {
         (failure) => <Map<String, dynamic>>[],
         (history) => history,
       );
-      
-      final history = historyMaps.map((map) => TierUpgradeHistory.fromMap(map)).toList();
-      
+
+      final history = historyMaps
+          .map((map) => TierUpgradeHistory.fromMap(map))
+          .toList();
+
       // Cache the result
       _historyCache[userId] = history;
-      
+
       return history;
     } catch (e) {
       debugPrint('Error getting tier upgrade history: $e');
@@ -513,13 +523,15 @@ class TierCalculationService extends ChangeNotifier {
   Future<double> getPointsMultiplier(String userId) async {
     try {
       final benefits = await getUserBenefits(userId);
-      
+
       for (final benefit in benefits) {
-        if (benefit.type == TierBenefitType.pointsMultiplier && benefit.isActive && !benefit.isExpired) {
+        if (benefit.type == TierBenefitType.pointsMultiplier &&
+            benefit.isActive &&
+            !benefit.isExpired) {
           return benefit.config['multiplier']?.toDouble() ?? 1.0;
         }
       }
-      
+
       return 1.0;
     } catch (e) {
       debugPrint('Error getting points multiplier: $e');
@@ -528,24 +540,27 @@ class TierCalculationService extends ChangeNotifier {
   }
 
   /// Estimate time to reach next tier
-  Future<Duration?> estimateTimeToNextTier(String userId, {int? averagePointsPerDay}) async {
+  Future<Duration?> estimateTimeToNextTier(
+    String userId, {
+    int? averagePointsPerDay,
+  }) async {
     try {
       final projection = await getTierProjection(userId);
-      
+
       if (projection.isMaxTier || projection.pointsToNextTier <= 0) {
         return null;
       }
-      
+
       // Use provided average or calculate from user history
-      final dailyRate = averagePointsPerDay ?? await _calculateDailyPointsRate(userId);
-      
+      final dailyRate =
+          averagePointsPerDay ?? await _calculateDailyPointsRate(userId);
+
       if (dailyRate <= 0) {
         return null;
       }
-      
+
       final daysNeeded = (projection.pointsToNextTier / dailyRate).ceil();
       return Duration(days: daysNeeded);
-      
     } catch (e) {
       debugPrint('Error estimating time to next tier: $e');
       return null;
@@ -580,19 +595,21 @@ class TierCalculationService extends ChangeNotifier {
     // Find next tier
     final tierList = BadgeTier.values;
     final currentIndex = tierList.indexOf(currentTier);
-    
+
     if (currentIndex < tierList.length - 1) {
       nextTier = tierList[currentIndex + 1];
       totalPointsForNextTier = _tierRequirements[nextTier]!;
       pointsToNextTier = totalPointsForNextTier - currentPoints;
-      
+
       if (pointsToNextTier < 0) pointsToNextTier = 0;
-      
+
       final currentTierPoints = _tierRequirements[currentTier]!;
       final tierRange = totalPointsForNextTier - currentTierPoints;
       final progressInTier = currentPoints - currentTierPoints;
-      
-      progressToNext = tierRange > 0 ? (progressInTier / tierRange).clamp(0.0, 1.0) : 1.0;
+
+      progressToNext = tierRange > 0
+          ? (progressInTier / tierRange).clamp(0.0, 1.0)
+          : 1.0;
     }
 
     return TierProjection(
@@ -602,7 +619,7 @@ class TierCalculationService extends ChangeNotifier {
       pointsToNextTier: math.max(0, pointsToNextTier),
       totalPointsForNextTier: totalPointsForNextTier,
       progressToNext: progressToNext,
-      nextTierBenefits: nextTier != null 
+      nextTierBenefits: nextTier != null
           ? _getBenefitsForTierSync(nextTier)
           : [],
       allTierRequirements: Map.from(_tierRequirements),
@@ -611,14 +628,18 @@ class TierCalculationService extends ChangeNotifier {
 
   Future<List<TierBenefit>> _getBenefitsForTier(BadgeTier tier) async {
     final benefitMaps = _tierBenefits[tier] ?? [];
-    
-    return benefitMaps.map((benefitMap) => TierBenefit.fromMap(benefitMap)).toList();
+
+    return benefitMaps
+        .map((benefitMap) => TierBenefit.fromMap(benefitMap))
+        .toList();
   }
 
   List<TierBenefit> _getBenefitsForTierSync(BadgeTier tier) {
     final benefitMaps = _tierBenefits[tier] ?? [];
-    
-    return benefitMaps.map((benefitMap) => TierBenefit.fromMap(benefitMap)).toList();
+
+    return benefitMaps
+        .map((benefitMap) => TierBenefit.fromMap(benefitMap))
+        .toList();
   }
 
   Future<void> _applyBenefit(String userId, TierBenefit benefit) async {
@@ -658,15 +679,15 @@ class TierCalculationService extends ChangeNotifier {
   }
 
   Future<void> _processTierUpgrade(
-    String userId, 
-    BadgeTier fromTier, 
-    BadgeTier toTier, 
+    String userId,
+    BadgeTier fromTier,
+    BadgeTier toTier,
     int currentPoints,
   ) async {
     try {
       // Convert BadgeTier to TierLevel (simple mapping for now)
       final tierLevel = _badgeTierToTierLevel(toTier);
-      
+
       // Create UserTier object
       final userTier = UserTier(
         id: _generateUpgradeId(),
@@ -678,16 +699,16 @@ class TierCalculationService extends ChangeNotifier {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
-      
+
       // Update user's tier
       await _repository.updateUserTier(userId, userTier);
-      
+
       // Get benefits for new tier
       final newBenefits = await _getBenefitsForTier(toTier);
-      
+
       // Apply tier benefits
       await applyTierBenefits(userId, toTier);
-      
+
       // Create upgrade history entry
       final upgradeHistory = TierUpgradeHistory(
         id: _generateUpgradeId(),
@@ -699,15 +720,16 @@ class TierCalculationService extends ChangeNotifier {
         reason: 'Points threshold reached',
         benefitsUnlocked: newBenefits,
       );
-      
+
       // Save upgrade history
       await _repository.saveTierUpgradeHistory(userId, upgradeHistory.toMap());
-      
+
       // Clear cache
       clearUserCache(userId);
-      
-      debugPrint('Tier upgrade processed: $fromTier -> $toTier for user: $userId');
-      
+
+      debugPrint(
+        'Tier upgrade processed: $fromTier -> $toTier for user: $userId',
+      );
     } catch (e) {
       debugPrint('Error processing tier upgrade: $e');
       rethrow;
@@ -721,34 +743,36 @@ class TierCalculationService extends ChangeNotifier {
   Future<int> _calculateDailyPointsRate(String userId) async {
     try {
       final transactionsResult = await _repository.getTransactionHistory(
-        userId, 
+        userId,
         limit: 100,
       );
-      
+
       final transactions = transactionsResult.fold(
         (failure) => <PointTransaction>[],
         (transactionList) => transactionList,
       );
-      
+
       if (transactions.isEmpty) return 0;
-      
+
       final now = DateTime.now();
       final recentTransactions = transactions.where((t) {
         final daysDiff = now.difference(t.createdAt).inDays;
         return daysDiff <= 30; // Last 30 days
       }).toList();
-      
+
       if (recentTransactions.isEmpty) return 0;
-      
+
       final totalPoints = recentTransactions
           .where((t) => t.finalPoints > 0)
           .fold<double>(0.0, (sum, t) => sum + t.finalPoints);
-      
+
       final oldestTransaction = recentTransactions.last;
-      final daysDiff = math.max(1, now.difference(oldestTransaction.createdAt).inDays);
-      
+      final daysDiff = math.max(
+        1,
+        now.difference(oldestTransaction.createdAt).inDays,
+      );
+
       return (totalPoints / daysDiff).round();
-      
     } catch (e) {
       debugPrint('Error calculating daily points rate: $e');
       return 0;
@@ -765,15 +789,14 @@ class TierCalculationService extends ChangeNotifier {
 
   Future<void> _performPeriodicCalculations() async {
     if (_currentUserId == null) return;
-    
+
     try {
       // Check for tier upgrades
       await checkTierUpgrade(_currentUserId!);
-      
+
       // Refresh projection cache
       _projectionCache.remove(_currentUserId!);
       await getTierProjection(_currentUserId!);
-      
     } catch (e) {
       debugPrint('Error in periodic calculations: $e');
     }
@@ -781,7 +804,7 @@ class TierCalculationService extends ChangeNotifier {
 
   Future<void> _loadInitialData() async {
     if (_currentUserId == null) return;
-    
+
     try {
       // Preload projection and benefits
       await Future.wait([
@@ -798,37 +821,58 @@ class TierCalculationService extends ChangeNotifier {
   }
 
   // Benefit application methods
-  Future<void> _unlockExclusiveContent(String userId, Map<String, dynamic> config) async {
+  Future<void> _unlockExclusiveContent(
+    String userId,
+    Map<String, dynamic> config,
+  ) async {
     // Implementation for unlocking exclusive content
     debugPrint('Unlocking exclusive content for user: $userId');
   }
 
-  Future<void> _enablePrioritySupport(String userId, Map<String, dynamic> config) async {
+  Future<void> _enablePrioritySupport(
+    String userId,
+    Map<String, dynamic> config,
+  ) async {
     // Implementation for enabling priority support
     debugPrint('Enabling priority support for user: $userId');
   }
 
-  Future<void> _unlockCustomization(String userId, Map<String, dynamic> config) async {
+  Future<void> _unlockCustomization(
+    String userId,
+    Map<String, dynamic> config,
+  ) async {
     // Implementation for unlocking customization options
     debugPrint('Unlocking customization for user: $userId');
   }
 
-  Future<void> _enableEarlyAccess(String userId, Map<String, dynamic> config) async {
+  Future<void> _enableEarlyAccess(
+    String userId,
+    Map<String, dynamic> config,
+  ) async {
     // Implementation for enabling early access
     debugPrint('Enabling early access for user: $userId');
   }
 
-  Future<void> _enableFreeFeatures(String userId, Map<String, dynamic> config) async {
+  Future<void> _enableFreeFeatures(
+    String userId,
+    Map<String, dynamic> config,
+  ) async {
     // Implementation for enabling free features
     debugPrint('Enabling free features for user: $userId');
   }
 
-  Future<void> _enableSocialPerks(String userId, Map<String, dynamic> config) async {
+  Future<void> _enableSocialPerks(
+    String userId,
+    Map<String, dynamic> config,
+  ) async {
     // Implementation for enabling social perks
     debugPrint('Enabling social perks for user: $userId');
   }
 
-  Future<void> _enableGamingBoosts(String userId, Map<String, dynamic> config) async {
+  Future<void> _enableGamingBoosts(
+    String userId,
+    Map<String, dynamic> config,
+  ) async {
     // Implementation for enabling gaming boosts
     debugPrint('Enabling gaming boosts for user: $userId');
   }

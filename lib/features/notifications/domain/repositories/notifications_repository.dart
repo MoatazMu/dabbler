@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failure.dart';
-import '../entities/notification.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/data/models/notifications/notification.dart';
 
 /// Repository interface for notifications
 abstract class NotificationsRepository {
@@ -8,7 +8,9 @@ abstract class NotificationsRepository {
   Future<Either<Failure, List<Notification>>> getNotifications(String userId);
 
   /// Get unread notifications for a user
-  Future<Either<Failure, List<Notification>>> getUnreadNotifications(String userId);
+  Future<Either<Failure, List<Notification>>> getUnreadNotifications(
+    String userId,
+  );
 
   /// Get notifications by type
   Future<Either<Failure, List<Notification>>> getNotificationsByType(
@@ -29,5 +31,7 @@ abstract class NotificationsRepository {
   Future<Either<Failure, void>> deleteAllNotifications(String userId);
 
   /// Create a new notification
-  Future<Either<Failure, Notification>> createNotification(Notification notification);
+  Future<Either<Failure, Notification>> createNotification(
+    Notification notification,
+  );
 }

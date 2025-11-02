@@ -1,7 +1,7 @@
 import 'dart:io';
-import '../../../../core/errors/failure.dart';
-import '../../../../core/utils/either.dart';
-import '../entities/user_profile.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/utils/either.dart';
+import 'package:dabbler/data/models/profile/user_profile.dart';
 import '../repositories/profile_repository.dart';
 
 /// Parameters for avatar upload
@@ -38,7 +38,9 @@ class UploadAvatarUseCase {
 
   UploadAvatarUseCase(this._profileRepository);
 
-  Future<Either<Failure, UploadAvatarResult>> call(UploadAvatarParams params) async {
+  Future<Either<Failure, UploadAvatarResult>> call(
+    UploadAvatarParams params,
+  ) async {
     try {
       // Validate input parameters
       final validationResult = await _validateParams(params);
@@ -47,19 +49,25 @@ class UploadAvatarUseCase {
       }
 
       // Get current profile
-      final currentProfileResult = await _profileRepository.getProfile(params.userId);
+      final currentProfileResult = await _profileRepository.getProfile(
+        params.userId,
+      );
       if (currentProfileResult.isLeft) {
         return Left(currentProfileResult.leftOrNull()!);
       }
-      
+
       final currentProfile = currentProfileResult.rightOrNull()!;
 
       // Delete current avatar if requested
       if (params.deleteCurrentAvatar && currentProfile.avatarUrl != null) {
-        final deleteResult = await _profileRepository.deleteAvatar(params.userId);
+        final deleteResult = await _profileRepository.deleteAvatar(
+          params.userId,
+        );
         if (deleteResult.isLeft) {
           // Log warning but continue with upload
-          print('Warning: Failed to delete current avatar: ${deleteResult.leftOrNull()}');
+          print(
+            'Warning: Failed to delete current avatar: ${deleteResult.leftOrNull()}',
+          );
         }
       }
 
@@ -73,19 +81,21 @@ class UploadAvatarUseCase {
           print('Upload progress: ${(progress * 100).toStringAsFixed(1)}%');
         },
       );
-      
+
       if (uploadResult.isLeft) {
         return Left(uploadResult.leftOrNull()!);
       }
-      
+
       newAvatarUrl = uploadResult.rightOrNull()!;
 
       // Get updated profile after avatar upload
-      final updatedProfileResult = await _profileRepository.getProfile(params.userId);
+      final updatedProfileResult = await _profileRepository.getProfile(
+        params.userId,
+      );
       if (updatedProfileResult.isLeft) {
         return Left(updatedProfileResult.leftOrNull()!);
       }
-      
+
       final updatedProfile = updatedProfileResult.rightOrNull()!;
 
       // Generate metadata about the upload
@@ -94,20 +104,23 @@ class UploadAvatarUseCase {
       // Generate warnings
       final warnings = _generateWarnings(params.imageFile, metadata);
 
-      return Right(UploadAvatarResult(
-        updatedProfile: updatedProfile,
-        avatarUrl: newAvatarUrl,
-        warnings: warnings,
-        metadata: metadata,
-      ));
-
+      return Right(
+        UploadAvatarResult(
+          updatedProfile: updatedProfile,
+          avatarUrl: newAvatarUrl,
+          warnings: warnings,
+          metadata: metadata,
+        ),
+      );
     } catch (e) {
       return Left(DataFailure(message: 'Avatar upload failed: $e'));
     }
   }
 
   /// Validate input parameters
-  Future<Either<Failure, void>> _validateParams(UploadAvatarParams params) async {
+  Future<Either<Failure, void>> _validateParams(
+    UploadAvatarParams params,
+  ) async {
     final errors = <String>[];
 
     // Check if file exists
@@ -126,7 +139,9 @@ class UploadAvatarUseCase {
     // Validate file extension
     final fileName = params.imageFile.path.toLowerCase();
     const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    final hasValidExtension = allowedExtensions.any((ext) => fileName.endsWith(ext));
+    final hasValidExtension = allowedExtensions.any(
+      (ext) => fileName.endsWith(ext),
+    );
     if (!hasValidExtension) {
       errors.add('Image must be in JPG, PNG, GIF, or WebP format');
     }
@@ -149,7 +164,10 @@ class UploadAvatarUseCase {
   }
 
   /// Generate metadata about the upload
-  Future<Map<String, dynamic>> _generateMetadata(File imageFile, String avatarUrl) async {
+  Future<Map<String, dynamic>> _generateMetadata(
+    File imageFile,
+    String avatarUrl,
+  ) async {
     final metadata = <String, dynamic>{};
 
     try {
@@ -166,15 +184,18 @@ class UploadAvatarUseCase {
       if (dimensions != null) {
         metadata['original_width'] = dimensions['width'];
         metadata['original_height'] = dimensions['height'];
-        metadata['aspect_ratio'] = (dimensions['width']! / dimensions['height']!).toStringAsFixed(2);
+        metadata['aspect_ratio'] =
+            (dimensions['width']! / dimensions['height']!).toStringAsFixed(2);
       }
 
       // File format
       metadata['file_format'] = _detectImageFormat(bytes);
-      
-      // Quality assessment
-      metadata['quality_score'] = _assessImageQuality(fileSizeBytes, dimensions);
 
+      // Quality assessment
+      metadata['quality_score'] = _assessImageQuality(
+        fileSizeBytes,
+        dimensions,
+      );
     } catch (e) {
       metadata['metadata_error'] = 'Failed to generate complete metadata: $e';
     }
@@ -183,39 +204,49 @@ class UploadAvatarUseCase {
   }
 
   /// Generate warnings for the user
-  List<String> _generateWarnings(File imageFile, Map<String, dynamic> metadata) {
+  List<String> _generateWarnings(
+    File imageFile,
+    Map<String, dynamic> metadata,
+  ) {
     final warnings = <String>[];
 
     // File size warnings
     final fileSizeBytes = metadata['original_file_size'] as int? ?? 0;
-    if (fileSizeBytes > 5 * 1024 * 1024) { // 5MB
+    if (fileSizeBytes > 5 * 1024 * 1024) {
+      // 5MB
       warnings.add('Large image file may take longer to load in the app.');
     }
 
     // Dimension warnings
     final width = metadata['original_width'] as int?;
     final height = metadata['original_height'] as int?;
-    
+
     if (width != null && height != null) {
       if (width < 200 || height < 200) {
         warnings.add('Low resolution image may appear blurry when displayed.');
       }
-      
+
       if (width > 2000 || height > 2000) {
-        warnings.add('High resolution image will be automatically resized for optimal performance.');
+        warnings.add(
+          'High resolution image will be automatically resized for optimal performance.',
+        );
       }
 
       // Aspect ratio warning
       final aspectRatio = width / height;
       if (aspectRatio < 0.8 || aspectRatio > 1.2) {
-        warnings.add('Non-square images will be cropped to fit profile picture format.');
+        warnings.add(
+          'Non-square images will be cropped to fit profile picture format.',
+        );
       }
     }
 
     // Quality warning
     final qualityScore = metadata['quality_score'] as double? ?? 0.0;
     if (qualityScore < 50) {
-      warnings.add('Image quality appears to be low and may not look good when displayed.');
+      warnings.add(
+        'Image quality appears to be low and may not look good when displayed.',
+      );
     }
 
     // Format warning
@@ -233,27 +264,45 @@ class UploadAvatarUseCase {
 
     // Check for common image file signatures
     // JPEG: FF D8 FF
-    if (bytes.length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+    if (bytes.length >= 3 &&
+        bytes[0] == 0xFF &&
+        bytes[1] == 0xD8 &&
+        bytes[2] == 0xFF) {
       return true;
     }
 
     // PNG: 89 50 4E 47 0D 0A 1A 0A
-    if (bytes.length >= 8 && 
-        bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 &&
-        bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A) {
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47 &&
+        bytes[4] == 0x0D &&
+        bytes[5] == 0x0A &&
+        bytes[6] == 0x1A &&
+        bytes[7] == 0x0A) {
       return true;
     }
 
     // GIF: 47 49 46 38 (GIF8)
-    if (bytes.length >= 4 && 
-        bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x38) {
+    if (bytes.length >= 4 &&
+        bytes[0] == 0x47 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x38) {
       return true;
     }
 
     // WebP: 52 49 46 46 ... 57 45 42 50
     if (bytes.length >= 12 &&
-        bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 &&
-        bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
       return true;
     }
 
@@ -270,20 +319,32 @@ class UploadAvatarUseCase {
     }
 
     // PNG
-    if (bytes.length >= 8 && 
-        bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+    if (bytes.length >= 8 &&
+        bytes[0] == 0x89 &&
+        bytes[1] == 0x50 &&
+        bytes[2] == 0x4E &&
+        bytes[3] == 0x47) {
       return 'png';
     }
 
     // GIF
-    if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x38) {
+    if (bytes[0] == 0x47 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x38) {
       return 'gif';
     }
 
     // WebP
     if (bytes.length >= 12 &&
-        bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 &&
-        bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50) {
+        bytes[0] == 0x52 &&
+        bytes[1] == 0x49 &&
+        bytes[2] == 0x46 &&
+        bytes[3] == 0x46 &&
+        bytes[8] == 0x57 &&
+        bytes[9] == 0x45 &&
+        bytes[10] == 0x42 &&
+        bytes[11] == 0x50) {
       return 'webp';
     }
 
@@ -294,17 +355,29 @@ class UploadAvatarUseCase {
   Map<String, int>? _estimateImageDimensions(List<int> bytes) {
     try {
       // PNG dimensions
-      if (bytes.length >= 24 && 
-          bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
-        final width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19];
-        final height = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23];
+      if (bytes.length >= 24 &&
+          bytes[0] == 0x89 &&
+          bytes[1] == 0x50 &&
+          bytes[2] == 0x4E &&
+          bytes[3] == 0x47) {
+        final width =
+            (bytes[16] << 24) |
+            (bytes[17] << 16) |
+            (bytes[18] << 8) |
+            bytes[19];
+        final height =
+            (bytes[20] << 24) |
+            (bytes[21] << 16) |
+            (bytes[22] << 8) |
+            bytes[23];
         return {'width': width, 'height': height};
       }
 
       // JPEG dimensions (basic SOF marker search)
       if (bytes[0] == 0xFF && bytes[1] == 0xD8) {
         for (int i = 2; i < bytes.length - 9; i++) {
-          if (bytes[i] == 0xFF && (bytes[i + 1] == 0xC0 || bytes[i + 1] == 0xC2)) {
+          if (bytes[i] == 0xFF &&
+              (bytes[i + 1] == 0xC0 || bytes[i + 1] == 0xC2)) {
             final height = (bytes[i + 5] << 8) | bytes[i + 6];
             final width = (bytes[i + 7] << 8) | bytes[i + 8];
             return {'width': width, 'height': height};
@@ -314,12 +387,14 @@ class UploadAvatarUseCase {
 
       // GIF dimensions
       if (bytes.length >= 10 &&
-          bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x38) {
+          bytes[0] == 0x47 &&
+          bytes[1] == 0x49 &&
+          bytes[2] == 0x46 &&
+          bytes[3] == 0x38) {
         final width = bytes[6] | (bytes[7] << 8);
         final height = bytes[8] | (bytes[9] << 8);
         return {'width': width, 'height': height};
       }
-
     } catch (e) {
       // Return null if dimension detection fails
     }
@@ -332,9 +407,11 @@ class UploadAvatarUseCase {
     double score = 50.0; // Base score
 
     // File size factor
-    if (fileSizeBytes > 1024 * 1024) { // > 1MB
+    if (fileSizeBytes > 1024 * 1024) {
+      // > 1MB
       score += 20.0;
-    } else if (fileSizeBytes < 100 * 1024) { // < 100KB
+    } else if (fileSizeBytes < 100 * 1024) {
+      // < 100KB
       score -= 20.0;
     }
 
@@ -344,9 +421,11 @@ class UploadAvatarUseCase {
       final height = dimensions['height']!;
       final pixels = width * height;
 
-      if (pixels > 1000000) { // > 1MP
+      if (pixels > 1000000) {
+        // > 1MP
         score += 20.0;
-      } else if (pixels < 40000) { // < 200x200
+      } else if (pixels < 40000) {
+        // < 200x200
         score -= 30.0;
       }
 
