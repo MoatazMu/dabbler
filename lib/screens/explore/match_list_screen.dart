@@ -29,36 +29,28 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
   Widget build(BuildContext context) {
     // Watch the public games provider
     final publicGamesAsync = ref.watch(publicGamesProvider);
-
+    
     return publicGamesAsync.when(
       data: (allGames) {
         print('🎮 [DEBUG] Public games loaded: ${allGames.length} games');
-
+        
         // Filter by sport
         final sportFilteredGames = allGames.where((game) {
           return game.sport.toLowerCase() == widget.sport.toLowerCase();
         }).toList();
-
-        print(
-          '🎮 [DEBUG] After sport filter (${widget.sport}): ${sportFilteredGames.length} games',
-        );
-
+        
+        print('🎮 [DEBUG] After sport filter (${widget.sport}): ${sportFilteredGames.length} games');
+        
         // Filter by search query if any
         final searchFilteredGames = widget.searchQuery.isEmpty
             ? sportFilteredGames
             : sportFilteredGames.where((game) {
-                return game.title.toLowerCase().contains(
-                      widget.searchQuery.toLowerCase(),
-                    ) ||
-                    game.description.toLowerCase().contains(
-                      widget.searchQuery.toLowerCase(),
-                    );
+                return game.title.toLowerCase().contains(widget.searchQuery.toLowerCase()) ||
+                       game.description.toLowerCase().contains(widget.searchQuery.toLowerCase());
               }).toList();
-
-        print(
-          '🎮 [DEBUG] After search filter: ${searchFilteredGames.length} games',
-        );
-
+        
+        print('🎮 [DEBUG] After search filter: ${searchFilteredGames.length} games');
+        
         if (searchFilteredGames.isEmpty) {
           return Center(
             child: Column(
@@ -87,14 +79,16 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
             ),
           );
         }
-
+        
         return Column(
           children: [
             // Filters
             _buildFilters(),
-
+            
             // Game list - display directly as Game entities
-            Expanded(child: _buildGamesList(searchFilteredGames)),
+            Expanded(
+              child: _buildGamesList(searchFilteredGames),
+            ),
           ],
         );
       },
@@ -107,7 +101,10 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
             children: [
               const Icon(Icons.error_outline, size: 48, color: Colors.red),
               const SizedBox(height: 16),
-              Text('Failed to load games', style: context.textTheme.titleLarge),
+              Text(
+                'Failed to load games',
+                style: context.textTheme.titleLarge,
+              ),
               const SizedBox(height: 8),
               Text(
                 error.toString(),
@@ -125,7 +122,7 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
       },
     );
   }
-
+  
   /// Build games list from Game entities (no conversion needed)
   Widget _buildGamesList(List<Game> games) {
     return ListView.builder(
@@ -137,7 +134,7 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
       },
     );
   }
-
+  
   /// Build a game card from Game entity
   Widget _buildGameCard(Game game) {
     return Card(
@@ -148,7 +145,10 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
           '${game.scheduledDate.toString().split(' ')[0]} • ${game.startTime} - ${game.endTime}\n'
           '${game.currentPlayers}/${game.maxPlayers} players • ${game.currency} ${game.pricePerPlayer.toStringAsFixed(0)}',
         ),
-        trailing: Icon(Icons.arrow_forward_ios, color: widget.sportColor),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          color: widget.sportColor,
+        ),
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -162,7 +162,7 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
 
   Widget _buildFilters() {
     final filters = _getFiltersForSport();
-
+    
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
@@ -185,13 +185,15 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
           //     color: context.colors.onSurface,
           //   ),
           // ),
+          // const SizedBox(height: 8),
           // Text(
           //   _getSportDescription(),
           //   style: context.textTheme.bodyMedium?.copyWith(
           //     color: context.colors.onSurfaceVariant,
           //   ),
           // ),
-
+          // const SizedBox(height: 16),
+          
           // Filters
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -203,10 +205,7 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
                     padding: EdgeInsets.only(
                       right: filter != filters.last ? 8 : 0,
                     ),
-                    child: _buildFilterChip(
-                      filter['label'] ?? '',
-                      filter['value'] ?? '',
-                    ),
+                    child: _buildFilterChip(filter['label'] ?? '', filter['value'] ?? ''),
                   );
                 }).toList(),
               ),
@@ -258,7 +257,7 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
 
   Widget _buildFilterChip(String label, String value) {
     final isSelected = _selectedFilter == value;
-
+    
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -270,10 +269,12 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? widget.sportColor : context.violetWidgetBg,
+          color: isSelected 
+              ? widget.sportColor
+              : context.violetWidgetBg,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected
+            color: isSelected 
                 ? widget.sportColor
                 : context.colors.outline.withValues(alpha: 0.1),
             width: 1,
@@ -283,7 +284,9 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
           label,
           style: context.textTheme.bodySmall?.copyWith(
             fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : context.colors.onSurface,
+            color: isSelected 
+                ? Colors.white
+                : context.colors.onSurface,
           ),
         ),
       ),

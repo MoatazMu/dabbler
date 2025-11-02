@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/errors/failure.dart';
-import '../../core/types/result.dart';
+import '../../core/result.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/profile.dart';
 import 'base_repository.dart';
 import 'profiles_repository.dart';
@@ -19,15 +19,15 @@ class ProfilesRepositoryImpl extends BaseRepository
   Future<Result<Profile>> getMyProfile() async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return failure(const AuthFailure(message: 'Not signed in'));
     }
 
     final result = await _fetchProfileOptional(uid);
     return result.fold(
-      (l) => Left(l),
+      failure,
       (profile) => profile != null
-          ? Right(profile)
-          : const Left(NotFoundFailure(message: 'Profile not found')),
+          ? success(profile)
+          : failure(const NotFoundFailure(message: 'Profile not found')),
     );
   }
 
@@ -35,10 +35,10 @@ class ProfilesRepositoryImpl extends BaseRepository
   Future<Result<Profile>> getByUserId(String userId) async {
     final result = await _fetchProfileOptional(userId);
     return result.fold(
-      (l) => Left(l),
+      failure,
       (profile) => profile != null
-          ? Right(profile)
-          : const Left(NotFoundFailure(message: 'Profile not found')),
+          ? success(profile)
+          : failure(const NotFoundFailure(message: 'Profile not found')),
     );
   }
 
@@ -64,11 +64,13 @@ class ProfilesRepositoryImpl extends BaseRepository
   Future<Result<void>> upsert(Profile profile) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return failure(const AuthFailure(message: 'Not signed in'));
     }
     if (profile.userId != uid) {
-      return left(
-        PermissionFailure(message: "Cannot upsert another user's profile"),
+      return failure(
+        const PermissionFailure(
+          message: "Cannot upsert another user's profile",
+        ),
       );
     }
 
@@ -81,7 +83,7 @@ class ProfilesRepositoryImpl extends BaseRepository
   Future<Result<void>> deactivateMe() async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return failure(const AuthFailure(message: 'Not signed in'));
     }
 
     return guard(() async {
@@ -99,7 +101,7 @@ class ProfilesRepositoryImpl extends BaseRepository
   Future<Result<void>> reactivateMe() async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return failure(const AuthFailure(message: 'Not signed in'));
     }
 
     return guard(() async {
@@ -117,7 +119,7 @@ class ProfilesRepositoryImpl extends BaseRepository
   Stream<Result<Profile?>> watchMyProfile() {
     final uid = svc.authUserId();
     if (uid == null) {
-      return Stream.value(const Left(AuthFailure(message: 'Not signed in')));
+      return Stream.value(failure(const AuthFailure(message: 'Not signed in')));
     }
 
     final controller = StreamController<Result<Profile?>>();
@@ -138,16 +140,15 @@ class ProfilesRepositoryImpl extends BaseRepository
       final initial = await getMyProfile();
       emit(initial.map((profile) => profile));
 
-      channel.onPostgresChanges(
-        event: PostgresChangeEvent.all,
-        schema: 'public',
-        table: _table,
-        filter: PostgresChangeFilter(
-          type: PostgresChangeFilterType.eq,
-          column: 'user_id',
-          value: uid,
+      channel.on(
+        RealtimeListenTypes.postgresChanges,
+        ChannelFilter(
+          event: '*',
+          schema: 'public',
+          table: _table,
+          filter: 'user_id=eq.$uid',
         ),
-        callback: (payload) async {
+        (payload, [ref]) async {
           await emitCurrentProfile();
         },
       );
@@ -155,7 +156,7 @@ class ProfilesRepositoryImpl extends BaseRepository
       try {
         channel.subscribe();
       } catch (error) {
-        emit(Left(svc.mapPostgrest(error as PostgrestException)));
+        emit(failure(svc.mapPostgrestError(error)));
       }
     };
 
@@ -166,29 +167,6 @@ class ProfilesRepositoryImpl extends BaseRepository
     };
 
     return controller.stream;
-  }
-
-  @override
-  Future<Result<void>> deleteSoft(String userId) async {
-    final uid = svc.authUserId();
-    if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
-    }
-    if (userId != uid) {
-      return left(
-        PermissionFailure(message: "Cannot delete another user's profile"),
-      );
-    }
-
-    return guard(() async {
-      await svc.client
-          .from(_table)
-          .update({
-            'is_active': false,
-            'deleted_at': DateTime.now().toIso8601String(),
-          })
-          .eq('user_id', uid);
-    });
   }
 
   Future<Result<Profile?>> _fetchProfileOptional(String userId) {

@@ -23,49 +23,67 @@ abstract class Failure extends Equatable {
 
 class AuthFailure extends Failure {
   const AuthFailure({
-    super.message = 'Authentication failed',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'Authentication failed',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class UnauthenticatedFailure extends AuthFailure {
   const UnauthenticatedFailure({
-    super.message = 'User not authenticated',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'User not authenticated',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class ForbiddenFailure extends Failure {
   const ForbiddenFailure({
-    super.message = 'You do not have permission to perform this action',
-    super.cause,
-    super.stackTrace,
-  });
+    String message = 'You do not have permission to perform this action',
+    Object? cause,
+    StackTrace? stackTrace,
+  }) : super(message: message, cause: cause, stackTrace: stackTrace);
 }
 
 class NotFoundFailure extends Failure {
   const NotFoundFailure({
-    super.message = 'Requested resource was not found',
-    super.cause,
-    super.stackTrace,
-  });
+    String message = 'Requested resource was not found',
+    Object? cause,
+    StackTrace? stackTrace,
+  }) : super(message: message, cause: cause, stackTrace: stackTrace);
 }
 
 class ValidationFailure extends Failure {
   const ValidationFailure({
-    super.message = 'Validation failed',
+    String message = 'Validation failed',
     this.fieldErrors,
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 
   final Map<String, List<String>>? fieldErrors;
 
@@ -75,13 +93,19 @@ class ValidationFailure extends Failure {
 
 class NetworkFailure extends Failure {
   const NetworkFailure({
-    super.message = 'Network request failed',
+    String message = 'Network request failed',
     this.status,
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 
   final int? status;
 
@@ -91,133 +115,212 @@ class NetworkFailure extends Failure {
 
 class TimeoutFailure extends NetworkFailure {
   const TimeoutFailure({
-    super.message = 'The request timed out',
-    super.status,
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'The request timed out',
+    int? status,
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          status: status,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class ServerFailure extends Failure {
   const ServerFailure({
-    super.message = 'Server error',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'Server error',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class DataFailure extends Failure {
   const DataFailure({
-    super.message = 'Data operation failed',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'Data operation failed',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class CacheFailure extends Failure {
   const CacheFailure({
-    super.message = 'Cache operation failed',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'Cache operation failed',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class DatabaseFailure extends Failure {
   const DatabaseFailure({
-    super.message = 'Database operation failed',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'Database operation failed',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class PermissionFailure extends Failure {
   const PermissionFailure({
-    super.message = 'You do not have permission to perform this action',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'You do not have permission to perform this action',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class BusinessLogicFailure extends Failure {
   const BusinessLogicFailure({
-    super.message = 'Business rule validation failed',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'Business rule validation failed',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class ConflictFailure extends Failure {
   const ConflictFailure({
-    super.message = 'Resource conflict detected',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'Resource conflict detected',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class FileUploadFailure extends Failure {
   const FileUploadFailure({
-    super.message = 'Failed to upload file',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'Failed to upload file',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class FileDownloadFailure extends Failure {
   const FileDownloadFailure({
-    super.message = 'Failed to download file',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'Failed to download file',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class FileNotFoundFailure extends Failure {
   const FileNotFoundFailure({
-    super.message = 'File not found',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'File not found',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class UnexpectedFailure extends Failure {
   const UnexpectedFailure({
-    super.message = 'An unexpected error occurred',
-    super.cause,
-    super.stackTrace,
-    super.code,
-    super.details,
-  });
+    String message = 'An unexpected error occurred',
+    Object? cause,
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class UnknownFailure extends Failure {
   const UnknownFailure({
-    super.message = 'An unknown error occurred',
+    String message = 'An unknown error occurred',
     this.error,
-    super.stackTrace,
-    super.code,
-    super.details,
-  }) : super(cause: error);
+    StackTrace? stackTrace,
+    String? code,
+    Map<String, dynamic>? details,
+  }) : super(
+          message: message,
+          cause: error,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 
   final Object? error;
 
@@ -227,60 +330,96 @@ class UnknownFailure extends Failure {
 
 class SupabaseFailure extends Failure {
   const SupabaseFailure({
-    super.message = 'Supabase request failed',
-    super.code,
-    super.details,
-    super.cause,
-    super.stackTrace,
-  });
+    String message = 'Supabase request failed',
+    String? code,
+    Map<String, dynamic>? details,
+    Object? cause,
+    StackTrace? stackTrace,
+  }) : super(
+          message: message,
+          cause: cause,
+          stackTrace: stackTrace,
+          code: code,
+          details: details,
+        );
 }
 
 class SupabaseAuthFailure extends SupabaseFailure {
   const SupabaseAuthFailure({
-    super.message = 'Supabase authentication failed',
-    super.code,
-    super.details,
-    super.cause,
-    super.stackTrace,
-  });
+    String message = 'Supabase authentication failed',
+    String? code,
+    Map<String, dynamic>? details,
+    Object? cause,
+    StackTrace? stackTrace,
+  }) : super(
+          message: message,
+          code: code,
+          details: details,
+          cause: cause,
+          stackTrace: stackTrace,
+        );
 }
 
 class SupabaseAuthorizationFailure extends SupabaseFailure {
   const SupabaseAuthorizationFailure({
-    super.message = 'You do not have access to this resource',
-    super.code,
-    super.details,
-    super.cause,
-    super.stackTrace,
-  });
+    String message = 'You do not have access to this resource',
+    String? code,
+    Map<String, dynamic>? details,
+    Object? cause,
+    StackTrace? stackTrace,
+  }) : super(
+          message: message,
+          code: code,
+          details: details,
+          cause: cause,
+          stackTrace: stackTrace,
+        );
 }
 
 class SupabaseNotFoundFailure extends SupabaseFailure {
   const SupabaseNotFoundFailure({
-    super.message = 'Supabase resource not found',
-    super.code,
-    super.details,
-    super.cause,
-    super.stackTrace,
-  });
+    String message = 'Supabase resource not found',
+    String? code,
+    Map<String, dynamic>? details,
+    Object? cause,
+    StackTrace? stackTrace,
+  }) : super(
+          message: message,
+          code: code,
+          details: details,
+          cause: cause,
+          stackTrace: stackTrace,
+        );
 }
 
 class SupabaseConflictFailure extends SupabaseFailure {
   const SupabaseConflictFailure({
-    super.message = 'Supabase resource conflict',
-    super.code,
-    super.details,
-    super.cause,
-    super.stackTrace,
-  });
+    String message = 'Supabase resource conflict',
+    String? code,
+    Map<String, dynamic>? details,
+    Object? cause,
+    StackTrace? stackTrace,
+  }) : super(
+          message: message,
+          code: code,
+          details: details,
+          cause: cause,
+          stackTrace: stackTrace,
+        );
 }
 
 class SupabaseValidationFailure extends SupabaseFailure {
   const SupabaseValidationFailure({
-    super.message = 'Supabase validation error',
-    super.details,
-    super.code,
-    super.cause,
-    super.stackTrace,
-  });
+    String message = 'Supabase validation error',
+    Map<String, dynamic>? details,
+    String? code,
+    Object? cause,
+    StackTrace? stackTrace,
+  }) : super(
+          message: message,
+          code: code,
+          details: details,
+          cause: cause,
+          stackTrace: stackTrace,
+        );
 }

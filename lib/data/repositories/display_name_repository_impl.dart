@@ -5,7 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/display_name_rules.dart';
 import '../../core/errors/failure.dart';
-import '../../core/types/result.dart';
+import '../../core/result.dart';
 import '../../services/supabase/supabase_service.dart';
 import '../models/profile.dart';
 import 'display_name_repository.dart';
@@ -15,7 +15,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
 
   final SupabaseService svc;
 
-  SupabaseClient get _db => svc.client;
+  PostgrestClient get _db => svc.client;
 
   @override
   Future<Result<bool>> isAvailable(String displayName) async {
@@ -206,13 +206,17 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
     try {
       yield await fetch();
 
-      final stream = _db.from('profiles').stream(primaryKey: ['id']);
+      final stream = _db
+          .from('profiles')
+          .stream(primaryKey: ['id'])
+          .eq('user_id', uid)
+          .eq('profile_type', profileType);
 
       await for (final _ in stream) {
         yield await fetch();
       }
     } catch (error) {
-      yield left(svc.mapPostgrest(error as PostgrestException));
+      yield left(svc.mapPostgrestError(error));
     }
   }
 }

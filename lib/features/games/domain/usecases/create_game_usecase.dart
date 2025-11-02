@@ -261,12 +261,12 @@ class GameFailure extends Failure {
 
 class VenueUnavailableFailure extends GameFailure {
   const VenueUnavailableFailure([
-    super.message = 'Venue is not available for the selected time',
-  ]);
+    String message = 'Venue is not available for the selected time',
+  ]) : super(message);
 }
 
 class InvalidGameParametersFailure extends GameFailure {
   const InvalidGameParametersFailure([
-    super.message = 'Invalid game parameters provided',
-  ]);
+    String message = 'Invalid game parameters provided',
+  ]) : super(message);
 }

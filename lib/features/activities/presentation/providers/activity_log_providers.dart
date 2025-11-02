@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/activity_log.dart';
 import '../../domain/usecases/activity_usecases.dart';
-import '../../domain/repositories/activity_log_repository.dart';
 import '../../data/datasources/activity_log_remote_data_source.dart';
 import '../../data/repositories/activity_log_repository_impl.dart';
 
@@ -14,7 +13,7 @@ final activityLogDataSourceProvider = Provider<ActivityLogRemoteDataSource>((ref
 });
 
 // Repository provider
-final activityLogRepositoryProvider = Provider<ActivityLogRepository>((ref) {
+final activityLogRepositoryProvider = Provider((ref) {
   return ActivityLogRepositoryImpl(
     remoteDataSource: ref.watch(activityLogDataSourceProvider),
   );

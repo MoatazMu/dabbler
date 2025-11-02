@@ -1,4 +1,4 @@
-import 'package:dabbler/core/types/result.dart';
+import 'package:dabbler/core/result.dart';
 import 'package:dabbler/data/models/sport_profile.dart';
 
 /// Repository contract for managing sport profile preferences for the

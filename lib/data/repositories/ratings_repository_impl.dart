@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/rating.dart';
 import 'base_repository.dart';
 import 'ratings_repository.dart';
@@ -30,7 +31,7 @@ class RatingsRepositoryImpl extends BaseRepository
 
       final q = _db
           .from('ratings')
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('rater_user_id', uid)
           .order('created_at', ascending: false)
           .limit(limit);
@@ -56,7 +57,7 @@ class RatingsRepositoryImpl extends BaseRepository
 
       final q = _db
           .from('ratings')
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('target_user_id', uid)
           .order('created_at', ascending: false)
           .limit(limit);
@@ -80,7 +81,7 @@ class RatingsRepositoryImpl extends BaseRepository
     return guard<List<Rating>>(() async {
       final q = _db
           .from('ratings')
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('target_game_id', gameId)
           .order('created_at', ascending: false)
           .limit(limit);
@@ -104,7 +105,7 @@ class RatingsRepositoryImpl extends BaseRepository
     return guard<List<Rating>>(() async {
       final q = _db
           .from('ratings')
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('target_venue_id', venueId)
           .order('created_at', ascending: false)
           .limit(limit);

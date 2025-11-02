@@ -3,7 +3,7 @@ import '../../../../core/services/auth_profile_service.dart';
 import '../../../../data/repositories/profiles_repository.dart';
 import '../../../../data/repositories/profiles_repository_impl.dart';
 import '../../../../services/supabase/supabase_service.dart';
-import '../../../../core/types/result.dart';
+import '../../../../core/result.dart';
 import '../../../../data/models/profile.dart';
 import './auth_providers.dart'; // For authServiceProvider
 

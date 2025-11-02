@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/errors/failure.dart';
-import 'package:dabbler/core/types/result.dart';
+import 'package:dabbler/core/result.dart';
+import 'package:dabbler/core/utils/either.dart';
 import 'package:dabbler/data/models/sport_profile.dart';
 import 'package:dabbler/data/repositories/base_repository.dart';
 import 'package:dabbler/data/repositories/sport_profiles_repository.dart';
@@ -21,7 +21,7 @@ class SportProfilesRepositoryImpl extends BaseRepository
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return const Left(AuthFailure(message: 'Not signed in'));
     }
 
     try {
@@ -36,9 +36,9 @@ class SportProfilesRepositoryImpl extends BaseRepository
           .map(SportProfile.fromJson)
           .toList(growable: false);
 
-      return right(rows);
+      return Right(rows);
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Left(svc.mapPostgrestError(e));
     }
   }
 
@@ -47,7 +47,7 @@ class SportProfilesRepositoryImpl extends BaseRepository
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return const Left(AuthFailure(message: 'Not signed in'));
     }
 
     try {
@@ -59,13 +59,13 @@ class SportProfilesRepositoryImpl extends BaseRepository
           .maybeSingle();
 
       if (response == null) {
-        return right(null);
+        return const Right(null);
       }
 
       final map = Map<String, dynamic>.from(response as Map);
-      return right(SportProfile.fromJson(map));
+      return Right(SportProfile.fromJson(map));
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Left(svc.mapPostgrestError(e));
     }
   }
 
@@ -77,29 +77,29 @@ class SportProfilesRepositoryImpl extends BaseRepository
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return const Left(AuthFailure(message: 'Not signed in'));
     }
 
     if (!_isValidSkillLevel(skillLevel)) {
-      return left(
+      return const Left(
         ValidationFailure(message: 'Skill level must be between 1 and 10'),
       );
     }
 
     try {
       await svc.client.from(table).insert({
-        'user_id': uid,
-        'sport_key': sportKey,
-        'skill_level': skillLevel,
-      });
-      return right(null);
+            'user_id': uid,
+            'sport_key': sportKey,
+            'skill_level': skillLevel,
+          });
+      return const Right(null);
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
-        return left(ConflictFailure(message: 'Already added'));
+        return const Left(ConflictFailure(message: 'Already added'));
       }
-      return left(svc.mapPostgrestError(e));
+      return Left(svc.mapPostgrestError(e));
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Left(svc.mapPostgrestError(e));
     }
   }
 
@@ -111,11 +111,11 @@ class SportProfilesRepositoryImpl extends BaseRepository
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return const Left(AuthFailure(message: 'Not signed in'));
     }
 
     if (!_isValidSkillLevel(skillLevel)) {
-      return left(
+      return const Left(
         ValidationFailure(message: 'Skill level must be between 1 and 10'),
       );
     }
@@ -126,9 +126,9 @@ class SportProfilesRepositoryImpl extends BaseRepository
           .update({'skill_level': skillLevel})
           .eq('user_id', uid)
           .eq('sport_key', sportKey);
-      return right(null);
+      return const Right(null);
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Left(svc.mapPostgrestError(e));
     }
   }
 
@@ -137,7 +137,7 @@ class SportProfilesRepositoryImpl extends BaseRepository
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return const Left(AuthFailure(message: 'Not signed in'));
     }
 
     try {
@@ -146,9 +146,9 @@ class SportProfilesRepositoryImpl extends BaseRepository
           .delete()
           .eq('user_id', uid)
           .eq('sport_key', sportKey);
-      return right(null);
+      return const Right(null);
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Left(svc.mapPostgrestError(e));
     }
   }
 
@@ -178,7 +178,7 @@ class SportProfilesRepositoryImpl extends BaseRepository
         await emitCurrent();
       } catch (e) {
         if (!controller.isClosed) {
-          controller.add(left(svc.mapPostgrestError(e)));
+          controller.add(Left(svc.mapPostgrestError(e)));
         }
       }
 

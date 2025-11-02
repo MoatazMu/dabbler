@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import '../../core/result.dart';
 import '../models/profile.dart';
 
 /// Username operations over the `profiles` table (citext unique).

@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
+import '../../services/supabase/supabase_service.dart';
 import '../models/vibe.dart';
 import 'base_repository.dart';
 import 'vibes_repository.dart';
@@ -21,7 +22,7 @@ class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
     return guard<Vibe?>(() async {
       final rows = await _db
           .from(_table)
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('post_id', postId)
           .order('created_at', ascending: false)
           .limit(1);

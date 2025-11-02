@@ -3,14 +3,14 @@ import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../services/supabase/supabase_service.dart';
 import '../../core/errors/failure.dart';
-import '../../core/types/result.dart';
+import '../../core/result.dart';
 import '../models/circle_contact.dart';
 import 'circle_repository.dart';
 
 class CircleRepositoryImpl implements CircleRepository {
   final SupabaseService svc;
   CircleRepositoryImpl(this.svc);
-  SupabaseClient get _db => svc.client;
+  PostgrestClient get _db => svc.client;
 
   @override
   Future<Result<List<CircleContact>>> circleList() async {

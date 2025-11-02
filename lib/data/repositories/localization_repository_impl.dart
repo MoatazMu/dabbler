@@ -2,6 +2,7 @@ import 'package:meta/meta.dart';
 
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
+import '../../services/supabase/supabase_service.dart';
 import 'base_repository.dart';
 import '../models/localized_error.dart';
 import 'localization_repository.dart';
@@ -140,7 +141,7 @@ class LocalizationRepositoryImpl extends BaseRepository
     if (codes.isEmpty) return {};
     final rows = await svc.client
         .from(_table)
-        .select()
+        .select<List<Map<String, dynamic>>>()
         .eq('locale', locale)
         .in_('code', codes);
 

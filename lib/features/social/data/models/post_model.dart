@@ -36,7 +36,7 @@ class PostModel extends Post {
   factory PostModel.fromJson(Map<String, dynamic> json) {
     // Parse author data from nested profiles table
     final authorData = json['profiles'] ?? json['author'] ?? {};
-
+    
     // Parse media URLs - handle both string and array formats
     List<String> mediaUrls = [];
     if (json['media_urls'] != null) {
@@ -105,43 +105,36 @@ class PostModel extends Post {
     return PostModel(
       id: json['id'] ?? '',
       authorId: json['author_id'] ?? json['user_id'] ?? '',
-      authorName:
-          authorData['display_name'] ??
-          authorData['username'] ??
-          authorData['full_name'] ??
-          'Unknown User',
-      authorAvatar:
-          authorData['avatar_url'] ?? authorData['profile_picture'] ?? '',
+      authorName: authorData['full_name'] ?? 
+                  authorData['display_name'] ?? 
+                  authorData['username'] ?? 
+                  'Unknown User',
+      authorAvatar: authorData['avatar_url'] ?? 
+                    authorData['profile_picture'] ?? 
+                    '',
       content: json['content'] ?? '',
       mediaUrls: mediaUrls,
       createdAt: _parseDateTime(json['created_at']),
       updatedAt: _parseDateTime(json['updated_at']),
       likesCount: _parseInt(json['likes_count'] ?? json['like_count'] ?? 0),
-      commentsCount: _parseInt(
-        json['comments_count'] ?? json['comment_count'] ?? 0,
-      ),
+      commentsCount: _parseInt(json['comments_count'] ?? json['comment_count'] ?? 0),
       sharesCount: _parseInt(json['shares_count'] ?? json['share_count'] ?? 0),
       visibility: visibility,
       gameId: json['game_id'],
       locationName: json['location_name'],
       isLiked: json['is_liked'] == true || json['user_has_liked'] == true,
-      isBookmarked:
-          json['is_bookmarked'] == true || json['user_has_bookmarked'] == true,
+      isBookmarked: json['is_bookmarked'] == true || json['user_has_bookmarked'] == true,
       authorBio: authorData['bio'] ?? authorData['description'],
-      authorVerified:
-          _parseBoolean(authorData['verified']) ||
-          _parseBoolean(authorData['is_verified']),
+      authorVerified: authorData['verified'] == true || authorData['is_verified'] == true,
       tags: tags,
       mentionedUsers: mentionedUsers,
       isEdited: json['is_edited'] == true,
-      editedAt: json['edited_at'] != null
-          ? _parseDateTime(json['edited_at'])
-          : null,
+      editedAt: json['edited_at'] != null ? _parseDateTime(json['edited_at']) : null,
       replyToPostId: json['reply_to_post_id'],
       shareOriginalId: json['share_original_id'],
       activityType: json['activity_type'],
-      activityData: json['activity_data'] != null
-          ? Map<String, dynamic>.from(json['activity_data'])
+      activityData: json['activity_data'] != null 
+          ? Map<String, dynamic>.from(json['activity_data']) 
           : null,
     );
   }
@@ -305,16 +298,6 @@ class PostModel extends Post {
     return 0;
   }
 
-  static bool _parseBoolean(dynamic value) {
-    if (value == null) return false;
-    if (value is bool) return value;
-    if (value is String) {
-      return value.toLowerCase() == 'true' || value == '1';
-    }
-    if (value is int) return value == 1;
-    return false;
-  }
-
   static String _visibilityToString(PostVisibility visibility) {
     switch (visibility) {
       case PostVisibility.public:
@@ -331,7 +314,9 @@ class PostModel extends Post {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is PostModel && runtimeType == other.runtimeType && id == other.id;
+      other is PostModel &&
+          runtimeType == other.runtimeType &&
+          id == other.id;
 
   @override
   int get hashCode => id.hashCode;
@@ -387,13 +372,13 @@ class PostCommentModel {
       id: json['id'] ?? '',
       postId: json['post_id'] ?? '',
       authorId: json['author_id'] ?? json['user_id'] ?? '',
-      authorName:
-          authorData['display_name'] ??
-          authorData['username'] ??
-          authorData['full_name'] ??
-          'Unknown User',
-      authorAvatar:
-          authorData['avatar_url'] ?? authorData['profile_picture'] ?? '',
+      authorName: authorData['full_name'] ?? 
+                  authorData['display_name'] ?? 
+                  authorData['username'] ?? 
+                  'Unknown User',
+      authorAvatar: authorData['avatar_url'] ?? 
+                    authorData['profile_picture'] ?? 
+                    '',
       content: json['content'] ?? '',
       createdAt: PostModel._parseDateTime(json['created_at']),
       updatedAt: PostModel._parseDateTime(json['updated_at']),

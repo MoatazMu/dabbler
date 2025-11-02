@@ -1,16 +1,18 @@
+import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/errors/failure.dart';
 import '../../core/types/result.dart';
 import '../../core/utils/json.dart';
 import '../../data/models/notification.dart';
+import '../../services/supabase/supabase_service.dart';
 import 'notifications_repository.dart';
-import 'base_repository.dart';
 import 'package:meta/meta.dart';
 
 @immutable
 class NotificationsRepositoryImpl extends BaseRepository
     implements NotificationsRepository {
-  const NotificationsRepositoryImpl(super.svc);
+  const NotificationsRepositoryImpl(SupabaseService svc) : super(svc);
 
   SupabaseClient get _db => svc.client;
 
@@ -29,7 +31,7 @@ class NotificationsRepositoryImpl extends BaseRepository
 
       final query = _db
           .from('notifications')
-          .select()
+          .select<List<Map<String, dynamic>>>()
           .eq('user_id', uid)
           .order('created_at', ascending: false)
           .limit(limit);
