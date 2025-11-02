@@ -1,5 +1,7 @@
-import 'package:fpdart/fpdart.dart';
+import 'package:fpdart/fpdart.dart' hide Unit, unit;
 import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/core/fp/result_guard.dart';
 import '../../../../core/errors/exceptions.dart';
 import 'package:dabbler/data/models/games/game.dart';
 import 'package:dabbler/data/models/games/player.dart';
@@ -30,6 +32,9 @@ class CacheException implements Exception {
   final String message;
   const CacheException(this.message);
 }
+
+// In-session tracker to avoid re-prompt spam
+final Set<String> _ratedInSession = <String>{};
 
 class GamesRepositoryImpl implements GamesRepository {
   final GamesRemoteDataSource remoteDataSource;
@@ -646,6 +651,50 @@ class GamesRepositoryImpl implements GamesRepository {
     if (ascending != null) buffer.write('_asc_$ascending');
     return buffer.toString();
   }
+
+  /// Submit a game rating (1-5 stars) with optional note.
+  /// Returns Unit on success. Idempotent: treats duplicate/conflict as success.
+  Future<Result<Unit, Failure>> rateGame(
+    String gameId,
+    int rating, {
+    String? note,
+  }) async {
+    // Clamp rating defensively 1..5
+    final r = rating.clamp(1, 5);
+    final res = await guardResult(() async {
+      await remoteDataSource.submitGameRating(gameId, r, note: note);
+      _ratedInSession.add(gameId);
+      return unit;
+    });
+    // Treat duplicate/conflict as success (idempotent)
+    if (res.isFailure) {
+      final e = res.requireError.message.toLowerCase();
+      if (e.contains('already') ||
+          e.contains('duplicate') ||
+          e.contains('conflict') ||
+          e.contains('23505')) {
+        _ratedInSession.add(gameId);
+        return Ok(unit);
+      }
+    }
+    return res;
+  }
+
+  /// Fetch the current user's average game rating (0.0-5.0).
+  /// Returns 0.0 if no ratings or if backend not implemented.
+  Future<Result<double, Failure>> myAverageRating() async {
+    return await guardResult(() async {
+      final v = await remoteDataSource.fetchMyAverageRating();
+      if (v.isNaN || v.isInfinite) return 0.0;
+      if (v < 0) return 0.0;
+      if (v > 5) return 5.0;
+      return v;
+    });
+  }
+
+  /// Helper to check if a game has been rated in this session.
+  /// Prevents re-prompting the user for the same game.
+  bool hasRatedInSession(String gameId) => _ratedInSession.contains(gameId);
 
   // Clear cache method for external use
   void clearCache() {

@@ -172,4 +172,12 @@ abstract class GamesRemoteDataSource {
 
   /// Gets all players for a specific game
   Future<List<PlayerModel>> getGamePlayers(String gameId);
+
+  /// Submits a rating for a completed game (1-5 stars) with optional note.
+  /// Should not throw for duplicate ratings (idempotent).
+  Future<void> submitGameRating(String gameId, int rating, {String? note});
+
+  /// Fetches the current user's average game rating (0.0-5.0).
+  /// Returns 0.0 if no ratings exist or backend not implemented.
+  Future<double> fetchMyAverageRating();
 }

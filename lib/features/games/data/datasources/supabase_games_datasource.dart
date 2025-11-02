@@ -734,6 +734,30 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     }
   }
 
+  @override
+  Future<void> submitGameRating(
+    String gameId,
+    int rating, {
+    String? note,
+  }) async {
+    // TODO: implement supabase.from('game_ratings').upsert(...) when backend table exists
+    // Stubbed for now to succeed without throwing
+    print(
+      '⭐ [Datasource] submitGameRating: gameId=$gameId, rating=$rating, note=$note (STUB)',
+    );
+    // Simulate brief delay
+    await Future.delayed(const Duration(milliseconds: 100));
+    // Success - no throw
+  }
+
+  @override
+  Future<double> fetchMyAverageRating() async {
+    // TODO: implement supabase RPC or select avg(rating) when backend exists
+    // Stubbed for now to return 0.0
+    print('⭐ [Datasource] fetchMyAverageRating: returning 0.0 (STUB)');
+    return 0.0;
+  }
+
   void dispose() {
     _gamesSubscription?.cancel();
     _gameUpdatesController.close();
