@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
 
 // Onboarding screens
 import 'package:dabbler/features/misc/presentation/screens/phone_input_screen.dart';
@@ -406,20 +407,37 @@ class AppRouter {
       ),
     ),
 
-    // Social/Community route
+    // Social/Community route (hidden for MVP)
+    // Route kept for deep links/admin access but UI entry points hidden
     GoRoute(
       path: RoutePaths.social,
       name: RouteNames.social,
+      redirect: (context, state) {
+        // Social feed hidden for MVP
+        if (!FeatureFlags.socialFeed) {
+          return RoutePaths.home;
+        }
+        return null; // Allow access if enabled
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const SocialScreen(),
       ),
     ),
 
-    // Explore/Sports route
+    // Explore/Sports route (hidden for MVP - not in tab list)
+    // Route kept for deep links/admin access but UI entry points hidden
     GoRoute(
       path: RoutePaths.explore,
       name: RouteNames.explore,
+      redirect: (context, state) {
+        // Hide Explore from MVP - redirect to Activities (My Games)
+        // Keep route definition for deep links/future enablement
+        if (!FeatureFlags.enableGameBrowsing) {
+          return RoutePaths.home;
+        }
+        return null; // Allow access if enabled
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const ExploreScreen(),
@@ -457,9 +475,17 @@ class AppRouter {
       ),
     ),
 
-    // Notifications route
+    // Notifications route (hidden for MVP)
+    // Route kept for deep links/admin access but UI entry points hidden
     GoRoute(
       path: RoutePaths.notifications,
+      redirect: (context, state) {
+        // Notifications hidden for MVP
+        if (!FeatureFlags.notifications) {
+          return RoutePaths.home;
+        }
+        return null; // Allow access if enabled
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const NotificationsScreenV2(),
@@ -513,10 +539,22 @@ class AppRouter {
       ),
     ),
 
-    // Game Creation Routes
+    // Game Creation Routes (admin-only for MVP)
+    // Public UI surfaces hidden but route kept for admin/deep link access
     GoRoute(
       path: RoutePaths.createGame,
       name: RouteNames.createGame,
+      redirect: (context, state) {
+        // Hide public create game access for MVP
+        // Admin access could be enabled by checking user role here
+        // For now, redirect to home if feature is disabled
+        if (!FeatureFlags.createGamePublic) {
+          // TODO: Add admin role check here when auth supports it
+          // if (isAdmin) return null; // Allow admin access
+          return RoutePaths.home;
+        }
+        return null; // Allow access if feature enabled
+      },
       pageBuilder: (context, state) => BottomSheetTransitionPage(
         key: state.pageKey,
         child: CreateGameScreen(
@@ -530,6 +568,13 @@ class AppRouter {
     GoRoute(
       path: RoutePaths.createGameBasicInfo,
       name: RouteNames.createGameBasicInfo,
+      redirect: (context, state) {
+        // Hide public create game access for MVP
+        if (!FeatureFlags.createGamePublic) {
+          return RoutePaths.home;
+        }
+        return null; // Allow access if feature enabled
+      },
       pageBuilder: (context, state) => BottomSheetTransitionPage(
         key: state.pageKey,
         child: CreateGameScreen(
@@ -668,20 +713,28 @@ class AppRouter {
       ),
     ),
 
-    // Social Create Post route (alias for add post)
+    // Social Create Post route (alias for add post) - hidden for MVP
     GoRoute(
       path: RoutePaths.socialCreatePost,
       name: RouteNames.socialCreatePost,
+      redirect: (context, state) {
+        if (!FeatureFlags.socialFeed) return RoutePaths.home;
+        return null;
+      },
       pageBuilder: (context, state) => BottomSheetTransitionPage(
         key: state.pageKey,
         child: const AddPostScreen(),
       ),
     ),
 
-    // Social Routes
+    // Social Routes - hidden for MVP
     GoRoute(
       path: RoutePaths.socialFeed,
       name: RouteNames.socialFeed,
+      redirect: (context, state) {
+        if (!FeatureFlags.socialFeed) return RoutePaths.home;
+        return null;
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const SocialFeedScreen(),
@@ -691,6 +744,10 @@ class AppRouter {
     GoRoute(
       path: RoutePaths.socialSearch,
       name: RouteNames.socialSearch,
+      redirect: (context, state) {
+        if (!FeatureFlags.socialFeed) return RoutePaths.home;
+        return null;
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const SocialSearchScreen(),
@@ -794,6 +851,10 @@ class AppRouter {
     GoRoute(
       path: RoutePaths.socialNotifications,
       name: RouteNames.socialNotifications,
+      redirect: (context, state) {
+        if (!FeatureFlags.notifications) return RoutePaths.home;
+        return null;
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const _PlaceholderScreen(title: 'Social Notifications'),
@@ -803,6 +864,10 @@ class AppRouter {
     GoRoute(
       path: RoutePaths.socialMessages,
       name: RouteNames.socialMessages,
+      redirect: (context, state) {
+        if (!FeatureFlags.messaging) return RoutePaths.home;
+        return null;
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const _PlaceholderScreen(title: 'Messages'),
@@ -812,6 +877,10 @@ class AppRouter {
     GoRoute(
       path: RoutePaths.socialChat,
       name: RouteNames.socialChat,
+      redirect: (context, state) {
+        if (!FeatureFlags.messaging) return RoutePaths.home;
+        return null;
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const _PlaceholderScreen(title: 'Chat'),

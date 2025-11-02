@@ -35,22 +35,15 @@ class CategoryButtons extends StatelessWidget {
       buttons.add(const SizedBox(width: 8));
     }
 
-    // Sports Button (always visible for MVP)
-    buttons.add(
-      _CategoryButton(
-        icon: Iconsax.game_copy,
-        label: 'Sports',
-        accentColor: const Color(0xFF05DF72), // Green
-        onTap: onSportsTap,
-      ),
-    );
-    buttons.add(const SizedBox(width: 8));
+    // Sports Button (Explore - hidden for MVP, not in tab list)
+    // Explore is not part of MVP tabs (Home, My Games, Profile, Settings)
+    // Keep route available but hide UI entry point
 
-    // Activities Button (always visible for MVP)
+    // Activities Button (My Games - always visible for MVP)
     buttons.add(
       _CategoryButton(
         icon: Iconsax.archive_copy,
-        label: 'Activities',
+        label: 'My Games',
         accentColor: const Color(0xFFFF8383), // Coral red
         onTap: onActivitiesTap,
       ),
