@@ -71,7 +71,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    // MVP: 3 tabs when venuesBooking=false (hide Reviews), 4 tabs when enabled
+    final tabCount = FeatureFlags.venuesBooking ? 4 : 3;
+    _tabController = TabController(length: tabCount, vsync: this);
   }
 
   @override
@@ -116,6 +118,30 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
   }
 
   Widget _buildImageCarousel() {
+    // MVP: Hide photo carousel when venuesBooking is disabled
+    if (!FeatureFlags.venuesBooking) {
+      return Container(
+        color: Colors.grey[300],
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.location_on, size: 80, color: Colors.grey[600]),
+              const SizedBox(height: 8),
+              Text(
+                _venueData['name'],
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final images = _venueData['images'] as List<String>;
 
     return PageView.builder(
@@ -153,8 +179,8 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
       ),
       child: Stack(
         children: [
-          // Image indicators
-          if (images.length > 1)
+          // MVP: Hide image indicators when venuesBooking is disabled
+          if (FeatureFlags.venuesBooking && images.length > 1)
             Positioned(
               bottom: 80,
               left: 0,
@@ -213,26 +239,31 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                       ),
                       const SizedBox(height: 8),
 
-                      // Rating
-                      Row(
-                        children: [
-                          Icon(Icons.star, color: Colors.amber[300], size: 20),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${_venueData['rating']} (${_venueData['reviewCount']} reviews)',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
+                      // MVP: Hide rating when venuesBooking is disabled
+                      if (FeatureFlags.venuesBooking)
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: Colors.amber[300],
+                              size: 20,
                             ),
-                          ),
-                        ],
-                      ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${_venueData['rating']} (${_venueData['reviewCount']} reviews)',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
                 ),
 
-                // Quick action buttons
+                // Quick action buttons (Keep: Call and Directions)
                 Column(
                   children: [
                     IconButton(
@@ -261,6 +292,21 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
   }
 
   Widget _buildTabContent() {
+    // MVP: Hide Reviews tab when venuesBooking=false
+    final tabs = [
+      const Tab(text: 'Overview'),
+      const Tab(text: 'Amenities'),
+      if (FeatureFlags.venuesBooking) const Tab(text: 'Reviews'),
+      const Tab(text: 'Hours'),
+    ];
+
+    final tabViews = [
+      _buildOverviewTab(),
+      _buildAmenitiesTab(),
+      if (FeatureFlags.venuesBooking) _buildReviewsTab(),
+      _buildHoursTab(),
+    ];
+
     return Column(
       children: [
         Container(
@@ -270,24 +316,11 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
             labelColor: Colors.blue,
             unselectedLabelColor: Colors.grey,
             indicatorColor: Colors.blue,
-            tabs: const [
-              Tab(text: 'Overview'),
-              Tab(text: 'Amenities'),
-              Tab(text: 'Reviews'),
-              Tab(text: 'Hours'),
-            ],
+            tabs: tabs,
           ),
         ),
         Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildOverviewTab(),
-              _buildAmenitiesTab(),
-              _buildReviewsTab(),
-              _buildHoursTab(),
-            ],
-          ),
+          child: TabBarView(controller: _tabController, children: tabViews),
         ),
       ],
     );
@@ -805,7 +838,10 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
   }
 
   Widget _buildHoursTab() {
-    final hours = _venueData['hours'] as Map<String, String>;
+    // Null-safety: Safe access to hours data
+    final hours = _venueData['hours'] as Map<String, String>? ?? {};
+    final isOpen = _venueData['isOpen'] as bool? ?? false;
+    final openUntil = _venueData['openUntil'] as String? ?? '—';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -827,69 +863,70 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
               ),
               const SizedBox(height: 16),
 
-              ...hours.entries.map((entry) {
-                final isToday = _isToday(entry.key);
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _capitalizeFirst(entry.key),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: isToday
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          color: isToday ? Colors.blue : null,
-                        ),
-                      ),
-                      Text(
-                        entry.value,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: isToday
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                          color: isToday ? Colors.blue : Colors.grey[600],
-                        ),
-                      ),
-                    ],
+              if (hours.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    'Hours information not available',
+                    style: TextStyle(fontSize: 16, color: Colors.grey),
                   ),
-                );
-              }),
+                )
+              else
+                ...hours.entries.map((entry) {
+                  final isToday = _isToday(entry.key);
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _capitalizeFirst(entry.key),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: isToday
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isToday ? Colors.blue : null,
+                          ),
+                        ),
+                        Text(
+                          entry.value,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: isToday
+                                ? FontWeight.bold
+                                : FontWeight.normal,
+                            color: isToday ? Colors.blue : Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
 
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: _venueData['isOpen']
-                      ? Colors.green[50]
-                      : Colors.red[50],
+                  color: isOpen ? Colors.green[50] : Colors.red[50],
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: _venueData['isOpen']
-                        ? Colors.green[200]!
-                        : Colors.red[200]!,
+                    color: isOpen ? Colors.green[200]! : Colors.red[200]!,
                   ),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      _venueData['isOpen'] ? Icons.check_circle : Icons.cancel,
-                      color: _venueData['isOpen']
-                          ? Colors.green[600]
-                          : Colors.red[600],
+                      isOpen ? Icons.check_circle : Icons.cancel,
+                      color: isOpen ? Colors.green[600] : Colors.red[600],
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      _venueData['isOpen']
-                          ? 'Currently Open until ${_venueData['openUntil']}'
+                      isOpen
+                          ? 'Currently Open until $openUntil'
                           : 'Currently Closed',
                       style: TextStyle(
-                        color: _venueData['isOpen']
-                            ? Colors.green[800]
-                            : Colors.red[800],
+                        color: isOpen ? Colors.green[800] : Colors.red[800],
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -904,6 +941,13 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
   }
 
   Widget _buildBottomBar() {
+    // Null-safety: Safe access to venue data with fallbacks
+    final priceRange = _venueData['priceRange'] as String? ?? '—';
+    final address = _venueData['address'] as String? ?? 'Address not available';
+    final addressFirstLine = address.contains(',')
+        ? address.split(',')[0]
+        : address;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -919,28 +963,30 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
       child: SafeArea(
         child: Row(
           children: [
-            // Contact Info
+            // Contact Info (Keep visible for MVP)
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    _venueData['priceRange'],
+                    priceRange,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
-                    _venueData['address'].split(',')[0],
+                    addressFirstLine,
                     style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
 
-            // Action Buttons
+            // Action Buttons (Keep: Directions and Call)
             Row(
               children: [
                 ElevatedButton(
@@ -956,7 +1002,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
-                // Hide booking button when venuesBooking flag is false
+                // MVP: Hide booking button when venuesBooking=false
                 if (FeatureFlags.venuesBooking) ...[
                   const SizedBox(width: 8),
                   ElevatedButton(

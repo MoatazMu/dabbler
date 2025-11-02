@@ -47,7 +47,7 @@ class GameModel extends Game {
         currentPlayers: json['current_players'] as int? ?? 0,
         organizerId:
             json['host_user_id'] as String? ??
-                '', // Changed from organizer_id to host_user_id
+            '', // Changed from organizer_id to host_user_id
         skillLevel: json['skill_level'] as String? ?? 'beginner',
         pricePerPlayer: (json['price_per_player'] as num?)?.toDouble() ?? 0.0,
         currency: json['currency'] as String? ?? 'USD',
@@ -60,8 +60,12 @@ class GameModel extends Game {
         cancellationDeadline: json['cancellation_deadline'] != null
             ? _parseDate(json['cancellation_deadline'])
             : null,
-        createdAt: _parseDate(json['created_at'] ?? DateTime.now().toIso8601String()),
-        updatedAt: _parseDate(json['updated_at'] ?? DateTime.now().toIso8601String()),
+        createdAt: _parseDate(
+          json['created_at'] ?? DateTime.now().toIso8601String(),
+        ),
+        updatedAt: _parseDate(
+          json['updated_at'] ?? DateTime.now().toIso8601String(),
+        ),
       );
     } catch (e, stackTrace) {
       print('❌ [GameModel] fromJson: Failed to parse game data. Error: $e');
@@ -73,7 +77,9 @@ class GameModel extends Game {
 
   static DateTime _parseDate(dynamic dateData) {
     if (dateData == null) {
-      print('⚠️ [GameModel] _parseDate: null date, defaulting to DateTime.now()');
+      print(
+        '⚠️ [GameModel] _parseDate: null date, defaulting to DateTime.now()',
+      );
       return DateTime.now();
     }
 
@@ -88,7 +94,9 @@ class GameModel extends Game {
           return DateTime.parse('${dateData}T00:00:00.000Z');
         }
       } catch (e) {
-        print('⚠️ [GameModel] _parseDate: failed to parse "$dateData", error: $e. Defaulting to DateTime.now()');
+        print(
+          '⚠️ [GameModel] _parseDate: failed to parse "$dateData", error: $e. Defaulting to DateTime.now()',
+        );
         return DateTime.now();
       }
     }
@@ -97,7 +105,9 @@ class GameModel extends Game {
       return dateData;
     }
 
-    print('⚠️ [GameModel] _parseDate: unexpected type ${dateData.runtimeType}, defaulting to DateTime.now()');
+    print(
+      '⚠️ [GameModel] _parseDate: unexpected type ${dateData.runtimeType}, defaulting to DateTime.now()',
+    );
     return DateTime.now();
   }
 
@@ -121,14 +131,18 @@ class GameModel extends Game {
             return GameStatus.completed;
           }
         } catch (e) {
-          print('⚠️ [GameModel] _parseGameStatusFromIsCancelled: failed to parse start_at "$startAt", error: $e');
+          print(
+            '⚠️ [GameModel] _parseGameStatusFromIsCancelled: failed to parse start_at "$startAt", error: $e',
+          );
           // If parsing fails, default to upcoming
         }
       }
 
       return GameStatus.upcoming;
     } catch (e) {
-      print('⚠️ [GameModel] _parseGameStatusFromIsCancelled: unexpected error: $e. Defaulting to upcoming');
+      print(
+        '⚠️ [GameModel] _parseGameStatusFromIsCancelled: unexpected error: $e. Defaulting to upcoming',
+      );
       return GameStatus.upcoming;
     }
   }

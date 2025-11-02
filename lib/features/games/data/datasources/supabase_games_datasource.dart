@@ -161,7 +161,9 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .maybeSingle();
 
       if (existingPlayerResponse != null) {
-        print('✅ [Datasource] joinGame: Player already in game (idempotent success)');
+        print(
+          '✅ [Datasource] joinGame: Player already in game (idempotent success)',
+        );
         return true; // Already joined - idempotent success
       }
 
@@ -205,11 +207,15 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       print('✅ [Datasource] joinGame: Successfully joined game');
       return true;
     } on PostgrestException catch (e) {
-      print('❌ [Datasource] joinGame: PostgrestException code=${e.code}, message=${e.message}');
+      print(
+        '❌ [Datasource] joinGame: PostgrestException code=${e.code}, message=${e.message}',
+      );
       if (e.code == '23505') {
         // Unique violation - race condition, player got added between check and insert
         // This is still a success (idempotent)
-        print('✅ [Datasource] joinGame: Unique violation (race condition), treating as success');
+        print(
+          '✅ [Datasource] joinGame: Unique violation (race condition), treating as success',
+        );
         return true;
       }
       throw GameServerException('Database error: ${e.message}');
@@ -236,7 +242,9 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .maybeSingle();
 
       if (existingPlayerResponse == null) {
-        print('✅ [Datasource] leaveGame: Player not in game (idempotent success)');
+        print(
+          '✅ [Datasource] leaveGame: Player not in game (idempotent success)',
+        );
         return true; // Not in game - idempotent success
       }
 
@@ -250,7 +258,9 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       print('✅ [Datasource] leaveGame: Successfully left game');
       return true;
     } on PostgrestException catch (e) {
-      print('❌ [Datasource] leaveGame: PostgrestException code=${e.code}, message=${e.message}');
+      print(
+        '❌ [Datasource] leaveGame: PostgrestException code=${e.code}, message=${e.message}',
+      );
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
       print('❌ [Datasource] leaveGame: Unexpected error: $e');

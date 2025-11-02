@@ -26,6 +26,7 @@ class _ActionCard extends StatelessWidget {
     required this.subtitle,
     required this.backgroundColor,
     required this.iconBackgroundColor,
+    this.onTap,
   });
 
   final IconData icon;
