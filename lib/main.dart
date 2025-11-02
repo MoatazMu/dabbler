@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:dabbler/core/config/environment.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/services/theme_service.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +16,24 @@ class AppFeatures {
   static const bool enableReferralProgram = false; // ✅ Toggle for future use
   static const bool enableDeepLinks =
       enableReferralProgram; // Links to referral feature
+}
+
+// Guard to send flags snapshot only once per session
+bool _flagsLogged = false;
+
+void _logFlagsOnce() {
+  if (_flagsLogged) return;
+  _flagsLogged = true;
+  AnalyticsService.trackEvent('flags_snapshot', {
+    'multiSport': FeatureFlags.multiSport,
+    'organiserProfile': FeatureFlags.organiserProfile,
+    'createGamePublic': FeatureFlags.createGamePublic,
+    'socialFeed': FeatureFlags.socialFeed,
+    'messaging': FeatureFlags.messaging,
+    'notifications': FeatureFlags.notifications,
+    'squads': FeatureFlags.squads,
+    'venuesBooking': FeatureFlags.venuesBooking,
+  });
 }
 
 Future<void> main() async {
@@ -55,6 +75,9 @@ Future<void> main() async {
         'No Supabase Authorization Token found. User may not be signed in.',
       );
     }
+
+    // Log feature flags snapshot once per session
+    _logFlagsOnce();
 
     runApp(const ProviderScope(child: MyApp()));
   } catch (e) {

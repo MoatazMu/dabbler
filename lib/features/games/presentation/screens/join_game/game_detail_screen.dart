@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../providers/games_providers.dart';
 import 'package:dabbler/core/services/auth_service.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 
 class GameDetailScreen extends ConsumerStatefulWidget {
   final String gameId;
@@ -1009,41 +1010,153 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen>
     );
   }
 
-  void _joinGame() {
-    setState(() {
-      _isJoined = true;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Successfully joined the game!')),
+  Future<void> _joinGame() async {
+    final authService = AuthService();
+    final currentUserId = authService.getCurrentUserId();
+
+    if (currentUserId == null) return;
+
+    final detailState = ref.read(
+      gameDetailControllerProvider(
+        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
+      ),
     );
+
+    if (detailState.game == null) return;
+
+    final game = detailState.game!;
+
+    // Track join attempt
+    AnalyticsService.trackEvent('join_attempt', {
+      'gameId': game.id,
+      'sport': game.sport,
+      'startsAt': game.scheduledDate.toIso8601String(),
+    });
+
+    final controller = ref.read(
+      gameDetailControllerProvider(
+        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
+      ).notifier,
+    );
+
+    await controller.joinGame();
+
+    // Get updated state after join
+    final updatedState = ref.read(
+      gameDetailControllerProvider(
+        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
+      ),
+    );
+
+    if (updatedState.error != null) {
+      // Check if waitlisted based on error message or status
+      final errorMsg = updatedState.error!.toLowerCase();
+      if (errorMsg.contains('waitlist') || errorMsg.contains('full')) {
+        AnalyticsService.trackEvent('waitlist', {
+          'gameId': game.id,
+          'sport': game.sport,
+          'startsAt': game.scheduledDate.toIso8601String(),
+        });
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(updatedState.error!)));
+      }
+    } else {
+      // Track successful join
+      AnalyticsService.trackEvent('join_success', {
+        'gameId': game.id,
+        'sport': game.sport,
+        'startsAt': game.scheduledDate.toIso8601String(),
+      });
+
+      setState(() {
+        _isJoined = true;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Successfully joined the game!')),
+        );
+      }
+    }
   }
 
-  void _leaveGame() {
-    showDialog(
+  Future<void> _leaveGame() async {
+    final shouldLeave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Leave Game'),
         content: const Text('Are you sure you want to leave this game?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _isJoined = false;
-              });
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('You have left the game')),
-              );
-            },
+            onPressed: () => Navigator.pop(context, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text('Leave', style: TextStyle(color: Colors.white)),
           ),
         ],
       ),
     );
+
+    if (shouldLeave != true) return;
+
+    final authService = AuthService();
+    final currentUserId = authService.getCurrentUserId();
+
+    if (currentUserId == null) return;
+
+    final detailState = ref.read(
+      gameDetailControllerProvider(
+        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
+      ),
+    );
+
+    if (detailState.game == null) return;
+
+    final game = detailState.game!;
+
+    final controller = ref.read(
+      gameDetailControllerProvider(
+        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
+      ).notifier,
+    );
+
+    await controller.leaveGame();
+
+    // Get updated state
+    final updatedState = ref.read(
+      gameDetailControllerProvider(
+        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
+      ),
+    );
+
+    if (updatedState.error == null) {
+      // Track successful leave
+      AnalyticsService.trackEvent('leave_success', {
+        'gameId': game.id,
+        'sport': game.sport,
+        'startsAt': game.scheduledDate.toIso8601String(),
+      });
+
+      setState(() {
+        _isJoined = false;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('You have left the game')));
+      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(updatedState.error!)));
+    }
   }
 }

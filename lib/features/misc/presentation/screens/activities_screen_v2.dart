@@ -6,12 +6,26 @@ import 'package:go_router/go_router.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/widgets/custom_app_bar.dart';
 import 'package:dabbler/core/services/auth_service.dart';
+import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/data/models/games/game.dart';
 import 'package:dabbler/data/models/games/booking.dart';
 import 'package:dabbler/data/models/activities/activity_log.dart';
 import 'package:dabbler/features/activities/presentation/providers/activity_log_providers.dart';
 import 'package:dabbler/core/fp/failure.dart';
+
+// Guard to log core loop completion only once per session
+bool _coreLoopLogged = false;
+
+void _logCoreLoopOnceIfEligible(List<Game> items) {
+  if (_coreLoopLogged) return;
+  if (items.isNotEmpty) {
+    _coreLoopLogged = true;
+    AnalyticsService.trackEvent('mvp.core_loop_completed', {
+      'count': items.length,
+    });
+  }
+}
 
 /// **Activities Screen V2** - Polished & Restructured
 ///
@@ -66,6 +80,10 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
           .read(bookingsControllerProvider(user.id).notifier)
           .loadUpcomingBookings(user.id),
     ]);
+
+    // Log core loop completion once per session if user has games
+    final gamesState = ref.read(myGamesControllerProvider(user.id));
+    _logCoreLoopOnceIfEligible(gamesState.upcomingGames);
 
     // Check for post-game rating opportunities
     _checkForRatingPrompts(user.id);
