@@ -1,5 +1,8 @@
-import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/failure.dart';
 import '../models/joinability_rule.dart';
+
+typedef Result<T> = core.Result<T, Failure>;
 
 /// Pure client-side joinability matrix.
 /// Server remains the source of truth (RLS / RPC can still deny).
