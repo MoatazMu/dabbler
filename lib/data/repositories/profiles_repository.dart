@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/profile.dart';
 
 abstract class ProfilesRepository {

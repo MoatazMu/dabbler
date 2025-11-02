@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../../data/models/profile.dart';
 import '../../data/repositories/display_name_repository.dart';
 import '../../data/repositories/display_name_repository_impl.dart';

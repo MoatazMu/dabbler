@@ -5,7 +5,7 @@ import '../../data/models/notification.dart';
 import '../../data/repositories/notifications_repository.dart';
 import '../../data/repositories/notifications_repository_impl.dart';
 import '../../services/supabase/supabase_service.dart';
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 
 final notificationsRepositoryProvider = Provider<NotificationsRepository>((
   ref,

@@ -4,7 +4,7 @@ import '../../../data/repositories/friends_repository_impl.dart';
 import '../../../data/repositories/feed_repository.dart';
 import '../../../data/repositories/feed_repository_impl.dart';
 import '../../../services/supabase/supabase_service.dart';
-import '../../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 
 // =============================================================================
 // REPOSITORY PROVIDERS - Core Data Layer

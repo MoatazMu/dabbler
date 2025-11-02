@@ -1,4 +1,4 @@
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/venue.dart';
 
 abstract class GeoRepository {

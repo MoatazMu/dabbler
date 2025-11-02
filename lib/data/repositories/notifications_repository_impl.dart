@@ -1,6 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../../core/utils/json.dart';
 import '../../data/models/notification.dart';
 import 'notifications_repository.dart';

@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../entities/achievement.dart';
 import '../entities/user_progress.dart';
 import '../entities/badge.dart';

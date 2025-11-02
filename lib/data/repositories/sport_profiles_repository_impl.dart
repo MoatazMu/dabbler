@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:fpdart/fpdart.dart';
-import 'package:dabbler/core/errors/failure.dart';
-import 'package:dabbler/core/types/result.dart';
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/sport_profile.dart';
 import 'package:dabbler/data/repositories/base_repository.dart';
 import 'package:dabbler/data/repositories/sport_profiles_repository.dart';

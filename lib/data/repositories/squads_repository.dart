@@ -1,4 +1,4 @@
-import 'package:dabbler/core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 
 import '../models/squad.dart';
 import '../models/squad_invite.dart';

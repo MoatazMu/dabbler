@@ -1,5 +1,5 @@
 
-import '../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../models/post.dart';
 
 abstract class PostsRepository {
