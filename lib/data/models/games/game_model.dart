@@ -28,44 +28,54 @@ class GameModel extends Game {
   });
 
   factory GameModel.fromJson(Map<String, dynamic> json) {
-    return GameModel(
-      id: json['id'] as String,
-      title: json['title'] as String,
-      description: json['description'] as String? ?? '',
-      sport: json['sport'] as String? ?? 'football',
-      venueId: json['venue_id'] as String?,
-      venueName: _parseVenueName(json), // Parse from JOIN or direct field
-      scheduledDate: _parseDate(
-        json['start_at'],
-      ), // Changed from scheduled_date to start_at
-      startTime: json['start_time'] as String? ?? '09:00',
-      endTime: json['end_time'] as String? ?? '10:00',
-      minPlayers: json['min_players'] as int? ?? 2,
-      maxPlayers:
-          json['max_players'] as int? ?? 10, // Added default for null safety
-      currentPlayers: json['current_players'] as int? ?? 0,
-      organizerId:
-          json['host_user_id']
-              as String, // Changed from organizer_id to host_user_id
-      skillLevel: json['skill_level'] as String? ?? 'beginner',
-      pricePerPlayer: (json['price_per_player'] as num?)?.toDouble() ?? 0.0,
-      currency: json['currency'] as String? ?? 'USD',
-      status: _parseGameStatusFromIsCancelled(
-        json,
-      ), // Changed to parse from is_cancelled
-      isPublic: json['is_public'] as bool? ?? true,
-      allowsWaitlist: json['allows_waitlist'] as bool? ?? false,
-      checkInEnabled: json['check_in_enabled'] as bool? ?? false,
-      cancellationDeadline: json['cancellation_deadline'] != null
-          ? DateTime.parse(json['cancellation_deadline'] as String)
-          : null,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
-    );
+    try {
+      return GameModel(
+        id: json['id'] as String,
+        title: json['title'] as String? ?? 'Untitled Game',
+        description: json['description'] as String? ?? '',
+        sport: json['sport'] as String? ?? 'football',
+        venueId: json['venue_id'] as String?,
+        venueName: _parseVenueName(json), // Parse from JOIN or direct field
+        scheduledDate: _parseDate(
+          json['start_at'],
+        ), // Changed from scheduled_date to start_at
+        startTime: json['start_time'] as String? ?? '09:00',
+        endTime: json['end_time'] as String? ?? '10:00',
+        minPlayers: json['min_players'] as int? ?? 2,
+        maxPlayers:
+            json['max_players'] as int? ?? 10, // Added default for null safety
+        currentPlayers: json['current_players'] as int? ?? 0,
+        organizerId:
+            json['host_user_id'] as String? ??
+                '', // Changed from organizer_id to host_user_id
+        skillLevel: json['skill_level'] as String? ?? 'beginner',
+        pricePerPlayer: (json['price_per_player'] as num?)?.toDouble() ?? 0.0,
+        currency: json['currency'] as String? ?? 'USD',
+        status: _parseGameStatusFromIsCancelled(
+          json,
+        ), // Changed to parse from is_cancelled
+        isPublic: json['is_public'] as bool? ?? true,
+        allowsWaitlist: json['allows_waitlist'] as bool? ?? false,
+        checkInEnabled: json['check_in_enabled'] as bool? ?? false,
+        cancellationDeadline: json['cancellation_deadline'] != null
+            ? _parseDate(json['cancellation_deadline'])
+            : null,
+        createdAt: _parseDate(json['created_at'] ?? DateTime.now().toIso8601String()),
+        updatedAt: _parseDate(json['updated_at'] ?? DateTime.now().toIso8601String()),
+      );
+    } catch (e, stackTrace) {
+      print('❌ [GameModel] fromJson: Failed to parse game data. Error: $e');
+      print('Stack trace: $stackTrace');
+      print('JSON data: $json');
+      rethrow; // Re-throw after logging for debugging
+    }
   }
 
   static DateTime _parseDate(dynamic dateData) {
-    if (dateData == null) return DateTime.now();
+    if (dateData == null) {
+      print('⚠️ [GameModel] _parseDate: null date, defaulting to DateTime.now()');
+      return DateTime.now();
+    }
 
     if (dateData is String) {
       try {
@@ -78,6 +88,7 @@ class GameModel extends Game {
           return DateTime.parse('${dateData}T00:00:00.000Z');
         }
       } catch (e) {
+        print('⚠️ [GameModel] _parseDate: failed to parse "$dateData", error: $e. Defaulting to DateTime.now()');
         return DateTime.now();
       }
     }
@@ -86,33 +97,40 @@ class GameModel extends Game {
       return dateData;
     }
 
+    print('⚠️ [GameModel] _parseDate: unexpected type ${dateData.runtimeType}, defaulting to DateTime.now()');
     return DateTime.now();
   }
 
   static GameStatus _parseGameStatusFromIsCancelled(Map<String, dynamic> json) {
     // Database uses is_cancelled boolean instead of status enum
-    final isCancelled = json['is_cancelled'] as bool?;
+    try {
+      final isCancelled = json['is_cancelled'] as bool?;
 
-    if (isCancelled == true) {
-      return GameStatus.cancelled;
-    }
-
-    // If not cancelled, determine status from start_at datetime
-    final startAt = json['start_at'];
-    if (startAt != null) {
-      try {
-        final startDate = DateTime.parse(startAt as String);
-        final now = DateTime.now();
-
-        if (startDate.isBefore(now)) {
-          return GameStatus.completed;
-        }
-      } catch (e) {
-        // If parsing fails, default to upcoming
+      if (isCancelled == true) {
+        return GameStatus.cancelled;
       }
-    }
 
-    return GameStatus.upcoming;
+      // If not cancelled, determine status from start_at datetime
+      final startAt = json['start_at'];
+      if (startAt != null) {
+        try {
+          final startDate = DateTime.parse(startAt as String);
+          final now = DateTime.now();
+
+          if (startDate.isBefore(now)) {
+            return GameStatus.completed;
+          }
+        } catch (e) {
+          print('⚠️ [GameModel] _parseGameStatusFromIsCancelled: failed to parse start_at "$startAt", error: $e');
+          // If parsing fails, default to upcoming
+        }
+      }
+
+      return GameStatus.upcoming;
+    } catch (e) {
+      print('⚠️ [GameModel] _parseGameStatusFromIsCancelled: unexpected error: $e. Defaulting to upcoming');
+      return GameStatus.upcoming;
+    }
   }
 
   static String? _parseVenueName(Map<String, dynamic> json) {

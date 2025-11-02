@@ -150,6 +150,21 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   @override
   Future<bool> joinGame(String gameId, String playerId) async {
     try {
+      print('🔄 [Datasource] joinGame: gameId=$gameId, playerId=$playerId');
+
+      // IDEMPOTENT CHECK: First check if player is already in the game
+      final existingPlayerResponse = await _supabaseClient
+          .from('game_players')
+          .select('id')
+          .eq('game_id', gameId)
+          .eq('player_id', playerId)
+          .maybeSingle();
+
+      if (existingPlayerResponse != null) {
+        print('✅ [Datasource] joinGame: Player already in game (idempotent success)');
+        return true; // Already joined - idempotent success
+      }
+
       // Check if game exists and get current player count
       final gameResponse = await _supabaseClient
           .from('games')
@@ -163,6 +178,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       // Check if game is full
       if (currentPlayerCount >= game.maxPlayers) {
+        print('❌ [Datasource] joinGame: Game is full');
         throw GameFullException('Game is full');
       }
 
@@ -172,6 +188,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         '${game.scheduledDate} ${game.startTime}',
       );
       if (gameDateTime.isBefore(now)) {
+        print('❌ [Datasource] joinGame: Game already started');
         throw GameAlreadyStartedException(
           'Cannot join a game that has already started',
         );
@@ -185,17 +202,22 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         'joined_at': DateTime.now().toIso8601String(),
       });
 
+      print('✅ [Datasource] joinGame: Successfully joined game');
       return true;
     } on PostgrestException catch (e) {
+      print('❌ [Datasource] joinGame: PostgrestException code=${e.code}, message=${e.message}');
       if (e.code == '23505') {
-        // Unique violation - already joined
-        throw GameServerException('Player is already in this game');
+        // Unique violation - race condition, player got added between check and insert
+        // This is still a success (idempotent)
+        print('✅ [Datasource] joinGame: Unique violation (race condition), treating as success');
+        return true;
       }
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
       if (e is GameFullException || e is GameAlreadyStartedException) {
         rethrow;
       }
+      print('❌ [Datasource] joinGame: Unexpected error: $e');
       throw GameServerException('Failed to join game: ${e.toString()}');
     }
   }
@@ -203,16 +225,35 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   @override
   Future<bool> leaveGame(String gameId, String playerId) async {
     try {
+      print('🔄 [Datasource] leaveGame: gameId=$gameId, playerId=$playerId');
+
+      // IDEMPOTENT CHECK: First check if player is in the game
+      final existingPlayerResponse = await _supabaseClient
+          .from('game_players')
+          .select('id')
+          .eq('game_id', gameId)
+          .eq('player_id', playerId)
+          .maybeSingle();
+
+      if (existingPlayerResponse == null) {
+        print('✅ [Datasource] leaveGame: Player not in game (idempotent success)');
+        return true; // Not in game - idempotent success
+      }
+
+      // Remove player from game
       await _supabaseClient
           .from('game_players')
           .delete()
           .eq('game_id', gameId)
           .eq('player_id', playerId);
 
+      print('✅ [Datasource] leaveGame: Successfully left game');
       return true;
     } on PostgrestException catch (e) {
+      print('❌ [Datasource] leaveGame: PostgrestException code=${e.code}, message=${e.message}');
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
+      print('❌ [Datasource] leaveGame: Unexpected error: $e');
       throw GameServerException('Failed to leave game: ${e.toString()}');
     }
   }

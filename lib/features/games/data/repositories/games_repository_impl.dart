@@ -160,6 +160,8 @@ class GamesRepositoryImpl implements GamesRepository {
   @override
   Future<Either<Failure, bool>> joinGame(String gameId, String playerId) async {
     try {
+      print('🔄 [Repository] joinGame: gameId=$gameId, playerId=$playerId');
+
       // Optimistic update - update local cache first
       if (_gamesCache.containsKey(gameId)) {
         // Update the game's player list optimistically if needed
@@ -168,19 +170,34 @@ class GamesRepositoryImpl implements GamesRepository {
       final result = await remoteDataSource.joinGame(gameId, playerId);
 
       if (result) {
+        print('✅ [Repository] joinGame: Success, clearing caches');
         // Clear cache to force refresh on next get
         _gamesCache.remove(gameId);
         _listCache.clear();
       }
 
       return Right(result);
+    } on GameFullException catch (e) {
+      print('❌ [Repository] joinGame: Game full - ${e.message}');
+      _gamesCache.remove(gameId);
+      return Left(ValidationFailure(message: e.message));
+    } on GameAlreadyStartedException catch (e) {
+      print('❌ [Repository] joinGame: Game already started - ${e.message}');
+      _gamesCache.remove(gameId);
+      return Left(ValidationFailure(message: e.message));
+    } on GameNotFoundException catch (e) {
+      print('❌ [Repository] joinGame: Game not found - ${e.message}');
+      return Left(NotFoundFailure(message: e.message));
     } on ServerException catch (e) {
+      print('❌ [Repository] joinGame: Server error - ${e.message}');
       // Revert optimistic update if failed
       _gamesCache.remove(gameId);
       return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
+      print('❌ [Repository] joinGame: Network error - ${e.message}');
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
+      print('❌ [Repository] joinGame: Unexpected error - $e');
       return Left(UnknownFailure('Failed to join game: ${e.toString()}'));
     }
   }
@@ -191,20 +208,29 @@ class GamesRepositoryImpl implements GamesRepository {
     String playerId,
   ) async {
     try {
+      print('🔄 [Repository] leaveGame: gameId=$gameId, playerId=$playerId');
+
       final result = await remoteDataSource.leaveGame(gameId, playerId);
 
       if (result) {
+        print('✅ [Repository] leaveGame: Success, clearing caches');
         // Clear cache to force refresh
         _gamesCache.remove(gameId);
         _listCache.clear();
       }
 
       return Right(result);
+    } on GameNotFoundException catch (e) {
+      print('❌ [Repository] leaveGame: Game not found - ${e.message}');
+      return Left(NotFoundFailure(message: e.message));
     } on ServerException catch (e) {
+      print('❌ [Repository] leaveGame: Server error - ${e.message}');
       return Left(ServerFailure(e.message));
     } on NetworkException catch (e) {
+      print('❌ [Repository] leaveGame: Network error - ${e.message}');
       return Left(NetworkFailure(message: e.message));
     } catch (e) {
+      print('❌ [Repository] leaveGame: Unexpected error - $e');
       return Left(UnknownFailure('Failed to leave game: ${e.toString()}'));
     }
   }
