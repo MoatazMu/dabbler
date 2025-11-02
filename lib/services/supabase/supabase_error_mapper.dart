@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:riverpod/riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 final supabaseErrorMapperProvider = Provider<SupabaseErrorMapper>((ref) {
   return const SupabaseErrorMapper();

@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../domain/entities/venue.dart';
 import '../../domain/entities/sport_config.dart';
 import '../../domain/repositories/venues_repository.dart';

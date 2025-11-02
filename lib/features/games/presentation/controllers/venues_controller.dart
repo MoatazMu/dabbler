@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/types/result.dart';
+import 'package:dabbler/core/fp/result.dart';
 import '../../../../data/repositories/geo_repository.dart' as geo;
 import '../../domain/entities/venue.dart' as domain;
 import '../../domain/repositories/venues_repository.dart' as repo;

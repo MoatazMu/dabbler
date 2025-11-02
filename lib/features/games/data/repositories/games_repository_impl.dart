@@ -1,5 +1,5 @@
 import 'package:fpdart/fpdart.dart';
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/errors/exceptions.dart';
 import '../../domain/entities/game.dart';
 import '../../domain/entities/player.dart';

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../domain/entities/achievement.dart';
 import '../../domain/entities/user_progress.dart';
 import '../../domain/entities/badge.dart';

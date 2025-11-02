@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/usecases/update_profile_usecase.dart';
 import '../../domain/usecases/upload_avatar_usecase.dart';
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 /// State for profile editing form
 class ProfileEditState {

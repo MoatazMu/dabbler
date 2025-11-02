@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/user_preferences.dart';
 import '../../domain/usecases/update_preferences_usecase.dart';
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 /// State for user preferences management
 class PreferencesState {

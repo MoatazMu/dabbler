@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/logger.dart';
 import '../../../../utils/enums/social_enums.dart';
 import '../repositories/posts_repository.dart';

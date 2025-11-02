@@ -1,4 +1,4 @@
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
 import '../entities/privacy_settings.dart';
 import '../repositories/settings_repository.dart';

@@ -1,4 +1,4 @@
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
 import '../entities/user_profile.dart';
 import '../entities/sports_profile.dart';

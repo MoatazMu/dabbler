@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import '../../../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import '../../../../core/utils/either.dart';
 import '../../domain/entities/user_profile.dart';
 import '../../domain/entities/sports_profile.dart';

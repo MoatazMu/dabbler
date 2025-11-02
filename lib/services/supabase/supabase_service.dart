@@ -1,7 +1,7 @@
 import 'package:riverpod/riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../core/errors/failure.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import 'supabase_client.dart';
 import 'supabase_error_mapper.dart';
 
