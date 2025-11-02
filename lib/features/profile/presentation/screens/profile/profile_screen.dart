@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../controllers/profile_controller.dart';
+import '../../../../../features/games/providers/games_providers.dart';
 import '../../controllers/sports_profile_controller.dart';
 import '../../providers/profile_providers.dart';
 import 'package:dabbler/data/models/profile/user_profile.dart';
@@ -24,6 +25,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   late AnimationController _refreshController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  double _myAverageRating = 0.0;
 
   @override
   void initState() {
@@ -73,6 +75,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         profileController.loadProfile(user.id),
         sportsController.loadSportsProfiles(user.id),
       ]);
+      await _loadAverageRating();
+    }
+  }
+
+  Future<void> _loadAverageRating() async {
+    final repository = ref.read(gamesRepositoryProvider);
+    final avgRes = await repository.myAverageRating();
+    if (mounted) {
+      setState(() {
+        _myAverageRating = avgRes.isSuccess ? avgRes.requireValue : 0.0;
+      });
     }
   }
 
@@ -245,7 +258,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             children: [
               _buildStatItem(context, 'Games', '12'),
               _buildStatItem(context, 'Wins', '8'),
-              _buildStatItem(context, 'Rating', '4.8'),
+              _buildStatItem(
+                context,
+                'My Rating',
+                _myAverageRating > 0
+                    ? _myAverageRating.toStringAsFixed(1)
+                    : '—',
+              ),
             ],
           ),
         ],

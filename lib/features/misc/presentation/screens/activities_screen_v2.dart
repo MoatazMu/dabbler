@@ -11,6 +11,7 @@ import 'package:dabbler/data/models/games/game.dart';
 import 'package:dabbler/data/models/games/booking.dart';
 import 'package:dabbler/data/models/activities/activity_log.dart';
 import 'package:dabbler/features/activities/presentation/providers/activity_log_providers.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 /// **Activities Screen V2** - Polished & Restructured
 ///
@@ -65,6 +66,9 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
           .read(bookingsControllerProvider(user.id).notifier)
           .loadUpcomingBookings(user.id),
     ]);
+
+    // Check for post-game rating opportunities
+    _checkForRatingPrompts(user.id);
   }
 
   Future<void> _refreshStats() async {
@@ -103,6 +107,134 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
         });
       },
     );
+  }
+
+  void _checkForRatingPrompts(String userId) {
+    final gamesState = ref.read(myGamesControllerProvider(userId));
+    final repository = ref.read(gamesRepositoryProvider);
+
+    // Find the first completed game that hasn't been rated this session
+    final finishedGames = gamesState.upcomingGames.where((game) {
+      final gameEndTime = _getGameEndDateTime(game);
+      return gameEndTime.isBefore(DateTime.now()) &&
+          !repository.hasRatedInSession(game.id);
+    }).toList();
+
+    if (finishedGames.isNotEmpty) {
+      // Show rating prompt for the first eligible game
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showRatingSheet(context, finishedGames.first);
+        }
+      });
+    }
+  }
+
+  DateTime _getGameEndDateTime(Game game) {
+    try {
+      final endParts = game.endTime.split(':');
+      if (endParts.length >= 2) {
+        final hour = int.parse(endParts[0]);
+        final minute = int.parse(endParts[1]);
+        return DateTime(
+          game.scheduledDate.year,
+          game.scheduledDate.month,
+          game.scheduledDate.day,
+          hour,
+          minute,
+        );
+      }
+    } catch (e) {
+      // Fallback: assume 2 hours after start
+    }
+    return game.scheduledDate.add(const Duration(hours: 2));
+  }
+
+  Future<void> _showRatingSheet(BuildContext context, Game game) async {
+    int tempRating = 5; // default
+    final rating = await showModalBottomSheet<int>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 16,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Rate this game',
+                    style: Theme.of(ctx).textTheme.titleMedium,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    game.title,
+                    style: Theme.of(
+                      ctx,
+                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(5, (i) {
+                      final v = i + 1;
+                      final sel = v <= tempRating;
+                      return IconButton(
+                        icon: Icon(
+                          sel ? Icons.star : Icons.star_border,
+                          color: sel ? Colors.amber : Colors.grey,
+                          size: 32,
+                        ),
+                        onPressed: () {
+                          setModalState(() {
+                            tempRating = v;
+                          });
+                        },
+                      );
+                    }),
+                  ),
+                  const SizedBox(height: 8),
+                  ElevatedButton(
+                    onPressed: () => Navigator.of(ctx).pop(tempRating),
+                    child: const Text('Submit'),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (rating == null || !mounted) return;
+
+    final repository = ref.read(gamesRepositoryProvider);
+    final r = await repository.rateGame(game.id, rating);
+
+    if (r.isSuccess) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Thanks for your rating!')),
+        );
+      }
+    } else {
+      final failure = r.requireError;
+      final msg = failure.category == FailureCode.timeout
+          ? 'Network timeout. Try again.'
+          : 'Could not submit rating.';
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(msg)));
+      }
+    }
   }
 
   @override
