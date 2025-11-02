@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dabbler/core/fp/result.dart';
-import '../../services/supabase/supabase_service.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import '../../data/models/squad.dart';
 import '../../data/models/squad_invite.dart';
 import '../../data/models/squad_join_request.dart';

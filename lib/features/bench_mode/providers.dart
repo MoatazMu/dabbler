@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/core/fp/result.dart';
-import '../../services/supabase/supabase_service.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import '../../data/models/profile.dart';
 import '../../data/repositories/bench_mode_repository.dart';
 import '../../data/repositories/bench_mode_repository_impl.dart';

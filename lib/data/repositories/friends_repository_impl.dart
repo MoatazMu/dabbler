@@ -3,7 +3,7 @@ import 'package:dabbler/core/fp/result.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:dabbler/services/supabase/supabase_service.dart';
+import 'package:dabbler/features/misc/data/datasources/supabase_remote_data_source.dart';
 
 import '../models/friend_edge.dart';
 import '../models/friendship.dart';

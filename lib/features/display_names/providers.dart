@@ -4,7 +4,7 @@ import 'package:dabbler/core/fp/result.dart';
 import '../../data/models/profile.dart';
 import '../../data/repositories/display_name_repository.dart';
 import '../../data/repositories/display_name_repository_impl.dart';
-import '../../services/supabase/supabase_service.dart';
+import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 
 final displayNameRepositoryProvider =
     Provider.autoDispose<DisplayNameRepository>((ref) {

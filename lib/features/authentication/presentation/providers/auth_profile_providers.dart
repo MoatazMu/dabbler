@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/services/auth_profile_service.dart';
 import '../../../../data/repositories/profiles_repository.dart';
 import '../../../../data/repositories/profiles_repository_impl.dart';
-import '../../../../services/supabase/supabase_service.dart';
+import '../../../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import 'package:dabbler/core/fp/result.dart';
 import '../../../../data/models/profile.dart';
 import './auth_providers.dart'; // For authServiceProvider
