@@ -56,7 +56,7 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
 
       // Apply filters
       if (filters != null) {
-        // For now, skip sports filtering
+        // Sports filtering - skip for now as we need to verify column name
         /* 
         final sports = filters['sports'] ?? filters['sport'];
         if (sports != null) {
@@ -90,12 +90,15 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
 
       final response = await query
           .eq('is_active', true) // Only show active venues
-          .order(sortBy ?? 'name', ascending: ascending)
+          .order(
+            sortBy ?? 'name_en',
+            ascending: ascending,
+          ) // Use name_en for alphabetical sorting
           .range((page - 1) * limit, page * limit - 1);
 
       print('✅ [DEBUG] Fetched ${response.length} venues from database');
       if (response.isNotEmpty) {
-        print('📍 [DEBUG] First venue: ${response.first['name']}');
+        print('📍 [DEBUG] First venue ID: ${response.first['id']}');
       }
 
       final venues = response
@@ -110,6 +113,14 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
       return venues;
     } on PostgrestException catch (e) {
       print('❌ [ERROR] PostgrestException: ${e.message}, code: ${e.code}');
+
+      // Handle RLS infinite recursion error gracefully (code 42P17)
+      if (e.code == '42P17') {
+        print('⚠️ [ERROR] RLS infinite recursion in venue_members policy');
+        print('⚠️ [ERROR] Returning empty venues list until RLS is fixed');
+        return [];
+      }
+
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
       print('❌ [ERROR] Failed to get venues: $e');
@@ -175,7 +186,7 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .from('venues')
           .select('*')
           .or(
-            'name.ilike.%$query%,description.ilike.%$query%,address.ilike.%$query%',
+            'name_en.ilike.%$query%,description_en.ilike.%$query%,district.ilike.%$query%',
           );
 
       // Location-based filtering if coordinates provided
@@ -209,7 +220,7 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
       }
 
       final response = await searchQuery
-          .order('name')
+          .order('name_en')
           .range((page - 1) * limit, page * limit - 1);
 
       return response
@@ -640,7 +651,7 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .from('venues')
           .select('*, venue_favorites!inner(user_id)')
           .eq('venue_favorites.user_id', userId)
-          .order('name')
+          .order('name_en')
           .range((page - 1) * limit, page * limit - 1);
 
       return response

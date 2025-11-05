@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
-import 'package:go_router/go_router.dart';
-import '../../../../utils/constants/route_constants.dart';
+import '../../../../core/design_system/design_system.dart';
 
 /// Main social feed screen
 class SocialFeedScreen extends ConsumerStatefulWidget {
@@ -21,104 +19,118 @@ class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
   Widget build(BuildContext context) {
     super.build(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Social'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.push(RoutePaths.socialSearch);
-            },
-            icon: const Icon(LucideIcons.search),
-          ),
-          IconButton(
-            onPressed: () {
-              context.push(RoutePaths.socialNotifications);
-            },
-            icon: const Icon(LucideIcons.bell),
-          ),
-          IconButton(
-            onPressed: () {
-              context.push(RoutePaths.socialCreatePost);
-            },
-            icon: const Icon(LucideIcons.plus),
-          ),
-        ],
-      ),
-      body: const CustomScrollView(
-        slivers: [
-          // Social widgets will be implemented here
-          SliverToBoxAdapter(child: SizedBox(height: 16)),
-          // Stories/highlights section
-          SliverToBoxAdapter(child: _StoriesSection()),
-          SliverToBoxAdapter(child: SizedBox(height: 16)),
-          // Quick actions (friend suggestions, etc.)
-          SliverToBoxAdapter(child: _QuickActionsSection()),
-          SliverToBoxAdapter(child: SizedBox(height: 16)),
-          // Posts feed
-          SliverToBoxAdapter(child: _PostsFeedSection()),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          context.push(RoutePaths.socialCreatePost);
-        },
-        child: const Icon(LucideIcons.plus),
-      ),
+    return TwoSectionLayout(
+      topSection: _buildTopSection(),
+      bottomSection: _buildBottomSection(),
     );
   }
-}
 
-class _StoriesSection extends StatelessWidget {
-  const _StoriesSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 100,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: const Center(
-        child: Text(
-          'Stories section - To be implemented',
-          style: TextStyle(color: Colors.grey),
+  Widget _buildTopSection() {
+    return Column(
+      children: [
+        SizedBox(height: AppSpacing.md),
+        // Header with home and arena buttons
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SocialHeaderButton(
+              emoji: '🏠',
+              onTap: () {
+                // Navigate to home
+              },
+            ),
+            SocialHeaderButton(
+              emoji: '🌏',
+              label: 'Arenas',
+              onTap: () {
+                // Navigate to arenas
+              },
+            ),
+          ],
         ),
-      ),
+        SizedBox(height: AppSpacing.xl),
+        // What's on your mind input
+        SocialInputBox(
+          placeholder: "What's on your mind?",
+          emoji: '📝',
+          onTap: () {
+            // Open create post screen
+          },
+        ),
+        SizedBox(height: AppSpacing.sectionSpacing),
+      ],
     );
   }
-}
 
-class _QuickActionsSection extends StatelessWidget {
-  const _QuickActionsSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: const Center(
-        child: Text(
-          'Friend suggestions and quick actions - To be implemented',
-          style: TextStyle(color: Colors.grey),
+  Widget _buildBottomSection() {
+    return Column(
+      children: [
+        // Feed posts
+        SocialFeedPost(
+          name: 'Sarah',
+          time: '2h',
+          content:
+              "Had an amazing time at the community cooking class today! 🍳 Learning new recipes and meeting wonderful people. Next week we're doing Italian cuisine!",
+          likeIcon: '🩶',
+          likes: '24',
+          comments: '8',
+          onLikeTap: () {
+            // Handle like
+          },
+          onCommentTap: () {
+            // Handle comment
+          },
+          onMenuTap: () {
+            // Handle menu
+          },
         ),
-      ),
-    );
-  }
-}
-
-class _PostsFeedSection extends StatelessWidget {
-  const _PostsFeedSection();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: const Center(
-        child: Text(
-          'Posts feed - To be implemented',
-          style: TextStyle(color: Colors.grey),
+        SizedBox(height: AppSpacing.lg),
+        SocialFeedPost(
+          name: 'Sarah',
+          time: '2h',
+          content:
+              "Had an amazing time at the community cooking class today! 🍳 Learning new recipes and meeting wonderful people. Next week we're doing Italian cuisine!",
+          likeIcon: '❤️',
+          likes: '24',
+          comments: '8',
+          onLikeTap: () {
+            // Handle like
+          },
+          onCommentTap: () {
+            // Handle comment
+          },
         ),
-      ),
+        SizedBox(height: AppSpacing.lg),
+        SocialFeedPost(
+          name: 'Sarah',
+          time: '2h',
+          content:
+              "Had an amazing time at the community cooking class today! 🍳 Learning new recipes and meeting wonderful people. Next week we're doing Italian cuisine!",
+          likeIcon: '🩶',
+          likes: '24',
+          comments: '8',
+        ),
+        SizedBox(height: AppSpacing.lg),
+        SocialFeedPost(
+          name: 'Sarah',
+          time: '2h',
+          content:
+              "Had an amazing time at the community cooking class today! 🍳 Learning new recipes and meeting wonderful people. Next week we're doing Italian cuisine!",
+          likeIcon: '🩶',
+          likes: '24',
+          comments: '8',
+        ),
+        SizedBox(height: AppSpacing.lg),
+        SocialFeedPost(
+          name: 'Sarah',
+          time: '2h',
+          content:
+              "Had an amazing time at the community cooking class today! 🍳 Learning new recipes and meeting wonderful people. Next week we're doing Italian cuisine!",
+          likeIcon: '🩶',
+          likes: '24',
+          comments: '8',
+        ),
+      ],
     );
   }
 }

@@ -220,9 +220,10 @@ class VenuesController extends StateNotifier<VenuesState> {
       print('🔧 [CONTROLLER] Applying filters: ${repoFilters.toJson()}');
 
       // Don't pass 'distance' to database - it's not a column, we calculate it client-side
+      // Map 'name' enum to 'name_en' column in database
       final dbSortBy = state.sortBy == VenueSortBy.distance
-          ? 'name'
-          : state.sortBy.name;
+          ? 'name_en'
+          : (state.sortBy == VenueSortBy.name ? 'name_en' : state.sortBy.name);
 
       final venuesResult = await _venuesRepository.getVenues(
         filters: repoFilters,

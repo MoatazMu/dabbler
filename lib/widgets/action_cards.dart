@@ -11,7 +11,7 @@ class ActionCards extends StatelessWidget {
   Widget build(BuildContext context) {
     // MVP: Hide both Create and Join Game cards
     // Create Game: hidden (createGamePublic = false)
-    // Join Game: navigates to Explore which is hidden (not in MVP tab list)
+    // Join Game: navigates to Sports which is hidden (not in MVP tab list)
     // Users can access games through My Games (Activities) tab
 
     // Return empty container to maintain layout
@@ -19,13 +19,15 @@ class ActionCards extends StatelessWidget {
   }
 }
 
-class _ActionCard extends StatelessWidget {
+// Unused class - kept for future feature enablement
+/* class _ActionCard extends StatelessWidget {
   const _ActionCard({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.backgroundColor,
     required this.iconBackgroundColor,
+    this.onTap,
   });
 
   final IconData icon;
@@ -90,4 +92,4 @@ class _ActionCard extends StatelessWidget {
       ),
     );
   }
-}
+} */

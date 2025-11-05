@@ -1,10 +1,9 @@
-import 'package:fpdart/fpdart.dart';
-
 import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart' as core;
 import 'package:dabbler/data/models/venue.dart';
 import 'package:dabbler/data/models/venue_space.dart';
 
-typedef Result<T> = Either<Failure, T>;
+typedef Result<T> = core.Result<T, Failure>;
 
 abstract class VenuesRepository {
   /// Public venues listing relying on the `venues_public_read` policy.

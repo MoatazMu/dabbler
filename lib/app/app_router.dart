@@ -26,7 +26,7 @@ import 'package:dabbler/features/authentication/presentation/screens/register_sc
 import 'package:dabbler/features/error/presentation/pages/error_page.dart';
 import 'package:dabbler/features/home/presentation/screens/home_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/social_screen.dart';
-import 'package:dabbler/features/explore/presentation/screens/explore_screen.dart';
+import 'package:dabbler/features/explore/presentation/screens/sports_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/activities_screen_v2.dart';
 import 'package:dabbler/features/misc/presentation/screens/rewards_screen.dart';
 
@@ -425,13 +425,13 @@ class AppRouter {
       ),
     ),
 
-    // Explore/Sports route (hidden for MVP - not in tab list)
+    // Sports route (hidden for MVP - not in tab list)
     // Route kept for deep links/admin access but UI entry points hidden
     GoRoute(
-      path: RoutePaths.explore,
-      name: RouteNames.explore,
+      path: RoutePaths.sports,
+      name: RouteNames.sports,
       redirect: (context, state) {
-        // Hide Explore from MVP - redirect to Activities (My Games)
+        // Hide Sports from MVP - redirect to Activities (My Games)
         // Keep route definition for deep links/future enablement
         if (!FeatureFlags.enableGameBrowsing) {
           return RoutePaths.home;

@@ -51,7 +51,7 @@ class FeatureFlags {
   static const bool organiserProfile = false;
   static const bool createGamePublic =
       false; // admin-only create stays; hide public surfaces
-  static const bool socialFeed = false;
+  static const bool socialFeed = true; // NOW ENABLED FOR MVP
   static const bool messaging = false;
   static const bool notifications = false;
   static const bool squads = false;
@@ -74,14 +74,14 @@ class FeatureFlags {
   static const bool enableProfileCompletionPercent = false;
 
   /// Social Features
-  static const bool enableSocialFeed = false;
-  static const bool enableCreatePost = false;
-  static const bool enableLikePost = false;
-  static const bool enableCommentPost = false;
-  static const bool enableSharePost = false;
-  static const bool enableFollowUsers = false;
-  static const bool enableFriendRequests = false;
-  static const bool enableFriendsList = false;
+  static const bool enableSocialFeed = true; // NOW ENABLED FOR MVP
+  static const bool enableCreatePost = true; // NOW ENABLED FOR MVP
+  static const bool enableLikePost = true; // NOW ENABLED FOR MVP
+  static const bool enableCommentPost = true; // NOW ENABLED FOR MVP
+  static const bool enableSharePost = true; // NOW ENABLED FOR MVP
+  static const bool enableFollowUsers = true; // NOW ENABLED FOR MVP
+  static const bool enableFriendRequests = true; // NOW ENABLED FOR MVP
+  static const bool enableFriendsList = true; // NOW ENABLED FOR MVP
   static const bool enableBlockUsers = false;
   static const bool enableReportContent = false;
   static const bool enableCircleFeed = false;
@@ -233,9 +233,10 @@ class FeatureFlags {
 
   /// Bottom navigation tabs visibility
   static const bool showHomeTab = true;
-  static const bool showExploreTab = false;
+  static const bool showSportsTab =
+      true; // NOW ENABLED FOR MVP - Sports/Games Browsing
   static const bool showMyGamesTab = true;
-  static const bool showSocialTab = false;
+  static const bool showSocialTab = true; // NOW ENABLED FOR MVP
   static const bool showSquadsTab = false;
   static const bool showProfileTab = true;
   static const bool showSettingsTab = true; // Or within profile

@@ -31,7 +31,7 @@ class RoutePaths {
   static const String profile = '/profile';
   static const String games = '/games';
   static const String social = '/social';
-  static const String explore = '/explore';
+  static const String sports = '/sports';
   static const String bookings = '/bookings';
   static const String activities = '/activities';
   static const String notifications = '/notifications';
@@ -168,7 +168,7 @@ class RouteNames {
   static const String socialAnalytics = 'social-analytics';
 
   // Main Navigation Routes
-  static const String explore = 'explore';
+  static const String sports = 'sports';
   static const String activities = 'activities';
 
   // Rewards & Leaderboard

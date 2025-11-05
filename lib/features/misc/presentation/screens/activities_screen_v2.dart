@@ -571,9 +571,9 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
             ),
             const SizedBox(height: 24),
             ElevatedButton.icon(
-              onPressed: () => context.go('/explore'),
+              onPressed: () => context.go('/sports'),
               icon: const Icon(LucideIcons.search),
-              label: const Text('Explore Games'),
+              label: const Text('Find Sports Games'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.colors.primary,
                 foregroundColor: Colors.white,

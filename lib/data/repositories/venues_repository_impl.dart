@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart' as core;
 import 'package:dabbler/data/models/venue.dart';
 import 'package:dabbler/data/models/venue_space.dart';
 import 'package:dabbler/data/repositories/base_repository.dart';
-import 'package:dabbler/data/repositories/venues_repository.dart';
+import 'package:dabbler/data/repositories/venues_repository.dart' hide Result;
 
 class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
   VenuesRepositoryImpl(super.svc);
@@ -39,27 +39,31 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
         query = query.ilike('name', '%$q%');
       }
 
-      query = query.order('name');
-
-      final data = await svc.getList(query);
-      final venues = data.map(Venue.fromJson).toList(growable: false);
-      return right(venues);
+      final response = await query.order('name');
+      final data = List<dynamic>.from(response as List);
+      final venues = data
+          .map((item) => Venue.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList(growable: false);
+      return core.Ok(venues);
     } catch (error, stackTrace) {
-      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
   @override
   Future<Result<Venue>> getVenueById(String venueId) async {
     try {
-      final query = svc.from(venuesTable).select().eq('id', venueId);
-      final data = await svc.maybeSingle(query);
-      if (data == null) {
-        return left(NotFoundFailure(message: 'Venue $venueId not found'));
+      final response = await svc
+          .from(venuesTable)
+          .select()
+          .eq('id', venueId)
+          .maybeSingle();
+      if (response == null) {
+        return core.Err(NotFoundFailure(message: 'Venue $venueId not found'));
       }
-      return right(Venue.fromJson(data));
+      return core.Ok(Venue.fromJson(response));
     } catch (error, stackTrace) {
-      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
@@ -75,27 +79,33 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
         query = query.eq('is_active', true);
       }
 
-      final data = await query.order('name') as List;
+      final response = await query.order('name');
+      final data = List<dynamic>.from(response as List);
       final spaces = data
-          .map((e) => VenueSpace.fromMap(e))
+          .map((e) => VenueSpace.fromMap(Map<String, dynamic>.from(e as Map)))
           .toList(growable: false);
-      return right(spaces);
+      return core.Ok(spaces);
     } catch (error, stackTrace) {
-      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
   @override
   Future<Result<VenueSpace>> getSpaceById(String spaceId) async {
     try {
-      final query = svc.from(spacesTable).select().eq('id', spaceId);
-      final data = await svc.maybeSingle(query);
-      if (data == null) {
-        return left(NotFoundFailure(message: 'Venue space $spaceId not found'));
+      final response = await svc
+          .from(spacesTable)
+          .select()
+          .eq('id', spaceId)
+          .maybeSingle();
+      if (response == null) {
+        return core.Err(
+          NotFoundFailure(message: 'Venue space $spaceId not found'),
+        );
       }
-      return right(VenueSpace.fromMap(data));
+      return core.Ok(VenueSpace.fromMap(response));
     } catch (error, stackTrace) {
-      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
@@ -125,13 +135,14 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
         query = query.eq('is_active', true);
       }
 
-      query = query.order('name');
-
-      final data = await svc.getList(query);
-      final venues = data.map(Venue.fromJson).toList(growable: false);
-      return right(venues);
+      final response = await query.order('name');
+      final data = List<dynamic>.from(response as List);
+      final venues = data
+          .map((item) => Venue.fromJson(Map<String, dynamic>.from(item as Map)))
+          .toList(growable: false);
+      return core.Ok(venues);
     } catch (error, stackTrace) {
-      return left(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
@@ -144,14 +155,6 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final result = await listSpacesByVenue(venueId);
       if (!controller.isClosed) {
         controller.add(result);
-      }
-    }
-
-    void emitError(Object error, [StackTrace? stackTrace]) {
-      if (!controller.isClosed) {
-        controller.add(
-          left(svc.mapPostgrestError(error, stackTrace: stackTrace)),
-        );
       }
     }
 

@@ -37,16 +37,10 @@ class VenueCard extends StatelessWidget {
     final sports = (venue['sports'] as List<dynamic>?)?.cast<String>() ?? [];
     final rating = (venue['rating'] as num?)?.toDouble() ?? 0.0;
     final isClosed = venue['isOpen'] == false;
-    final slots =
-        (venue['slots'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [];
     final reviews =
         (venue['reviews'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
         [];
     final distance = venue['distance'] as String? ?? '';
-    final hasQuickSlot = slots.any(
-      (slot) => slot['available'] == true && slot['isSoon'] == true,
-    );
-    final ctaEnabled = !isClosed && (hasQuickSlot || slots.isNotEmpty);
     final showRating = reviews.length >= 3 && rating >= 3.0;
     final maxNameLength = 26;
     final displayName = name.length > maxNameLength
@@ -58,7 +52,7 @@ class VenueCard extends StatelessWidget {
     final thumbnail = images.isNotEmpty ? images.first : null;
 
     return GestureDetector(
-      onTap: ctaEnabled ? onTap : null,
+      onTap: onTap, // Changed: Always call onTap when provided
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         decoration: BoxDecoration(
@@ -622,7 +616,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Explore Sports',
+                              'Sports',
                               style: context.textTheme.headlineMedium?.copyWith(
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
@@ -1052,7 +1046,10 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
   void didUpdateWidget(_VenuesTabContent oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.selectedSport != widget.selectedSport) {
-      _applyFilter();
+      // Delay provider update to avoid modifying during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _applyFilter();
+      });
     }
   }
 

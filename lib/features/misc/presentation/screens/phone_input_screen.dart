@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 
 class PhoneInputScreen extends ConsumerStatefulWidget {
   const PhoneInputScreen({super.key});
@@ -150,224 +152,361 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ...existing code...
+    return TwoSectionLayout(
+      topSection: _buildTopSection(),
+      bottomSection: _buildBottomSection(),
+    );
+  }
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.language),
-            onPressed: () {
-              // ...existing code...
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Language button pressed!')),
-              );
-            },
-            tooltip: 'Select Language',
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 32),
-              // Header
-              const Center(
-                child: Text(
-                  'Welcome to Dabbler',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Center(
-                child: Text(
-                  'Join the community of sports enthusiasts',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 48),
-
-              // Primary: Continue with Email button
-              SizedBox(
-                height: 56,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    debugPrint(
-                      '📧 [DEBUG] PhoneInputScreen: Email button pressed',
-                    );
-                    context.go(RoutePaths.emailInput);
-                  },
-                  icon: const Icon(Icons.email_outlined, size: 24),
-                  label: const Text(
-                    'Continue with Email',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Secondary: Continue with Google button (disabled for now)
-              SizedBox(
-                height: 56,
-                child: OutlinedButton.icon(
-                  onPressed: null, // Disabled for now
-                  icon: Icon(
-                    Icons.g_mobiledata_rounded,
-                    size: 32,
-                    color: Colors.grey.shade400,
-                  ),
-                  label: Text(
-                    'Continue with Google',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade400,
-                    ),
-                  ),
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: Colors.grey.shade300),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Divider
-              Row(
-                children: [
-                  Expanded(child: Divider(color: Colors.grey.shade300)),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'or continue with phone',
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ),
-                  Expanded(child: Divider(color: Colors.grey.shade300)),
-                ],
-              ),
-
-              const SizedBox(height: 32),
-
-              // Phone input
-              Form(
-                key: _formKey,
-                child: TextFormField(
-                  controller: _phoneController,
-                  decoration: InputDecoration(
-                    labelText: 'Phone Number',
-                    hintText: '5X XXX XXXX',
-                    prefixText: '$_countryCode ',
-                    prefixStyle: const TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  keyboardType: TextInputType.phone,
-                  onChanged: _onPhoneChanged,
-                  validator: _validatePhone,
-                ),
-              ),
-
-              const SizedBox(height: 24),
-
-              // Continue with phone button
-              SizedBox(
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _handleSubmit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).primaryColor,
-                    foregroundColor: Colors.white,
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        )
-                      : const Text(
-                          'Continue',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
-              ),
-
-              const Spacer(),
-
-              // Error/Success messages
-              if (_errorMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.red.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.red.withOpacity(0.3)),
-                  ),
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-
-              if (_successMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: Colors.green.withOpacity(0.3)),
-                  ),
-                  child: Text(
-                    _successMessage!,
-                    style: const TextStyle(color: Colors.green),
-                  ),
-                ),
-            ],
+  Widget _buildTopSection() {
+    return Column(
+      children: [
+        SizedBox(height: AppSpacing.huge),
+        // Dabbler logo and text
+        _buildLogo(),
+        SizedBox(height: AppSpacing.huge),
+        // Welcome text
+        Text(
+          'Welcome to dabbler!',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
         ),
+        SizedBox(height: AppSpacing.sm),
+        Text(
+          'Enter your mobile number to get started',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Colors.white70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLogo() {
+    return Column(
+      children: [
+        // Dabbler geometric icon
+        SvgPicture.asset(
+          'assets/images/dabbler_logo.svg',
+          width: 80,
+          height: 88,
+        ),
+        SizedBox(height: AppSpacing.md),
+        // Dabbler text logo
+        SvgPicture.asset(
+          'assets/images/dabbler_text_logo.svg',
+          width: 110,
+          height: 21,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomSection() {
+    return Column(
+      children: [
+        // Phone input field
+        _buildPhoneInput(),
+        SizedBox(height: AppSpacing.lg),
+
+        // Login with Email button
+        _buildEmailButton(),
+
+        SizedBox(height: AppSpacing.xl),
+
+        // Divider with "or"
+        _buildDivider(),
+
+        SizedBox(height: AppSpacing.xl),
+
+        // Continue with Google button
+        _buildGoogleButton(),
+
+        SizedBox(height: AppSpacing.md),
+
+        // Continue with Email button
+        _buildContinueEmailButton(),
+
+        SizedBox(height: AppSpacing.xxl),
+
+        // Terms and privacy
+        _buildTermsText(),
+
+        // Error/Success messages
+        if (_errorMessage != null) ...[
+          SizedBox(height: AppSpacing.lg),
+          Container(
+            padding: EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.error.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppSpacing.sm),
+              border: Border.all(color: AppColors.error.withOpacity(0.3)),
+            ),
+            child: Text(
+              _errorMessage!,
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+
+        if (_successMessage != null) ...[
+          SizedBox(height: AppSpacing.lg),
+          Container(
+            padding: EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.success.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppSpacing.sm),
+              border: Border.all(color: AppColors.success.withOpacity(0.3)),
+            ),
+            child: Text(
+              _successMessage!,
+              style: TextStyle(color: AppColors.success),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildPhoneInput() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xs,
       ),
+      decoration: BoxDecoration(
+        color: AppColors.backgroundCardDark,
+        borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
+        border: Border.all(color: AppColors.borderDark),
+      ),
+      child: Form(
+        key: _formKey,
+        child: Row(
+          children: [
+            Text('🇦🇪', style: TextStyle(fontSize: 22)),
+            SizedBox(width: AppSpacing.sm),
+            Text(
+              _countryCode,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: TextFormField(
+                controller: _phoneController,
+                decoration: InputDecoration(
+                  hintText: '505050500',
+                  hintStyle: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: AppColors.textSecondary,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.zero,
+                ),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.textPrimary,
+                ),
+                keyboardType: TextInputType.phone,
+                onChanged: _onPhoneChanged,
+                validator: _validatePhone,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmailButton() {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleSubmit,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryPurple,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+          ),
+        ),
+        child: _isLoading
+            ? SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('📱', style: TextStyle(fontSize: 18)),
+                  SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'Login with Email',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Row(
+      children: [
+        Expanded(child: Container(height: 1, color: AppColors.borderDark)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Text(
+            'or',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ),
+        Expanded(child: Container(height: 1, color: AppColors.borderDark)),
+      ],
+    );
+  }
+
+  Widget _buildGoogleButton() {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      child: OutlinedButton(
+        onPressed: () {
+          // TODO: Implement Google sign in
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Google sign-in coming soon')));
+        },
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: AppColors.borderDark),
+          backgroundColor: AppColors.backgroundCardDark,
+          foregroundColor: AppColors.textPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'G',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            SizedBox(width: AppSpacing.sm),
+            Text(
+              'Continue with Google',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContinueEmailButton() {
+    return Container(
+      width: double.infinity,
+      height: 56,
+      child: OutlinedButton(
+        onPressed: () {
+          debugPrint('📧 [DEBUG] PhoneInputScreen: Email button pressed');
+          context.go(RoutePaths.emailInput);
+        },
+        style: OutlinedButton.styleFrom(
+          side: BorderSide(color: AppColors.borderDark),
+          backgroundColor: AppColors.backgroundCardDark,
+          foregroundColor: AppColors.textPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('📨', style: TextStyle(fontSize: 18)),
+            SizedBox(width: AppSpacing.sm),
+            Text(
+              'Continue with Email',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTermsText() {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 4,
+      children: [
+        Text(
+          'By continuing, you agree to our',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            // TODO: Open Terms of Service
+          },
+          child: Text(
+            'Terms of Service',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+        Text(
+          'and',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            // TODO: Open Privacy Policy
+          },
+          child: Text(
+            'Privacy Policy',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textPrimary,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -118,8 +118,13 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
             query = query.eq('is_cancelled', true);
           }
         }
+        // Database uses 'listing_visibility' not 'is_public'
         if (filters['is_public'] != null) {
-          query = query.eq('is_public', filters['is_public']);
+          if (filters['is_public'] == true) {
+            query = query.eq('listing_visibility', 'public');
+          } else {
+            query = query.neq('listing_visibility', 'public');
+          }
         }
       }
 

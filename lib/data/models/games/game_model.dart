@@ -29,37 +29,41 @@ class GameModel extends Game {
 
   factory GameModel.fromJson(Map<String, dynamic> json) {
     try {
+      // Parse start/end times from start_at and end_at timestamps
+      final startAt = json['start_at'] != null
+          ? DateTime.parse(json['start_at'] as String)
+          : DateTime.now();
+      final endAt = json['end_at'] != null
+          ? DateTime.parse(json['end_at'] as String)
+          : startAt.add(Duration(hours: 1));
+
       return GameModel(
         id: json['id'] as String,
         title: json['title'] as String? ?? 'Untitled Game',
         description: json['description'] as String? ?? '',
         sport: json['sport'] as String? ?? 'football',
-        venueId: json['venue_id'] as String?,
+        venueId: json['venue_space_id'] as String?,
         venueName: _parseVenueName(json), // Parse from JOIN or direct field
-        scheduledDate: _parseDate(
-          json['start_at'],
-        ), // Changed from scheduled_date to start_at
-        startTime: json['start_time'] as String? ?? '09:00',
-        endTime: json['end_time'] as String? ?? '10:00',
-        minPlayers: json['min_players'] as int? ?? 2,
+        scheduledDate: startAt,
+        startTime:
+            '${startAt.hour.toString().padLeft(2, '0')}:${startAt.minute.toString().padLeft(2, '0')}',
+        endTime:
+            '${endAt.hour.toString().padLeft(2, '0')}:${endAt.minute.toString().padLeft(2, '0')}',
+        minPlayers: 2, // Default - not in DB schema
         maxPlayers:
-            json['max_players'] as int? ?? 10, // Added default for null safety
-        currentPlayers: json['current_players'] as int? ?? 0,
-        organizerId:
-            json['host_user_id'] as String? ??
-            '', // Changed from organizer_id to host_user_id
-        skillLevel: json['skill_level'] as String? ?? 'beginner',
-        pricePerPlayer: (json['price_per_player'] as num?)?.toDouble() ?? 0.0,
-        currency: json['currency'] as String? ?? 'USD',
-        status: _parseGameStatusFromIsCancelled(
-          json,
-        ), // Changed to parse from is_cancelled
-        isPublic: json['is_public'] as bool? ?? true,
-        allowsWaitlist: json['allows_waitlist'] as bool? ?? false,
-        checkInEnabled: json['check_in_enabled'] as bool? ?? false,
-        cancellationDeadline: json['cancellation_deadline'] != null
-            ? _parseDate(json['cancellation_deadline'])
-            : null,
+            json['capacity'] as int? ?? 10, // Map capacity to maxPlayers
+        currentPlayers: 0, // TODO: Calculate from game_players join
+        organizerId: json['host_user_id'] as String? ?? '',
+        skillLevel: _parseSkillLevel(json), // Parse from min_skill/max_skill
+        pricePerPlayer: 0.0, // Default - not in DB schema
+        currency: 'AED',
+        status: _parseGameStatusFromIsCancelled(json),
+        isPublic:
+            (json['listing_visibility'] as String?) ==
+            'public', // Map listing_visibility to isPublic
+        allowsWaitlist: false, // Default - not in DB schema
+        checkInEnabled: false, // Default - not in DB schema
+        cancellationDeadline: null, // Not in DB schema
         createdAt: _parseDate(
           json['created_at'] ?? DateTime.now().toIso8601String(),
         ),
@@ -145,6 +149,26 @@ class GameModel extends Game {
       );
       return GameStatus.upcoming;
     }
+  }
+
+  static String _parseSkillLevel(Map<String, dynamic> json) {
+    // Database has min_skill and max_skill (nullable)
+    // Map to our skill level strings
+    final minSkill = json['min_skill'];
+    final maxSkill = json['max_skill'];
+
+    if (minSkill == null && maxSkill == null) {
+      return 'all'; // Open to all skill levels
+    }
+
+    // Simple mapping - can be enhanced based on actual skill values
+    if (minSkill != null && minSkill is num && minSkill >= 7) {
+      return 'advanced';
+    } else if (minSkill != null && minSkill is num && minSkill >= 4) {
+      return 'intermediate';
+    }
+
+    return 'beginner';
   }
 
   static String? _parseVenueName(Map<String, dynamic> json) {

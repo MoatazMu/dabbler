@@ -30,11 +30,19 @@ class VenueModel extends Venue {
 
   factory VenueModel.fromJson(Map<String, dynamic> json) {
     try {
-      print('🏟️ [DEBUG] Parsing venue: ${json['name']}');
+      // Use name_en for English name, fallback to name if present
+      final name =
+          json['name_en'] as String? ??
+          json['name'] as String? ??
+          'Unnamed Venue';
+      print('🏟️ [DEBUG] Parsing venue: $name');
       return VenueModel(
         id: json['id'] as String,
-        name: json['name'] as String,
-        description: json['description'] as String? ?? '',
+        name: name,
+        description:
+            json['description_en'] as String? ??
+            json['description'] as String? ??
+            '',
         addressLine1:
             json['address_line1'] as String? ??
             json['address_line_1'] as String? ??

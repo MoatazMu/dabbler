@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
+import 'package:dabbler/features/venues/providers.dart';
 
 class VenueDetailScreen extends ConsumerStatefulWidget {
   final String venueId;
@@ -16,6 +17,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
   late TabController _tabController;
   int _currentImageIndex = 0;
 
+  // Mock data as fallback (will be replaced by real data from provider)
   final Map<String, dynamic> _venueData = {
     'id': '1',
     'name': 'Central Park Basketball Court',
@@ -84,23 +86,47 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final venueAsync = ref.watch(venueDetailProvider(widget.venueId));
+
     return Scaffold(
-      body: NestedScrollView(
-        headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          _buildSliverAppBar(),
-        ],
-        body: _buildTabContent(),
+      body: venueAsync.when(
+        data: (venue) => NestedScrollView(
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            _buildSliverAppBar(venue),
+          ],
+          body: _buildTabContent(venue),
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 16),
+              Text('Failed to load venue: $error'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () =>
+                    ref.refresh(venueDetailProvider(widget.venueId)),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
       ),
-      bottomNavigationBar: _buildBottomBar(),
+      bottomNavigationBar: venueAsync.maybeWhen(
+        data: (venue) => _buildBottomBar(venue),
+        orElse: () => null,
+      ),
     );
   }
 
-  Widget _buildSliverAppBar() {
+  Widget _buildSliverAppBar(dynamic venue) {
     return SliverAppBar(
       expandedHeight: 300.0,
       floating: false,
       pinned: true,
-      title: Text(_venueData['name']),
+      title: Text(venue.name),
       flexibleSpace: FlexibleSpaceBar(
         background: Stack(
           fit: StackFit.expand,
@@ -291,7 +317,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
     );
   }
 
-  Widget _buildTabContent() {
+  Widget _buildTabContent(dynamic venue) {
     // MVP: Hide Reviews tab when venuesBooking=false
     final tabs = [
       const Tab(text: 'Overview'),
@@ -301,10 +327,10 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
     ];
 
     final tabViews = [
-      _buildOverviewTab(),
-      _buildAmenitiesTab(),
+      _buildOverviewTab(venue),
+      _buildAmenitiesTab(venue),
       if (FeatureFlags.venuesBooking) _buildReviewsTab(),
-      _buildHoursTab(),
+      _buildHoursTab(venue),
     ];
 
     return Column(
@@ -326,7 +352,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
     );
   }
 
-  Widget _buildOverviewTab() {
+  Widget _buildOverviewTab(dynamic venue) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -354,7 +380,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    _venueData['description'],
+                    venue.description.isEmpty
+                        ? 'No description available'
+                        : venue.description,
                     style: const TextStyle(fontSize: 16, height: 1.5),
                   ),
                 ],
@@ -387,7 +415,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: (_venueData['sports'] as List<String>)
+                    children: (venue.supportedSports as List<String>)
                         .map(
                           (sport) => Container(
                             padding: const EdgeInsets.symmetric(
@@ -522,7 +550,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
     );
   }
 
-  Widget _buildAmenitiesTab() {
+  Widget _buildAmenitiesTab(dynamic venue) {
+    final amenitiesList = venue.amenities as List<String>;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -547,50 +577,51 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
                     ],
                   ),
                   const SizedBox(height: 16),
-                  GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 4,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                        ),
-                    itemCount: (_venueData['amenities'] as List<String>).length,
-                    itemBuilder: (context, index) {
-                      final amenity =
-                          (_venueData['amenities'] as List<String>)[index];
-                      return Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.green[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.green[200]!),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              _getAmenityIcon(amenity),
-                              color: Colors.green[600],
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                amenity,
-                                style: TextStyle(
-                                  color: Colors.green[800],
-                                  fontWeight: FontWeight.w500,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                  amenitiesList.isEmpty
+                      ? const Text('No amenities information available')
+                      : GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                childAspectRatio: 4,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
                               ),
-                            ),
-                          ],
+                          itemCount: amenitiesList.length,
+                          itemBuilder: (context, index) {
+                            final amenity = amenitiesList[index];
+                            return Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.green[50],
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: Colors.green[200]!),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    _getAmenityIcon(amenity),
+                                    color: Colors.green[600],
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      amenity,
+                                      style: TextStyle(
+                                        color: Colors.green[800],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    },
-                  ),
                 ],
               ),
             ),
@@ -837,11 +868,10 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
     );
   }
 
-  Widget _buildHoursTab() {
-    // Null-safety: Safe access to hours data
-    final hours = _venueData['hours'] as Map<String, String>? ?? {};
-    final isOpen = _venueData['isOpen'] as bool? ?? false;
-    final openUntil = _venueData['openUntil'] as String? ?? '—';
+  Widget _buildHoursTab(dynamic venue) {
+    // Use opening and closing times from venue
+    final openingTime = venue.openingTime ?? '—';
+    final closingTime = venue.closingTime ?? '—';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -863,72 +893,22 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
               ),
               const SizedBox(height: 16),
 
-              if (hours.isEmpty)
-                const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: Text(
-                    'Hours information not available',
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
-                  ),
-                )
-              else
-                ...hours.entries.map((entry) {
-                  final isToday = _isToday(entry.key);
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _capitalizeFirst(entry.key),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: isToday
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isToday ? Colors.blue : null,
-                          ),
-                        ),
-                        Text(
-                          entry.value,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: isToday
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isToday ? Colors.blue : Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }),
-
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isOpen ? Colors.green[50] : Colors.red[50],
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: isOpen ? Colors.green[200]! : Colors.red[200]!,
-                  ),
-                ),
+              // Simple hours display
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(
-                      isOpen ? Icons.check_circle : Icons.cancel,
-                      color: isOpen ? Colors.green[600] : Colors.red[600],
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      isOpen
-                          ? 'Currently Open until $openUntil'
-                          : 'Currently Closed',
+                    const Text(
+                      'Daily Hours',
                       style: TextStyle(
-                        color: isOpen ? Colors.green[800] : Colors.red[800],
+                        fontSize: 16,
                         fontWeight: FontWeight.w500,
                       ),
+                    ),
+                    Text(
+                      '$openingTime - $closingTime',
+                      style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                     ),
                   ],
                 ),
@@ -940,13 +920,13 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
     );
   }
 
-  Widget _buildBottomBar() {
-    // Null-safety: Safe access to venue data with fallbacks
-    final priceRange = _venueData['priceRange'] as String? ?? '—';
-    final address = _venueData['address'] as String? ?? 'Address not available';
-    final addressFirstLine = address.contains(',')
-        ? address.split(',')[0]
-        : address;
+  Widget _buildBottomBar(dynamic venue) {
+    // Use venue data
+    final priceRange =
+        '\$${venue.pricePerHour.toStringAsFixed(0)}/${venue.currency}';
+    final addressFirstLine = venue.addressLine1.isNotEmpty
+        ? venue.addressLine1
+        : 'Address not available';
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1074,24 +1054,6 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen>
       default:
         return Icons.check_circle;
     }
-  }
-
-  bool _isToday(String day) {
-    final today = DateTime.now().weekday;
-    final dayMap = {
-      'monday': 1,
-      'tuesday': 2,
-      'wednesday': 3,
-      'thursday': 4,
-      'friday': 5,
-      'saturday': 6,
-      'sunday': 7,
-    };
-    return dayMap[day.toLowerCase()] == today;
-  }
-
-  String _capitalizeFirst(String text) {
-    return text[0].toUpperCase() + text.substring(1);
   }
 
   void _shareVenue() {

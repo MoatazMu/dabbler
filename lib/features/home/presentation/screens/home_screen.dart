@@ -3,19 +3,14 @@ import 'package:dabbler/utils/constants/route_constants.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:intl/intl.dart';
-// import 'package:dabbler/core/services/games_service.dart'; // File doesn't exist
-import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
-import 'package:dabbler/widgets/game_card.dart';
-import 'package:dabbler/widgets/thoughts_input.dart';
-import 'package:dabbler/widgets/category_buttons.dart';
-import 'package:dabbler/widgets/action_cards.dart';
 import 'package:dabbler/widgets/svg_avatar.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/features/games/presentation/screens/join_game/game_detail_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {
@@ -68,195 +63,591 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ? (_userProfile!['display_name'] as String).split(' ').first
         : null;
 
-    return Scaffold(
-      // Transparent so the global AppBackground gradient is visible
-      backgroundColor: Colors.transparent,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Rank and Notification Row
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+    return TwoSectionLayout(
+      topSection: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Greeting and Avatar Row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Rank/Leaderboard Button (hidden when rewards disabled)
-                    if (FeatureFlags.enablePlayerRatings)
-                      GestureDetector(
-                        onTap: () {
-                          context.go(RoutePaths.rewards);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 10,
-                          ),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.12),
-                              width: 1,
-                            ),
-                            gradient: const LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [Color(0xFF7B4397), Color(0xFFDC2430)],
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Iconsax.cup_copy,
-                                size: 20,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Silver',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontFamily: 'Inter',
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.43,
-                                  letterSpacing: -0.15,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    if (FeatureFlags.enablePlayerRatings &&
-                        FeatureFlags.notifications)
-                      const SizedBox(width: 12),
-
-                    // Notification Icon (hidden when notifications disabled)
-                    if (FeatureFlags.notifications)
-                      GestureDetector(
-                        onTap: () {
-                          context.go(RoutePaths.notifications);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: const Color(0xFFEBD7FA).withOpacity(0.24),
-                              width: 1,
-                            ),
-                            color: const Color(0xFF301C4D),
-                          ),
-                          child: Icon(
-                            Iconsax.notification_copy,
-                            size: 24,
-                            color: const Color(0xFFEBD7FA),
-                          ),
+                    Text('${_getGreeting()},', style: AppTypography.greeting),
+                    if (displayName != null)
+                      Text('$displayName!', style: AppTypography.displayLarge)
+                    else
+                      Text(
+                        'Complete your profile',
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: AppColors.error,
+                          fontStyle: FontStyle.italic,
                         ),
                       ),
                   ],
                 ),
-                const SizedBox(height: 20),
-
-                // Greeting and Avatar Row
-                Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${_getGreeting()},',
-                            style: context.textTheme.headlineLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: context.colors.onSurface,
-                              height: 1.1,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          if (displayName != null)
-                            Text(
-                              displayName,
-                              style: context.textTheme.headlineLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: context.colors.primary,
-                                height: 1.1,
-                              ),
-                            )
-                          else
-                            Text(
-                              'Complete your profile',
-                              style: context.textTheme.bodyMedium?.copyWith(
-                                color: context.colors.error,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                    // User Avatar
-                    GestureDetector(
-                      onTap: () => context.go(RoutePaths.profile),
-                      child: SvgNetworkOrAssetAvatar(
-                        imageUrlOrAsset: _userProfile?['avatar_url'],
-                        radius: 32,
-                        fallbackIcon: Icons.person,
-                        backgroundColor: context.colors.primary.withValues(
-                          alpha: 0.1,
-                        ),
-                        fallbackColor: context.colors.primary,
-                      ),
-                    ),
-                  ],
+              ),
+              // User Avatar
+              GestureDetector(
+                onTap: () => context.go(RoutePaths.profile),
+                child: SvgNetworkOrAssetAvatar(
+                  imageUrlOrAsset: _userProfile?['avatar_url'],
+                  radius: 30,
+                  fallbackIcon: Icons.person,
+                  backgroundColor: Colors.blue.shade100,
+                  fallbackColor: Colors.blue.shade700,
                 ),
-                const SizedBox(height: 28),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sectionSpacing),
 
-                // Thoughts Input
-                ThoughtsInput(
-                  onTap: () {
-                    // context.go('/create-post');
-                  },
+          // Upcoming Game Card
+          _buildUpcomingGameSection(),
+          const SizedBox(height: AppSpacing.xl),
+
+          // Thoughts Input
+          _buildThoughtsInput(),
+        ],
+      ),
+      bottomSection: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Category Buttons
+          Row(
+            children: [
+              Expanded(
+                child: AppButtonCard(
+                  emoji: '📚',
+                  label: 'Community',
+                  onTap: () => context.go(RoutePaths.social),
                 ),
-                const SizedBox(height: 20),
-
-                // Category Buttons
-                CategoryButtons(
-                  onCommunityTap: () {
-                    context.go(RoutePaths.social);
-                  },
-                  onSportsTap: () {
-                    context.go(RoutePaths.explore);
-                  },
-                  onActivitiesTap: () {
-                    context.go(RoutePaths.activities);
-                  },
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: AppButtonCard(
+                  emoji: '🏆',
+                  label: 'Sports',
+                  onTap: () => context.go(RoutePaths.sports),
                 ),
-                const SizedBox(height: 20),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sectionSpacing),
 
-                // Upcoming Game Card (from Supabase)
-                _buildUpcomingGameSection(),
-                const SizedBox(height: 20),
+          // Newly joined section
+          _buildNewlyJoinedSection(),
+          const SizedBox(height: AppSpacing.sectionSpacing),
 
-                // Action Cards
-                ActionCards(
-                  onCreateGameTap: () {
-                    context.go(RoutePaths.createGame);
-                  },
-                  onJoinGameTap: () {
-                    context.go(RoutePaths.explore);
-                  },
+          // Action Cards
+          Row(
+            children: [
+              Expanded(
+                child: AppActionCard(
+                  emoji: '➕',
+                  title: 'Create Game',
+                  subtitle: 'Start a new match',
+                  onTap: () => context.go(RoutePaths.createGame),
                 ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: AppActionCard(
+                  emoji: '🔍',
+                  title: 'Join Game',
+                  subtitle: 'Find nearby games',
+                  onTap: () => context.go(RoutePaths.sports),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sectionSpacing),
 
-                const SizedBox(height: 24),
-              ],
+          // Activities button
+          _buildActivitiesButton(),
+          const SizedBox(height: AppSpacing.sectionSpacing),
+
+          // Latest feeds (if social enabled)
+          if (FeatureFlags.socialFeed) _buildLatestFeedsSection(),
+          if (FeatureFlags.socialFeed)
+            const SizedBox(height: AppSpacing.sectionSpacing),
+
+          // Recent Games
+          _buildRecentGamesSection(),
+          const SizedBox(height: AppSpacing.sectionSpacing),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThoughtsInput() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'What\'s on your mind?',
+              style: TextStyle(color: Colors.grey, fontSize: 15),
             ),
+          ),
+          const Text('📝', style: TextStyle(fontSize: 20)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivitiesButton() {
+    return GestureDetector(
+      onTap: () => context.go(RoutePaths.activities),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D2D2D),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF404040)),
+        ),
+        child: const Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('⚡', style: TextStyle(fontSize: 18)),
+              SizedBox(width: 8),
+              Text(
+                'Activities',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildNewlyJoinedSection() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _fetchRecentPlayers(),
+      builder: (context, snapshot) {
+        // Show placeholder avatars even while loading
+        final players = snapshot.hasData ? snapshot.data! : [];
+
+        // If no data, show 6 placeholder avatars with different sports
+        final displayPlayers = players.isEmpty
+            ? List.generate(
+                6,
+                (index) => {
+                  'avatar_url': null,
+                  'display_name': null,
+                  'sport_key': [
+                    'football',
+                    'basketball',
+                    'tennis',
+                    'volleyball',
+                    'cricket',
+                    'football',
+                  ][index],
+                },
+              )
+            : players;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Newly joined',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 75,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: displayPlayers.length > 6
+                    ? 6
+                    : displayPlayers.length,
+                itemBuilder: (context, index) {
+                  final player = displayPlayers[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 16),
+                    child: Column(
+                      children: [
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            CircleAvatar(
+                              radius: 26,
+                              backgroundImage: player['avatar_url'] != null
+                                  ? NetworkImage(player['avatar_url'])
+                                  : null,
+                              backgroundColor: Colors.grey.shade300,
+                              child: player['avatar_url'] == null
+                                  ? Icon(
+                                      Icons.person,
+                                      size: 26,
+                                      color: Colors.grey.shade600,
+                                    )
+                                  : null,
+                            ),
+                            Positioned(
+                              bottom: -2,
+                              right: -2,
+                              child: Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 2,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    _getSportEmoji(player['sport_key']),
+                                    style: const TextStyle(fontSize: 12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildLatestFeedsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Latest feeds',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 12),
+        // Placeholder for 3 recent posts
+        ...List.generate(3, (index) => _buildFeedItem(index)),
+      ],
+    );
+  }
+
+  Widget _buildFeedItem(int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF2D2D2D),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFF404040)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: const Color(0xFF404040),
+            child: const Icon(Icons.person, size: 20, color: Colors.white70),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text(
+                      'Sarah',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      '2h',
+                      style: TextStyle(fontSize: 13, color: Color(0xFFAAAAAA)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Had an amazing time at the community cooking class today! 🍳 Learning new recip...',
+                  style: TextStyle(fontSize: 14, color: Color(0xFFCCCCCC)),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRecentGamesSection() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: _fetchRecentGames(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        final games = snapshot.data!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Recent Games',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 12),
+            ...games.map((game) => _buildRecentGameItem(game)).toList(),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildRecentGameItem(Map<String, dynamic> game) {
+    final sport = game['sport'] ?? 'Football';
+    final format = game['format'] ?? 'Futsal';
+    final title = game['title'] ?? 'Game';
+    final date = game['scheduled_date'] != null
+        ? DateFormat('dd MMM').format(DateTime.parse(game['scheduled_date']))
+        : '25 OCT';
+    final time = game['start_time'] ?? '6:00 PM';
+    final location = game['location_name'] ?? 'Downtown, Dubai';
+    final currentPlayers = game['current_players'] ?? 5;
+    final maxPlayers = game['max_players'] ?? 10;
+
+    return GestureDetector(
+      onTap: () {
+        if (game['id'] != null) {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => GameDetailScreen(gameId: game['id']),
+            ),
+          );
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF2D2D2D),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFF404040)),
+        ),
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _getSportEmoji(sport),
+                  style: const TextStyle(fontSize: 32),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                sport,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                format,
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: Color(0xFFAAAAAA),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              const Text('👥', style: TextStyle(fontSize: 16)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$currentPlayers/$maxPlayers',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Row(
+                  children: [
+                    const Text('�', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(
+                      '$date • $time',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                Row(
+                  children: [
+                    const Text('�', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(
+                      location,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey.shade700,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchRecentPlayers() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final response = await supabase
+          .from('sport_profiles')
+          .select(
+            'profile_id, sport_key, skill_level, profiles!inner(display_name, avatar_url)',
+          )
+          .limit(6);
+
+      return (response as List).map((item) {
+        return {
+          'profile_id': item['profile_id'],
+          'sport_key': item['sport_key'],
+          'skill_level': item['skill_level'],
+          'display_name': item['profiles']['display_name'],
+          'avatar_url': item['profiles']['avatar_url'],
+        };
+      }).toList();
+    } catch (e) {
+      print('Error fetching recent players: $e');
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchRecentGames() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final response = await supabase
+          .from('games')
+          .select()
+          .eq('is_cancelled', false)
+          .order('created_at', ascending: false)
+          .limit(2);
+
+      return (response as List).cast<Map<String, dynamic>>();
+    } catch (e) {
+      print('Error fetching recent games: $e');
+      return [];
+    }
+  }
+
+  String _getSportEmoji(String? sport) {
+    if (sport == null) return '⚽';
+    switch (sport.toLowerCase()) {
+      case 'football':
+      case 'soccer':
+        return '⚽';
+      case 'basketball':
+        return '🏀';
+      case 'tennis':
+        return '🎾';
+      case 'cricket':
+        return '🏏';
+      case 'padel':
+        return '🎾';
+      case 'volleyball':
+        return '🏐';
+      default:
+        return '⚽';
+    }
   }
 
   /// Builds the upcoming game section with real Supabase data
@@ -266,8 +657,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return nextGameAsync.when(
       data: (game) {
         if (game == null) {
-          // No upcoming games - show empty state
-          return _buildEmptyGameState();
+          return const SizedBox.shrink();
         }
 
         // Calculate countdown
@@ -283,28 +673,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         String countdownLabel;
         if (difference.inDays > 0) {
-          countdownLabel = '${difference.inDays}d ${difference.inHours % 24}h';
+          countdownLabel =
+              '${difference.inHours}h ${difference.inMinutes % 60}m';
         } else if (difference.inHours > 0) {
           countdownLabel =
               '${difference.inHours}h ${difference.inMinutes % 60}m';
         } else if (difference.inMinutes > 0) {
           countdownLabel = '${difference.inMinutes}m';
         } else {
-          countdownLabel = 'Starting soon!';
+          countdownLabel = '0h 45m';
         }
 
         // Format date
-        final dateFormat = DateFormat('EEE, MMM dd');
-        final formattedDate = dateFormat.format(game.scheduledDate);
+        final timeFormat = '${game.startTime} - ${game.endTime}';
 
-        return GameCard(
-          countdownLabel: countdownLabel,
-          title: game.title,
-          date: formattedDate,
-          timeRange: '${game.startTime} - ${game.endTime}',
-          location: 'Loading venue...',
-          avatarUrls: const [],
-          othersCount: game.currentPlayers,
+        return GestureDetector(
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
@@ -312,110 +695,118 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             );
           },
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Text('🕐', style: TextStyle(fontSize: 20)),
+                        SizedBox(width: 8),
+                        Text(
+                          'Upcoming Game',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('⏰', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 4),
+                          Text(
+                            countdownLabel,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.red.shade700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  game.title,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    const Text('🕐', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    Text(
+                      timeFormat,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.grey.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const Text('📍', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        game.venueName ?? 'Location TBD',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Colors.grey.shade700,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
-      loading: () => _buildLoadingGameCard(),
+      loading: () => Container(
+        height: 160,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
       error: (error, stack) {
         print('Error loading upcoming game: $error');
-        return _buildErrorGameState();
+        return const SizedBox.shrink();
       },
-    );
-  }
-
-  /// Empty state when no games exist
-  Widget _buildEmptyGameState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF301C4D).withOpacity(0.6),
-            const Color(0xFF1E0E33).withOpacity(0.4),
-          ],
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Iconsax.calendar_1_copy,
-            size: 48,
-            color: Colors.white.withOpacity(0.3),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'No upcoming games',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Create or join a game to get started',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// Loading placeholder
-  Widget _buildLoadingGameCard() {
-    return Container(
-      height: 200,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: const Color(0xFF301C4D).withOpacity(0.3),
-      ),
-      child: Center(
-        child: CircularProgressIndicator(color: Colors.white.withOpacity(0.5)),
-      ),
-    );
-  }
-
-  /// Error state
-  Widget _buildErrorGameState() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.red.withOpacity(0.3), width: 1),
-        color: const Color(0xFF301C4D).withOpacity(0.3),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.error_outline,
-            size: 48,
-            color: Colors.red.withOpacity(0.7),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Failed to load games',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.7),
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Pull down to retry',
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.5),
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
     );
   }
 
