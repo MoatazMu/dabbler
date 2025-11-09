@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart' hide Badge;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:confetti/confetti.dart';
 import '../../../services/onboarding_gamification.dart' as gamification;
 import '../../../../../themes/design_system.dart';
@@ -371,7 +370,7 @@ class _OnboardingCompletionScreenState
               children: [
                 Expanded(
                   child: _buildStatCard(
-                    icon: LucideIcons.zap,
+                    icon: Icons.bolt,
                     label: 'Points Earned',
                     value: '$_totalPoints',
                     color: DesignSystem.colors.warning,
@@ -380,7 +379,7 @@ class _OnboardingCompletionScreenState
                 const SizedBox(width: 16),
                 Expanded(
                   child: _buildStatCard(
-                    icon: LucideIcons.award,
+                    icon: Icons.military_tech,
                     label: 'Badges Unlocked',
                     value: '${_unlockedBadges.length}',
                     color: DesignSystem.colors.success,
@@ -446,7 +445,7 @@ class _OnboardingCompletionScreenState
           Row(
             children: [
               Icon(
-                LucideIcons.award,
+                Icons.military_tech,
                 color: DesignSystem.colors.success,
                 size: 20,
               ),
@@ -532,7 +531,7 @@ class _OnboardingCompletionScreenState
           Row(
             children: [
               Icon(
-                LucideIcons.gift,
+                Icons.card_giftcard,
                 color: DesignSystem.colors.primary,
                 size: 24,
               ),
@@ -602,27 +601,27 @@ class _OnboardingCompletionScreenState
           const SizedBox(height: 16),
 
           _buildNextStepItem(
-            icon: LucideIcons.search,
+            icon: Icons.search,
             title: 'Find Your First Game',
             subtitle: 'Browse nearby games and join your first match',
             isRecommended: true,
           ),
 
           _buildNextStepItem(
-            icon: LucideIcons.users,
+            icon: Icons.group,
             title: 'Connect with Players',
             subtitle: 'Follow interesting players and build your network',
           ),
 
           _buildNextStepItem(
-            icon: LucideIcons.calendar,
+            icon: Icons.calendar_today,
             title: 'Create a Game',
             subtitle: 'Host your own game and invite others to join',
           ),
 
           if (variant == 'gamified' && _nextAction.isNotEmpty)
             _buildNextStepItem(
-              icon: LucideIcons.target,
+              icon: Icons.gps_fixed,
               title: 'Personalized Suggestion',
               subtitle: _nextAction,
               color: DesignSystem.colors.primary,
@@ -715,7 +714,7 @@ class _OnboardingCompletionScreenState
           ),
 
           Icon(
-            LucideIcons.chevronRight,
+            Icons.chevron_right,
             color: DesignSystem.colors.textSecondary,
             size: 16,
           ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:dabbler/themes/design_system.dart';
 
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/utils/constants/app_constants.dart';
 
 class WelcomeScreen extends StatefulWidget {
@@ -91,7 +90,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(
-                                LucideIcons.check,
+                                Icons.check,
                                 size: 60,
                                 color: DS.primary,
                               ),

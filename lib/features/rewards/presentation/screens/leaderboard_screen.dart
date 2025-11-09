@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
@@ -126,7 +125,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
       elevation: 0,
       surfaceTintColor: context.colors.surface,
       leading: IconButton(
-        icon: Icon(LucideIcons.arrowLeft, color: context.colors.onSurface),
+        icon: Icon(Icons.arrow_back, color: context.colors.onSurface),
         onPressed: () => Navigator.of(context).pop(),
       ),
       flexibleSpace: FlexibleSpaceBar(
@@ -154,7 +153,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Icon(
-                          LucideIcons.trophy,
+                          Icons.emoji_events,
                           color: Color(0xFFF59E0B),
                           size: 24,
                         ),
@@ -208,7 +207,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                         child: Column(
                           children: [
                             Icon(
-                              LucideIcons.trophy,
+                              Icons.emoji_events,
                               color: context.colors.primary,
                               size: 24,
                             ),
@@ -241,12 +240,12 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
       ),
       actions: [
         IconButton(
-          icon: Icon(_showFilters ? LucideIcons.filterX : LucideIcons.filter),
+          icon: Icon(_showFilters ? Icons.filter_list_off : Icons.filter_list),
           onPressed: () => setState(() => _showFilters = !_showFilters),
           color: context.colors.onSurface,
         ),
         PopupMenuButton<String>(
-          icon: Icon(LucideIcons.moreVertical, color: context.colors.onSurface),
+          icon: Icon(Icons.more_vert, color: context.colors.onSurface),
           onSelected: (value) {
             switch (value) {
               case 'refresh':
@@ -281,7 +280,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               value: 'share',
               child: Row(
                 children: [
-                  Icon(LucideIcons.share2),
+                  Icon(Icons.share),
                   SizedBox(width: 12),
                   Text('Share'),
                 ],
@@ -291,7 +290,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               value: 'export',
               child: Row(
                 children: [
-                  Icon(LucideIcons.download),
+                  Icon(Icons.download),
                   SizedBox(width: 12),
                   Text('Export'),
                 ],
@@ -301,7 +300,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
               value: 'search',
               child: Row(
                 children: [
-                  Icon(LucideIcons.search),
+                  Icon(Icons.search),
                   SizedBox(width: 12),
                   Text('Search Users'),
                 ],
@@ -312,7 +311,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                 value: 'my_rank',
                 child: Row(
                   children: [
-                    Icon(LucideIcons.mapPin),
+                    Icon(Icons.location_on),
                     SizedBox(width: 12),
                     Text('Go to My Rank'),
                   ],
@@ -452,7 +451,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                LucideIcons.alertTriangle,
+                Icons.warning_amber,
                 size: 64,
                 color: context.colors.error,
               ),
@@ -489,7 +488,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                LucideIcons.trophy,
+                Icons.emoji_events,
                 size: 64,
                 color: context.colors.onSurfaceVariant,
               ),
@@ -569,7 +568,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             children: [
               Row(
                 children: [
-                  Icon(LucideIcons.crown, color: const Color(0xFFF59E0B)),
+                  Icon(Icons.workspace_premium, color: const Color(0xFFF59E0B)),
                   const SizedBox(width: 8),
                   Text(
                     'Top Performers',
@@ -662,7 +661,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
         children: [
           Row(
             children: [
-              Icon(LucideIcons.mapPin, color: context.colors.primary, size: 20),
+              Icon(Icons.location_on, color: context.colors.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Your Current Rank',
@@ -736,7 +735,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             backgroundColor: context.colors.primary,
             foregroundColor: context.colors.onPrimary,
             elevation: 2,
-            child: const Icon(LucideIcons.mapPin),
+            child: const Icon(Icons.location_on),
           ),
 
         const SizedBox(height: 16),
@@ -747,7 +746,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           backgroundColor: context.colors.surfaceContainerLowest,
           foregroundColor: context.colors.onSurface,
           elevation: 2,
-          icon: const Icon(LucideIcons.refreshCw),
+          icon: const Icon(Icons.refresh),
           label: const Text('Refresh'),
         ),
       ],

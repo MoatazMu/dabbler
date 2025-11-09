@@ -1,7 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:go_router/go_router.dart';
 import '../utils/constants/route_constants.dart';
 
@@ -81,7 +80,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Iconsax.home_hashtag_copy,
+                          Icons.home_rounded,
                           size: 20,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),

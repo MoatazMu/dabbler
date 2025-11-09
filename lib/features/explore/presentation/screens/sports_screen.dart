@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
@@ -185,7 +184,7 @@ class VenueCard extends StatelessWidget {
                   Row(
                     children: [
                       Icon(
-                        LucideIcons.mapPin,
+                        Icons.location_on,
                         size: 16,
                         color: context.colors.onSurfaceVariant,
                       ),
@@ -234,7 +233,7 @@ class VenueCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                LucideIcons.navigation,
+                                Icons.navigation,
                                 size: 12,
                                 color: context.colors.primary,
                               ),
@@ -370,7 +369,7 @@ class VenueCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(LucideIcons.image, size: 24, color: Colors.grey[400]),
+            Icon(Icons.image, size: 24, color: Colors.grey[400]),
             const SizedBox(height: 4),
             Text(
               'No Image',
@@ -486,7 +485,7 @@ class _ExploreScreenState extends State<ExploreScreen>
     {
       'name': 'Football',
       'emoji': '⚽️',
-      'icon': LucideIcons.circle,
+      'icon': Icons.circle_outlined,
       'color': Colors.green,
       'description': 'Find football games near you',
       'count': 30,
@@ -494,7 +493,7 @@ class _ExploreScreenState extends State<ExploreScreen>
     {
       'name': 'Cricket',
       'emoji': '🏏',
-      'icon': LucideIcons.circle,
+      'icon': Icons.circle_outlined,
       'color': Colors.orange,
       'description': 'Join cricket games and tournaments',
       'count': 15,
@@ -502,7 +501,7 @@ class _ExploreScreenState extends State<ExploreScreen>
     {
       'name': 'Padel',
       'emoji': '🎾',
-      'icon': LucideIcons.square,
+      'icon': Icons.crop_square,
       'color': Colors.blue,
       'description': 'Discover padel courts and players',
       'count': 8,
@@ -1173,7 +1172,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
           child: Row(
             children: [
               Icon(
-                LucideIcons.mapPin,
+                Icons.location_on,
                 size: 16,
                 color: context.colors.onSurfaceVariant,
               ),
@@ -1259,7 +1258,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 color: DS.error.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(LucideIcons.wifiOff, size: 48, color: DS.error),
+              child: Icon(Icons.wifi_off, size: 48, color: DS.error),
             ),
             const SizedBox(height: 24),
             Text(
@@ -1279,7 +1278,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _refreshVenues,
-              icon: const Icon(LucideIcons.refreshCw),
+              icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
               style: DS.primaryButton,
             ),
@@ -1302,7 +1301,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 color: DS.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(LucideIcons.mapPin, size: 48, color: DS.primary),
+              child: Icon(Icons.location_on, size: 48, color: DS.primary),
             ),
             const SizedBox(height: 24),
             Text(
@@ -1322,7 +1321,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: _refreshVenues,
-              icon: const Icon(LucideIcons.filter),
+              icon: const Icon(Icons.filter_list),
               label: const Text('Adjust Filters'),
               style: DS.primaryButton,
             ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../utils/constants/route_constants.dart';
 
@@ -38,7 +37,7 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  LucideIcons.users,
+                  Icons.group,
                   size: 60,
                   color: theme.primaryColor,
                 ),
@@ -100,17 +99,17 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
   Widget _buildFeaturesList(BuildContext context) {
     final features = [
       _FeatureItem(
-        icon: LucideIcons.userPlus,
+        icon: Icons.person_add,
         title: 'Find Friends',
         description: 'Connect with players in your area',
       ),
       _FeatureItem(
-        icon: LucideIcons.messageCircle,
+        icon: Icons.chat_bubble_outline,
         title: 'Chat & Share',
         description: 'Message friends and share game moments',
       ),
       _FeatureItem(
-        icon: LucideIcons.gamepad2,
+        icon: Icons.sports_esports,
         title: 'Game Together',
         description: 'Discover and join games with your network',
       ),

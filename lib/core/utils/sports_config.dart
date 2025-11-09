@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 
 enum SportType { football, cricket, padel }
@@ -28,7 +27,7 @@ class SportsConfig {
       type: SportType.football,
       name: 'football',
       displayName: 'Football',
-      icon: LucideIcons.circle, // Football/Soccer ball
+      icon: Icons.circle_outlined, // Football/Soccer ball
       primaryColor: Color(0xFF22C55E), // Green
       secondaryColor: Color(0xFFDCFCE7),
     ),
@@ -36,7 +35,7 @@ class SportsConfig {
       type: SportType.cricket,
       name: 'cricket',
       displayName: 'Cricket',
-      icon: LucideIcons.circle, // Cricket ball
+      icon: Icons.circle_outlined, // Cricket ball
       primaryColor: Color(0xFF8B5CF6), // Purple
       secondaryColor: Color(0xFFF3E8FF),
     ),
@@ -44,7 +43,7 @@ class SportsConfig {
       type: SportType.padel,
       name: 'padel',
       displayName: 'Padel',
-      icon: LucideIcons.square, // Padel court (rectangular)
+      icon: Icons.crop_square, // Padel court (rectangular)
       primaryColor: Color(0xFF06B6D4), // Cyan
       secondaryColor: Color(0xFFE0F7FA),
     ),

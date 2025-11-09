@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -55,7 +54,7 @@ class _NotificationSettingsScreenState
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
@@ -172,7 +171,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Push Notifications',
               'Receive notifications on your device',
-              LucideIcons.smartphone,
+              Icons.smartphone,
               _pushNotifications,
               (value) => setState(() => _pushNotifications = value),
             ),
@@ -180,7 +179,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Email Notifications',
               'Get notifications via email',
-              LucideIcons.mail,
+              Icons.email,
               _emailNotifications,
               (value) => setState(() => _emailNotifications = value),
             ),
@@ -188,7 +187,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'SMS Notifications',
               'Receive urgent alerts via text message',
-              LucideIcons.messageSquare,
+              Icons.chat_bubble_outline,
               _smsNotifications,
               (value) => setState(() => _smsNotifications = value),
             ),
@@ -207,7 +206,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Game Invitations',
               'When someone invites you to join a game',
-              LucideIcons.userPlus,
+              Icons.person_add,
               _gameInvites,
               (value) => setState(() => _gameInvites = value),
             ),
@@ -215,7 +214,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Game Updates',
               'Changes to games you\'ve joined',
-              LucideIcons.gamepad2,
+              Icons.sports_esports,
               _gameUpdates,
               (value) => setState(() => _gameUpdates = value),
             ),
@@ -223,7 +222,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Game Reminders',
               'Reminders before your upcoming games',
-              LucideIcons.clock,
+              Icons.access_time,
               _gameReminders,
               (value) => setState(() => _gameReminders = value),
             ),
@@ -231,7 +230,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Game Results',
               'Results and post-game activities',
-              LucideIcons.trophy,
+              Icons.emoji_events,
               _gameResults,
               (value) => setState(() => _gameResults = value),
             ),
@@ -250,7 +249,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Booking Confirmations',
               'When your venue booking is confirmed',
-              LucideIcons.checkCircle,
+              Icons.check_circle_outline,
               _bookingConfirmations,
               (value) => setState(() => _bookingConfirmations = value),
             ),
@@ -258,7 +257,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Booking Reminders',
               'Reminders before your booking time',
-              LucideIcons.calendar,
+              Icons.calendar_today,
               _bookingReminders,
               (value) => setState(() => _bookingReminders = value),
             ),
@@ -266,7 +265,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Booking Changes',
               'Updates to your existing bookings',
-              LucideIcons.pencil,
+              Icons.edit,
               _bookingChanges,
               (value) => setState(() => _bookingChanges = value),
             ),
@@ -285,7 +284,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Friend Requests',
               'When someone wants to connect with you',
-              LucideIcons.users,
+              Icons.group,
               _friendRequests,
               (value) => setState(() => _friendRequests = value),
             ),
@@ -293,7 +292,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Friend Activity',
               'Updates about your friends\' activities',
-              LucideIcons.activity,
+              Icons.show_chart,
               _friendActivity,
               (value) => setState(() => _friendActivity = value),
             ),
@@ -301,7 +300,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Team Invitations',
               'Invitations to join teams',
-              LucideIcons.users,
+              Icons.group,
               _teamInvites,
               (value) => setState(() => _teamInvites = value),
             ),
@@ -320,7 +319,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Achievement Unlocked',
               'When you earn new badges and achievements',
-              LucideIcons.award,
+              Icons.military_tech,
               _achievements,
               (value) => setState(() => _achievements = value),
             ),
@@ -328,7 +327,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Loyalty Points',
               'Updates about earned loyalty points',
-              LucideIcons.gift,
+              Icons.card_giftcard,
               _loyaltyPoints,
               (value) => setState(() => _loyaltyPoints = value),
             ),
@@ -336,7 +335,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Rewards Available',
               'When new rewards become available',
-              LucideIcons.star,
+              Icons.star,
               _rewards,
               (value) => setState(() => _rewards = value),
             ),
@@ -355,7 +354,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'App Updates',
               'New features and app improvements',
-              LucideIcons.download,
+              Icons.download,
               _appUpdates,
               (value) => setState(() => _appUpdates = value),
             ),
@@ -363,7 +362,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Maintenance Alerts',
               'Scheduled maintenance and downtime',
-              LucideIcons.wrench,
+              Icons.build,
               _maintenanceAlerts,
               (value) => setState(() => _maintenanceAlerts = value),
             ),
@@ -371,7 +370,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Security Alerts',
               'Important security and privacy updates',
-              LucideIcons.shield,
+              Icons.shield,
               _securityAlerts,
               (value) => setState(() => _securityAlerts = value),
             ),
@@ -390,7 +389,7 @@ class _NotificationSettingsScreenState
             _buildSwitchTile(
               'Enable Quiet Hours',
               'Pause non-urgent notifications during specified times',
-              LucideIcons.moon,
+              Icons.nightlight_round,
               _quietHoursEnabled,
               (value) => setState(() => _quietHoursEnabled = value),
             ),
@@ -423,7 +422,7 @@ class _NotificationSettingsScreenState
                             ),
                             child: Row(
                               children: [
-                                const Icon(LucideIcons.clock, size: 16),
+                                const Icon(Icons.access_time, size: 16),
                                 const SizedBox(width: 8),
                                 Text(_quietHoursStart),
                               ],
@@ -459,7 +458,7 @@ class _NotificationSettingsScreenState
                             ),
                             child: Row(
                               children: [
-                                const Icon(LucideIcons.clock, size: 16),
+                                const Icon(Icons.access_time, size: 16),
                                 const SizedBox(width: 8),
                                 Text(_quietHoursEnd),
                               ],
@@ -537,7 +536,7 @@ class _NotificationSettingsScreenState
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(LucideIcons.send, size: 16),
+            Icon(Icons.send, size: 16),
             SizedBox(width: 8),
             Text('Send Test Notification'),
           ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 
 /// Social search screen with global search capabilities
@@ -23,11 +22,11 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
   String _currentQuery = '';
 
   final List<SearchTab> _searchTabs = [
-    SearchTab(key: 'all', label: 'All', icon: LucideIcons.search),
-    SearchTab(key: 'people', label: 'People', icon: LucideIcons.users),
-    SearchTab(key: 'posts', label: 'Posts', icon: LucideIcons.messageSquare),
-    SearchTab(key: 'games', label: 'Games', icon: LucideIcons.gamepad2),
-    SearchTab(key: 'venues', label: 'Venues', icon: LucideIcons.mapPin),
+    SearchTab(key: 'all', label: 'All', icon: Icons.search),
+    SearchTab(key: 'people', label: 'People', icon: Icons.group),
+    SearchTab(key: 'posts', label: 'Posts', icon: Icons.chat_bubble_outline),
+    SearchTab(key: 'games', label: 'Games', icon: Icons.sports_esports),
+    SearchTab(key: 'venues', label: 'Venues', icon: Icons.location_on),
   ];
 
   @override
@@ -95,7 +94,7 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: const Icon(Icons.arrow_back),
         ),
         title: Container(
           height: 40,
@@ -114,11 +113,11 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
             decoration: InputDecoration(
               hintText:
                   'Search ${_searchTabs[_tabController.index].label.toLowerCase()}...',
-              prefixIcon: const Icon(LucideIcons.search, size: 18),
+              prefixIcon: const Icon(Icons.search, size: 18),
               suffixIcon: _currentQuery.isNotEmpty
                   ? IconButton(
                       onPressed: _clearSearch,
-                      icon: const Icon(LucideIcons.x, size: 18),
+                      icon: const Icon(Icons.close, size: 18),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     )
@@ -170,17 +169,17 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
         children: [
           // Recent searches
           _buildSection('Recent Searches', [
-            _buildRecentSearchItem('John Doe', LucideIcons.user),
-            _buildRecentSearchItem('Basketball game', LucideIcons.gamepad2),
-            _buildRecentSearchItem('Central Park Courts', LucideIcons.mapPin),
+            _buildRecentSearchItem('John Doe', Icons.person),
+            _buildRecentSearchItem('Basketball game', Icons.sports_esports),
+            _buildRecentSearchItem('Central Park Courts', Icons.location_on),
           ]),
           const SizedBox(height: 24),
 
           // Suggested searches
           _buildSection('Suggestions', [
-            _buildSuggestionItem('People nearby', LucideIcons.users),
-            _buildSuggestionItem('Popular games today', LucideIcons.gamepad2),
-            _buildSuggestionItem('Trending posts', LucideIcons.trendingUp),
+            _buildSuggestionItem('People nearby', Icons.group),
+            _buildSuggestionItem('Popular games today', Icons.sports_esports),
+            _buildSuggestionItem('Trending posts', Icons.trending_up),
           ]),
           const SizedBox(height: 24),
 
@@ -215,7 +214,7 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
               const Spacer(),
               TextButton.icon(
                 onPressed: () {},
-                icon: const Icon(LucideIcons.filter, size: 16),
+                icon: const Icon(Icons.filter_list, size: 16),
                 label: const Text('Filter'),
               ),
             ],
@@ -253,7 +252,7 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
         onPressed: () {
           // Remove from recent searches
         },
-        icon: const Icon(LucideIcons.x, size: 16),
+        icon: const Icon(Icons.close, size: 16),
       ),
       onTap: () {
         _searchController.text = text;
@@ -267,7 +266,7 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
     return ListTile(
       leading: Icon(icon, size: 20),
       title: Text(text),
-      trailing: const Icon(LucideIcons.arrowUpRight, size: 16),
+      trailing: const Icon(Icons.north_east, size: 16),
       onTap: () {
         _searchController.text = text;
         _onSearchChanged(text);
@@ -319,7 +318,7 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
         ),
         title: Text('$tabKey Result ${index + 1}'),
         subtitle: Text('Sample subtitle for $_currentQuery'),
-        trailing: const Icon(LucideIcons.chevronRight),
+        trailing: const Icon(Icons.chevron_right),
         onTap: () {
           // Navigate to result detail
           switch (tabKey) {

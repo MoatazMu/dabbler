@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 
 /// Completion screen for social onboarding
@@ -24,7 +23,7 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                LucideIcons.check,
+                Icons.check,
                 size: 60,
                 color: Colors.green,
               ),
@@ -67,7 +66,7 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
-                            LucideIcons.users,
+                            Icons.group,
                             color: Theme.of(context).primaryColor,
                           ),
                         ),
@@ -100,7 +99,7 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
-                            LucideIcons.messageCircle,
+                            Icons.chat_bubble_outline,
                             color: Colors.blue,
                           ),
                         ),
@@ -133,7 +132,7 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: const Icon(
-                            LucideIcons.gamepad2,
+                            Icons.sports_esports,
                             color: Colors.orange,
                           ),
                         ),

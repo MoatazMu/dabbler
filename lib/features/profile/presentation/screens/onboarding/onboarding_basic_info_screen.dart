@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'onboarding_welcome_screen.dart';
 import 'package:dabbler/themes/design_system.dart';
 import 'package:dabbler/routes/app_routes.dart';
@@ -103,7 +102,7 @@ class _OnboardingBasicInfoScreenState
           leading: IconButton(
             onPressed: () => context.go(AppRoutes.onboardingWelcome),
             icon: Icon(
-              LucideIcons.arrowLeft,
+              Icons.arrow_back,
               color: DesignSystem.colors.textPrimary,
             ),
           ),
@@ -230,7 +229,7 @@ class _OnboardingBasicInfoScreenState
                       ),
                     )
                   : Icon(
-                      LucideIcons.camera,
+                      Icons.camera_alt,
                       size: 40,
                       color: DesignSystem.colors.textSecondary,
                     ),
@@ -286,7 +285,7 @@ class _OnboardingBasicInfoScreenState
           controller: _nameController,
           decoration: InputDecoration(
             hintText: 'How should other players know you?',
-            prefixIcon: Icon(LucideIcons.user),
+            prefixIcon: Icon(Icons.person),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide(color: DesignSystem.colors.border),
@@ -401,7 +400,7 @@ class _OnboardingBasicInfoScreenState
       child: Row(
         children: [
           Icon(
-            LucideIcons.lightbulb,
+            Icons.lightbulb_outline,
             color: DesignSystem.colors.primary,
             size: 20,
           ),
@@ -461,7 +460,7 @@ class _OnboardingBasicInfoScreenState
 
                   const SizedBox(width: 8),
 
-                  const Icon(LucideIcons.arrowRight, size: 20),
+                  const Icon(Icons.arrow_forward, size: 20),
                 ],
               ),
       ),
@@ -529,7 +528,7 @@ class _OnboardingBasicInfoScreenState
                 children: [
                   Expanded(
                     child: _buildImageOption(
-                      icon: LucideIcons.camera,
+                      icon: Icons.camera_alt,
                       label: 'Camera',
                       onTap: () async {
                         Navigator.pop(context);
@@ -549,7 +548,7 @@ class _OnboardingBasicInfoScreenState
 
                   Expanded(
                     child: _buildImageOption(
-                      icon: LucideIcons.image,
+                      icon: Icons.image,
                       label: 'Gallery',
                       onTap: () async {
                         Navigator.pop(context);
@@ -690,7 +689,7 @@ class _OnboardingBasicInfoScreenState
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                LucideIcons.trophy,
+                Icons.emoji_events,
                 size: 40,
                 color: DesignSystem.colors.success,
               ),

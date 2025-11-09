@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
 import 'package:dabbler/utils/enums/social_enums.dart';
@@ -32,7 +31,7 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
         backgroundColor: context.colors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(LucideIcons.x, color: context.colors.onSurface),
+          icon: Icon(Icons.close, color: context.colors.onSurface),
           onPressed: () => context.pop(),
         ),
         title: Text(
@@ -117,7 +116,7 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                             child:
                                 userAvatarUrl == null || userAvatarUrl.isEmpty
                                 ? Icon(
-                                    LucideIcons.user,
+                                    Icons.person,
                                     size: 20,
                                     color: context.colors.primary,
                                   )
@@ -236,7 +235,7 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
           SnackBar(
             content: Row(
               children: [
-                Icon(LucideIcons.check, color: Colors.white, size: 16),
+                Icon(Icons.check, color: Colors.white, size: 16),
                 const SizedBox(width: 8),
                 const Text('Post shared successfully!'),
               ],
@@ -267,7 +266,7 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
       SnackBar(
         content: Row(
           children: [
-            Icon(LucideIcons.alertCircle, color: Colors.white, size: 16),
+            Icon(Icons.error_outline, color: Colors.white, size: 16),
             const SizedBox(width: 8),
             Text(message),
           ],

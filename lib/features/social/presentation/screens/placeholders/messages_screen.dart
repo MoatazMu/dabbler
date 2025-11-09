@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 /// Messages screen showing list of conversations
 class MessagesScreen extends StatelessWidget {
@@ -11,8 +10,8 @@ class MessagesScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Messages'),
         actions: [
-          IconButton(icon: const Icon(LucideIcons.search), onPressed: () {}),
-          IconButton(icon: const Icon(LucideIcons.edit), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.edit), onPressed: () {}),
         ],
       ),
       body: CustomScrollView(
@@ -47,7 +46,7 @@ class MessagesScreen extends StatelessWidget {
                                 radius: 24,
                                 backgroundColor: Colors.grey[200],
                                 child: Icon(
-                                  LucideIcons.user,
+                                  Icons.person,
                                   color: Colors.grey[600],
                                 ),
                               ),
@@ -96,7 +95,7 @@ class MessagesScreen extends StatelessWidget {
                     CircleAvatar(
                       radius: 24,
                       backgroundColor: Colors.grey[200],
-                      child: Icon(LucideIcons.user, color: Colors.grey[600]),
+                      child: Icon(Icons.person, color: Colors.grey[600]),
                     ),
                     if (index < 5)
                       Positioned(

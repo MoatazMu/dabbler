@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 /// Notifications screen showing social notifications
 class NotificationsScreen extends StatefulWidget {
@@ -31,7 +30,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       appBar: AppBar(
         title: const Text('Notifications'),
         actions: [
-          IconButton(icon: const Icon(LucideIcons.settings), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -66,7 +65,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(LucideIcons.bell, size: 64, color: Colors.grey),
+            Icon(Icons.notifications, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
               'No notifications',
@@ -214,19 +213,19 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   IconData _getNotificationIcon(String type) {
     switch (type) {
       case 'friend_request':
-        return LucideIcons.userPlus;
+        return Icons.person_add;
       case 'game_invite':
-        return LucideIcons.calendar;
+        return Icons.calendar_today;
       case 'like':
-        return LucideIcons.heart;
+        return Icons.favorite;
       case 'comment':
-        return LucideIcons.messageCircle;
+        return Icons.chat_bubble_outline;
       case 'game_reminder':
-        return LucideIcons.clock;
+        return Icons.access_time;
       case 'message':
-        return LucideIcons.mail;
+        return Icons.email;
       default:
-        return LucideIcons.bell;
+        return Icons.notifications;
     }
   }
 

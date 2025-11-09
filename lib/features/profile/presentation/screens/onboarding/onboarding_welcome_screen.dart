@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../services/onboarding_controller.dart';
 import '../../../services/onboarding_gamification.dart';
@@ -210,7 +209,7 @@ class _ProfileOnboardingWelcomeScreenState
         borderRadius: BorderRadius.circular(100),
       ),
       child: Icon(
-        variant == 'gamified' ? LucideIcons.trophy : LucideIcons.userPlus,
+        variant == 'gamified' ? Icons.emoji_events : Icons.person_add,
         size: 80,
         color: DesignSystem.colors.primary,
       ),
@@ -255,17 +254,17 @@ class _ProfileOnboardingWelcomeScreenState
     final benefits = variant == 'gamified'
         ? [
             BenefitItem(
-              icon: LucideIcons.trophy,
+              icon: Icons.emoji_events,
               title: 'Earn Points & Badges',
               description: 'Get rewarded for every action you take',
             ),
             BenefitItem(
-              icon: LucideIcons.target,
+              icon: Icons.gps_fixed,
               title: 'Perfect Game Matches',
               description: 'AI-powered recommendations just for you',
             ),
             BenefitItem(
-              icon: LucideIcons.users,
+              icon: Icons.group,
               title: 'Connect & Compete',
               description: 'Join a community of passionate players',
             ),
@@ -273,29 +272,29 @@ class _ProfileOnboardingWelcomeScreenState
         : variant == 'minimal'
         ? [
             BenefitItem(
-              icon: LucideIcons.search,
+              icon: Icons.search,
               title: 'Find Games',
               description: 'Discover games near you',
             ),
             BenefitItem(
-              icon: LucideIcons.calendar,
+              icon: Icons.calendar_today,
               title: 'Easy Booking',
               description: 'Book with one tap',
             ),
           ]
         : [
             BenefitItem(
-              icon: LucideIcons.mapPin,
+              icon: Icons.location_on,
               title: 'Local Games',
               description: 'Find games in your neighborhood',
             ),
             BenefitItem(
-              icon: LucideIcons.clock,
+              icon: Icons.access_time,
               title: 'Flexible Scheduling',
               description: 'Games that fit your schedule',
             ),
             BenefitItem(
-              icon: LucideIcons.shield,
+              icon: Icons.shield,
               title: 'Safe & Verified',
               description: 'Play with trusted community members',
             ),
@@ -366,7 +365,7 @@ class _ProfileOnboardingWelcomeScreenState
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(LucideIcons.users, color: DesignSystem.colors.success, size: 16),
+          Icon(Icons.group, color: DesignSystem.colors.success, size: 16),
 
           const SizedBox(width: 8),
 
@@ -418,7 +417,7 @@ class _ProfileOnboardingWelcomeScreenState
 
                   const SizedBox(width: 8),
 
-                  const Icon(LucideIcons.arrowRight, size: 20),
+                  const Icon(Icons.arrow_forward, size: 20),
                 ],
               ),
             ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 import 'package:dabbler/core/viewmodels/game_creation_viewmodel.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -197,14 +196,14 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
               const SizedBox(height: 16),
               _buildSummaryRow(
                 context,
-                icon: LucideIcons.mapPin,
+                icon: Icons.location_on,
                 label: 'Venue',
                 value: state.selectedVenueSlot?.venueName ?? 'Not selected',
               ),
               const SizedBox(height: 16),
               _buildSummaryRow(
                 context,
-                icon: LucideIcons.clock,
+                icon: Icons.access_time,
                 label: 'Date & Time',
                 value: _formatDateTime(
                   state.selectedVenueSlot?.timeSlot.startTime,
@@ -213,14 +212,14 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
               const SizedBox(height: 16),
               _buildSummaryRow(
                 context,
-                icon: LucideIcons.users,
+                icon: Icons.group,
                 label: 'Players',
                 value: '${state.maxPlayers} players • ${state.skillLevel}',
               ),
               const SizedBox(height: 16),
               _buildSummaryRow(
                 context,
-                icon: LucideIcons.clock4,
+                icon: Icons.access_time,
                 label: 'Duration',
                 value: '${state.gameDuration} minutes',
               ),
@@ -425,7 +424,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
               Row(
                 children: [
                   Icon(
-                    LucideIcons.mail,
+                    Icons.email,
                     size: 16,
                     color: context.colors.primary,
                   ),
@@ -497,7 +496,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  LucideIcons.bell,
+                  Icons.notifications,
                   size: 20,
                   color: _enableReminders
                       ? context.colors.primary
@@ -656,28 +655,28 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
   IconData _getSportIcon(String? sport) {
     switch (sport?.toLowerCase()) {
       case 'football':
-        return LucideIcons.target;
+        return Icons.gps_fixed;
       case 'basketball':
-        return LucideIcons.circle;
+        return Icons.circle_outlined;
       case 'tennis':
-        return LucideIcons.circle;
+        return Icons.circle_outlined;
       case 'cricket':
-        return LucideIcons.target;
+        return Icons.gps_fixed;
       case 'padel':
-        return LucideIcons.square;
+        return Icons.crop_square;
       default:
-        return LucideIcons.activity;
+        return Icons.show_chart;
     }
   }
 
   IconData _getParticipationIcon(ParticipationMode mode) {
     switch (mode) {
       case ParticipationMode.public:
-        return LucideIcons.globe;
+        return Icons.public;
       case ParticipationMode.private:
-        return LucideIcons.lock;
+        return Icons.lock;
       case ParticipationMode.hybrid:
-        return LucideIcons.userPlus;
+        return Icons.person_add;
     }
   }
 

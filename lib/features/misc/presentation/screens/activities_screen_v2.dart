@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -262,7 +261,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: CustomAppBar(
-        actionIcon: LucideIcons.history,
+        actionIcon: Icons.history,
         onActionPressed: () {
           // Navigate to full-screen history view
           if (user != null) {
@@ -351,7 +350,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(LucideIcons.calendar, size: 18),
+                        Icon(Icons.calendar_today, size: 18),
                         SizedBox(width: 8),
                         Text('Upcoming'),
                       ],
@@ -361,7 +360,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(LucideIcons.barChart3, size: 18),
+                        Icon(Icons.bar_chart, size: 18),
                         SizedBox(width: 8),
                         Text('Stats'),
                       ],
@@ -429,7 +428,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
                       context,
                       'Games',
                       upcomingGames.length,
-                      LucideIcons.gamepad2,
+                      Icons.sports_esports,
                     ),
                     const SizedBox(height: 12),
                     ...upcomingGames.map(
@@ -444,7 +443,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
                       context,
                       'Venue Bookings',
                       upcomingBookings.length,
-                      LucideIcons.mapPin,
+                      Icons.location_on,
                     ),
                     const SizedBox(height: 12),
                     ...upcomingBookings.map(
@@ -486,7 +485,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
               context,
               gamesCount.toString(),
               'Games',
-              LucideIcons.gamepad2,
+              Icons.sports_esports,
             ),
           ),
           Container(
@@ -499,7 +498,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
               context,
               bookingsCount.toString(),
               'Bookings',
-              LucideIcons.mapPin,
+              Icons.location_on,
             ),
           ),
         ],
@@ -549,7 +548,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                LucideIcons.calendarOff,
+                Icons.event_busy,
                 size: 64,
                 color: context.colors.primary.withValues(alpha: 0.5),
               ),
@@ -572,7 +571,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
             const SizedBox(height: 24),
             ElevatedButton.icon(
               onPressed: () => context.go('/sports'),
-              icon: const Icon(LucideIcons.search),
+              icon: const Icon(Icons.search),
               label: const Text('Find Sports Games'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: context.colors.primary,
@@ -660,7 +659,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
-              LucideIcons.activity,
+              Icons.show_chart,
               size: 32,
               color: Colors.white,
             ),
@@ -698,20 +697,20 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     final categories = [
       {
         'name': 'Games',
-        'icon': LucideIcons.gamepad2,
+        'icon': Icons.sports_esports,
         'color': context.colors.primary,
       },
-      {'name': 'Bookings', 'icon': LucideIcons.mapPin, 'color': Colors.green},
+      {'name': 'Bookings', 'icon': Icons.location_on, 'color': Colors.green},
       {
         'name': 'Payments',
-        'icon': LucideIcons.creditCard,
+        'icon': Icons.credit_card,
         'color': Colors.orange,
       },
-      {'name': 'Social', 'icon': LucideIcons.users, 'color': Colors.blue},
-      {'name': 'Rewards', 'icon': LucideIcons.award, 'color': Colors.amber},
+      {'name': 'Social', 'icon': Icons.group, 'color': Colors.blue},
+      {'name': 'Rewards', 'icon': Icons.military_tech, 'color': Colors.amber},
       {
         'name': 'Community',
-        'icon': LucideIcons.messageSquare,
+        'icon': Icons.chat_bubble_outline,
         'color': Colors.purple,
       },
     ];
@@ -785,7 +784,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(LucideIcons.alertCircle, color: context.colors.error),
+            Icon(Icons.error_outline, color: context.colors.error),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -810,7 +809,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
         ),
         child: Row(
           children: [
-            Icon(LucideIcons.hourglass, color: context.colors.onSurfaceVariant),
+            Icon(Icons.hourglass_empty, color: context.colors.onSurfaceVariant),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -899,24 +898,24 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
   IconData _iconForActivity(ActivityType type) {
     switch (type) {
       case ActivityType.game:
-        return LucideIcons.gamepad2;
+        return Icons.sports_esports;
       case ActivityType.booking:
-        return LucideIcons.mapPin;
+        return Icons.location_on;
       case ActivityType.payment:
       case ActivityType.refund:
-        return LucideIcons.creditCard;
+        return Icons.credit_card;
       case ActivityType.reward:
       case ActivityType.badge:
       case ActivityType.achievement:
-        return LucideIcons.award;
+        return Icons.military_tech;
       case ActivityType.post:
       case ActivityType.comment:
       case ActivityType.like:
       case ActivityType.share:
       case ActivityType.follow:
-        return LucideIcons.users;
+        return Icons.group;
       default:
-        return LucideIcons.activity;
+        return Icons.show_chart;
     }
   }
 
@@ -1040,7 +1039,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
           Row(
             children: [
               Icon(
-                LucideIcons.mapPin,
+                Icons.location_on,
                 size: 14,
                 color: context.colors.onSurfaceVariant,
               ),
@@ -1060,7 +1059,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
           const SizedBox(height: 6),
           Row(
             children: [
-              Icon(LucideIcons.clock, size: 14, color: context.colors.primary),
+              Icon(Icons.access_time, size: 14, color: context.colors.primary),
               const SizedBox(width: 6),
               Text(
                 '$dateDisplay, $timeDisplay',
@@ -1135,7 +1134,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
           Row(
             children: [
               Icon(
-                LucideIcons.calendar,
+                Icons.calendar_today,
                 size: 14,
                 color: context.colors.onSurfaceVariant,
               ),
@@ -1147,7 +1146,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
                 ),
               ),
               const SizedBox(width: 12),
-              Icon(LucideIcons.clock, size: 14, color: Colors.green),
+              Icon(Icons.access_time, size: 14, color: Colors.green),
               const SizedBox(width: 6),
               Text(
                 '${booking.startTime} - ${booking.endTime}',
@@ -1171,7 +1170,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              LucideIcons.userX,
+              Icons.person_off,
               size: 64,
               color: context.colors.onSurfaceVariant.withValues(alpha: 0.5),
             ),
@@ -1508,14 +1507,14 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
 
   IconData _getActivityIcon(String type) {
     final t = type.toLowerCase();
-    if (t.contains('game')) return LucideIcons.gamepad2;
-    if (t.contains('booking')) return LucideIcons.mapPin;
-    if (t.contains('payment')) return LucideIcons.creditCard;
-    if (t.contains('friend')) return LucideIcons.userPlus;
-    if (t.contains('post')) return LucideIcons.messageSquare;
-    if (t.contains('achievement')) return LucideIcons.award;
-    if (t.contains('badge')) return LucideIcons.shield;
-    return LucideIcons.activity;
+    if (t.contains('game')) return Icons.sports_esports;
+    if (t.contains('booking')) return Icons.location_on;
+    if (t.contains('payment')) return Icons.credit_card;
+    if (t.contains('friend')) return Icons.person_add;
+    if (t.contains('post')) return Icons.chat_bubble_outline;
+    if (t.contains('achievement')) return Icons.military_tech;
+    if (t.contains('badge')) return Icons.shield;
+    return Icons.show_chart;
   }
 
   Color _getActivityColor(BuildContext context, String type) {
@@ -1546,7 +1545,7 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              LucideIcons.history,
+              Icons.history,
               size: 64,
               color: context.colors.onSurfaceVariant.withValues(alpha: 0.5),
             ),
@@ -1578,7 +1577,7 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              LucideIcons.filter,
+              Icons.filter_list,
               size: 64,
               color: context.colors.onSurfaceVariant.withValues(alpha: 0.5),
             ),
@@ -1610,7 +1609,7 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              LucideIcons.alertCircle,
+              Icons.error_outline,
               size: 64,
               color: Colors.red.withValues(alpha: 0.5),
             ),

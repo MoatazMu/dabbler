@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
@@ -66,7 +65,7 @@ class _SocialScreenState extends State<SocialScreen> {
         SnackBar(
           content: Row(
             children: [
-              Icon(LucideIcons.alertCircle, color: Colors.white, size: 16),
+              Icon(Icons.error_outline, color: Colors.white, size: 16),
               const SizedBox(width: 8),
               Expanded(child: Text('Failed to load posts: $e')),
             ],
@@ -122,7 +121,7 @@ class _SocialScreenState extends State<SocialScreen> {
         SnackBar(
           content: Row(
             children: [
-              Icon(LucideIcons.alertCircle, color: Colors.white, size: 16),
+              Icon(Icons.error_outline, color: Colors.white, size: 16),
               const SizedBox(width: 8),
               const Text('Failed to update like'),
             ],
@@ -215,10 +214,7 @@ class _SocialScreenState extends State<SocialScreen> {
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon: const Text(
-                    '🏠',
-                    style: TextStyle(fontSize: 24, fontFamily: 'Roboto'),
-                  ),
+                  icon: const Icon(Icons.home_rounded, size: 28),
                   onPressed: () => context.go('/home'),
                 ),
               ),
@@ -263,11 +259,7 @@ class _SocialScreenState extends State<SocialScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            LucideIcons.users,
-            size: 64,
-            color: context.colors.onSurfaceVariant,
-          ),
+          Icon(Icons.group, size: 64, color: context.colors.onSurfaceVariant),
           const SizedBox(height: 16),
           Text(
             'No posts yet',
@@ -286,7 +278,7 @@ class _SocialScreenState extends State<SocialScreen> {
           const SizedBox(height: 24),
           ElevatedButton.icon(
             onPressed: _navigateToCreatePost,
-            icon: const Icon(LucideIcons.plus),
+            icon: const Icon(Icons.add),
             label: const Text('Create your first post'),
             style: ElevatedButton.styleFrom(
               backgroundColor: context.colors.primary,

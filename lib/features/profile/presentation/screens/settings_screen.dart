@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/core/services/auth_service.dart';
@@ -43,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Profile Information',
         'Update your personal details',
-        LucideIcons.user,
+        Icons.person,
         () {
           context.push('/edit_profile');
         },
@@ -52,7 +51,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Password & Security',
         'Change password and security settings',
-        LucideIcons.shield,
+        Icons.shield,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -66,7 +65,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Connected Accounts',
         'Manage social media connections',
-        LucideIcons.link,
+        Icons.link,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -85,7 +84,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Location Services',
         'Allow app to access your location',
-        LucideIcons.mapPin,
+        Icons.location_on,
         true,
         (value) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -104,7 +103,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Profile Visibility',
         'Make your profile visible to others',
-        LucideIcons.eye,
+        Icons.visibility,
         true,
         (value) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -123,7 +122,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Data & Privacy',
         'Manage your data and privacy settings',
-        LucideIcons.database,
+        Icons.storage,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -142,7 +141,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Payment Methods',
         'Manage your payment cards and methods',
-        LucideIcons.creditCard,
+        Icons.credit_card,
         () {
           context.push('/payment_methods');
         },
@@ -151,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Language',
         'Choose your preferred language',
-        LucideIcons.languages,
+        Icons.language,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -165,7 +164,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Theme & Appearance',
         'Switch between light and dark mode',
-        LucideIcons.palette,
+        Icons.palette,
         () {
           context.push('/theme_settings');
         },
@@ -179,7 +178,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Help & Support',
         'Get help and contact support',
-        LucideIcons.info,
+        Icons.info_outline,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -193,7 +192,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Report a Problem',
         'Report bugs or issues',
-        LucideIcons.flag,
+        Icons.flag,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -207,7 +206,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Contact Us',
         'Get in touch with our team',
-        LucideIcons.mail,
+        Icons.email,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -226,7 +225,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'App Information',
         'Version, terms, and privacy policy',
-        LucideIcons.info,
+        Icons.info_outline,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -240,7 +239,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Terms of Service',
         'Read our terms and conditions',
-        LucideIcons.fileText,
+        Icons.description,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -256,7 +255,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Privacy Policy',
         'Learn how we protect your data',
-        LucideIcons.shield,
+        Icons.shield,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -287,7 +286,7 @@ class SettingsScreen extends StatelessWidget {
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-        leading: Icon(LucideIcons.logOut, color: Colors.red.shade600),
+        leading: Icon(Icons.logout, color: Colors.red.shade600),
         title: Text(
           'Sign Out',
           style: TextStyle(
@@ -296,7 +295,7 @@ class SettingsScreen extends StatelessWidget {
           ),
         ),
         trailing: Icon(
-          LucideIcons.chevronRight,
+          Icons.chevron_right,
           size: 16,
           color: Colors.red.shade600,
         ),
@@ -522,7 +521,7 @@ class SettingsScreen extends StatelessWidget {
             fontSize: 13,
           ),
         ),
-        trailing: Icon(LucideIcons.chevronRight, size: 16),
+        trailing: Icon(Icons.chevron_right, size: 16),
         onTap: onTap,
       ),
     );

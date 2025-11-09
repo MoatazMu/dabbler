@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 import 'package:dabbler/core/viewmodels/game_creation_viewmodel.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -95,7 +94,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
             child: Row(
               children: [
                 Icon(
-                  LucideIcons.dollarSign,
+                  Icons.attach_money,
                   size: 16,
                   color: context.colors.primary,
                 ),
@@ -226,7 +225,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
               ),
             ),
             if (isSelected)
-              Icon(LucideIcons.check, size: 20, color: context.colors.primary),
+              Icon(Icons.check, size: 20, color: context.colors.primary),
           ],
         ),
       ),
@@ -301,7 +300,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  LucideIcons.users,
+                  Icons.group,
                   size: 20,
                   color: allowWaitlist
                       ? context.colors.primary
@@ -366,7 +365,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
-                  LucideIcons.info,
+                  Icons.info_outline,
                   size: 16,
                   color: context.colors.primary,
                 ),
@@ -391,25 +390,25 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
         return {
           'title': 'I\'ll pay',
           'description': 'You cover the full cost',
-          'icon': LucideIcons.creditCard,
+          'icon': Icons.credit_card,
         };
       case PaymentSplit.equal:
         return {
           'title': 'Split equally',
           'description': 'Cost divided among all players including you',
-          'icon': LucideIcons.divide,
+          'icon': Icons.horizontal_rule,
         };
       case PaymentSplit.perPlayer:
         return {
           'title': 'Players pay',
           'description': 'Each player pays their share (you play for free)',
-          'icon': LucideIcons.users,
+          'icon': Icons.group,
         };
       case PaymentSplit.custom:
         return {
           'title': 'Custom split',
           'description': 'Set custom payment amounts',
-          'icon': LucideIcons.settings,
+          'icon': Icons.settings,
         };
     }
   }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../utils/constants/route_constants.dart';
 
@@ -138,7 +137,7 @@ class _SocialOnboardingFriendsScreenState
         elevation: 0,
         leading: IconButton(
           onPressed: () => context.pop(),
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: const Icon(Icons.arrow_back),
         ),
         actions: [
           TextButton(
@@ -181,7 +180,7 @@ class _SocialOnboardingFriendsScreenState
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
-                      : const Icon(LucideIcons.userPlus),
+                      : const Icon(Icons.person_add),
                   label: Text(
                     _isLoadingContacts ? 'Syncing...' : 'Sync Contacts',
                   ),
@@ -345,7 +344,7 @@ class _SocialOnboardingFriendsScreenState
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(LucideIcons.check, size: 14, color: Colors.green),
+                      Icon(Icons.check, size: 14, color: Colors.green),
                       SizedBox(width: 4),
                       Text(
                         'Added',

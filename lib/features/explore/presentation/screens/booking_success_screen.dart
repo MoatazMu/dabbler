@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/core/design_system/ds.dart';
 import 'package:dabbler/routes/app_routes.dart';
 import 'package:dabbler/routes/route_arguments.dart';
@@ -38,7 +37,7 @@ class BookingSuccessScreen extends StatelessWidget {
                   color: DS.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(LucideIcons.check, size: 60, color: DS.primary),
+                child: Icon(Icons.check, size: 60, color: DS.primary),
               ),
 
               const SizedBox(height: 32),
@@ -88,7 +87,7 @@ class BookingSuccessScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Icon(
-                            LucideIcons.mapPin,
+                            Icons.location_on,
                             color: DS.primary,
                             size: 24,
                           ),
@@ -140,7 +139,7 @@ class BookingSuccessScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () => _addToCalendar(context),
-                      icon: const Icon(LucideIcons.calendar),
+                      icon: const Icon(Icons.calendar_today),
                       label: const Text('Add to Calendar'),
                       style: DS.primaryButton.copyWith(
                         minimumSize: const WidgetStatePropertyAll(
@@ -157,7 +156,7 @@ class BookingSuccessScreen extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton.icon(
                       onPressed: () => _createGameFromBooking(context),
-                      icon: const Icon(LucideIcons.users),
+                      icon: const Icon(Icons.group),
                       label: const Text('Create Game from this Booking'),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(48),
@@ -176,7 +175,7 @@ class BookingSuccessScreen extends StatelessWidget {
                     width: double.infinity,
                     child: TextButton.icon(
                       onPressed: () => _viewBookings(context),
-                      icon: const Icon(LucideIcons.list),
+                      icon: const Icon(Icons.list),
                       label: const Text('View My Bookings'),
                       style: TextButton.styleFrom(
                         minimumSize: const Size.fromHeight(48),

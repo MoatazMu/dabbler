@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 /// Friends screen showing friend lists and management
 class FriendsScreen extends StatefulWidget {
@@ -31,8 +30,8 @@ class _FriendsScreenState extends State<FriendsScreen>
       appBar: AppBar(
         title: const Text('Friends'),
         actions: [
-          IconButton(icon: const Icon(LucideIcons.search), onPressed: () {}),
-          IconButton(icon: const Icon(LucideIcons.userPlus), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.search), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.person_add), onPressed: () {}),
         ],
         bottom: TabBar(
           controller: _tabController,
@@ -68,7 +67,7 @@ class _FriendsScreenState extends State<FriendsScreen>
         child: ListTile(
           leading: CircleAvatar(
             backgroundColor: Colors.grey[200],
-            child: Icon(LucideIcons.user, color: Colors.grey[600]),
+            child: Icon(Icons.person, color: Colors.grey[600]),
           ),
           title: Text('Friend ${index + 1}'),
           subtitle: Text('${100 + index} mutual friends'),
@@ -78,7 +77,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                 value: 'profile',
                 child: Row(
                   children: [
-                    Icon(LucideIcons.user),
+                    Icon(Icons.person),
                     SizedBox(width: 8),
                     Text('View Profile'),
                   ],
@@ -88,7 +87,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                 value: 'message',
                 child: Row(
                   children: [
-                    Icon(LucideIcons.messageCircle),
+                    Icon(Icons.chat_bubble_outline),
                     SizedBox(width: 8),
                     Text('Send Message'),
                   ],
@@ -98,7 +97,7 @@ class _FriendsScreenState extends State<FriendsScreen>
                 value: 'unfriend',
                 child: Row(
                   children: [
-                    Icon(LucideIcons.userMinus, color: Colors.red),
+                    Icon(Icons.person_remove, color: Colors.red),
                     SizedBox(width: 8),
                     Text('Unfriend', style: TextStyle(color: Colors.red)),
                   ],
@@ -125,7 +124,7 @@ class _FriendsScreenState extends State<FriendsScreen>
             children: [
               CircleAvatar(
                 backgroundColor: Colors.grey[200],
-                child: Icon(LucideIcons.user, color: Colors.grey[600]),
+                child: Icon(Icons.person, color: Colors.grey[600]),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -182,7 +181,7 @@ class _FriendsScreenState extends State<FriendsScreen>
             children: [
               CircleAvatar(
                 backgroundColor: Colors.grey[200],
-                child: Icon(LucideIcons.user, color: Colors.grey[600]),
+                child: Icon(Icons.person, color: Colors.grey[600]),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -205,14 +204,14 @@ class _FriendsScreenState extends State<FriendsScreen>
                         Expanded(
                           child: ElevatedButton.icon(
                             onPressed: () {},
-                            icon: const Icon(LucideIcons.userPlus, size: 16),
+                            icon: const Icon(Icons.person_add, size: 16),
                             label: const Text('Add Friend'),
                           ),
                         ),
                         const SizedBox(width: 8),
                         IconButton(
                           onPressed: () {},
-                          icon: const Icon(LucideIcons.x, size: 16),
+                          icon: const Icon(Icons.close, size: 16),
                         ),
                       ],
                     ),

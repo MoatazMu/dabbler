@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 import '../../data/notifications_repository.dart';
 import '../providers/notifications_providers.dart';
@@ -50,7 +49,7 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
     if (userId == null) {
       return Scaffold(
         appBar: CustomAppBar(
-          actionIcon: LucideIcons.bell,
+          actionIcon: Icons.notifications,
           onActionPressed: () {},
         ),
         body: const Center(child: Text('Please sign in to view notifications')),
@@ -62,7 +61,7 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: CustomAppBar(
-        actionIcon: LucideIcons.checkCheck,
+        actionIcon: Icons.done_all,
         onActionPressed: () => _markAllAsRead(userId),
       ),
       body: Column(
@@ -82,11 +81,11 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
 
   Widget _buildFilterSection(state) {
     final filters = [
-      {'label': 'All', 'icon': LucideIcons.inbox},
-      {'label': 'Games', 'icon': LucideIcons.gamepad2},
-      {'label': 'Bookings', 'icon': LucideIcons.calendar},
-      {'label': 'Social', 'icon': LucideIcons.users},
-      {'label': 'Achievements', 'icon': LucideIcons.award},
+      {'label': 'All', 'icon': Icons.inbox},
+      {'label': 'Games', 'icon': Icons.sports_esports},
+      {'label': 'Bookings', 'icon': Icons.calendar_today},
+      {'label': 'Social', 'icon': Icons.group},
+      {'label': 'Achievements', 'icon': Icons.military_tech},
     ];
 
     return Container(
@@ -165,7 +164,7 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
       ),
       child: Row(
         children: [
-          Icon(LucideIcons.bellDot, size: 16, color: context.colors.primary),
+          Icon(Icons.notifications_active, size: 16, color: context.colors.primary),
           const SizedBox(width: 8),
           Text(
             '${state.unreadCount} unread',
@@ -241,7 +240,7 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
         color: Colors.red,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20),
-        child: const Icon(LucideIcons.trash2, color: Colors.white),
+        child: const Icon(Icons.delete, color: Colors.white),
       ),
       direction: DismissDirection.endToStart,
       onDismissed: (_) {
@@ -320,32 +319,32 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
     switch (type) {
       case NotificationType.gameInvite:
       case NotificationType.gameUpdate:
-        icon = LucideIcons.gamepad2;
+        icon = Icons.sports_esports;
         color = Colors.blue;
         break;
       case NotificationType.bookingConfirmation:
       case NotificationType.bookingReminder:
-        icon = LucideIcons.calendar;
+        icon = Icons.calendar_today;
         color = Colors.green;
         break;
       case NotificationType.friendRequest:
-        icon = LucideIcons.userPlus;
+        icon = Icons.person_add;
         color = Colors.purple;
         break;
       case NotificationType.achievement:
-        icon = LucideIcons.award;
+        icon = Icons.military_tech;
         color = Colors.amber;
         break;
       case NotificationType.loyaltyPoints:
-        icon = LucideIcons.coins;
+        icon = Icons.paid;
         color = Colors.orange;
         break;
       case NotificationType.systemAlert:
-        icon = LucideIcons.alertTriangle;
+        icon = Icons.warning_amber;
         color = Colors.red;
         break;
       default:
-        icon = LucideIcons.bell;
+        icon = Icons.notifications;
         color = Colors.grey;
     }
 
@@ -371,7 +370,7 @@ class _NotificationsScreenV2State extends ConsumerState<NotificationsScreenV2> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            LucideIcons.bellOff,
+            Icons.notifications_off,
             size: 64,
             color: context.colors.onSurfaceVariant,
           ),

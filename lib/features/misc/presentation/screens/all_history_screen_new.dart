@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:dabbler/widgets/custom_app_bar.dart';
@@ -193,7 +192,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                   context,
                   'Total Activities',
                   totalActivities.toString(),
-                  LucideIcons.activity,
+                  Icons.show_chart,
                   Theme.of(context).colorScheme.primary,
                 ),
               ),
@@ -208,7 +207,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                   context,
                   'Games',
                   gamesCount.toString(),
-                  LucideIcons.users,
+                  Icons.group,
                   Colors.green,
                 ),
               ),
@@ -222,7 +221,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                   context,
                   'Bookings',
                   bookingsCount.toString(),
-                  LucideIcons.mapPin,
+                  Icons.location_on,
                   Colors.blue,
                 ),
               ),
@@ -237,7 +236,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                   context,
                   'Community',
                   communityCount.toString(),
-                  LucideIcons.messageSquare,
+                  Icons.chat_bubble_outline,
                   Colors.purple,
                 ),
               ),
@@ -434,31 +433,31 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                           if (activity.venue != null)
                             _buildInfoChip(
                               context,
-                              LucideIcons.mapPin,
+                              Icons.location_on,
                               activity.venue!,
                             ),
                           if (activity.amount != null)
                             _buildInfoChip(
                               context,
-                              LucideIcons.dollarSign,
+                              Icons.attach_money,
                               '${activity.amount!.toStringAsFixed(0)} ${activity.currency ?? 'AED'}',
                             ),
                           if (activity.points != null)
                             _buildInfoChip(
                               context,
-                              LucideIcons.gift,
+                              Icons.card_giftcard,
                               '${activity.points! > 0 ? '+' : ''}${activity.points} pts',
                             ),
                           if (activity.count != null)
                             _buildInfoChip(
                               context,
-                              LucideIcons.heart,
+                              Icons.favorite,
                               '${activity.count}',
                             ),
                           if (activity.targetUserName != null)
                             _buildInfoChip(
                               context,
-                              LucideIcons.user,
+                              Icons.person,
                               activity.targetUserName!,
                             ),
                         ],
@@ -503,43 +502,43 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
       case ActivityType.game:
       case ActivityType.gameJoin:
       case ActivityType.gameComplete:
-        return LucideIcons.users;
+        return Icons.group;
       case ActivityType.booking:
       case ActivityType.bookingConfirm:
-        return LucideIcons.mapPin;
+        return Icons.location_on;
       case ActivityType.post:
-        return LucideIcons.messageSquare;
+        return Icons.chat_bubble_outline;
       case ActivityType.like:
-        return LucideIcons.heart;
+        return Icons.favorite;
       case ActivityType.comment:
-        return LucideIcons.messageCircle;
+        return Icons.chat_bubble_outline;
       case ActivityType.share:
-        return LucideIcons.share2;
+        return Icons.share;
       case ActivityType.team:
-        return LucideIcons.shield;
+        return Icons.shield;
       case ActivityType.challenge:
-        return LucideIcons.target;
+        return Icons.gps_fixed;
       case ActivityType.payment:
-        return LucideIcons.creditCard;
+        return Icons.credit_card;
       case ActivityType.achievement:
       case ActivityType.badge:
-        return LucideIcons.award;
+        return Icons.military_tech;
       case ActivityType.loyaltyPoints:
       case ActivityType.reward:
-        return LucideIcons.gift;
+        return Icons.card_giftcard;
       case ActivityType.friendRequest:
       case ActivityType.follow:
-        return LucideIcons.userPlus;
+        return Icons.person_add;
       case ActivityType.message:
-        return LucideIcons.mail;
+        return Icons.email;
       case ActivityType.group:
-        return LucideIcons.users;
+        return Icons.group;
       case ActivityType.event:
-        return LucideIcons.calendar;
+        return Icons.calendar_today;
       case ActivityType.checkIn:
-        return LucideIcons.mapPin;
+        return Icons.location_on;
       default:
-        return LucideIcons.activity;
+        return Icons.show_chart;
     }
   }
 
@@ -597,7 +596,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
               color: Colors.grey.shade100,
               shape: BoxShape.circle,
             ),
-            child: Icon(LucideIcons.history, size: 40, color: Colors.grey[400]),
+            child: Icon(Icons.history, size: 40, color: Colors.grey[400]),
           ),
           const SizedBox(height: 16),
           Text(
@@ -625,7 +624,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(LucideIcons.alertCircle, size: 48, color: Colors.red[300]),
+          Icon(Icons.error_outline, size: 48, color: Colors.red[300]),
           const SizedBox(height: 16),
           Text(
             'Failed to load activities',
@@ -652,7 +651,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                     .refresh(user.id);
               }
             },
-            icon: const Icon(LucideIcons.refreshCw),
+            icon: const Icon(Icons.refresh),
             label: const Text('Retry'),
           ),
         ],

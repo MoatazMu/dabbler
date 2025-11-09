@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/utils/constants.dart';
 import 'package:dabbler/core/utils/validators.dart';
@@ -475,7 +474,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
             child: Row(
               children: [
                 Icon(
-                  LucideIcons.calendar,
+                  Icons.calendar_today,
                   color: _selectedBirthDate != null
                       ? Theme.of(context).colorScheme.primary
                       : Theme.of(context).colorScheme.onSurfaceVariant,
@@ -496,7 +495,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                   ),
                 ),
                 // Icon(
-                //   LucideIcons.calendar,
+                //   Icons.calendar_today,
                 //   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 //   size: 21,
                 // ),
@@ -624,7 +623,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
             ),
             if (isSelected)
               Icon(
-                LucideIcons.check,
+                Icons.check,
                 color: Theme.of(context).colorScheme.primary,
                 size: 20,
               ),

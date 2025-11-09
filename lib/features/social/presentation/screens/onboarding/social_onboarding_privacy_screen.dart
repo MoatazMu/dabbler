@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
 
 /// Privacy settings introduction screen for social onboarding
@@ -25,7 +24,7 @@ class _SocialOnboardingPrivacyScreenState
       appBar: AppBar(
         title: const Text('Privacy Settings'),
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => context.pop(),
         ),
       ),
@@ -59,7 +58,7 @@ class _SocialOnboardingPrivacyScreenState
 
             // Header
             Icon(
-              LucideIcons.shield,
+              Icons.shield,
               size: 64,
               color: Theme.of(context).primaryColor,
             ),
@@ -179,7 +178,7 @@ class _SocialOnboardingPrivacyScreenState
         value: value,
         onChanged: onChanged,
         secondary: Icon(
-          value ? LucideIcons.eye : LucideIcons.eyeOff,
+          value ? Icons.visibility : Icons.visibility_off,
           color: value ? Colors.green : Colors.grey,
         ),
       ),

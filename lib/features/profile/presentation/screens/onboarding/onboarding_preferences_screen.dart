@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../../themes/design_system.dart';
 import '../../../../../utils/constants/route_constants.dart';
 import 'onboarding_welcome_screen.dart'; // For providers
@@ -268,7 +267,7 @@ class _OnboardingPreferencesScreenState
           IconButton(
             onPressed: () => context.go(RoutePaths.onboardingSports),
             icon: Icon(
-              LucideIcons.arrowLeft,
+              Icons.arrow_back,
               color: DesignSystem.colors.textPrimary,
             ),
           ),
@@ -322,7 +321,7 @@ class _OnboardingPreferencesScreenState
         Row(
           children: [
             Icon(
-              LucideIcons.mapPin,
+              Icons.location_on,
               color: DesignSystem.colors.primary,
               size: 20,
             ),
@@ -344,7 +343,7 @@ class _OnboardingPreferencesScreenState
           initialValue: _selectedCity,
           decoration: InputDecoration(
             labelText: 'Primary City',
-            prefixIcon: const Icon(LucideIcons.mapPin),
+            prefixIcon: const Icon(Icons.location_on),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           items: _cities
@@ -460,7 +459,7 @@ class _OnboardingPreferencesScreenState
         Row(
           children: [
             Icon(
-              LucideIcons.calendar,
+              Icons.calendar_today,
               color: DesignSystem.colors.primary,
               size: 20,
             ),
@@ -679,7 +678,7 @@ class _OnboardingPreferencesScreenState
         Row(
           children: [
             Icon(
-              LucideIcons.settings,
+              Icons.settings,
               color: DesignSystem.colors.primary,
               size: 20,
             ),
@@ -853,7 +852,7 @@ class _OnboardingPreferencesScreenState
       child: Row(
         children: [
           Icon(
-            LucideIcons.lightbulb,
+            Icons.lightbulb_outline,
             color: DesignSystem.colors.primary,
             size: 20,
           ),
@@ -913,7 +912,7 @@ class _OnboardingPreferencesScreenState
 
                   const SizedBox(width: 8),
 
-                  const Icon(LucideIcons.arrowRight, size: 20),
+                  const Icon(Icons.arrow_forward, size: 20),
                 ],
               ),
       ),
@@ -1036,7 +1035,7 @@ class _OnboardingPreferencesScreenState
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                LucideIcons.mapPin,
+                Icons.location_on,
                 size: 40,
                 color: DesignSystem.colors.success,
               ),

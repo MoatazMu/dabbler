@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 import 'package:dabbler/core/viewmodels/game_creation_viewmodel.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -403,7 +402,7 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep>
               ),
             ),
             if (isSelected)
-              Icon(LucideIcons.check, size: 20, color: context.colors.primary),
+              Icon(Icons.check, size: 20, color: context.colors.primary),
           ],
         ),
       ),
@@ -416,19 +415,19 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep>
         return {
           'title': 'Public',
           'description': 'Anyone can join your game',
-          'icon': LucideIcons.globe,
+          'icon': Icons.public,
         };
       case ParticipationMode.private:
         return {
           'title': 'Private',
           'description': 'Only invited players can join',
-          'icon': LucideIcons.lock,
+          'icon': Icons.lock,
         };
       case ParticipationMode.hybrid:
         return {
           'title': 'Hybrid',
           'description': 'Mix of invited players and open spots',
-          'icon': LucideIcons.userPlus,
+          'icon': Icons.person_add,
         };
     }
   }

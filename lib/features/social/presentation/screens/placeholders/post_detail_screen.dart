@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 /// Post detail screen showing full post content, comments, and interactions
 class PostDetailScreen extends StatelessWidget {
@@ -13,9 +12,9 @@ class PostDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Post'),
         actions: [
-          IconButton(icon: const Icon(LucideIcons.share), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.share), onPressed: () {}),
           IconButton(
-            icon: const Icon(LucideIcons.moreHorizontal),
+            icon: const Icon(Icons.more_horiz),
             onPressed: () {},
           ),
         ],
@@ -36,7 +35,7 @@ class PostDetailScreen extends StatelessWidget {
                       children: [
                         const CircleAvatar(
                           radius: 20,
-                          child: Icon(LucideIcons.user),
+                          child: Icon(Icons.person),
                         ),
                         const SizedBox(width: 12),
                         Column(
@@ -74,7 +73,7 @@ class PostDetailScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
-                        LucideIcons.image,
+                        Icons.image,
                         size: 48,
                         color: Colors.grey,
                       ),
@@ -85,19 +84,19 @@ class PostDetailScreen extends StatelessWidget {
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(LucideIcons.heart),
+                          icon: const Icon(Icons.favorite),
                           onPressed: () {},
                         ),
                         const Text('12'),
                         const SizedBox(width: 16),
                         IconButton(
-                          icon: const Icon(LucideIcons.messageCircle),
+                          icon: const Icon(Icons.chat_bubble_outline),
                           onPressed: () {},
                         ),
                         const Text('5'),
                         const SizedBox(width: 16),
                         IconButton(
-                          icon: const Icon(LucideIcons.share),
+                          icon: const Icon(Icons.share),
                           onPressed: () {},
                         ),
                         const Text('3'),
@@ -130,7 +129,7 @@ class PostDetailScreen extends StatelessWidget {
                 child: ListTile(
                   leading: const CircleAvatar(
                     radius: 16,
-                    child: Icon(LucideIcons.user, size: 16),
+                    child: Icon(Icons.person, size: 16),
                   ),
                   title: Text('Commenter ${index + 1}'),
                   subtitle: Text(
@@ -179,7 +178,7 @@ class PostDetailScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-            IconButton(icon: const Icon(LucideIcons.send), onPressed: () {}),
+            IconButton(icon: const Icon(Icons.send), onPressed: () {}),
           ],
         ),
       ),

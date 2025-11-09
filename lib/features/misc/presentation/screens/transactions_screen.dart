@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -116,7 +115,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: CustomAppBar(
-        actionIcon: LucideIcons.download,
+        actionIcon: Icons.download,
         onActionPressed: _exportTransactions,
       ),
       body: user == null
@@ -218,7 +217,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
               context,
               'Total Spent',
               'AED ${total.toStringAsFixed(0)}',
-              LucideIcons.trendingUp,
+              Icons.trending_up,
               Colors.white.withValues(alpha: 0.2),
             ),
           ),
@@ -228,7 +227,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
               context,
               'This Month',
               'AED ${thisMonth.toStringAsFixed(0)}',
-              LucideIcons.calendar,
+              Icons.calendar_today,
               Colors.white.withValues(alpha: 0.2),
             ),
           ),
@@ -266,7 +265,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Icon(
-                  LucideIcons.trendingUp,
+                  Icons.trending_up,
                   color: Colors.white,
                   size: 12,
                 ),
@@ -303,10 +302,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
         controller: _searchController,
         decoration: InputDecoration(
           hintText: 'Search transactions...',
-          prefixIcon: const Icon(LucideIcons.search, size: 20),
+          prefixIcon: const Icon(Icons.search, size: 20),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
-                  icon: const Icon(LucideIcons.x, size: 18),
+                  icon: const Icon(Icons.close, size: 18),
                   onPressed: () {
                     setState(() {
                       _searchController.clear();
@@ -388,7 +387,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                   child: Row(
                     children: [
                       if (isSelected) ...[
-                        Icon(LucideIcons.check, size: 16, color: Colors.white),
+                        Icon(Icons.check, size: 16, color: Colors.white),
                         const SizedBox(width: 4),
                       ],
                       Text(
@@ -565,7 +564,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                   Row(
                     children: [
                       Icon(
-                        LucideIcons.building,
+                        Icons.business,
                         size: 12,
                         color: context.colors.onSurfaceVariant,
                       ),
@@ -642,13 +641,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
   IconData _getTypeIcon(String type) {
     switch (type) {
       case 'game_payment':
-        return LucideIcons.gamepad2;
+        return Icons.sports_esports;
       case 'booking_payment':
-        return LucideIcons.calendar;
+        return Icons.calendar_today;
       case 'refund':
-        return LucideIcons.arrowLeftCircle;
+        return Icons.arrow_circle_left;
       default:
-        return LucideIcons.creditCard;
+        return Icons.credit_card;
     }
   }
 
@@ -764,7 +763,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              LucideIcons.receipt,
+              Icons.receipt,
               size: 64,
               color: context.colors.onSurfaceVariant.withValues(alpha: 0.5),
             ),
@@ -797,7 +796,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              LucideIcons.userX,
+              Icons.person_off,
               size: 64,
               color: context.colors.onSurfaceVariant.withValues(alpha: 0.5),
             ),
@@ -1001,7 +1000,7 @@ class TransactionDetailsSheet extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () {},
-                        icon: const Icon(LucideIcons.download, size: 18),
+                        icon: const Icon(Icons.download, size: 18),
                         label: const Text('Download Receipt'),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
@@ -1012,7 +1011,7 @@ class TransactionDetailsSheet extends StatelessWidget {
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {},
-                        icon: const Icon(LucideIcons.messageCircle, size: 18),
+                        icon: const Icon(Icons.chat_bubble_outline, size: 18),
                         label: const Text('Get Help'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: context.colors.primary,
@@ -1078,13 +1077,13 @@ class TransactionDetailsSheet extends StatelessWidget {
   IconData _getTypeIcon(String type) {
     switch (type) {
       case 'game_payment':
-        return LucideIcons.gamepad2;
+        return Icons.sports_esports;
       case 'booking_payment':
-        return LucideIcons.calendar;
+        return Icons.calendar_today;
       case 'refund':
-        return LucideIcons.arrowLeftCircle;
+        return Icons.arrow_circle_left;
       default:
-        return LucideIcons.creditCard;
+        return Icons.credit_card;
     }
   }
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 import 'package:dabbler/core/viewmodels/game_creation_viewmodel.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -79,7 +78,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
             decoration: InputDecoration(
               hintText: 'Search venues...',
               prefixIcon: Icon(
-                LucideIcons.search,
+                Icons.search,
                 color: context.colors.onSurfaceVariant,
               ),
               border: OutlineInputBorder(
@@ -104,12 +103,12 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
 
   Widget _buildFilters(BuildContext context) {
     final availableFilters = [
-      {'name': 'Parking', 'icon': LucideIcons.car},
-      {'name': 'Shower', 'icon': LucideIcons.droplets},
-      {'name': 'Equipment', 'icon': LucideIcons.dumbbell},
-      {'name': 'Lighting', 'icon': LucideIcons.lightbulb},
-      {'name': 'Food & Drinks', 'icon': LucideIcons.coffee},
-      {'name': 'AC', 'icon': LucideIcons.snowflake},
+      {'name': 'Parking', 'icon': Icons.directions_car},
+      {'name': 'Shower', 'icon': Icons.water_drop},
+      {'name': 'Equipment', 'icon': Icons.fitness_center},
+      {'name': 'Lighting', 'icon': Icons.lightbulb_outline},
+      {'name': 'Food & Drinks', 'icon': Icons.local_cafe},
+      {'name': 'AC', 'icon': Icons.ac_unit},
     ];
 
     return Column(
@@ -262,7 +261,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    LucideIcons.mapPin,
+                    Icons.location_on,
                     color: context.colors.primary,
                     size: 24,
                   ),
@@ -283,7 +282,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                       Row(
                         children: [
                           Icon(
-                            LucideIcons.mapPin,
+                            Icons.location_on,
                             size: 14,
                             color: context.colors.onSurfaceVariant,
                           ),
@@ -301,7 +300,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Icon(LucideIcons.star, size: 14, color: Colors.amber),
+                          Icon(Icons.star, size: 14, color: Colors.amber),
                           const SizedBox(width: 4),
                           Text(
                             venue.rating.toStringAsFixed(1),
@@ -359,10 +358,10 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
 
   Widget _buildAmenities(BuildContext context, Map<String, dynamic> amenities) {
     final amenityIcons = {
-      'parking': LucideIcons.car,
-      'shower': LucideIcons.droplets,
-      'equipment': LucideIcons.dumbbell,
-      'lighting': LucideIcons.lightbulb,
+      'parking': Icons.directions_car,
+      'shower': Icons.water_drop,
+      'equipment': Icons.fitness_center,
+      'lighting': Icons.lightbulb_outline,
     };
 
     final availableAmenities = amenities.entries
@@ -376,7 +375,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
       spacing: 8,
       runSpacing: 8,
       children: availableAmenities.map((amenity) {
-        final icon = amenityIcons[amenity] ?? LucideIcons.check;
+        final icon = amenityIcons[amenity] ?? Icons.check;
 
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -464,7 +463,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
               borderRadius: BorderRadius.circular(16),
             ),
             child: Icon(
-              LucideIcons.calendar,
+              Icons.calendar_today,
               size: 48,
               color: context.colors.onSurfaceVariant,
             ),

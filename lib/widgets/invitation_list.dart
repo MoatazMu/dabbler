@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/themes/app_theme.dart';
 
 // Player model for invitations
@@ -258,7 +257,7 @@ class _InvitationListState extends State<InvitationList>
         fontWeight: FontWeight.w600,
         color: context.colors.primary,
       ),
-      deleteIcon: Icon(LucideIcons.x, size: 16, color: context.colors.primary),
+      deleteIcon: Icon(Icons.close, size: 16, color: context.colors.primary),
     );
   }
 
@@ -277,7 +276,7 @@ class _InvitationListState extends State<InvitationList>
             decoration: InputDecoration(
               hintText: 'Search contacts...',
               prefixIcon: Icon(
-                LucideIcons.search,
+                Icons.search,
                 color: context.colors.onSurfaceVariant,
               ),
               border: OutlineInputBorder(
@@ -302,7 +301,7 @@ class _InvitationListState extends State<InvitationList>
               ? _buildAntdEmptyState(
                   context,
                   'No contacts found',
-                  LucideIcons.phone,
+                  Icons.phone,
                 )
               : ListView.separated(
                   itemCount: filteredContacts.length,
@@ -335,7 +334,7 @@ class _InvitationListState extends State<InvitationList>
             decoration: InputDecoration(
               hintText: 'Search recent teammates...',
               prefixIcon: Icon(
-                LucideIcons.search,
+                Icons.search,
                 color: context.colors.onSurfaceVariant,
               ),
               border: OutlineInputBorder(
@@ -360,7 +359,7 @@ class _InvitationListState extends State<InvitationList>
               ? _buildAntdEmptyState(
                   context,
                   'No recent teammates found',
-                  LucideIcons.users,
+                  Icons.group,
                 )
               : ListView.separated(
                   itemCount: filteredTeammates.length,
@@ -388,7 +387,7 @@ class _InvitationListState extends State<InvitationList>
             decoration: InputDecoration(
               hintText: 'Search players by name or email...',
               prefixIcon: Icon(
-                LucideIcons.search,
+                Icons.search,
                 color: context.colors.onSurfaceVariant,
               ),
               border: OutlineInputBorder(
@@ -411,13 +410,13 @@ class _InvitationListState extends State<InvitationList>
               ? _buildAntdEmptyState(
                   context,
                   'Enter a name or email to search',
-                  LucideIcons.search,
+                  Icons.search,
                 )
               : widget.searchResults.isEmpty
               ? _buildAntdEmptyState(
                   context,
                   'No players found',
-                  LucideIcons.userPlus,
+                  Icons.person_add,
                 )
               : ListView.separated(
                   itemCount: widget.searchResults.length,
@@ -453,8 +452,8 @@ class _InvitationListState extends State<InvitationList>
         size: AntdButtonSize.small,
         onPressed: () => widget.onPlayerToggle(player),
         child: isSelected
-            ? const Icon(LucideIcons.check, size: 16)
-            : const Icon(LucideIcons.userPlus, size: 16),
+            ? const Icon(Icons.check, size: 16)
+            : const Icon(Icons.person_add, size: 16),
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class AvatarWidget extends StatelessWidget {
@@ -81,7 +80,7 @@ class AvatarWidget extends StatelessWidget {
     if (initials.isEmpty) {
       return Center(
         child: Icon(
-          LucideIcons.user,
+          Icons.person,
           size: size * 0.5,
           color: textColor ?? const Color(0xFF1890FF),
         ),

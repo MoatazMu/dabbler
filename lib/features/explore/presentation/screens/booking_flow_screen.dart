@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/core/design_system/ds.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/features/games/domain/repositories/venues_repository.dart';
@@ -149,7 +148,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               color: DS.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(LucideIcons.mapPin, color: DS.primary, size: 24),
+            child: Icon(Icons.location_on, color: DS.primary, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -410,7 +409,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               padding: const EdgeInsets.all(32.0),
               child: Column(
                 children: [
-                  Icon(LucideIcons.alertCircle, color: DS.error, size: 32),
+                  Icon(Icons.error_outline, color: DS.error, size: 32),
                   const SizedBox(height: 8),
                   Text(
                     _slotsError!,
@@ -554,7 +553,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(LucideIcons.alertCircle, color: DS.error, size: 16),
+                    Icon(Icons.error_outline, color: DS.error, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(

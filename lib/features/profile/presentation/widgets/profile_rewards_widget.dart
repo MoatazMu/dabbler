@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import '../../../rewards/services/rewards_service_stub.dart' as rewards;
 import 'package:dabbler/data/models/rewards/achievement.dart';
 import 'package:dabbler/data/models/rewards/badge_tier.dart';
@@ -164,7 +163,7 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
                   children: [
                     Expanded(
                       child: _buildStatItem(
-                        icon: LucideIcons.trophy,
+                        icon: Icons.emoji_events,
                         label: 'Points',
                         value: _formatNumber(_totalPoints),
                         color: Colors.orange,
@@ -173,7 +172,7 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatItem(
-                        icon: LucideIcons.award,
+                        icon: Icons.military_tech,
                         label: 'Achievements',
                         value: _totalAchievements.toString(),
                         color: Colors.purple,
@@ -182,7 +181,7 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: _buildStatItem(
-                        icon: LucideIcons.trendingUp,
+                        icon: Icons.trending_up,
                         label: 'Rank',
                         value: _leaderboardRank > 0
                             ? '#$_leaderboardRank'
@@ -287,7 +286,7 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              LucideIcons.award,
+              Icons.military_tech,
               color: achievement.tier.color,
               size: 18,
             ),

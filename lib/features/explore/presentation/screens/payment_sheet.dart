@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/core/design_system/ds.dart';
 
 class PaymentSheet extends StatefulWidget {
@@ -27,28 +26,28 @@ class _PaymentSheetState extends State<PaymentSheet> {
       'id': 'card_1',
       'type': 'card',
       'name': 'Visa ending in 4242',
-      'icon': LucideIcons.creditCard,
+      'icon': Icons.credit_card,
       'color': Colors.blue,
     },
     {
       'id': 'card_2',
       'type': 'card',
       'name': 'Mastercard ending in 8888',
-      'icon': LucideIcons.creditCard,
+      'icon': Icons.credit_card,
       'color': Colors.orange,
     },
     {
       'id': 'apple_pay',
       'type': 'wallet',
       'name': 'Apple Pay',
-      'icon': LucideIcons.apple,
+      'icon': Icons.apple,
       'color': Colors.black,
     },
     {
       'id': 'google_pay',
       'type': 'wallet',
       'name': 'Google Pay',
-      'icon': LucideIcons.creditCard,
+      'icon': Icons.credit_card,
       'color': Colors.green,
     },
   ];
@@ -88,7 +87,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Icon(LucideIcons.creditCard, color: DS.primary, size: 24),
+                Icon(Icons.credit_card, color: DS.primary, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   'Payment',
@@ -128,7 +127,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                       ),
                     ],
                   ),
-                  Icon(LucideIcons.shield, color: DS.primary, size: 24),
+                  Icon(Icons.shield, color: DS.primary, size: 24),
                 ],
               ),
             ),
@@ -166,7 +165,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 ),
                 child: Row(
                   children: [
-                    Icon(LucideIcons.alertCircle, color: DS.error, size: 16),
+                    Icon(Icons.error_outline, color: DS.error, size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -273,7 +272,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
               ),
             ),
             if (isSelected)
-              Icon(LucideIcons.check, color: DS.primary, size: 20),
+              Icon(Icons.check, color: DS.primary, size: 20),
           ],
         ),
       ),

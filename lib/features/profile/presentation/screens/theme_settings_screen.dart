@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:dabbler/core/services/theme_service.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 class ThemeSettingsScreen extends StatefulWidget {
   const ThemeSettingsScreen({super.key});
@@ -18,7 +17,7 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
       appBar: AppBar(
         title: const Text('Theme & Appearance'),
         leading: IconButton(
-          icon: const Icon(LucideIcons.arrowLeft),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
@@ -90,7 +89,7 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              isDark ? LucideIcons.moon : LucideIcons.sun,
+              isDark ? Icons.nightlight_round : Icons.wb_sunny,
               size: 24,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -131,19 +130,19 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
         _buildThemeModeOption(
           'Light',
           'Always use light theme',
-          LucideIcons.sun,
+          Icons.wb_sunny,
           ThemeMode.light,
         ),
         _buildThemeModeOption(
           'Dark',
           'Always use dark theme',
-          LucideIcons.moon,
+          Icons.nightlight_round,
           ThemeMode.dark,
         ),
         _buildThemeModeOption(
           'System',
           'Follow device settings',
-          LucideIcons.monitor,
+          Icons.computer,
           ThemeMode.system,
         ),
       ],
@@ -171,7 +170,7 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
           child: Row(
             children: [
               Icon(
-                LucideIcons.clock,
+                Icons.access_time,
                 size: 20,
                 color: _themeService.autoThemeEnabled
                     ? Theme.of(context).colorScheme.primary
@@ -220,7 +219,7 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
         _buildTimeOption(
           'Day starts at',
           'Light theme will activate',
-          LucideIcons.sunrise,
+          Icons.wb_twilight,
           _themeService.dayStartTime,
           (time) => _themeService.setDayStartTime(time),
         ),
@@ -228,7 +227,7 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
         _buildTimeOption(
           'Night starts at',
           'Dark theme will activate',
-          LucideIcons.sunset,
+          Icons.wb_twilight,
           _themeService.nightStartTime,
           (time) => _themeService.setNightStartTime(time),
         ),
@@ -337,7 +336,7 @@ class _ThemeSettingsScreenState extends State<ThemeSettingsScreen> {
             ),
             if (isSelected)
               Icon(
-                LucideIcons.check,
+                Icons.check,
                 size: 16,
                 color: Theme.of(context).colorScheme.primary,
               ),

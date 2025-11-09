@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/match_model.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/widgets/app_button.dart';
@@ -79,17 +78,17 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
       pinned: true,
       backgroundColor: context.colors.surface,
       leading: IconButton(
-        icon: Icon(LucideIcons.arrowLeft, color: context.colors.onSurface),
+        icon: Icon(Icons.arrow_back, color: context.colors.onSurface),
         onPressed: () => Navigator.of(context).pop(),
       ),
       actions: [
         IconButton(
-          icon: Icon(LucideIcons.share2, color: context.colors.onSurface),
+          icon: Icon(Icons.share, color: context.colors.onSurface),
           onPressed: () {},
         ),
         IconButton(
           icon: Icon(
-            _isJoined ? LucideIcons.heart : LucideIcons.heart,
+            _isJoined ? Icons.favorite : Icons.favorite,
             color: _isJoined ? Colors.red : context.colors.onSurface,
           ),
           onPressed: () {
@@ -125,7 +124,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                         color: context.colors.primary.withValues(alpha: 0.1),
                       ),
                       child: Icon(
-                        LucideIcons.mapPin,
+                        Icons.location_on,
                         size: 64,
                         color: context.colors.primary,
                       ),
@@ -235,7 +234,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
         children: [
           Row(
             children: [
-              Icon(LucideIcons.mapPin, size: 20, color: context.colors.primary),
+              Icon(Icons.location_on, size: 20, color: context.colors.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -259,7 +258,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
               ),
               IconButton(
                 icon: Icon(
-                  LucideIcons.navigation,
+                  Icons.navigation,
                   color: context.colors.primary,
                 ),
                 onPressed: () {},
@@ -269,7 +268,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
           const SizedBox(height: 16),
           Row(
             children: [
-              Icon(LucideIcons.clock, size: 20, color: context.colors.primary),
+              Icon(Icons.access_time, size: 20, color: context.colors.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -518,7 +517,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            LucideIcons.userPlus,
+            Icons.person_add,
             size: 24,
             color: context.colors.onSurfaceVariant,
           ),
@@ -558,21 +557,21 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
           const SizedBox(height: 16),
 
           _buildDetailRow(
-            icon: LucideIcons.users,
+            icon: Icons.group,
             label: 'Format',
             value: widget.match.format.name,
           ),
           const SizedBox(height: 8),
 
           _buildDetailRow(
-            icon: LucideIcons.target,
+            icon: Icons.gps_fixed,
             label: 'Skill Level',
             value: widget.match.skillLevel,
           ),
           const SizedBox(height: 8),
 
           _buildDetailRow(
-            icon: LucideIcons.clock,
+            icon: Icons.access_time,
             label: 'Duration',
             value: '${widget.match.duration.inMinutes} minutes',
           ),
@@ -580,7 +579,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
           if (widget.match.amenities.isNotEmpty) ...[
             const SizedBox(height: 8),
             _buildDetailRow(
-              icon: LucideIcons.star,
+              icon: Icons.star,
               label: 'Amenities',
               value: widget.match.amenities.join(', '),
             ),
@@ -660,7 +659,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
           ),
           IconButton(
             icon: Icon(
-              LucideIcons.messageCircle,
+              Icons.chat_bubble_outline,
               color: context.colors.primary,
             ),
             onPressed: () {},
@@ -698,8 +697,8 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                     ? ButtonVariant.secondary
                     : ButtonVariant.primary,
                 leadingIcon: _isJoined
-                    ? LucideIcons.userMinus
-                    : LucideIcons.userPlus,
+                    ? Icons.person_remove
+                    : Icons.person_add,
                 isLoading: _isJoining,
               ),
             ),
@@ -709,7 +708,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                 label: isFull ? 'Game Full' : 'Game Ended',
                 onPressed: null,
                 variant: ButtonVariant.secondary,
-                leadingIcon: isFull ? LucideIcons.users : LucideIcons.clock,
+                leadingIcon: isFull ? Icons.group : Icons.access_time,
               ),
             ),
           ],
@@ -718,7 +717,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
             label: 'Share',
             onPressed: () {},
             variant: ButtonVariant.secondary,
-            leadingIcon: LucideIcons.share2,
+            leadingIcon: Icons.share,
           ),
         ],
       ),

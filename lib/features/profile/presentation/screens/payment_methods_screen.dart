@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/widgets/app_button.dart';
 import 'package:dabbler/widgets/custom_app_bar.dart';
@@ -79,7 +78,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(LucideIcons.alertCircle, color: Colors.red, size: 48),
+          Icon(Icons.error_outline, color: Colors.red, size: 48),
           const SizedBox(height: 16),
           Text(
             error,
@@ -127,7 +126,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
-                LucideIcons.receipt,
+                Icons.receipt,
                 color: Colors.white,
                 size: 24,
               ),
@@ -163,7 +162,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: const Icon(
-                LucideIcons.arrowRight,
+                Icons.arrow_forward,
                 color: Colors.white,
                 size: 18,
               ),
@@ -184,7 +183,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
         },
         variant: ButtonVariant.primary,
         size: ButtonSize.large,
-        leadingIcon: LucideIcons.plus,
+        leadingIcon: Icons.add,
       ),
     );
   }
@@ -199,7 +198,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
           padding: const EdgeInsets.all(32.0),
           child: Column(
             children: [
-              Icon(LucideIcons.creditCard, size: 64, color: Colors.grey[400]),
+              Icon(Icons.credit_card, size: 64, color: Colors.grey[400]),
               const SizedBox(height: 16),
               Text(
                 'No payment methods yet',
@@ -311,7 +310,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
               ),
             ),
             PopupMenuButton<String>(
-              icon: Icon(LucideIcons.moreVertical, size: 20),
+              icon: Icon(Icons.more_vert, size: 20),
               onSelected: (value) {
                 switch (value) {
                   case 'default':
@@ -331,7 +330,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
                     value: 'default',
                     child: Row(
                       children: [
-                        Icon(LucideIcons.star, size: 16),
+                        Icon(Icons.star, size: 16),
                         SizedBox(width: 8),
                         Text('Set as Default'),
                       ],
@@ -341,7 +340,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
                   value: 'edit',
                   child: Row(
                     children: [
-                      Icon(LucideIcons.edit, size: 16),
+                      Icon(Icons.edit, size: 16),
                       SizedBox(width: 8),
                       Text('Edit'),
                     ],
@@ -351,7 +350,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
                   value: 'delete',
                   child: Row(
                     children: [
-                      Icon(LucideIcons.trash, size: 16, color: Colors.red),
+                      Icon(Icons.delete, size: 16, color: Colors.red),
                       SizedBox(width: 8),
                       Text('Delete', style: TextStyle(color: Colors.red)),
                     ],
@@ -368,15 +367,15 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
   IconData _getPaymentIcon(pm.PaymentType type) {
     switch (type) {
       case pm.PaymentType.card:
-        return LucideIcons.creditCard;
+        return Icons.credit_card;
       case pm.PaymentType.paypal:
-        return LucideIcons.wallet;
+        return Icons.account_balance_wallet;
       case pm.PaymentType.applePay:
-        return LucideIcons.apple;
+        return Icons.apple;
       case pm.PaymentType.googlePay:
-        return LucideIcons.smartphone;
+        return Icons.smartphone;
       case pm.PaymentType.bankTransfer:
-        return LucideIcons.building;
+        return Icons.business;
     }
   }
 

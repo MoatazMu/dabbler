@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/core/design_system/ds.dart';
 
 class BookingSummaryModal extends StatelessWidget {
@@ -46,7 +45,7 @@ class BookingSummaryModal extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Icon(LucideIcons.checkCircle, color: DS.primary, size: 24),
+                Icon(Icons.check_circle_outline, color: DS.primary, size: 24),
                 const SizedBox(width: 12),
                 Text(
                   'Booking Summary',
@@ -78,7 +77,7 @@ class BookingSummaryModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
-                      LucideIcons.mapPin,
+                      Icons.location_on,
                       color: DS.primary,
                       size: 20,
                     ),
@@ -143,7 +142,7 @@ class BookingSummaryModal extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Icon(LucideIcons.info, color: DS.primary, size: 16),
+                  Icon(Icons.info_outline, color: DS.primary, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(

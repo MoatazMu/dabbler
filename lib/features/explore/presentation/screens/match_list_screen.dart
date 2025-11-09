@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/data/models/games/game.dart';
@@ -65,7 +64,7 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  LucideIcons.gamepad2,
+                  Icons.sports_esports,
                   size: 64,
                   color: context.colors.onSurface.withOpacity(0.3),
                 ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 import 'package:dabbler/core/viewmodels/game_creation_viewmodel.dart';
 import 'package:dabbler/core/utils/sports_config.dart';
@@ -695,7 +694,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              LucideIcons.calendar,
+              Icons.calendar_today,
               size: 16,
               color: isCustomSelected
                   ? context.colors.primary
@@ -735,25 +734,25 @@ class _SportFormatStepState extends State<SportFormatStep> {
         'id': 'morning',
         'label': 'Morning',
         'time': '9:00 - 12:00',
-        'icon': LucideIcons.sunrise,
+        'icon': Icons.wb_twilight,
       },
       {
         'id': 'day',
         'label': 'Day',
         'time': '13:00 - 16:00',
-        'icon': LucideIcons.sun,
+        'icon': Icons.wb_sunny,
       },
       {
         'id': 'evening',
         'label': 'Evening',
         'time': '17:00 - 20:00',
-        'icon': LucideIcons.sunset,
+        'icon': Icons.wb_twilight,
       },
       {
         'id': 'night',
         'label': 'Night',
         'time': '21:00 - 00:00',
-        'icon': LucideIcons.moon,
+        'icon': Icons.nightlight_round,
       },
     ];
 
@@ -993,7 +992,7 @@ class _SportFormatStepState extends State<SportFormatStep> {
           ),
           child: Row(
             children: [
-              Icon(LucideIcons.users, size: 20, color: context.colors.primary),
+              Icon(Icons.group, size: 20, color: context.colors.primary),
               const SizedBox(width: 12),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 
 /// Social profile screen showing user's social information and posts
 class SocialProfileScreen extends StatelessWidget {
@@ -13,9 +12,9 @@ class SocialProfileScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Profile'),
         actions: [
-          IconButton(icon: const Icon(LucideIcons.share), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.share), onPressed: () {}),
           IconButton(
-            icon: const Icon(LucideIcons.moreHorizontal),
+            icon: const Icon(Icons.more_horiz),
             onPressed: () {},
           ),
         ],
@@ -33,7 +32,7 @@ class SocialProfileScreen extends StatelessWidget {
                     radius: 50,
                     backgroundColor: Colors.grey[200],
                     child: const Icon(
-                      LucideIcons.user,
+                      Icons.person,
                       size: 40,
                       color: Colors.grey,
                     ),
@@ -78,7 +77,7 @@ class SocialProfileScreen extends StatelessWidget {
                       Expanded(
                         child: ElevatedButton.icon(
                           onPressed: () {},
-                          icon: const Icon(LucideIcons.userPlus),
+                          icon: const Icon(Icons.person_add),
                           label: const Text('Add Friend'),
                         ),
                       ),
@@ -86,7 +85,7 @@ class SocialProfileScreen extends StatelessWidget {
                       Expanded(
                         child: OutlinedButton.icon(
                           onPressed: () {},
-                          icon: const Icon(LucideIcons.messageCircle),
+                          icon: const Icon(Icons.chat_bubble_outline),
                           label: const Text('Message'),
                         ),
                       ),
@@ -131,7 +130,7 @@ class SocialProfileScreen extends StatelessWidget {
                         children: [
                           const CircleAvatar(
                             radius: 16,
-                            child: Icon(LucideIcons.user, size: 16),
+                            child: Icon(Icons.person, size: 16),
                           ),
                           const SizedBox(width: 8),
                           Column(
@@ -163,14 +162,14 @@ class SocialProfileScreen extends StatelessWidget {
                       Row(
                         children: [
                           IconButton(
-                            icon: const Icon(LucideIcons.heart, size: 20),
+                            icon: const Icon(Icons.favorite, size: 20),
                             onPressed: () {},
                           ),
                           Text('${12 + index}'),
                           const SizedBox(width: 16),
                           IconButton(
                             icon: const Icon(
-                              LucideIcons.messageCircle,
+                              Icons.chat_bubble_outline,
                               size: 20,
                             ),
                             onPressed: () {},

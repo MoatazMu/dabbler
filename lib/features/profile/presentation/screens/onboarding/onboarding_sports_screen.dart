@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import 'onboarding_welcome_screen.dart';
 import 'package:dabbler/themes/design_system.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
@@ -294,7 +293,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
           IconButton(
             onPressed: () => context.go(RoutePaths.onboardingBasicInfo),
             icon: Icon(
-              LucideIcons.arrowLeft,
+              Icons.arrow_back,
               color: DesignSystem.colors.textPrimary,
             ),
           ),
@@ -670,7 +669,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
       child: Row(
         children: [
           Icon(
-            LucideIcons.lightbulb,
+            Icons.lightbulb_outline,
             color: DesignSystem.colors.primary,
             size: 20,
           ),
@@ -730,7 +729,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
 
                   const SizedBox(width: 8),
 
-                  const Icon(LucideIcons.arrowRight, size: 20),
+                  const Icon(Icons.arrow_forward, size: 20),
                 ],
               ),
       ),
@@ -969,7 +968,7 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                LucideIcons.trophy,
+                Icons.emoji_events,
                 size: 40,
                 color: DesignSystem.colors.success,
               ),

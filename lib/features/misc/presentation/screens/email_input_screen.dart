@@ -397,7 +397,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text('📱', style: TextStyle(fontSize: 18)),
+            Icon(Icons.phone, size: 18),
             SizedBox(width: AppSpacing.sm),
             Text(
               'Continue with Phone',

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lucide_icons/lucide_icons.dart';
 import '../../../../../themes/design_system.dart';
 import '../../../../../utils/constants/route_constants.dart';
 import 'onboarding_welcome_screen.dart'; // For providers
@@ -190,7 +189,7 @@ class _OnboardingPrivacyScreenState
           IconButton(
             onPressed: () => context.go(RoutePaths.onboardingPreferences),
             icon: Icon(
-              LucideIcons.arrowLeft,
+              Icons.arrow_back,
               color: DesignSystem.colors.textPrimary,
             ),
           ),
@@ -240,7 +239,7 @@ class _OnboardingPrivacyScreenState
   Widget _buildProfileVisibilitySection() {
     return _buildSection(
       title: 'Profile Visibility',
-      icon: LucideIcons.eye,
+      icon: Icons.visibility,
       children: [
         _buildDropdownSetting(
           title: 'Who can see your profile?',
@@ -310,7 +309,7 @@ class _OnboardingPrivacyScreenState
   Widget _buildCommunicationSection() {
     return _buildSection(
       title: 'Communication',
-      icon: LucideIcons.messageCircle,
+      icon: Icons.chat_bubble_outline,
       children: [
         _buildSwitchSetting(
           title: 'Allow direct messages',
@@ -351,7 +350,7 @@ class _OnboardingPrivacyScreenState
   Widget _buildDataSection() {
     return _buildSection(
       title: 'Data & Analytics',
-      icon: LucideIcons.database,
+      icon: Icons.storage,
       children: [
         _buildDropdownSetting(
           title: 'Data retention period',
@@ -542,7 +541,7 @@ class _OnboardingPrivacyScreenState
           Row(
             children: [
               Icon(
-                LucideIcons.shieldCheck,
+                Icons.verified_user,
                 color: DesignSystem.colors.primary,
                 size: 24,
               ),
@@ -611,7 +610,7 @@ class _OnboardingPrivacyScreenState
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    LucideIcons.award,
+                    Icons.military_tech,
                     color: DesignSystem.colors.success,
                     size: 16,
                   ),
@@ -641,7 +640,7 @@ class _OnboardingPrivacyScreenState
       ),
       child: Row(
         children: [
-          Icon(LucideIcons.info, color: DesignSystem.colors.info, size: 20),
+          Icon(Icons.info_outline, color: DesignSystem.colors.info, size: 20),
 
           const SizedBox(width: 12),
 
@@ -698,7 +697,7 @@ class _OnboardingPrivacyScreenState
 
                   const SizedBox(width: 8),
 
-                  const Icon(LucideIcons.check, size: 20),
+                  const Icon(Icons.check, size: 20),
                 ],
               ),
       ),
