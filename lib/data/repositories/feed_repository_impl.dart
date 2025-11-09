@@ -23,8 +23,9 @@ class FeedRepositoryImpl extends BaseRepository implements FeedRepository {
     String? beforeCursor,
   }) async {
     return guard<List<FeedItem>>(() async {
-      if (limit <= 0)
+      if (limit <= 0) {
         throw const ValidationFailure(message: 'limit must be > 0');
+      }
 
       dynamic q = _db
           .from(_posts)

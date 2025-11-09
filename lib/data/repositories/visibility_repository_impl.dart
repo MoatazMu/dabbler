@@ -1,4 +1,3 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -44,10 +43,7 @@ class VisibilityRepositoryImpl extends BaseRepository
         return Ok(false);
       case 'circle':
         final syncedResult = await areSynced(ownerId);
-        return syncedResult.fold(
-          (_) => Ok(false),
-          (isSynced) => Ok(isSynced),
-        );
+        return syncedResult.fold((_) => Ok(false), (isSynced) => Ok(isSynced));
       default:
         return Ok(false);
     }

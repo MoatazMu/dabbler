@@ -74,8 +74,9 @@ class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
   @override
   Future<Result<void, Failure>> clearVibe(String postId) async {
     return guard<void>(() async {
-      if (postId.isEmpty)
+      if (postId.isEmpty) {
         throw const ValidationFailure(message: 'postId is required');
+      }
       await _db.from(_table).delete().eq('post_id', postId);
     });
   }

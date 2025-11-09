@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/display_name_rules.dart';
@@ -178,7 +177,9 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
   }
 
   @override
-  Stream<Result<Profile, Failure>> myProfileTypeStream(String profileType) async* {
+  Stream<Result<Profile, Failure>> myProfileTypeStream(
+    String profileType,
+  ) async* {
     final uid = svc.authUserId();
     if (uid == null) {
       yield Err(const AuthFailure(message: 'Not signed in'));

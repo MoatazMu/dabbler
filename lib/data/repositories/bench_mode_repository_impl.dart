@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
@@ -34,7 +33,9 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
   }
 
   @override
-  Future<Result<Profile, Failure>> getMyProfileByType(String profileType) async {
+  Future<Result<Profile, Failure>> getMyProfileByType(
+    String profileType,
+  ) async {
     try {
       final uid = svc.authUserId();
       if (uid == null) {
