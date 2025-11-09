@@ -60,15 +60,16 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       print('✅ [Datasource] Game inserted successfully: ${gameResponse['id']}');
 
       // Add organizer as first player
-      await _supabaseClient.from('game_players').insert({
+      await _supabaseClient.from('game_roster').insert({
         'game_id': gameResponse['id'],
-        'player_id':
-            gameData['host_user_id'], // Changed from organizer_id to host_user_id
+        'profile_id': gameData['host_profile_id'],
+        'user_id': gameData['host_user_id'],
+        'role': 'host',
         'status': 'confirmed',
         'joined_at': DateTime.now().toIso8601String(),
       });
 
-      print('✅ [Datasource] Organizer added to game_players');
+      print('✅ [Datasource] Organizer added to game_roster');
 
       return GameModel.fromJson(gameResponse);
     } on PostgrestException catch (e) {
@@ -159,10 +160,10 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       // IDEMPOTENT CHECK: First check if player is already in the game
       final existingPlayerResponse = await _supabaseClient
-          .from('game_players')
-          .select('id')
+          .from('game_roster')
+          .select('game_id')
           .eq('game_id', gameId)
-          .eq('player_id', playerId)
+          .eq('user_id', playerId)
           .maybeSingle();
 
       if (existingPlayerResponse != null) {
@@ -175,13 +176,12 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       // Check if game exists and get current player count
       final gameResponse = await _supabaseClient
           .from('games')
-          .select('*, game_players(count)')
+          .select('*, game_roster(count)')
           .eq('id', gameId)
           .single();
 
       final game = GameModel.fromJson(gameResponse);
-      final currentPlayerCount =
-          gameResponse['game_players'][0]['count'] as int;
+      final currentPlayerCount = gameResponse['game_roster'][0]['count'] as int;
 
       // Check if game is full
       if (currentPlayerCount >= game.maxPlayers) {
@@ -202,9 +202,13 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       }
 
       // Add player to game
-      await _supabaseClient.from('game_players').insert({
+      // Note: We need profile_id here but only have user_id
+      // This will need to be resolved - for now using user_id for both
+      await _supabaseClient.from('game_roster').insert({
         'game_id': gameId,
-        'player_id': playerId,
+        'profile_id': playerId, // TODO: Get actual profile_id
+        'user_id': playerId,
+        'role': 'player',
         'status': 'confirmed',
         'joined_at': DateTime.now().toIso8601String(),
       });
@@ -240,10 +244,10 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       // IDEMPOTENT CHECK: First check if player is in the game
       final existingPlayerResponse = await _supabaseClient
-          .from('game_players')
-          .select('id')
+          .from('game_roster')
+          .select('game_id')
           .eq('game_id', gameId)
-          .eq('player_id', playerId)
+          .eq('user_id', playerId)
           .maybeSingle();
 
       if (existingPlayerResponse == null) {
@@ -255,10 +259,10 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       // Remove player from game
       await _supabaseClient
-          .from('game_players')
+          .from('game_roster')
           .delete()
           .eq('game_id', gameId)
-          .eq('player_id', playerId);
+          .eq('user_id', playerId);
 
       print('✅ [Datasource] leaveGame: Successfully left game');
       return true;
@@ -676,8 +680,8 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     try {
       final response = await _supabaseClient
           .from('games')
-          .select('*, game_players!inner(player_id)')
-          .eq('game_players.player_id', userId)
+          .select('*, game_roster!inner(user_id)')
+          .eq('game_roster.user_id', userId)
           .eq(
             'is_cancelled',
             true,
@@ -724,7 +728,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   Future<List<PlayerModel>> getGamePlayers(String gameId) async {
     try {
       final response = await _supabaseClient
-          .from('game_players')
+          .from('game_roster')
           .select('*')
           .eq('game_id', gameId)
           .order('joined_at', ascending: true);

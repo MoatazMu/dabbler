@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/result.dart';
@@ -29,7 +30,7 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
   // --- profiles --------------------------------------------------------------
 
   @override
-  Future<Result<List<Profile>>> searchProfiles({
+  Future<Result<List<Profile>, Failure>> searchProfiles({
     required String query,
     int limit = 20,
     int offset = 0,
@@ -53,7 +54,7 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
   // --- venues ---------------------------------------------------------------
 
   @override
-  Future<Result<List<Venue>>> searchVenues({
+  Future<Result<List<Venue>, Failure>> searchVenues({
     required String query,
     int limit = 20,
     int offset = 0,
@@ -76,7 +77,7 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
   // --- posts ----------------------------------------------------------------
 
   @override
-  Future<Result<List<Post>>> searchPosts({
+  Future<Result<List<Post>, Failure>> searchPosts({
     required String query,
     int limit = 20,
     int offset = 0,

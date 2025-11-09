@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import '../themes/app_theme.dart';
 import '../core/config/feature_flags.dart';
 
 /// Category Buttons Widget - Community, Sports, Activities
@@ -168,19 +167,17 @@ class _CategoryButtonState extends State<_CategoryButton> {
   }
 
   Color _getBackgroundColor(bool isDark) {
+    final theme = Theme.of(context);
+
     if (_isPressed) {
-      return isDark ? VioletShades.darkAccent : VioletShades.lightAccent;
+      return theme.colorScheme.primaryContainer;
     }
 
     if (_isHovered) {
-      return isDark
-          ? VioletShades.darkWidgetBackground
-          : VioletShades.lightWidgetBackground;
+      return theme.colorScheme.surfaceContainerHigh;
     }
 
-    return isDark
-        ? VioletShades.darkCardBackground
-        : VioletShades.lightCardBackground;
+    return theme.colorScheme.surfaceContainer;
   }
 
   Color _getBorderColor(bool isDark) {
@@ -188,9 +185,9 @@ class _CategoryButtonState extends State<_CategoryButton> {
       return widget.accentColor.withOpacity(_isPressed ? 0.6 : 0.4);
     }
 
-    return isDark
-        ? VioletShades.darkBorder.withOpacity(0.3)
-        : VioletShades.lightBorder.withOpacity(0.5);
+    return Theme.of(
+      context,
+    ).colorScheme.outline.withOpacity(isDark ? 0.3 : 0.5);
   }
 
   Color _getIconColor(bool isDark) {

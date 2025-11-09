@@ -140,24 +140,238 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
 
   /// Build a game card from Game entity
   Widget _buildGameCard(Game game) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        title: Text(game.title),
-        subtitle: Text(
-          '${game.scheduledDate.toString().split(' ')[0]} • ${game.startTime} - ${game.endTime}\n'
-          '${game.currentPlayers}/${game.maxPlayers} players • ${game.currency} ${game.pricePerPlayer.toStringAsFixed(0)}',
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => GameDetailScreen(gameId: game.id),
+          ),
+        );
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(
+          top: 18,
+          left: 12,
+          right: 18,
+          bottom: 18,
         ),
-        trailing: Icon(Icons.arrow_forward_ios, color: widget.sportColor),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => GameDetailScreen(gameId: game.id),
+        decoration: ShapeDecoration(
+          color: context.colors.surface,
+          shape: RoundedRectangleBorder(
+            side: BorderSide(
+              width: 0.50,
+              strokeAlign: BorderSide.strokeAlignCenter,
+              color: context.colors.outline.withOpacity(0.1),
             ),
-          );
-        },
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header: Sport, Game Type, Time
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _getSportEmoji(game.sport),
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      game.sport,
+                      style: TextStyle(
+                        color: context.colors.onSurface,
+                        fontSize: 14,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      game.skillLevel,
+                      style: TextStyle(
+                        color: context.colors.onSurface.withOpacity(0.6),
+                        fontSize: 12,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  _getTimeFromNow(game.scheduledDate),
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    color: context.colors.onSurface.withOpacity(0.6),
+                    fontSize: 12,
+                    fontFamily: 'Inter',
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Title
+            Text(
+              game.title,
+              style: TextStyle(
+                color: context.colors.onSurface,
+                fontSize: 18,
+                fontFamily: 'Inter',
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            // Time and Location
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('🕓', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(
+                      '${game.startTime} - ${game.endTime}',
+                      style: TextStyle(
+                        color: context.colors.onSurface.withOpacity(0.9),
+                        fontSize: 14,
+                        fontFamily: 'Inter',
+                        fontWeight: FontWeight.w400,
+                        height: 1.36,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Text('📍', style: TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        game.venueName ?? 'Venue TBD',
+                        style: TextStyle(
+                          color: context.colors.onSurface.withOpacity(0.9),
+                          fontSize: 14,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                          height: 1.36,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // Players and Join Button
+            Padding(
+              padding: const EdgeInsets.only(left: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    children: [
+                      const Text('👥', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 6),
+                      Text(
+                        '${game.currentPlayers}/${game.maxPlayers}',
+                        style: TextStyle(
+                          color: context.colors.onSurface.withOpacity(0.6),
+                          fontSize: 12,
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 2,
+                    ),
+                    decoration: ShapeDecoration(
+                      color: widget.sportColor.withOpacity(0.9),
+                      shape: RoundedRectangleBorder(
+                        side: BorderSide(
+                          width: 1,
+                          color: Colors.white.withOpacity(0.12),
+                        ),
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('➕', style: TextStyle(fontSize: 15)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Join',
+                          style: TextStyle(
+                            color: context.colors.onPrimary,
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            fontWeight: FontWeight.w500,
+                            height: 1.43,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  String _getSportEmoji(String sport) {
+    switch (sport.toLowerCase()) {
+      case 'football':
+      case 'soccer':
+        return '⚽️';
+      case 'basketball':
+        return '🏀';
+      case 'tennis':
+        return '🎾';
+      case 'cricket':
+        return '🏏';
+      case 'volleyball':
+        return '🏐';
+      case 'padel':
+        return '🎾';
+      default:
+        return '⚽️';
+    }
+  }
+
+  String _getTimeFromNow(DateTime scheduledDate) {
+    final now = DateTime.now();
+    final difference = scheduledDate.difference(now);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m';
+    } else {
+      return 'now';
+    }
   }
 
   Widget _buildFilters() {

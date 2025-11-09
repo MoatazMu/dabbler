@@ -20,6 +20,7 @@ class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
     super.build(context);
 
     return TwoSectionLayout(
+      topBackgroundColor: AppColors.categoryBgSocial(context),
       topSection: _buildTopSection(),
       bottomSection: _buildBottomSection(),
     );

@@ -4,7 +4,7 @@ import 'dart:math' as math;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/venue.dart';
 import 'package:dabbler/data/models/venue_space.dart';
 import 'package:dabbler/data/repositories/base_repository.dart';
@@ -17,7 +17,7 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
   static const String spacesTable = 'venue_spaces';
 
   @override
-  Future<Result<List<Venue>>> listVenues({
+  Future<Result<List<Venue>, Failure>> listVenues({
     bool activeOnly = true,
     String? city,
     String? district,
@@ -44,14 +44,14 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final venues = data
           .map((item) => Venue.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList(growable: false);
-      return core.Ok(venues);
+      return Ok(venues);
     } catch (error, stackTrace) {
-      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
   @override
-  Future<Result<Venue>> getVenueById(String venueId) async {
+  Future<Result<Venue, Failure>> getVenueById(String venueId) async {
     try {
       final response = await svc
           .from(venuesTable)
@@ -59,16 +59,16 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
           .eq('id', venueId)
           .maybeSingle();
       if (response == null) {
-        return core.Err(NotFoundFailure(message: 'Venue $venueId not found'));
+        return Err(NotFoundFailure(message: 'Venue $venueId not found'));
       }
-      return core.Ok(Venue.fromJson(response));
+      return Ok(Venue.fromJson(response));
     } catch (error, stackTrace) {
-      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
   @override
-  Future<Result<List<VenueSpace>>> listSpacesByVenue(
+  Future<Result<List<VenueSpace>, Failure>> listSpacesByVenue(
     String venueId, {
     bool activeOnly = true,
   }) async {
@@ -84,14 +84,14 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final spaces = data
           .map((e) => VenueSpace.fromMap(Map<String, dynamic>.from(e as Map)))
           .toList(growable: false);
-      return core.Ok(spaces);
+      return Ok(spaces);
     } catch (error, stackTrace) {
-      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
   @override
-  Future<Result<VenueSpace>> getSpaceById(String spaceId) async {
+  Future<Result<VenueSpace, Failure>> getSpaceById(String spaceId) async {
     try {
       final response = await svc
           .from(spacesTable)
@@ -99,18 +99,18 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
           .eq('id', spaceId)
           .maybeSingle();
       if (response == null) {
-        return core.Err(
+        return Err(
           NotFoundFailure(message: 'Venue space $spaceId not found'),
         );
       }
-      return core.Ok(VenueSpace.fromMap(response));
+      return Ok(VenueSpace.fromMap(response));
     } catch (error, stackTrace) {
-      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
   @override
-  Future<Result<List<Venue>>> nearbyVenues({
+  Future<Result<List<Venue>, Failure>> nearbyVenues({
     required double lat,
     required double lng,
     double withinKm = 10,
@@ -140,15 +140,15 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final venues = data
           .map((item) => Venue.fromJson(Map<String, dynamic>.from(item as Map)))
           .toList(growable: false);
-      return core.Ok(venues);
+      return Ok(venues);
     } catch (error, stackTrace) {
-      return core.Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
+      return Err(svc.mapPostgrestError(error, stackTrace: stackTrace));
     }
   }
 
   @override
-  Stream<Result<List<VenueSpace>>> watchSpacesByVenue(String venueId) {
-    final controller = StreamController<Result<List<VenueSpace>>>.broadcast();
+  Stream<Result<List<VenueSpace>, Failure>> watchSpacesByVenue(String venueId) {
+    final controller = StreamController<Result<List<VenueSpace>, Failure>>.broadcast();
     RealtimeChannel? channel;
 
     Future<void> emitCurrent() async {

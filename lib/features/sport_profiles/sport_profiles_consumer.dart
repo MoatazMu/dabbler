@@ -1,3 +1,5 @@
+import 'package:dabbler/core/fp/failure.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -44,7 +46,7 @@ class SportProfilesConsumer extends StatelessWidget {
 class _ResultView extends StatelessWidget {
   const _ResultView({required this.value});
 
-  final AsyncValue<Result<List<SportProfile>>> value;
+  final AsyncValue<Result<List<SportProfile>, Failure>> value;
 
   @override
   Widget build(BuildContext context) {

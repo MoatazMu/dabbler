@@ -1,3 +1,5 @@
+import 'package:dabbler/core/fp/failure.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dabbler/core/fp/result.dart';
@@ -11,6 +13,6 @@ final profilesRepositoryProvider = Provider<ProfilesRepository>((ref) {
   return ProfilesRepositoryImpl(svc);
 });
 
-final myProfileStreamProvider = StreamProvider<Result<Profile?>>((ref) {
+final myProfileStreamProvider = StreamProvider<Result<Profile?, Failure>>((ref) {
   return ref.watch(profilesRepositoryProvider).watchMyProfile();
 });

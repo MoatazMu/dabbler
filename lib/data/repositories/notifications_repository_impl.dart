@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/utils/json.dart';
@@ -17,7 +18,7 @@ class NotificationsRepositoryImpl extends BaseRepository
   String? get _uid => _db.auth.currentUser?.id;
 
   @override
-  Future<Result<List<AppNotification>>> getLatest({
+  Future<Result<List<AppNotification>, Failure>> getLatest({
     int limit = 50,
     DateTime? since,
   }) async {
@@ -27,31 +28,28 @@ class NotificationsRepositoryImpl extends BaseRepository
         throw AuthException('Not authenticated');
       }
 
-      final query = _db
-          .from('notifications')
-          .select()
-          .eq('user_id', uid)
-          .order('created_at', ascending: false)
-          .limit(limit);
+      var query = _db.from('notifications').select().eq('user_id', uid);
 
       if (since != null) {
-        query.gte('created_at', since.toIso8601String());
+        query = query.gte('created_at', since.toIso8601String());
       }
 
-      final rows = await query;
+      final rows = await query
+          .order('created_at', ascending: false)
+          .limit(limit);
       return rows.map((r) => AppNotification.fromMap(r)).toList();
     });
   }
 
   @override
-  Future<Result<AppNotification?>> getById(String id) async {
+  Future<Result<AppNotification?, Failure>> getById(String id) async {
     return guard<AppNotification?>(() async {
       final uid = _uid;
       if (uid == null) throw AuthException('Not authenticated');
 
       final rows = await _db
           .from('notifications')
-          .select<Map<String, dynamic>>()
+          .select()
           .eq('id', id)
           .limit(1)
           .maybeSingle();
@@ -62,7 +60,7 @@ class NotificationsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<int>> markAsRead(String id) async {
+  Future<Result<int, Failure>> markAsRead(String id) async {
     return guard<int>(() async {
       final uid = _uid;
       if (uid == null) throw AuthException('Not authenticated');
@@ -84,21 +82,21 @@ class NotificationsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<int>> markAllAsRead({DateTime? before}) async {
+  Future<Result<int, Failure>> markAllAsRead({DateTime? before}) async {
     return guard<int>(() async {
       final uid = _uid;
       if (uid == null) throw AuthException('Not authenticated');
 
       final now = DateTime.now().toUtc().toIso8601String();
 
-      final query = _db
+      var query = _db
           .from('notifications')
           .update({'read_at': now})
           .eq('user_id', uid)
-          .is_('read_at', null);
+          .isFilter('read_at', null);
 
       if (before != null) {
-        query.lte('created_at', before.toIso8601String());
+        query = query.lte('created_at', before.toIso8601String());
       }
 
       final res = await query;

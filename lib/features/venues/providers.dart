@@ -1,3 +1,6 @@
+import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dabbler/data/models/venue.dart';
@@ -30,7 +33,7 @@ final venueDetailProvider = FutureProvider.family<games_venue.Venue, String>((
 
 final activeVenuesProvider =
     FutureProvider.family<
-      Result<List<Venue>>,
+      Result<List<Venue>, Failure>,
       ({String? city, String? district, String? q})
     >((ref, params) async {
       return ref
@@ -44,6 +47,9 @@ final activeVenuesProvider =
     });
 
 final spacesByVenueStreamProvider =
-    StreamProvider.family<Result<List<VenueSpace>>, String>((ref, venueId) {
+    StreamProvider.family<Result<List<VenueSpace>, Failure>, String>((
+      ref,
+      venueId,
+    ) {
       return ref.watch(venuesRepositoryProvider).watchSpacesByVenue(venueId);
     });

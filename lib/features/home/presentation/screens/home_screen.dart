@@ -96,8 +96,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   imageUrlOrAsset: _userProfile?['avatar_url'],
                   radius: 30,
                   fallbackIcon: Icons.person,
-                  backgroundColor: Colors.blue.shade100,
-                  fallbackColor: Colors.blue.shade700,
+                  backgroundColor: AppColors.primaryPurpleLight,
+                  fallbackColor: AppColors.primaryPurple,
                 ),
               ),
             ],
@@ -186,16 +186,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardColor(context),
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.grey.shade200),
+        border: Border.all(color: AppColors.stroke(context)),
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
               'What\'s on your mind?',
-              style: TextStyle(color: Colors.grey, fontSize: 15),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 15,
+              ),
             ),
           ),
           const Text('📝', style: TextStyle(fontSize: 20)),
@@ -210,22 +213,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: const Color(0xFF2D2D2D),
+          color: AppColors.cardColor(context),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF404040)),
+          border: Border.all(color: AppColors.stroke(context)),
         ),
-        child: const Center(
+        child: Center(
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('⚡', style: TextStyle(fontSize: 18)),
-              SizedBox(width: 8),
+              const Text('⚡', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
               Text(
                 'Activities',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -264,12 +267,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Newly joined',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),
@@ -350,12 +353,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Latest feeds',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -370,17 +373,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF2D2D2D),
+        color: AppColors.cardColor(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF404040)),
+        border: Border.all(color: AppColors.stroke(context)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: const Color(0xFF404040),
-            child: const Icon(Icons.person, size: 20, color: Colors.white70),
+            backgroundColor: AppColors.sectionBg(context),
+            child: Icon(
+              Icons.person,
+              size: 20,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -389,25 +396,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 Row(
                   children: [
-                    const Text(
+                    Text(
                       'Sarah',
                       style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       '2h',
-                      style: TextStyle(fontSize: 13, color: Color(0xFFAAAAAA)),
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                const Text(
+                Text(
                   'Had an amazing time at the community cooking class today! 🍳 Learning new recip...',
-                  style: TextStyle(fontSize: 14, color: Color(0xFFCCCCCC)),
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.bodyTxt(context),
+                  ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -432,16 +445,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               'Recent Games',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),
-            ...games.map((game) => _buildRecentGameItem(game)).toList(),
+            ...games.map((game) => _buildRecentGameItem(game)),
           ],
         );
       },
@@ -474,9 +487,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFF2D2D2D),
+          color: AppColors.cardColor(context),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF404040)),
+          border: Border.all(color: AppColors.stroke(context)),
         ),
         child: Column(
           children: [
@@ -499,19 +512,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             children: [
                               Text(
                                 sport,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 format,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
-                                  color: Color(0xFFAAAAAA),
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -522,10 +535,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 '$currentPlayers/$maxPlayers',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
-                                  color: Colors.white,
+                                  color: Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -535,10 +548,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const SizedBox(height: 8),
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ],
@@ -558,7 +571,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -573,7 +586,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -698,9 +711,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.cardColor(context),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.grey.shade200),
+              border: Border.all(color: AppColors.stroke(context)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -708,16 +721,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Text('🕐', style: TextStyle(fontSize: 20)),
-                        SizedBox(width: 8),
+                        const Text('🕐', style: TextStyle(fontSize: 20)),
+                        const SizedBox(width: 8),
                         Text(
                           'Upcoming Game',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ],
@@ -728,9 +741,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade50,
+                        color: AppColors.danger.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.red.shade200),
+                        border: Border.all(
+                          color: AppColors.danger.withOpacity(0.3),
+                        ),
                       ),
                       child: Row(
                         children: [
@@ -738,10 +753,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           const SizedBox(width: 4),
                           Text(
                             countdownLabel,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: Colors.red.shade700,
+                              color: AppColors.danger,
                             ),
                           ),
                         ],
@@ -752,10 +767,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 const SizedBox(height: 16),
                 Text(
                   game.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -767,7 +782,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       timeFormat,
                       style: TextStyle(
                         fontSize: 15,
-                        color: Colors.grey.shade700,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -782,7 +797,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         game.venueName ?? 'Location TBD',
                         style: TextStyle(
                           fontSize: 15,
-                          color: Colors.grey.shade700,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -797,11 +812,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       loading: () => Container(
         height: 160,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardColor(context),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: AppColors.stroke(context)),
         ),
-        child: const Center(child: CircularProgressIndicator()),
+        child: const Center(
+          child: CircularProgressIndicator(color: AppColors.primaryPurple),
+        ),
       ),
       error: (error, stack) {
         print('Error loading upcoming game: $error');

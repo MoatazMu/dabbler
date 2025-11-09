@@ -37,7 +37,7 @@ class ExampleScreen extends StatelessWidget {
                 Text(
                   'Details about this featured item',
                   style: AppTypography.bodyMedium.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
@@ -157,7 +157,7 @@ class ExampleScreen extends StatelessWidget {
                     // Trailing icon or info
                     const Icon(
                       Icons.chevron_right,
-                      color: AppColors.textSecondary,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ],
                 ),

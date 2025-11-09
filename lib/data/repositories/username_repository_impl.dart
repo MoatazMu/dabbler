@@ -1,12 +1,10 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/result.dart';
 import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import '../models/profile.dart';
 import 'username_repository.dart';
-
-typedef Result<T> = core.Result<T, Failure>;
 
 class UsernameRepositoryImpl implements UsernameRepository {
   UsernameRepositoryImpl(this.svc);
@@ -16,10 +14,10 @@ class UsernameRepositoryImpl implements UsernameRepository {
   SupabaseClient get _client => svc.client;
 
   @override
-  Future<Result<bool>> isAvailable(String username) async {
+  Future<Result<bool, Failure>> isAvailable(String username) async {
     final trimmed = username.trim();
     if (trimmed.isEmpty) {
-      return core.Ok(true);
+      return Ok(true);
     }
     try {
       final row = await _client
@@ -27,9 +25,9 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select('id')
           .eq('username', trimmed)
           .maybeSingle();
-      return core.Ok(row == null);
+      return Ok(row == null);
     } catch (error) {
-      return core.Err(
+      return Err(
         ServerFailure(
           message: 'Failed to check username availability',
           cause: error,
@@ -39,7 +37,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
   }
 
   @override
-  Future<Result<Profile>> getByUsername(String username) async {
+  Future<Result<Profile, Failure>> getByUsername(String username) async {
     try {
       final row = await _client
           .from('profiles')
@@ -47,11 +45,11 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .eq('username', username.trim())
           .maybeSingle();
       if (row == null) {
-        return core.Err(const NotFoundFailure(message: 'Username not found'));
+        return Err(const NotFoundFailure(message: 'Username not found'));
       }
-      return core.Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
+      return Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
     } catch (error) {
-      return core.Err(
+      return Err(
         ServerFailure(
           message: 'Failed to fetch profile by username',
           cause: error,
@@ -61,7 +59,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
   }
 
   @override
-  Future<Result<List<Profile>>> search({
+  Future<Result<List<Profile>, Failure>> search({
     required String query,
     int limit = 20,
     int offset = 0,
@@ -85,16 +83,16 @@ class UsernameRepositoryImpl implements UsernameRepository {
             ),
           )
           .toList(growable: false);
-      return core.Ok(rows);
+      return Ok(rows);
     } catch (error) {
-      return core.Err(
+      return Err(
         ServerFailure(message: 'Failed to search usernames', cause: error),
       );
     }
   }
 
   @override
-  Future<Result<Profile>> setUsernameForProfile({
+  Future<Result<Profile, Failure>> setUsernameForProfile({
     required String profileId,
     required String username,
   }) async {
@@ -107,35 +105,33 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return core.Err(
+        return Err(
           const NotFoundFailure(message: 'Profile not found or not owned'),
         );
       }
-      return core.Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
+      return Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
-        return core.Err(
-          const ConflictFailure(message: 'Username already taken'),
-        );
+        return Err(const ConflictFailure(message: 'Username already taken'));
       }
-      return core.Err(
+      return Err(
         ServerFailure(message: 'Failed to set username', cause: error),
       );
     } catch (error) {
-      return core.Err(
+      return Err(
         ServerFailure(message: 'Failed to set username', cause: error),
       );
     }
   }
 
   @override
-  Future<Result<Profile>> setMyUsernameForType({
+  Future<Result<Profile, Failure>> setMyUsernameForType({
     required String profileType,
     required String username,
   }) async {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) {
-      return core.Err(const AuthFailure(message: 'Not authenticated'));
+      return Err(const AuthFailure(message: 'Not authenticated'));
     }
     final trimmed = username.trim();
     try {
@@ -146,7 +142,7 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .eq('profile_type', profileType)
           .maybeSingle();
       if (profileRow == null) {
-        return core.Err(
+        return Err(
           NotFoundFailure(
             message: 'Profile of type $profileType not found for current user',
           ),
@@ -161,32 +157,32 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return core.Err(
+        return Err(
           const NotFoundFailure(message: 'Profile not found after update'),
         );
       }
-      return core.Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
+      return Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
     } on PostgrestException catch (error) {
       if (error.code == '23505') {
-        return core.Err(
-          const ConflictFailure(message: 'Username already taken'),
-        );
+        return Err(const ConflictFailure(message: 'Username already taken'));
       }
-      return core.Err(
+      return Err(
         ServerFailure(message: 'Failed to update username', cause: error),
       );
     } catch (error) {
-      return core.Err(
+      return Err(
         ServerFailure(message: 'Failed to update username', cause: error),
       );
     }
   }
 
   @override
-  Stream<Result<Profile>> myProfileTypeStream(String profileType) async* {
+  Stream<Result<Profile, Failure>> myProfileTypeStream(
+    String profileType,
+  ) async* {
     final uid = _client.auth.currentUser?.id;
     if (uid == null) {
-      yield core.Err(const AuthFailure(message: 'Not authenticated'));
+      yield Err(const AuthFailure(message: 'Not authenticated'));
       return;
     }
     try {
@@ -199,16 +195,14 @@ class UsernameRepositoryImpl implements UsernameRepository {
           .maybeSingle();
 
       if (data == null) {
-        yield core.Err(const NotFoundFailure(message: 'Profile not found'));
+        yield Err(const NotFoundFailure(message: 'Profile not found'));
         return;
       }
 
       final map = Map<String, dynamic>.from(data);
-      yield core.Ok(Profile.fromJson(map));
+      yield Ok(Profile.fromJson(map));
     } catch (error) {
-      yield core.Err(
-        ServerFailure(message: 'Failed to get profile', cause: error),
-      );
+      yield Err(ServerFailure(message: 'Failed to get profile', cause: error));
     }
   }
 }

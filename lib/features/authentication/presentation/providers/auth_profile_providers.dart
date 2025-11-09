@@ -1,3 +1,5 @@
+import 'package:dabbler/core/fp/failure.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/core/services/auth_profile_service.dart';
 import '../../../../data/repositories/profiles_repository.dart';
@@ -38,8 +40,8 @@ final authProfileServiceProvider = Provider<AuthProfileService>((ref) {
 // =====================================================
 
 /// Provides the current user's profile
-/// Returns Result<Profile> which must be handled with fold()
-final myProfileProvider = FutureProvider<Result<Profile>>((ref) async {
+/// Returns Result<Profile, Failure> which must be handled with fold()
+final myProfileProvider = FutureProvider<Result<Profile, Failure>>((ref) async {
   final service = ref.watch(authProfileServiceProvider);
   return await service.getMyProfile();
 });
@@ -53,7 +55,7 @@ final authenticatedUserWithProfileProvider =
     });
 
 /// Stream provider for watching profile changes in real-time
-final watchMyProfileProvider = StreamProvider<Result<Profile?>>((ref) {
+final watchMyProfileProvider = StreamProvider<Result<Profile?, Failure>>((ref) {
   final service = ref.watch(authProfileServiceProvider);
   return service.watchMyProfile();
 });
@@ -103,7 +105,7 @@ final hasProfileProvider = FutureProvider<bool>((ref) async {
 
 /// Provides a profile by user ID
 /// Family provider - pass userId as parameter
-final profileByUserIdProvider = FutureProvider.family<Result<Profile>, String>((
+final profileByUserIdProvider = FutureProvider.family<Result<Profile, Failure>, String>((
   ref,
   userId,
 ) async {
@@ -114,7 +116,7 @@ final profileByUserIdProvider = FutureProvider.family<Result<Profile>, String>((
 /// Provides a public profile by username
 /// Family provider - pass username as parameter
 final publicProfileByUsernameProvider =
-    FutureProvider.family<Result<Profile?>, String>((ref, username) async {
+    FutureProvider.family<Result<Profile?, Failure>, String>((ref, username) async {
       final service = ref.watch(authProfileServiceProvider);
       return await service.getPublicProfileByUsername(username);
     });

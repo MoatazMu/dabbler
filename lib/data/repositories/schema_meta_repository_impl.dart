@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dabbler/core/fp/failure.dart';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter/services.dart' show rootBundle;
@@ -19,7 +20,7 @@ class SchemaMetaRepositoryImpl extends BaseRepository
   const SchemaMetaRepositoryImpl(super.svc);
 
   @override
-  Future<Result<SchemaMeta?>> getDbMeta() {
+  Future<Result<SchemaMeta?, Failure>> getDbMeta() {
     return guard<SchemaMeta?>(() async {
       final row = await svc.client
           .from(_table)
@@ -33,13 +34,13 @@ class SchemaMetaRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<String?>> getDbSchemaHash() async {
+  Future<Result<String?, Failure>> getDbSchemaHash() async {
     final meta = await getDbMeta();
     return meta.map((m) => m?.schemaHash);
   }
 
   @override
-  Future<Result<String?>> getAppSchemaHash() {
+  Future<Result<String?, Failure>> getAppSchemaHash() {
     return guard<String?>(() async {
       final raw = await _loadAsset();
       if (raw == null || raw.trim().isEmpty) return null;
@@ -55,7 +56,7 @@ class SchemaMetaRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<bool>> isCompatible({
+  Future<Result<bool, Failure>> isCompatible({
     List<String> acceptedDbHashes = const [],
   }) {
     return guard<bool>(() async {

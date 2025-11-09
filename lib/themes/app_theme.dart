@@ -1,570 +1,242 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
-/// Semantic colors for consistent usage across the app
-class SemanticColors {
-  // Revised semantic colors for accessibility compliance
-  static const Color success = Color(0xFF059669); // Light mode success
-  static const Color warning = Color(0xFFF59E0B); // Light mode warning
-  static const Color destructive = Color(
-    0xFFD91A1A,
-  ); // Light mode error (revised)
+/// Category-specific colors for different app sections
+class CategoryColors {
+  // Main category - Purple
+  static const Color main = Color(0xFF8B5CF6);
+  static const Color mainLight = Color(0xFFE0C7FF);
 
-  // Status colors with proper contrast - Light Mode
-  static const Color successBackground = Color(0xFFF0FDF4);
-  static const Color successForeground = Color(
-    0xFF059669,
-  ); // Revised for contrast
-  static const Color warningBackground = Color(0xFFFEFCE8);
-  static const Color warningForeground = Color(0xFF92400E);
-  static const Color destructiveBackground = Color(0xFFFEF2F2);
-  static const Color destructiveForeground = Color(
-    0xFFD91A1A,
-  ); // Revised for contrast
+  // Social category - Blue
+  static const Color social = Color(0xFF3B82F6);
+  static const Color socialLight = Color(0xFFD1EAFA);
 
-  // Dark mode equivalents - Revised for accessibility
-  static const Color successBackgroundDark = Color(0xFF14532D);
-  static const Color successForegroundDark = Color(
-    0xFF67E8F9,
-  ); // Revised bright cyan
-  static const Color warningBackgroundDark = Color(0xFF92400E);
-  static const Color warningForegroundDark = Color(
-    0xFFFBBF24,
-  ); // Revised bright amber
-  static const Color destructiveBackgroundDark = Color(0xFF991B1B);
-  static const Color destructiveForegroundDark = Color(
-    0xFFFFA1A1,
-  ); // Revised bright red
+  // Sports category - Green
+  static const Color sports = Color(0xFF10B981);
+  static const Color sportsLight = Color(0xFFB1FBDA);
+
+  // Activities category - Pink
+  static const Color activities = Color(0xFFEC4899);
+  static const Color activitiesLight = Color(0xFFFCDEE8);
+
+  // Profile category - Orange
+  static const Color profile = Color(0xFFF59E0B);
+  static const Color profileLight = Color(0xFFFCF8EA);
 }
 
-/// Violet Fusion Color System - Complete accessibility-compliant palette
-class VioletShades {
-  // Light theme - Violet Fusion palette
-  static const Color lightCardBackground = Color(
-    0xFFF3F0FF,
-  ); // Card backgrounds
-  static const Color lightWidgetBackground = Color(
-    0xFFEBE7FF,
-  ); // Widget backgrounds
-  static const Color lightSurfaceVariant = Color(
-    0xFFFFFFFF,
-  ); // Surface/modal backgrounds
-  static const Color lightAccent = Color(0xFFDDD6FE); // Accent elements
-  static const Color lightHover = Color(0xFFC4B5FD); // Hover states
-  static const Color lightBackground = Color(0xFFFAF9FF); // App background
-
-  // Dark theme - Enhanced rich violet palette
-  static const Color darkCardBackground = Color(
-    0xFF1A1625,
-  ); // Rich dark violet cards
-  static const Color darkWidgetBackground = Color(
-    0xFF241F35,
-  ); // Medium dark violet widgets
-  static const Color darkSurfaceVariant = Color(
-    0xFF2D2142,
-  ); // Lighter dark violet surfaces
-  static const Color darkAccent = Color(0xFF3E3354); // Rich violet accent
-  static const Color darkHover = Color(
-    0xFF4A3D61,
-  ); // Vibrant violet interactions
-  static const Color darkBackground = Color(
-    0xFF15111F,
-  ); // Deep violet background
-
-  // Additional dark theme shades for enhanced hierarchy
-  static const Color darkElevated = Color(0xFF332847); // Elevated elements
-  static const Color darkHighlight = Color(0xFF5B4C73); // Highlights and focus
-  static const Color darkSubtle = Color(0xFF15111F); // Subtle backgrounds
-
-  // Text colors - Accessibility compliant
-  static const Color lightTextPrimary = Color(0xFF1A202C);
-  static const Color lightTextMuted = Color(0xFF575366); // Revised for contrast
-  static const Color darkTextPrimary = Color(0xFFF8FAFC);
-  static const Color darkTextMuted = Color(0xFFA1A1AA);
-
-  // Border colors (minimal use)
-  static const Color lightBorder = Color(0xFFEBE7FF);
-  static const Color darkBorder = Color(0xFF332847);
-}
-
-/// Enhanced theme implementation following Ant Design best practices with Violet Fusion Color System
+/// Material Design 3 theme implementation
 class AppTheme {
-  // Violet Fusion primary colors - accessibility compliant
-  static const Color _violetPrimary = Color(0xFF8B5CF6); // Light mode primary
-  static const Color _violetPrimaryDark = Color(
-    0xFF7C3AED,
-  ); // Light mode variant
-  static const Color _violetPrimaryDarkMode = Color(
-    0xFFA78BFA,
-  ); // Dark mode primary
-  static const Color _violetPrimaryVariantDarkMode = Color(
-    0xFFC4B5FD,
-  ); // Dark mode variant
+  // Primary purple seed color for Material 3 ColorScheme generation
+  static const Color _primarySeed = Color(0xFF8B5CF6);
 
-  /// Light Violet Ant Design Theme - Violet Fusion System
+  /// Light Material Design 3 Theme
   static ThemeData lightTheme = ThemeData(
+    useMaterial3: true,
     brightness: Brightness.light,
-    primarySwatch: Colors.purple,
-    primaryColor: _violetPrimary,
-    // Make scaffold transparent to reveal global background gradient
+    textTheme: GoogleFonts.robotoTextTheme(),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: _primarySeed,
+      brightness: Brightness.light,
+    ),
     scaffoldBackgroundColor: Colors.transparent,
-
-    // Color scheme
-    colorScheme: const ColorScheme.light(
-      primary: _violetPrimary,
-      secondary: _violetPrimaryDark,
-      surface: VioletShades.lightSurfaceVariant,
-      surfaceContainerHighest: VioletShades.lightSurfaceVariant,
-      error: SemanticColors.destructive,
-      outline: VioletShades.lightBorder,
-      onPrimary: Colors.white,
-      onSecondary: Colors.white,
-      onSurface: VioletShades.lightTextPrimary,
-      onError: Colors.white,
-    ),
-
-    // App bar theme
     appBarTheme: const AppBarTheme(
-      // Transparent so the global background can softly bleed through if needed
-      backgroundColor: Colors.transparent,
-      foregroundColor: VioletShades.lightTextPrimary,
-      elevation: 0,
       centerTitle: true,
-    ),
-
-    // Card theme
-    cardTheme: CardThemeData(
-      color: VioletShades.lightCardBackground,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      scrolledUnderElevation: 0,
+      backgroundColor: Colors.transparent,
     ),
-
-    // Elevated button theme
+    cardTheme: CardThemeData(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      ),
+    ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: _violetPrimary,
-        foregroundColor: Colors.white,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
     ),
-
-    // Outlined button theme
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        backgroundColor: VioletShades.lightCardBackground,
-        foregroundColor: VioletShades.lightTextPrimary,
-        side: const BorderSide(color: VioletShades.lightBorder),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
     ),
-
-    // Text button theme
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: VioletShades.lightTextPrimary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
     ),
-
-    // Input decoration theme
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: VioletShades.lightWidgetBackground,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: VioletShades.lightBorder),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: VioletShades.lightBorder),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: _violetPrimary),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: const BorderSide(color: _primarySeed, width: 2),
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: SemanticColors.destructive),
-      ),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
     ),
-
-    // Bottom navigation bar theme
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: VioletShades.lightSurfaceVariant,
-      selectedItemColor: _violetPrimary,
-      unselectedItemColor: VioletShades.lightTextMuted,
-      type: BottomNavigationBarType.fixed,
+    chipTheme: ChipThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      labelPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
       elevation: 0,
-    ),
-
-    // Text theme
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(
-        fontSize: 32,
-        fontWeight: FontWeight.bold,
-        color: VioletShades.lightTextPrimary,
+      height: 80,
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      indicatorShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      displayMedium: TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.bold,
-        color: VioletShades.lightTextPrimary,
-      ),
-      displaySmall: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: VioletShades.lightTextPrimary,
-      ),
-      headlineLarge: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w600,
-        color: VioletShades.lightTextPrimary,
-      ),
-      headlineMedium: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: VioletShades.lightTextPrimary,
-      ),
-      headlineSmall: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: VioletShades.lightTextPrimary,
-      ),
-      titleLarge: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        color: VioletShades.lightTextPrimary,
-      ),
-      titleMedium: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: VioletShades.lightTextPrimary,
-      ),
-      titleSmall: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: VioletShades.lightTextPrimary,
-      ),
-      bodyLarge: TextStyle(fontSize: 16, color: VioletShades.lightTextPrimary),
-      bodyMedium: TextStyle(fontSize: 14, color: VioletShades.lightTextPrimary),
-      bodySmall: TextStyle(fontSize: 12, color: VioletShades.lightTextMuted),
     ),
   );
 
-  /// Dark Violet Ant Design Theme - Violet Fusion System
+  /// Dark Material Design 3 Theme
   static ThemeData darkTheme = ThemeData(
+    useMaterial3: true,
     brightness: Brightness.dark,
-    primarySwatch: Colors.purple,
-    primaryColor: _violetPrimaryDarkMode,
-    // Make scaffold transparent to reveal global background gradient
+    textTheme: GoogleFonts.robotoTextTheme(ThemeData.dark().textTheme),
+    colorScheme: ColorScheme.fromSeed(
+      seedColor: _primarySeed,
+      brightness: Brightness.dark,
+    ),
     scaffoldBackgroundColor: Colors.transparent,
-
-    // Color scheme
-    colorScheme: const ColorScheme.dark(
-      primary: _violetPrimaryDarkMode,
-      secondary: _violetPrimaryVariantDarkMode,
-      surface: VioletShades.darkSurfaceVariant,
-      surfaceContainerHighest: VioletShades.darkSurfaceVariant,
-      error: SemanticColors.destructiveForegroundDark,
-      outline: VioletShades.darkBorder,
-      onPrimary: Colors.black,
-      onSecondary: Colors.black,
-      onSurface: VioletShades.darkTextPrimary,
-      onError: Colors.black,
-    ),
-
-    // App bar theme
     appBarTheme: const AppBarTheme(
-      // Transparent so the global background can softly bleed through if needed
-      backgroundColor: Colors.transparent,
-      foregroundColor: VioletShades.darkTextPrimary,
-      elevation: 0,
       centerTitle: true,
-    ),
-
-    // Card theme
-    cardTheme: CardThemeData(
-      color: VioletShades.darkCardBackground,
       elevation: 0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      scrolledUnderElevation: 0,
+      backgroundColor: Colors.transparent,
     ),
-
-    // Elevated button theme
+    cardTheme: CardThemeData(
+      elevation: 0,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      ),
+    ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: _violetPrimaryDarkMode,
-        foregroundColor: Colors.black,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
     ),
-
-    // Outlined button theme
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
-        backgroundColor: VioletShades.darkCardBackground,
-        foregroundColor: VioletShades.darkTextPrimary,
-        side: const BorderSide(color: VioletShades.darkBorder),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
     ),
-
-    // Text button theme
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: VioletShades.darkTextPrimary,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       ),
     ),
-
-    // Input decoration theme
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: VioletShades.darkWidgetBackground,
       border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: VioletShades.darkBorder),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
       ),
       enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: VioletShades.darkBorder),
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
       ),
       focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: _violetPrimaryDarkMode),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(
-          color: SemanticColors.destructiveForegroundDark,
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: _primarySeed.withValues(alpha: 0.8),
+          width: 2,
         ),
       ),
+      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
     ),
-
-    // Bottom navigation bar theme
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-      backgroundColor: VioletShades.darkSurfaceVariant,
-      selectedItemColor: _violetPrimaryDarkMode,
-      unselectedItemColor: VioletShades.darkTextMuted,
-      type: BottomNavigationBarType.fixed,
+    chipTheme: ChipThemeData(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      labelPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+    ),
+    navigationBarTheme: NavigationBarThemeData(
       elevation: 0,
-    ),
-
-    // Text theme
-    textTheme: const TextTheme(
-      displayLarge: TextStyle(
-        fontSize: 32,
-        fontWeight: FontWeight.bold,
-        color: VioletShades.darkTextPrimary,
+      height: 80,
+      labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+      indicatorShape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
       ),
-      displayMedium: TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.bold,
-        color: VioletShades.darkTextPrimary,
-      ),
-      displaySmall: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.bold,
-        color: VioletShades.darkTextPrimary,
-      ),
-      headlineLarge: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w600,
-        color: VioletShades.darkTextPrimary,
-      ),
-      headlineMedium: TextStyle(
-        fontSize: 20,
-        fontWeight: FontWeight.w600,
-        color: VioletShades.darkTextPrimary,
-      ),
-      headlineSmall: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: VioletShades.darkTextPrimary,
-      ),
-      titleLarge: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        color: VioletShades.darkTextPrimary,
-      ),
-      titleMedium: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: VioletShades.darkTextPrimary,
-      ),
-      titleSmall: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: VioletShades.darkTextPrimary,
-      ),
-      bodyLarge: TextStyle(fontSize: 16, color: VioletShades.darkTextPrimary),
-      bodyMedium: TextStyle(fontSize: 14, color: VioletShades.darkTextPrimary),
-      bodySmall: TextStyle(fontSize: 12, color: VioletShades.darkTextMuted),
     ),
   );
 
-  /// Helper method to get semantic colors based on theme mode
-  static Color getSemanticBackground(BuildContext context, String type) {
+  /// Helper to get category color based on theme brightness
+  static Color getCategoryColor(BuildContext context, String category) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    switch (type) {
-      case 'success':
+    switch (category.toLowerCase()) {
+      case 'main':
+        return isDark ? CategoryColors.main : CategoryColors.mainLight;
+      case 'social':
+        return isDark ? CategoryColors.social : CategoryColors.socialLight;
+      case 'sports':
+        return isDark ? CategoryColors.sports : CategoryColors.sportsLight;
+      case 'activities':
         return isDark
-            ? SemanticColors.successBackgroundDark
-            : SemanticColors.successBackground;
-      case 'warning':
-        return isDark
-            ? SemanticColors.warningBackgroundDark
-            : SemanticColors.warningBackground;
-      case 'destructive':
-        return isDark
-            ? SemanticColors.destructiveBackgroundDark
-            : SemanticColors.destructiveBackground;
+            ? CategoryColors.activities
+            : CategoryColors.activitiesLight;
+      case 'profile':
+        return isDark ? CategoryColors.profile : CategoryColors.profileLight;
       default:
-        return Theme.of(context).colorScheme.surface;
+        return Theme.of(context).colorScheme.primary;
     }
   }
 
-  static Color getSemanticForeground(BuildContext context, String type) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+  // Compatibility methods for legacy code
+  static Color getCardBackground(BuildContext context) =>
+      Theme.of(context).colorScheme.surfaceContainer;
 
-    switch (type) {
-      case 'success':
-        return isDark
-            ? SemanticColors.successForegroundDark
-            : SemanticColors.successForeground;
-      case 'warning':
-        return isDark
-            ? SemanticColors.warningForegroundDark
-            : SemanticColors.warningForeground;
-      case 'destructive':
-        return isDark
-            ? SemanticColors.destructiveForegroundDark
-            : SemanticColors.destructiveForeground;
-      default:
-        return Theme.of(context).colorScheme.onSurface;
-    }
-  }
+  static Color getTextPrimary(BuildContext context) =>
+      Theme.of(context).colorScheme.onSurface;
 
-  /// Get violet shade for cards based on theme mode
-  static Color getCardBackground(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark
-        ? VioletShades.darkCardBackground
-        : VioletShades.lightCardBackground;
-  }
-
-  /// Get violet shade for widgets based on theme mode
-  static Color getWidgetBackground(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark
-        ? VioletShades.darkWidgetBackground
-        : VioletShades.lightWidgetBackground;
-  }
-
-  /// Get violet surface variant based on theme mode
-  static Color getSurfaceVariant(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark
-        ? VioletShades.darkSurfaceVariant
-        : VioletShades.lightSurfaceVariant;
-  }
-
-  /// Get violet accent color based on theme mode
-  static Color getAccentColor(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? VioletShades.darkAccent : VioletShades.lightAccent;
-  }
-
-  /// Get violet hover color based on theme mode
-  static Color getHoverColor(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? VioletShades.darkHover : VioletShades.lightHover;
-  }
-
-  /// Get elevated background for dark theme enhancement
-  static Color getElevatedBackground(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? VioletShades.darkElevated : VioletShades.lightAccent;
-  }
-
-  /// Get highlight color for focus states and emphasis
-  static Color getHighlightColor(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? VioletShades.darkHighlight : VioletShades.lightHover;
-  }
-
-  /// Get subtle background for minimal elements
-  static Color getSubtleBackground(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? VioletShades.darkSubtle : VioletShades.lightBackground;
-  }
-
-  /// Get app background based on theme mode
-  static Color getAppBackground(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? VioletShades.darkBackground : VioletShades.lightBackground;
-  }
-
-  /// Get text colors based on theme mode
-  static Color getTextPrimary(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark
-        ? VioletShades.darkTextPrimary
-        : VioletShades.lightTextPrimary;
-  }
-
-  static Color getTextMuted(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? VioletShades.darkTextMuted : VioletShades.lightTextMuted;
-  }
-
-  /// Get border color based on theme mode
-  static Color getBorderColor(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return isDark ? VioletShades.darkBorder : VioletShades.lightBorder;
-  }
+  static Color getBorderColor(BuildContext context) =>
+      Theme.of(context).colorScheme.outline;
 }
 
-/// Extension for easy access to Violet Fusion Color System
-extension ThemeExtension on BuildContext {
-  ColorScheme get colors => Theme.of(this).colorScheme;
+/// Extension for easy theme access
+extension AppThemeExtension on BuildContext {
+  ColorScheme get colorScheme => Theme.of(this).colorScheme;
+  ColorScheme get colors => colorScheme; // Alias for compatibility
   TextTheme get textTheme => Theme.of(this).textTheme;
   bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
 
-  /// Quick access to semantic colors
-  Color successColor([bool isBackground = false]) => isBackground
-      ? AppTheme.getSemanticBackground(this, 'success')
-      : AppTheme.getSemanticForeground(this, 'success');
+  /// Quick access to common colors
+  Color get primaryColor => colorScheme.primary;
+  Color get surfaceColor => colorScheme.surface;
+  Color get backgroundColor => colorScheme.surface;
+  Color get onPrimaryColor => colorScheme.onPrimary;
+  Color get onSurfaceColor => colorScheme.onSurface;
 
-  Color warningColor([bool isBackground = false]) => isBackground
-      ? AppTheme.getSemanticBackground(this, 'warning')
-      : AppTheme.getSemanticForeground(this, 'warning');
+  // Legacy compatibility helpers
+  Color get violetCardBg => colorScheme.surfaceContainerHighest;
+  Color get violetWidgetBg => colorScheme.surfaceContainer;
+  Color get violetSurface => colorScheme.surface;
 
-  Color destructiveColor([bool isBackground = false]) => isBackground
-      ? AppTheme.getSemanticBackground(this, 'destructive')
-      : AppTheme.getSemanticForeground(this, 'destructive');
-
-  /// Quick access to Violet Fusion violet shades
-  Color get violetCardBg => AppTheme.getCardBackground(this);
-  Color get violetWidgetBg => AppTheme.getWidgetBackground(this);
-  Color get violetSurface => AppTheme.getSurfaceVariant(this);
-  Color get violetAccent => AppTheme.getAccentColor(this);
-  Color get violetHover => AppTheme.getHoverColor(this);
-
-  /// Quick access to enhanced dark theme colors
-  Color get elevatedBg => AppTheme.getElevatedBackground(this);
-  Color get highlightColor => AppTheme.getHighlightColor(this);
-  Color get subtleBg => AppTheme.getSubtleBackground(this);
-  Color get appBackground => AppTheme.getAppBackground(this);
-
-  /// Quick access to accessible text colors
-  Color get textPrimary => AppTheme.getTextPrimary(this);
-  Color get textMuted => AppTheme.getTextMuted(this);
-  Color get borderColor => AppTheme.getBorderColor(this);
+  /// Category colors
+  Color categoryColor(String category) =>
+      AppTheme.getCategoryColor(this, category);
 }

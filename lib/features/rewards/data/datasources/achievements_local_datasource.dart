@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 
 import 'package:dabbler/data/models/rewards/achievement.dart';
 import 'package:dabbler/data/models/rewards/user_progress.dart';
-import 'package:dabbler/data/models/rewards/points_transaction.dart';
+import 'package:dabbler/data/models/rewards/point_transaction.dart';
 import 'package:dabbler/data/models/rewards/badge_tier.dart';
 
 import 'package:dabbler/data/models/rewards/achievement_model.dart';

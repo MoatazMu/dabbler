@@ -118,6 +118,9 @@ dependencies:
   
   # Cryptographic functions
   crypto: ^3.0.3
+  
+  # Google Fonts - Includes Roboto and proper emoji fallback handling
+  google_fonts: ^6.1.0
 
 dev_dependencies:
   flutter_test:

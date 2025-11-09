@@ -1,6 +1,6 @@
 /// Design System Exports
 /// Import this file to access all design system components
-library design_system;
+library;
 
 // Colors
 export 'colors/app_colors.dart';
@@ -17,3 +17,5 @@ export 'layouts/two_section_layout.dart';
 // Widgets
 export 'widgets/app_card.dart';
 export 'widgets/social_feed_widgets.dart';
+export 'widgets/app_filter_chip.dart';
+export 'widgets/app_search_input.dart';

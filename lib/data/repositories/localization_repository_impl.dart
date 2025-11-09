@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/utils/json.dart';
@@ -35,7 +36,7 @@ class LocalizationRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<LocalizedError?>> getError(
+  Future<Result<LocalizedError?, Failure>> getError(
     String code, {
     String locale = 'en',
     List<String> fallbackLocales = const ['en'],
@@ -61,7 +62,7 @@ class LocalizationRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<Map<String, LocalizedError>>> getErrors(
+  Future<Result<Map<String, LocalizedError>, Failure>> getErrors(
     List<String> codes, {
     String locale = 'en',
     List<String> fallbackLocales = const ['en'],
@@ -122,7 +123,7 @@ class LocalizationRepositoryImpl extends BaseRepository
   Future<LocalizedError?> _fetchSingle(String code, String locale) async {
     final row = await svc.client
         .from(_table)
-        .select<Map<String, dynamic>>()
+        .select()
         .eq('code', code)
         .eq('locale', locale)
         .maybeSingle();
@@ -142,7 +143,7 @@ class LocalizationRepositoryImpl extends BaseRepository
         .from(_table)
         .select()
         .eq('locale', locale)
-        .in_('code', codes);
+        .inFilter('code', codes);
 
     final map = <String, LocalizedError>{};
     for (final r in rows) {

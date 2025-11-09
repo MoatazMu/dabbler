@@ -6,6 +6,8 @@ import '../presentation/controllers/social_feed_controller.dart';
 import 'package:dabbler/data/models/social/chat_message_model.dart';
 import 'package:dabbler/data/models/social/conversation_model.dart';
 import '../../../../utils/enums/social_enums.dart'; // Import MessageType
+import '../services/social_service.dart';
+import '../../authentication/presentation/providers/auth_providers.dart';
 
 // =============================================================================
 // POSTS CONTROLLER PROVIDER
@@ -340,32 +342,27 @@ final postDetailsProvider = FutureProvider.family<dynamic, String>((
   ref,
   postId,
 ) async {
-  // Mock implementation - in real app, this would fetch from repository
-  await Future.delayed(const Duration(milliseconds: 300));
-  return _MockPost(
-    id: postId,
-    content: 'This is a sample post content for testing purposes.',
-    author: _MockUser(
-      id: 'user1',
-      name: 'John Doe',
-      username: 'johndoe',
-      avatar: null,
-      isVerified: true,
-    ),
-    createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-    location: 'Dubai, UAE',
-    isEdited: false,
-    media: [
-      {'type': 'image', 'url': 'https://example.com/image1.jpg'},
-    ],
-    sports: ['Football', 'Basketball'],
-    mentions: ['@janesmith', '@bobwilson'],
-    hashtags: ['#sports', '#dubai'],
-    likesCount: 42,
-    commentsCount: 12,
-    sharesCount: 5,
-    isLiked: false,
-  );
+  try {
+    print('DEBUG: postDetailsProvider called with postId: $postId');
+    final socialService = SocialService();
+
+    // Fetch the post from the feed (in a real implementation, you'd have a getPostById method)
+    // For now, we'll get from feed and filter, or you can add a new method to SocialService
+    final posts = await socialService.getFeedPosts(limit: 100);
+    print('DEBUG: Fetched ${posts.length} posts from service');
+    print('DEBUG: Post IDs: ${posts.map((p) => p.id).toList()}');
+
+    final post = posts.firstWhere(
+      (p) => p.id == postId,
+      orElse: () => throw Exception('Post not found with id: $postId'),
+    );
+
+    print('DEBUG: Found post with content: "${post.content}"');
+    return post;
+  } catch (e) {
+    print('ERROR in postDetailsProvider: $e');
+    throw Exception('Failed to load post: $e');
+  }
 });
 
 /// Provider for post comments
@@ -373,54 +370,33 @@ final postCommentsProvider = FutureProvider.family<List<dynamic>, String>((
   ref,
   postId,
 ) async {
-  // Mock implementation - in real app, this would fetch from repository
-  await Future.delayed(const Duration(milliseconds: 300));
-  return [
-    _MockComment(
-      id: 'comment1',
-      content: 'Great post! Love the energy.',
-      author: _MockUser(
-        id: 'user2',
-        name: 'Jane Smith',
-        username: 'janesmith',
-        avatar: null,
-        isVerified: false,
-      ),
-      createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
-      likesCount: 5,
-      isLiked: false,
-      replies: [
-        _MockComment(
-          id: 'reply1',
-          content: 'Totally agree!',
-          author: _MockUser(
-            id: 'user3',
-            name: 'Bob Wilson',
-            username: 'bobwilson',
-            avatar: null,
-            isVerified: false,
-          ),
-          createdAt: DateTime.now().subtract(const Duration(minutes: 15)),
-          likesCount: 2,
-          isLiked: false,
+  try {
+    final socialService = SocialService();
+    final rawComments = await socialService.getComments(postId);
+
+    // Transform database comments to UI-expected format
+    return rawComments.map((comment) {
+      final profile = comment['profiles'];
+      return _CommentData(
+        id: comment['id'],
+        authorId: comment['author_user_id'],
+        content: comment['body'] ?? '',
+        createdAt: DateTime.parse(comment['created_at']),
+        author: _UserViewModel(
+          id: comment['author_user_id'],
+          name: profile?['display_name'] ?? 'Unknown',
+          username: profile?['display_name'] ?? 'unknown',
+          avatar: profile?['avatar_url'],
+          isVerified: profile?['verified'] ?? false,
         ),
-      ],
-    ),
-    _MockComment(
-      id: 'comment2',
-      content: 'Looking forward to the next game!',
-      author: _MockUser(
-        id: 'user4',
-        name: 'Alice Johnson',
-        username: 'alicejohnson',
-        avatar: null,
-        isVerified: false,
-      ),
-      createdAt: DateTime.now().subtract(const Duration(minutes: 45)),
-      likesCount: 3,
-      isLiked: false,
-    ),
-  ];
+        likesCount: 0, // Comment likes not implemented yet
+        isLiked: false,
+        replies: const [], // Nested replies not implemented yet
+      );
+    }).toList();
+  } catch (e) {
+    throw Exception('Failed to load comments: $e');
+  }
 });
 
 /// Provider for post comments count
@@ -433,55 +409,36 @@ final postCommentsCountProvider = Provider.family<int, String>((ref, postId) {
   );
 });
 
-/// Provider for post likes
+/// Provider for post likes - fetches from database
 final postLikesProvider = FutureProvider.family<List<dynamic>, String>((
   ref,
   postId,
 ) async {
-  // Mock implementation - in real app, this would fetch from repository
-  await Future.delayed(const Duration(milliseconds: 300));
-  return [
-    _MockLike(
-      user: _MockUser(
-        id: 'user1',
-        name: 'John Doe',
-        username: 'johndoe',
-        avatar: null,
-        isVerified: true,
-      ),
-      reactionType: ReactionType.like,
-    ),
-    _MockLike(
-      user: _MockUser(
-        id: 'user2',
-        name: 'Jane Smith',
-        username: 'janesmith',
-        avatar: null,
-        isVerified: false,
-      ),
-      reactionType: ReactionType.love,
-    ),
-  ];
+  // TODO: Implement actual database fetch for post likes
+  // For now, return empty list (likes feature not in MVP phase)
+  return [];
 });
 
-/// Provider for current user ID
+/// Provider for current user ID - connected to auth service
 final currentUserIdProvider = Provider<String>((ref) {
-  // Mock implementation - in real app, this would come from auth service
-  return 'current_user_id';
+  final authService = ref.watch(authServiceProvider);
+  final currentUser = authService.getCurrentUser();
+  return currentUser?.id ?? '';
 });
 
 // =============================================================================
-// MOCK DATA CLASSES
+// VIEW MODEL CLASSES (for UI data transformation)
 // =============================================================================
 
-class _MockUser {
+/// User view model for displaying user info in comments/posts
+class _UserViewModel {
   final String id;
   final String name;
   final String username;
   final String? avatar;
   final bool isVerified;
 
-  const _MockUser({
+  const _UserViewModel({
     required this.id,
     required this.name,
     required this.username,
@@ -490,65 +447,27 @@ class _MockUser {
   });
 }
 
-class _MockPost {
+/// Comment view model with author data from database
+class _CommentData {
   final String id;
+  final String authorId;
   final String content;
-  final _MockUser author;
-  final DateTime createdAt;
-  final String? location;
-  final bool isEdited;
-  final List<dynamic> media;
-  final List<String> sports;
-  final List<String> mentions;
-  final List<String> hashtags;
-  final int likesCount;
-  final int commentsCount;
-  final int sharesCount;
-  final bool isLiked;
-
-  const _MockPost({
-    required this.id,
-    required this.content,
-    required this.author,
-    required this.createdAt,
-    this.location,
-    this.isEdited = false,
-    this.media = const [],
-    this.sports = const [],
-    this.mentions = const [],
-    this.hashtags = const [],
-    this.likesCount = 0,
-    this.commentsCount = 0,
-    this.sharesCount = 0,
-    this.isLiked = false,
-  });
-}
-
-class _MockComment {
-  final String id;
-  final String content;
-  final _MockUser author;
+  final _UserViewModel author;
   final DateTime createdAt;
   final int likesCount;
   final bool isLiked;
-  final List<_MockComment>? replies;
+  final List<_CommentData> replies;
 
-  const _MockComment({
+  const _CommentData({
     required this.id,
+    required this.authorId,
     required this.content,
     required this.author,
     required this.createdAt,
     this.likesCount = 0,
     this.isLiked = false,
-    this.replies,
+    this.replies = const [],
   });
-}
-
-class _MockLike {
-  final _MockUser user;
-  final ReactionType reactionType;
-
-  const _MockLike({required this.user, required this.reactionType});
 }
 
 // =============================================================================

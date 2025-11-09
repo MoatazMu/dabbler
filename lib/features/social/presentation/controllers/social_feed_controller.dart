@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import '../../../../utils/enums/social_enums.dart';
 import '../widgets/trending/trending_filter_bar.dart';
+import '../../services/social_service.dart';
 
 /// State for social feed management
 class SocialFeedState {
@@ -60,6 +61,7 @@ class SocialFeedState {
 class SocialFeedController extends StateNotifier<SocialFeedState> {
   int _currentPage = 1;
   static const int _pageSize = 20;
+  final SocialService _socialService = SocialService();
 
   SocialFeedController() : super(const SocialFeedState());
 
@@ -353,16 +355,34 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     String? parentCommentId,
   }) async {
     try {
-      // Simulate API call delay
-      await Future.delayed(const Duration(milliseconds: 500));
+      // Call the social service to add the comment
+      await _socialService.addComment(
+        postId: postId,
+        body: content,
+        parentCommentId: parentCommentId,
+      );
 
-      // In a real implementation, this would send the comment to the API
-      // and then update the local state with the new comment
+      // Update the post's comment count in local state
+      final postIndex = state.posts.indexWhere((post) => post.id == postId);
+      if (postIndex != -1) {
+        final post = state.posts[postIndex];
+        final updatedPost = post.copyWith(
+          commentsCount: post.commentsCount + 1,
+        );
 
-      // For now, just return success
+        final updatedPosts = List<PostModel>.from(state.posts);
+        updatedPosts[postIndex] = updatedPost;
+
+        state = state.copyWith(
+          posts: updatedPosts,
+          filteredPosts: _applyFilter(updatedPosts, state.filter),
+        );
+      }
+
       return true;
     } catch (e) {
       state = state.copyWith(error: e.toString());
+      debugPrint('Error adding comment: $e');
       return false;
     }
   }

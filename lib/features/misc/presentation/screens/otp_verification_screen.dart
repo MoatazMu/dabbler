@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/core/services/auth_service.dart';
-import 'package:dabbler/core/utils/constants.dart';
 import 'package:dabbler/core/utils/validators.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
-import 'package:dabbler/widgets/app_button.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   final String? phoneNumber;
@@ -77,6 +77,22 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     } else if (value.isEmpty && index > 0) {
       _focusNodes[index - 1].requestFocus();
     }
+
+    // Auto-submit when all 6 digits are entered
+    if (value.length == 1 && index == 5) {
+      // Check if all fields are filled
+      final otpCode = _getOtpCode();
+      if (otpCode.length == 6) {
+        // Unfocus to dismiss keyboard
+        FocusScope.of(context).unfocus();
+        // Automatically submit after a short delay
+        Future.delayed(const Duration(milliseconds: 100), () {
+          if (mounted && !_isLoading) {
+            _handleSubmit();
+          }
+        });
+      }
+    }
   }
 
   String _getOtpCode() {
@@ -130,7 +146,10 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } finally {
@@ -235,7 +254,10 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Error: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } finally {
@@ -247,143 +269,197 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Verify OTP'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.defaultPadding),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 32),
+    return TwoSectionLayout(
+      topSection: _buildTopSection(),
+      bottomSection: _buildBottomSection(),
+    );
+  }
 
-              // Header
-              Text(
-                'Verify Your Phone',
-                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
+  Widget _buildTopSection() {
+    return Column(
+      children: [
+        SizedBox(height: AppSpacing.huge),
+        // Logo
+        SvgPicture.asset(
+          'assets/images/dabbler_logo.svg',
+          width: 80,
+          height: 88,
+        ),
+        SizedBox(height: AppSpacing.md),
+        SvgPicture.asset(
+          'assets/images/dabbler_text_logo.svg',
+          width: 110,
+          height: 21,
+        ),
+        SizedBox(height: AppSpacing.huge),
+        // Header
+        Text(
+          'Verify Your Phone',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        SizedBox(height: AppSpacing.sm),
+        Text(
+          'We\'ve sent a 6-digit code to',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textLight70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: AppSpacing.xs),
+        Text(
+          widget.phoneNumber ?? '',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomSection() {
+    return Column(
+      children: [
+        // OTP Input Fields
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(6, (index) {
+            return SizedBox(
+              width: 45,
+              child: TextField(
+                controller: _otpControllers[index],
+                focusNode: _focusNodes[index],
+                keyboardType: TextInputType.number,
+                textAlign: TextAlign.center,
+                maxLength: 1,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 8),
-
-              Text(
-                'We\'ve sent a 6-digit code to',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 4),
-
-              Text(
-                widget.phoneNumber ?? '',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
-                textAlign: TextAlign.center,
-              ),
-
-              const SizedBox(height: 48),
-
-              // OTP Input Fields
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: List.generate(6, (index) {
-                  return SizedBox(
-                    width: 45,
-                    child: TextField(
-                      controller: _otpControllers[index],
-                      focusNode: _focusNodes[index],
-                      keyboardType: TextInputType.number,
-                      textAlign: TextAlign.center,
-                      maxLength: 1,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: InputDecoration(
-                        counterText: '',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppConstants.borderRadius,
-                          ),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                        ),
-                      ),
-                      onChanged: (value) => _onOtpChanged(value, index),
-                    ),
-                  );
-                }),
-              ),
-
-              const SizedBox(height: 32),
-
-              // Verify Button
-              AppButton(
-                onPressed: _isLoading ? null : _handleSubmit,
-                label: _isLoading ? 'Verifying...' : 'Verify',
-              ),
-
-              const SizedBox(height: 24),
-
-              // Resend OTP
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Didn\'t receive the code? ',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                decoration: InputDecoration(
+                  counterText: '',
+                  filled: true,
+                  fillColor: AppColors.cardColor(context),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.sm),
+                    borderSide: BorderSide(color: AppColors.borderDark),
                   ),
-                  if (_resendCountdown > 0)
-                    Text(
-                      'Resend in $_resendCountdown seconds',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: Colors.grey[500]),
-                    )
-                  else
-                    TextButton(
-                      onPressed: _isResending ? null : _handleResend,
-                      child: Text(
-                        _isResending ? 'Sending...' : 'Resend',
-                        style: TextStyle(
-                          color: Colors.blue[700],
-                          fontWeight: FontWeight.w600,
-                        ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.sm),
+                    borderSide: BorderSide(color: AppColors.borderDark),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSpacing.sm),
+                    borderSide: BorderSide(color: AppColors.primaryPurple),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onChanged: (value) => _onOtpChanged(value, index),
+              ),
+            );
+          }),
+        ),
+        SizedBox(height: AppSpacing.xl),
+
+        // Verify Button
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _handleSubmit,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryPurple,
+              foregroundColor: AppColors.buttonForeground,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.buttonBorderRadius,
+                ),
+              ),
+            ),
+            child: _isLoading
+                ? SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        AppColors.buttonForeground,
                       ),
                     ),
-                ],
+                  )
+                : Text(
+                    'Verify',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  ),
+          ),
+        ),
+        SizedBox(height: AppSpacing.lg),
+
+        // Resend OTP
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Didn\'t receive the code? ',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
-
-              const Spacer(),
-
-              // Change Phone Number
-              TextButton(
-                onPressed: () {
-                  context.go('/');
-                },
+            ),
+            if (_resendCountdown > 0)
+              Text(
+                'Resend in $_resendCountdown seconds',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              )
+            else
+              GestureDetector(
+                onTap: _isResending ? null : _handleResend,
                 child: Text(
-                  'Change Phone Number',
+                  _isResending ? 'Sending...' : 'Resend',
                   style: TextStyle(
-                    color: Colors.grey[600],
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.primaryPurple,
                     decoration: TextDecoration.underline,
                   ),
                 ),
               ),
+          ],
+        ),
+        SizedBox(height: AppSpacing.xxl),
 
-              const SizedBox(height: 16),
-            ],
+        // Change Phone Number
+        TextButton(
+          onPressed: () {
+            context.go('/');
+          },
+          child: Text(
+            'Change Phone Number',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              decoration: TextDecoration.underline,
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }

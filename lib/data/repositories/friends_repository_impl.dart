@@ -18,49 +18,49 @@ class FriendsRepositoryImpl implements FriendsRepository {
 
   /// Relies on RLS policy `friendships_insert_requester`.
   @override
-  Future<Result<void>> sendFriendRequest(String peerUserId) async {
+  Future<Result<void, Failure>> sendFriendRequest(String peerUserId) async {
     try {
       await _db.rpc('rpc_friend_request_send', params: {'p_peer': peerUserId});
-      return right(null);
+      return Ok(null);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `friendships_update_parties`.
   @override
-  Future<Result<void>> acceptFriendRequest(String peerUserId) async {
+  Future<Result<void, Failure>> acceptFriendRequest(String peerUserId) async {
     try {
       await _db.rpc(
         'rpc_friend_request_accept',
         params: {'p_peer': peerUserId},
       );
-      return right(null);
+      return Ok(null);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `friendships_update_parties`.
   @override
-  Future<Result<void>> rejectFriendRequest(String peerUserId) async {
+  Future<Result<void, Failure>> rejectFriendRequest(String peerUserId) async {
     try {
       await _db.rpc(
         'rpc_friend_request_reject',
         params: {'p_peer': peerUserId},
       );
-      return right(null);
+      return Ok(null);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `friendships_update_parties`.
   @override
-  Future<Result<void>> removeFriend(String peerUserId) async {
+  Future<Result<void, Failure>> removeFriend(String peerUserId) async {
     try {
       await _db.rpc('rpc_friend_remove', params: {'p_peer': peerUserId});
-      return right(null);
+      return Ok(null);
     } on PostgrestException catch (error) {
       if ((error.code == '42883') ||
           ((error.details as String?)?.toLowerCase().contains(
@@ -69,20 +69,20 @@ class FriendsRepositoryImpl implements FriendsRepository {
               false)) {
         try {
           await _db.rpc('rpc_friend_unfriend', params: {'p_peer': peerUserId});
-          return right(null);
+          return Ok(null);
         } catch (fallbackError) {
-          return left(svc.mapPostgrestError(fallbackError));
+          return Err(svc.mapPostgrestError(fallbackError));
         }
       }
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `friendships_select_parties`.
   @override
-  Future<Result<List<Friendship>>> listFriendships() async {
+  Future<Result<List<Friendship>, Failure>> listFriendships() async {
     try {
       final rows = await _db
           .from('friendships')
@@ -94,49 +94,49 @@ class FriendsRepositoryImpl implements FriendsRepository {
                 Friendship.fromJson(Map<String, dynamic>.from(row as Map)),
           )
           .toList(growable: false);
-      return right(friendships);
+      return Ok(friendships);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on stored procedure RLS visibility (typically `friendships_select_parties`).
   @override
-  Future<Result<List<Map<String, dynamic>>>> inbox() async {
+  Future<Result<List<Map<String, dynamic>>, Failure>> inbox() async {
     try {
       final rows = await _db.rpc('rpc_friend_requests_inbox');
       if (rows is List) {
         final payload = rows
             .map((dynamic row) => Map<String, dynamic>.from(row as Map))
             .toList(growable: false);
-        return right(payload);
+        return Ok(payload);
       }
-      return left(const ServerFailure(message: 'Unexpected inbox payload'));
+      return Err(const ServerFailure(message: 'Unexpected inbox payload'));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on stored procedure RLS visibility (typically `friendships_select_parties`).
   @override
-  Future<Result<List<Map<String, dynamic>>>> outbox() async {
+  Future<Result<List<Map<String, dynamic>>, Failure>> outbox() async {
     try {
       final rows = await _db.rpc('rpc_friend_requests_outbox');
       if (rows is List) {
         final payload = rows
             .map((dynamic row) => Map<String, dynamic>.from(row as Map))
             .toList(growable: false);
-        return right(payload);
+        return Ok(payload);
       }
-      return left(const ServerFailure(message: 'Unexpected outbox payload'));
+      return Err(const ServerFailure(message: 'Unexpected outbox payload'));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `friend_edges_read`.
   @override
-  Future<Result<List<FriendEdge>>> listFriendEdges() async {
+  Future<Result<List<FriendEdge>, Failure>> listFriendEdges() async {
     try {
       final rows = await _db
           .from('friend_edges')
@@ -148,18 +148,18 @@ class FriendsRepositoryImpl implements FriendsRepository {
                 FriendEdge.fromJson(Map<String, dynamic>.from(row as Map)),
           )
           .toList(growable: false);
-      return right(edges);
+      return Ok(edges);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Attempts `rpc_block_user` variants (`target_user` first, fallback to `(p_peer, p_block)`).
   @override
-  Future<Result<void>> blockUser(String peerUserId) async {
+  Future<Result<void, Failure>> blockUser(String peerUserId) async {
     try {
       await _db.rpc('rpc_block_user', params: {'target_user': peerUserId});
-      return right(null);
+      return Ok(null);
     } on PostgrestException catch (error) {
       final details = (error.details as String?)?.toLowerCase() ?? '';
       if (error.code == '42883' ||
@@ -171,25 +171,25 @@ class FriendsRepositoryImpl implements FriendsRepository {
             'rpc_block_user',
             params: {'p_peer': peerUserId, 'p_block': true},
           );
-          return right(null);
+          return Ok(null);
         } catch (fallbackError) {
-          return left(svc.mapPostgrestError(fallbackError));
+          return Err(svc.mapPostgrestError(fallbackError));
         }
       }
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on the RPC enforcing appropriate RLS.
   @override
-  Future<Result<void>> unblockUser(String peerUserId) async {
+  Future<Result<void, Failure>> unblockUser(String peerUserId) async {
     try {
       await _db.rpc('rpc_unblock_user', params: {'target_user': peerUserId});
-      return right(null);
+      return Ok(null);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 }

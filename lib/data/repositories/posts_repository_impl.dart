@@ -22,58 +22,45 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
   // ---------------------------------------------------------------------------
 
   @override
-  Future<Result<List<Post>>> listRecent({
+  Future<Result<List<Post>, Failure>> listRecent({
     int limit = 50,
     DateTime? before,
   }) async {
     return guard<List<Post>>(() async {
-      final q = _db
-          .from(_table)
-          .select()
-          .order('created_at', ascending: false)
-          .limit(limit);
+      var q = _db.from(_table).select();
 
       if (before != null) {
-        q.lt('created_at', before.toUtc().toIso8601String());
+        q = q.lt('created_at', before.toUtc().toIso8601String());
       }
 
       // RLS ensures only can_view_post rows are returned.
-      final rows = await q;
+      final rows = await q.order('created_at', ascending: false).limit(limit);
       return rows.map((m) => Post.fromMap(asMap(m))).toList();
     });
   }
 
   @override
-  Future<Result<List<Post>>> listByAuthor(
+  Future<Result<List<Post>, Failure>> listByAuthor(
     String authorUserId, {
     int limit = 50,
     DateTime? before,
   }) async {
     return guard<List<Post>>(() async {
-      final q = _db
-          .from(_table)
-          .select()
-          .eq('author_user_id', authorUserId)
-          .order('created_at', ascending: false)
-          .limit(limit);
+      var q = _db.from(_table).select().eq('author_user_id', authorUserId);
 
       if (before != null) {
-        q.lt('created_at', before.toUtc().toIso8601String());
+        q = q.lt('created_at', before.toUtc().toIso8601String());
       }
 
-      final rows = await q;
+      final rows = await q.order('created_at', ascending: false).limit(limit);
       return rows.map((m) => Post.fromMap(asMap(m))).toList();
     });
   }
 
   @override
-  Future<Result<Post?>> getById(String id) async {
+  Future<Result<Post?, Failure>> getById(String id) async {
     return guard<Post?>(() async {
-      final row = await _db
-          .from(_table)
-          .select<Map<String, dynamic>>()
-          .eq('id', id)
-          .maybeSingle();
+      final row = await _db.from(_table).select().eq('id', id).maybeSingle();
       if (row == null) return null;
       return Post.fromMap(row);
     });
@@ -84,7 +71,7 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
   // ---------------------------------------------------------------------------
 
   @override
-  Future<Result<Post>> create({
+  Future<Result<Post, Failure>> create({
     required String visibility,
     String? body,
     String? mediaUrl,
@@ -93,32 +80,45 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
   }) async {
     return guard<Post>(() async {
       final uid = _uid;
-      if (uid == null) throw Failure.unauthorized('Not signed in');
+      if (uid == null) throw const AuthFailure(message: 'Not signed in');
+
+      // Get author profile ID from user ID
+      final profileRow = await _db
+          .from('profiles')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+      if (profileRow == null) {
+        throw const AuthFailure(message: 'Profile not found');
+      }
+
+      final authorProfileId = profileRow['id'] as String;
 
       final insert = Post(
         id: 'tmp',
+        authorProfileId: authorProfileId,
         authorUserId: uid,
+        kind: 'moment', // default kind
         visibility: visibility,
         body: body,
-        mediaUrl: mediaUrl,
-        squadId: squadId,
-        meta: meta,
+        media: mediaUrl != null
+            ? [
+                {'url': mediaUrl},
+              ]
+            : [],
         createdAt: DateTime.now().toUtc(),
       ).toInsert();
 
       // RLS: WITH CHECK enforces author_user_id = auth.uid() and freeze state.
-      final row = await _db
-          .from(_table)
-          .insert(insert)
-          .select<Map<String, dynamic>>()
-          .single();
+      final row = await _db.from(_table).insert(insert).select().single();
 
       return Post.fromMap(row);
     });
   }
 
   @override
-  Future<Result<Post>> update(
+  Future<Result<Post, Failure>> update(
     String id, {
     String? visibility,
     String? body,
@@ -128,31 +128,44 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
   }) async {
     return guard<Post>(() async {
       final uid = _uid;
-      if (uid == null) throw Failure.unauthorized('Not signed in');
+      if (uid == null) throw const AuthFailure(message: 'Not signed in');
+
+      // Get author profile ID
+      final profileRow = await _db
+          .from('profiles')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+      if (profileRow == null) {
+        throw const AuthFailure(message: 'Profile not found');
+      }
+
+      final authorProfileId = profileRow['id'] as String;
 
       final patch = <String, dynamic>{}
         ..addAll(
           Post(
             id: id,
+            authorProfileId: authorProfileId,
             authorUserId: uid,
+            kind: 'moment',
             visibility: visibility ?? 'public',
             createdAt: DateTime.now().toUtc(),
           ).toUpdate(
             newVisibility: visibility,
             newBody: body,
-            newMediaUrl: mediaUrl,
-            newSquadId: squadId,
-            newMeta: meta,
+            newMedia: mediaUrl != null
+                ? [
+                    {'url': mediaUrl},
+                  ]
+                : null,
           ),
         );
 
       if (patch.isEmpty) {
         // No-op: return current row
-        final current = await _db
-            .from(_table)
-            .select<Map<String, dynamic>>()
-            .eq('id', id)
-            .single();
+        final current = await _db.from(_table).select().eq('id', id).single();
         return Post.fromMap(current);
       }
 
@@ -161,7 +174,7 @@ class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
           .from(_table)
           .update(patch)
           .eq('id', id)
-          .select<Map<String, dynamic>>()
+          .select()
           .single();
 
       return Post.fromMap(row);

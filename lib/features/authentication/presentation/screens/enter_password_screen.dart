@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/core/services/auth_service.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../providers/auth_providers.dart';
 import '../../../../utils/constants/route_constants.dart';
 
@@ -102,123 +104,210 @@ class _EnterPasswordScreenState extends ConsumerState<EnterPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Enter Password')),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-            return SingleChildScrollView(
-              padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 16,
+    return TwoSectionLayout(
+      topSection: _buildTopSection(),
+      bottomSection: _buildBottomSection(),
+    );
+  }
+
+  Widget _buildTopSection() {
+    return Column(
+      children: [
+        SizedBox(height: AppSpacing.huge),
+        // Logo
+        SvgPicture.asset(
+          'assets/images/dabbler_logo.svg',
+          width: 80,
+          height: 88,
+        ),
+        SizedBox(height: AppSpacing.md),
+        SvgPicture.asset(
+          'assets/images/dabbler_text_logo.svg',
+          width: 110,
+          height: 21,
+        ),
+        SizedBox(height: AppSpacing.huge),
+        // Header
+        Text(
+          'Welcome Back!',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        SizedBox(height: AppSpacing.sm),
+        Text(
+          widget.email,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textLight70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomSection() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          // Password Field
+          TextFormField(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w400,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Password',
+              hintStyle: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+              filled: true,
+              fillColor: AppColors.cardColor(context),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.buttonBorderRadius,
                 ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Email: ${widget.email}',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () => context.go(RoutePaths.phoneInput),
-                        child: const Text('Change Email'),
-                      ),
-                      const SizedBox(height: 24),
-                      TextFormField(
-                        controller: _passwordController,
-                        decoration: InputDecoration(
-                          labelText: 'Password',
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                            ),
-                            onPressed: () => setState(
-                              () => _obscurePassword = !_obscurePassword,
-                            ),
-                          ),
-                        ),
-                        obscureText: _obscurePassword,
-                        validator: (v) =>
-                            v == null || v.isEmpty ? 'Enter password' : null,
-                        textInputAction: TextInputAction.done,
-                        onFieldSubmitted: (_) => _signIn(),
-                      ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _signIn,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).primaryColor,
-                            foregroundColor: Colors.white,
-                            elevation: 2,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Colors.white,
-                                    ),
-                                  ),
-                                )
-                              : const Text(
-                                  'Login',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: TextButton(
-                          onPressed: () => context.go(
-                            RoutePaths.forgotPassword,
-                            extra: {'email': widget.email},
-                          ),
-                          child: const Text('Forgot Password?'),
-                        ),
-                      ),
-                      if (_errorMessage != null) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            _errorMessage == 'invalid_credentials'
-                                ? 'Invalid email or password'
-                                : _errorMessage!,
-                            style: const TextStyle(color: Colors.red),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ],
-                    ],
+                borderSide: BorderSide(color: AppColors.borderDark),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.buttonBorderRadius,
+                ),
+                borderSide: BorderSide(color: AppColors.borderDark),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.buttonBorderRadius,
+                ),
+                borderSide: BorderSide(color: AppColors.primaryPurple),
+              ),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: AppSpacing.md,
+                vertical: AppSpacing.md,
+              ),
+              suffixIcon: IconButton(
+                icon: Icon(
+                  _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                onPressed: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
+              ),
+            ),
+            validator: (v) => v == null || v.isEmpty ? 'Enter password' : null,
+            textInputAction: TextInputAction.done,
+            onFieldSubmitted: (_) => _signIn(),
+          ),
+          SizedBox(height: AppSpacing.sm),
+
+          // Forgot Password Link
+          Align(
+            alignment: Alignment.centerRight,
+            child: GestureDetector(
+              onTap: () => context.go(
+                RoutePaths.forgotPassword,
+                extra: {'email': widget.email},
+              ),
+              child: Text(
+                'Forgot Password?',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.primaryPurple,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: AppSpacing.xl),
+
+          // Login Button
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _signIn,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primaryPurple,
+                foregroundColor: AppColors.buttonForeground,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppSpacing.buttonBorderRadius,
                   ),
                 ),
               ),
-            );
-          },
-        ),
+              child: _isLoading
+                  ? SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.buttonForeground,
+                        ),
+                      ),
+                    )
+                  : Text(
+                      'Login',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+            ),
+          ),
+          SizedBox(height: AppSpacing.lg),
+
+          // Change Email Link
+          TextButton(
+            onPressed: () => context.go(RoutePaths.phoneInput),
+            child: Text(
+              'Change Email',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+
+          // Error Message
+          if (_errorMessage != null) ...[
+            SizedBox(height: AppSpacing.lg),
+            Container(
+              padding: EdgeInsets.all(AppSpacing.md),
+              decoration: BoxDecoration(
+                color: AppColors.errorBackground,
+                borderRadius: BorderRadius.circular(
+                  AppSpacing.buttonBorderRadius,
+                ),
+              ),
+              child: Text(
+                _errorMessage == 'invalid_credentials'
+                    ? 'Invalid email or password'
+                    : _errorMessage!,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.error,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }

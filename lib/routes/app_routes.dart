@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../routes/route_arguments.dart';
-import 'package:dabbler/features/misc/presentation/features/activities_screen_v2.dart';
-import 'package:dabbler/features/misc/presentation/features/create_game_screen.dart';
-import 'package:dabbler/features/home/presentation/features/home_screen.dart';
+import 'package:dabbler/features/misc/presentation/screens/activities_screen_v2.dart';
+import 'package:dabbler/features/misc/presentation/screens/create_game_screen.dart';
+import 'package:dabbler/features/home/presentation/screens/home_screen.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -12,6 +12,10 @@ class AppRoutes {
   static const String home = '/';
   static const String bookings = '/bookings';
   static const String gameCreate = '/gameCreate';
+
+  // Onboarding routes (aliases for RoutePaths)
+  static const String onboardingWelcome = '/onboarding-welcome';
+  static const String onboardingSports = '/onboarding-sports';
 
   /// Static routes that don't require arguments.
   static Map<String, WidgetBuilder> get routes => {
@@ -28,11 +32,27 @@ class AppRoutes {
         return MaterialPageRoute(builder: (_) => const ActivitiesScreenV2());
       case gameCreate:
         final args = settings.arguments;
-        final typedArgs = args is CreateGameRouteArgs
-            ? args
-            : const CreateGameRouteArgs();
+        Map<String, dynamic>? initialData;
+        if (args is CreateGameRouteArgs) {
+          // Convert CreateGameRouteArgs to Map for CreateGameScreen
+          initialData = {
+            if (args.draftId != null) 'draftId': args.draftId,
+            if (args.fromBooking != null)
+              'fromBooking': {
+                'bookingId': args.fromBooking!.bookingId,
+                if (args.fromBooking!.venueId != null)
+                  'venueId': args.fromBooking!.venueId,
+                'venueName': args.fromBooking!.venueName,
+                if (args.fromBooking!.venueLocation != null)
+                  'venueLocation': args.fromBooking!.venueLocation,
+                'date': args.fromBooking!.date.toIso8601String(),
+                'timeLabel': args.fromBooking!.timeLabel,
+                'sport': args.fromBooking!.sport,
+              },
+          };
+        }
         return MaterialPageRoute(
-          builder: (_) => CreateGameScreen(initialData: typedArgs),
+          builder: (_) => CreateGameScreen(initialData: initialData),
           settings: settings,
         );
       default:

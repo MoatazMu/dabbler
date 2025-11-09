@@ -25,7 +25,7 @@ class SocialHeaderButton extends StatelessWidget {
           vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardColor(context),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -36,10 +36,10 @@ class SocialHeaderButton extends StatelessWidget {
               SizedBox(width: AppSpacing.sm),
               Text(
                 label!,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Colors.black,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ],
@@ -70,7 +70,7 @@ class SocialInputBox extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardColor(context),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
@@ -78,10 +78,10 @@ class SocialInputBox extends StatelessWidget {
           children: [
             Text(
               placeholder,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
-                color: Colors.black54,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             Text(emoji, style: const TextStyle(fontSize: 22)),
@@ -124,7 +124,7 @@ class SocialFeedPost extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.backgroundCardDark,
+        color: AppColors.cardColor(context),
         borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
         border: Border.all(color: AppColors.borderDark, width: 1),
       ),
@@ -132,7 +132,7 @@ class SocialFeedPost extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Avatar
-          _buildAvatar(),
+          _buildAvatar(context),
           SizedBox(width: AppSpacing.md),
           // Content
           Expanded(
@@ -140,7 +140,7 @@ class SocialFeedPost extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Header
-                _buildHeader(),
+                _buildHeader(context),
                 SizedBox(height: AppSpacing.md),
                 // Post content
                 Text(
@@ -148,12 +148,12 @@ class SocialFeedPost extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.textPrimary,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 SizedBox(height: AppSpacing.md),
                 // Like and comment section
-                _buildEngagementRow(),
+                _buildEngagementRow(context),
               ],
             ),
           ),
@@ -162,7 +162,7 @@ class SocialFeedPost extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar() {
+  Widget _buildAvatar(BuildContext context) {
     return Container(
       width: 48,
       height: 48,
@@ -177,12 +177,12 @@ class SocialFeedPost extends StatelessWidget {
             : null,
       ),
       child: avatarUrl == null
-          ? Icon(Icons.person, color: AppColors.textSecondary)
+          ? Icon(Icons.person, color: Theme.of(context).colorScheme.onSurfaceVariant)
           : null,
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -193,7 +193,7 @@ class SocialFeedPost extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(width: AppSpacing.sm),
@@ -202,7 +202,7 @@ class SocialFeedPost extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -213,7 +213,7 @@ class SocialFeedPost extends StatelessWidget {
     );
   }
 
-  Widget _buildEngagementRow() {
+  Widget _buildEngagementRow(BuildContext context) {
     return Row(
       children: [
         GestureDetector(
@@ -227,7 +227,7 @@ class SocialFeedPost extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -245,7 +245,7 @@ class SocialFeedPost extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -271,7 +271,7 @@ class _ThreeDotsMenu extends StatelessWidget {
             width: 4,
             height: 4,
             decoration: BoxDecoration(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               borderRadius: BorderRadius.circular(2),
             ),
           ),

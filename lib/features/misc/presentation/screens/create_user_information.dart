@@ -6,12 +6,13 @@ import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/utils/constants.dart';
 import 'package:dabbler/core/utils/validators.dart';
 import 'package:dabbler/core/utils/helpers.dart';
-import 'package:dabbler/widgets/app_button.dart';
 import 'package:dabbler/widgets/input_field.dart';
 import 'package:dabbler/widgets/onboarding_progress.dart';
 import 'package:dabbler/core/services/user_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class RegistrationData {
   String email;
@@ -283,7 +284,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please fill in all required fields correctly'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           duration: Duration(seconds: 3),
         ),
       );
@@ -299,7 +300,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
           content: Text(
             'Name must be at least ${AppConstants.minNameLength} characters long',
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           duration: Duration(seconds: 3),
         ),
       );
@@ -310,7 +311,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select your birth date'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           duration: Duration(seconds: 3),
         ),
       );
@@ -324,7 +325,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('You must be at least 16 years old to register'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           duration: Duration(seconds: 3),
         ),
       );
@@ -337,7 +338,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
           content: Text(
             'Age must be between 16 and ${AppConstants.maxAge} years',
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           duration: Duration(seconds: 3),
         ),
       );
@@ -348,7 +349,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please select your gender'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
           duration: Duration(seconds: 3),
         ),
       );
@@ -396,7 +397,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('An error occurred: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
             duration: const Duration(seconds: 4),
           ),
         );
@@ -635,106 +636,132 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Create Profile'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Onboarding Progress
-            OnboardingProgress(),
+    if (_isLoadingData) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(color: AppColors.primaryPurple),
+        ),
+      );
+    }
 
-            // Main Content
-            Expanded(
-              child: _isLoadingData
-                  ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(
-                        AppConstants.defaultPadding,
-                      ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            const SizedBox(height: 32),
+    return TwoSectionLayout(
+      topSection: _buildTopSection(),
+      bottomSection: _buildBottomSection(),
+    );
+  }
 
-                            // Header
-                            Text(
-                              'We would like to know you',
-                              style: Theme.of(context).textTheme.headlineMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.center,
-                            ),
+  Widget _buildTopSection() {
+    return Column(
+      children: [
+        SizedBox(height: AppSpacing.huge),
+        // Logo
+        SvgPicture.asset(
+          'assets/images/dabbler_logo.svg',
+          width: 80,
+          height: 88,
+        ),
+        SizedBox(height: AppSpacing.md),
+        SvgPicture.asset(
+          'assets/images/dabbler_text_logo.svg',
+          width: 110,
+          height: 21,
+        ),
+        SizedBox(height: AppSpacing.lg),
+        // Onboarding Progress
+        OnboardingProgress(),
+        SizedBox(height: AppSpacing.xl),
+        // Header
+        Text(
+          'We would like to know you',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: AppSpacing.sm),
+        Text(
+          'Tell us a bit about yourself',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textLight70,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
 
-                            const SizedBox(height: 8),
+  Widget _buildBottomSection() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Name Input
+          CustomInputField(
+            controller: _nameController,
+            label: 'Display Name',
+            hintText: 'Choose a name',
+            validator: AppValidators.validateName,
+          ),
+          SizedBox(height: AppSpacing.md),
 
-                            Text(
-                              'Tell us a bit about yourself',
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(color: Colors.grey[600]),
-                              textAlign: TextAlign.center,
-                            ),
+          // Birth Date Picker
+          _buildBirthDatePicker(context),
+          SizedBox(height: AppSpacing.md),
 
-                            const SizedBox(height: 48),
+          // Gender Selection
+          _buildGenderSelect(context),
+          SizedBox(height: AppSpacing.xl),
 
-                            // Name Input
-                            CustomInputField(
-                              controller: _nameController,
-                              label: 'Display Name',
-                              hintText: 'Choose a name',
-                              validator: AppValidators.validateName,
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // Birth Date Picker
-                            _buildBirthDatePicker(context),
-
-                            const SizedBox(height: 16),
-
-                            // Gender Selection
-                            _buildGenderSelect(context),
-
-                            const SizedBox(height: 32),
-
-                            // Continue Button
-                            AppButton(
-                              onPressed: (_isLoading || !_areAllFieldsValid())
-                                  ? null
-                                  : _handleSubmit,
-                              label: _isLoading
-                                  ? 'Saving...'
-                                  : _areAllFieldsValid()
-                                  ? 'Continue'
-                                  : 'Fill all fields to continue',
-                              variant: _areAllFieldsValid()
-                                  ? ButtonVariant.primary
-                                  : ButtonVariant.secondary,
-                            ),
-
-                            const SizedBox(height: 16),
-
-                            // Required fields note
-                            // Text(
-                            //   '* Required fields',
-                            //   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            //     color: Colors.grey[600],
-                            //     fontStyle: FontStyle.italic,
-                            //   ),
-                            //   textAlign: TextAlign.center,
-                            // ),
-                            const SizedBox(height: 32),
-                          ],
+          // Continue Button
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: (_isLoading || !_areAllFieldsValid())
+                  ? null
+                  : _handleSubmit,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _areAllFieldsValid()
+                    ? AppColors.primaryPurple
+                    : AppColors.buttonDisabled,
+                foregroundColor: _areAllFieldsValid()
+                    ? AppColors.buttonForeground
+                    : AppColors.buttonDisabledForeground,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                    AppSpacing.buttonBorderRadius,
+                  ),
+                ),
+              ),
+              child: _isLoading
+                  ? SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.buttonForeground,
                         ),
+                      ),
+                    )
+                  : Text(
+                      _areAllFieldsValid()
+                          ? 'Continue'
+                          : 'Fill all fields to continue',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

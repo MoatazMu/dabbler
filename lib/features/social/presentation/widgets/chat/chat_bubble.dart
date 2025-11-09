@@ -366,7 +366,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
       style: AppTextStyles.bodyMedium.copyWith(
         color: _bubbleType == MessageBubbleType.sent
             ? Colors.white
-            : AppColors.textPrimary,
+            : Theme.of(context).colorScheme.onSurface,
       ),
       onTap: () => widget.onTap?.call(),
     );
@@ -423,7 +423,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: _bubbleType == MessageBubbleType.sent
                         ? Colors.white
-                        : AppColors.textPrimary,
+                        : Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -433,7 +433,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
                     style: AppTextStyles.bodySmall.copyWith(
                       color: _bubbleType == MessageBubbleType.sent
                           ? Colors.white.withOpacity(0.7)
-                          : AppColors.textSecondary,
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
               ],
@@ -476,7 +476,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
             style: AppTextStyles.bodySmall.copyWith(
               color: _bubbleType == MessageBubbleType.sent
                   ? Colors.white.withOpacity(0.8)
-                  : AppColors.textSecondary,
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -517,7 +517,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
             style: AppTextStyles.bodyMedium.copyWith(
               color: _bubbleType == MessageBubbleType.sent
                   ? Colors.white
-                  : AppColors.textPrimary,
+                  : Theme.of(context).colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
             maxLines: 2,
@@ -529,7 +529,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
             style: AppTextStyles.bodySmall.copyWith(
               color: _bubbleType == MessageBubbleType.sent
                   ? Colors.white.withOpacity(0.7)
-                  : AppColors.textSecondary,
+                  : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -549,7 +549,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
             Text(
               TimeFormatter.format(widget.message.sentAt),
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 11,
               ),
             ),
@@ -559,7 +559,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
             Text(
               'Read by ${widget.message.readBy.length}',
               style: AppTextStyles.bodySmall.copyWith(
-                color: AppColors.textSecondary,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 11,
               ),
             ),
@@ -596,7 +596,7 @@ class _ChatBubbleState extends ConsumerState<ChatBubble>
           child: Text(
             widget.message.content,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
           ),

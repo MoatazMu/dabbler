@@ -1,13 +1,12 @@
 import 'package:dabbler/core/fp/failure.dart';
-import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/venue.dart';
 import 'package:dabbler/data/models/venue_space.dart';
 
-typedef Result<T> = core.Result<T, Failure>;
 
 abstract class VenuesRepository {
   /// Public venues listing relying on the `venues_public_read` policy.
-  Future<Result<List<Venue>>> listVenues({
+  Future<Result<List<Venue>, Failure>> listVenues({
     bool activeOnly = true,
     String? city,
     String? district,
@@ -15,19 +14,19 @@ abstract class VenuesRepository {
   });
 
   /// Fetches a single venue using the `venues_public_read` policy.
-  Future<Result<Venue>> getVenueById(String venueId);
+  Future<Result<Venue, Failure>> getVenueById(String venueId);
 
   /// Lists spaces for a venue using the `spaces_public_read` policy.
-  Future<Result<List<VenueSpace>>> listSpacesByVenue(
+  Future<Result<List<VenueSpace>, Failure>> listSpacesByVenue(
     String venueId, {
     bool activeOnly = true,
   });
 
   /// Fetches a single space using the `spaces_public_read` policy.
-  Future<Result<VenueSpace>> getSpaceById(String spaceId);
+  Future<Result<VenueSpace, Failure>> getSpaceById(String spaceId);
 
   /// Approximates nearby venues via a bounding box using `venues_public_read`.
-  Future<Result<List<Venue>>> nearbyVenues({
+  Future<Result<List<Venue>, Failure>> nearbyVenues({
     required double lat,
     required double lng,
     double withinKm = 10,
@@ -35,5 +34,5 @@ abstract class VenuesRepository {
   });
 
   /// Watches spaces for a venue; RLS ensures manage access server-side.
-  Stream<Result<List<VenueSpace>>> watchSpacesByVenue(String venueId);
+  Stream<Result<List<VenueSpace>, Failure>> watchSpacesByVenue(String venueId);
 }

@@ -2,14 +2,13 @@ import 'dart:math' as math;
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import 'package:dabbler/core/utils/json.dart';
 import '../models/venue.dart';
 import 'base_repository.dart';
 import 'geo_repository.dart';
 
-typedef Result<T> = core.Result<T, Failure>;
 
 @immutable
 class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
@@ -20,7 +19,7 @@ class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
   // --- public API ------------------------------------------------------------
 
   @override
-  Future<Result<List<Venue>>> nearbyVenues({
+  Future<Result<List<Venue>, Failure>> nearbyVenues({
     required double lat,
     required double lng,
     double radiusMeters = 5000,

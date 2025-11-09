@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../themes/app_theme.dart';
+import 'package:dabbler/themes/app_theme.dart';
 
 // Player model for invitations
 class InvitePlayer {
@@ -242,7 +242,11 @@ class _InvitationListState extends State<InvitationList>
 
   Widget _buildAntdPlayerTag(BuildContext context, InvitePlayer player) {
     return Chip(
-      label: Text(player.displayName.split(' ').first),
+      label: Text(
+        player.displayName.split(' ').first,
+        overflow: TextOverflow.ellipsis,
+        maxLines: 1,
+      ),
       avatar: _buildPlayerAvatar(context, player, size: 20),
       onDeleted: () => widget.onPlayerToggle(player),
       backgroundColor: context.colors.primary.withValues(alpha: 0.08),

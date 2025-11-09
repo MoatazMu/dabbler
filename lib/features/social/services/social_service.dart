@@ -24,10 +24,10 @@ class SocialService {
         throw Exception('User not authenticated');
       }
 
-      // Get user profile information (for validation - profile should exist)
-      await _supabase
+      // Get user profile information (for validation and to get profile ID)
+      final userProfile = await _supabase
           .from('profiles')
-          .select('display_name')
+          .select('id, user_id, display_name, avatar_url, verified')
           .eq('user_id', user.id)
           .single();
 
@@ -36,7 +36,9 @@ class SocialService {
 
       // Map to actual database schema
       final postData = {
-        // Required fields - author_user_id and author_profile_id handled by RLS/triggers
+        // Required fields - must be set explicitly
+        'author_user_id': user.id, // REQUIRED: Set the user ID
+        'author_profile_id': userProfile['id'], // REQUIRED: Set the profile ID
         'kind': 'moment', // Default post type
         'visibility': visibility.name,
         'body': content, // Map content -> body
@@ -56,13 +58,6 @@ class SocialService {
           .select()
           .single();
 
-      // Fetch the author profile from the profiles table separately
-      final profile = await _supabase
-          .from('profiles')
-          .select('user_id, display_name, avatar_url, verified')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
       // Transform database response to PostModel format
       final transformedPost = {
         'id': inserted['id'],
@@ -78,14 +73,12 @@ class SocialService {
         'shares_count': 0,
         'location_name': inserted['venue_id'],
         'tags': tags,
-        'profiles': profile != null
-            ? {
-                'id': profile['user_id'],
-                'display_name': profile['display_name'],
-                'avatar_url': profile['avatar_url'],
-                'verified': profile['verified'],
-              }
-            : null,
+        'profiles': {
+          'id': userProfile['user_id'],
+          'display_name': userProfile['display_name'],
+          'avatar_url': userProfile['avatar_url'],
+          'verified': userProfile['verified'],
+        },
       };
 
       return PostModel.fromJson(transformedPost);
@@ -264,40 +257,104 @@ class SocialService {
       // Check if already liked
       final existingLike = await _supabase
           .from('post_likes')
-          .select('id')
+          .select('post_id')
           .eq('post_id', postId)
           .eq('user_id', user.id)
           .maybeSingle();
 
       if (existingLike != null) {
-        // Unlike: Remove the like
+        // Unlike: Remove the like (trigger will decrement like_count automatically)
         await _supabase
             .from('post_likes')
             .delete()
             .eq('post_id', postId)
             .eq('user_id', user.id);
-
-        // Decrement likes count
-        await _supabase.rpc(
-          'decrement_likes_count',
-          params: {'post_id': postId},
-        );
       } else {
-        // Like: Add the like
+        // Like: Add the like (trigger will increment like_count automatically)
         await _supabase.from('post_likes').insert({
           'post_id': postId,
           'user_id': user.id,
           'created_at': DateTime.now().toIso8601String(),
         });
-
-        // Increment likes count
-        await _supabase.rpc(
-          'increment_likes_count',
-          params: {'post_id': postId},
-        );
       }
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
+    }
+  }
+
+  /// Add a comment to a post
+  Future<Map<String, dynamic>> addComment({
+    required String postId,
+    required String body,
+    String? parentCommentId,
+  }) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get user profile
+      final profile = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+      // Insert comment (trigger will increment comment_count automatically)
+      final comment = await _supabase
+          .from('post_comments')
+          .insert({
+            'post_id': postId,
+            'author_user_id': user.id,
+            'author_profile_id': profile['id'],
+            'body': body,
+            if (parentCommentId != null) 'parent_comment_id': parentCommentId,
+          })
+          .select()
+          .single();
+
+      return comment;
+    } catch (e) {
+      throw Exception('Failed to add comment: $e');
+    }
+  }
+
+  /// Get comments for a post
+  Future<List<Map<String, dynamic>>> getComments(String postId) async {
+    try {
+      final comments = await _supabase
+          .from('post_comments')
+          .select(
+            '*, profiles:author_profile_id(user_id, display_name, avatar_url, verified)',
+          )
+          .eq('post_id', postId)
+          .eq('is_deleted', false)
+          .eq('is_hidden_admin', false)
+          .order('created_at', ascending: true);
+
+      return List<Map<String, dynamic>>.from(comments);
+    } catch (e) {
+      throw Exception('Failed to load comments: $e');
+    }
+  }
+
+  /// Delete a comment
+  Future<void> deleteComment(String commentId) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Soft delete (trigger will decrement comment_count automatically)
+      await _supabase
+          .from('post_comments')
+          .update({'is_deleted': true})
+          .eq('id', commentId)
+          .eq('author_user_id', user.id);
+    } catch (e) {
+      throw Exception('Failed to delete comment: $e');
     }
   }
 

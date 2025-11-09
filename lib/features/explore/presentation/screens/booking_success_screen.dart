@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../themes/design_system.dart';
+import 'package:dabbler/core/design_system/ds.dart';
 import 'package:dabbler/routes/app_routes.dart';
 import 'package:dabbler/routes/route_arguments.dart';
 

@@ -1,3 +1,5 @@
+import 'package:dabbler/core/fp/failure.dart';
+
 import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/squad.dart';
 import 'package:dabbler/data/models/squad_invite.dart';
@@ -22,35 +24,35 @@ final friendsRepositoryProvider = Provider<FriendsRepository>((ref) {
   return FriendsRepositoryImpl(svc);
 });
 
-final mySquadsProvider = FutureProvider<Result<List<Squad>>>((ref) {
+final mySquadsProvider = FutureProvider<Result<List<Squad>, Failure>>((ref) {
   final repo = ref.watch(squadsRepositoryProvider);
   return repo.mySquads();
 });
 
-final mySquadsStreamProvider = StreamProvider<Result<List<Squad>>>((ref) {
+final mySquadsStreamProvider = StreamProvider<Result<List<Squad>, Failure>>((ref) {
   final repo = ref.watch(squadsRepositoryProvider);
   return repo.mySquadsStream();
 });
 
 final squadMembersProvider =
-    StreamProvider.family<Result<List<SquadMember>>, String>((ref, squadId) {
+    StreamProvider.family<Result<List<SquadMember>, Failure>, String>((ref, squadId) {
       final repo = ref.watch(squadsRepositoryProvider);
       return repo.membersStream(squadId);
     });
 
-final mySquadInvitesProvider = FutureProvider<Result<List<SquadInvite>>>((ref) {
+final mySquadInvitesProvider = FutureProvider<Result<List<SquadInvite>, Failure>>((ref) {
   final repo = ref.watch(squadsRepositoryProvider);
   return repo.mySquadInvites();
 });
 
 final squadInvitesProvider =
-    FutureProvider.family<Result<List<SquadInvite>>, String>((ref, squadId) {
+    FutureProvider.family<Result<List<SquadInvite>, Failure>, String>((ref, squadId) {
       final repo = ref.watch(squadsRepositoryProvider);
       return repo.squadInvites(squadId);
     });
 
 final squadJoinRequestsProvider =
-    FutureProvider.family<Result<List<SquadJoinRequest>>, String>((
+    FutureProvider.family<Result<List<SquadJoinRequest>, Failure>, String>((
       ref,
       squadId,
     ) {
@@ -81,7 +83,7 @@ class CreateSquadParams {
 }
 
 final createSquadProvider =
-    FutureProvider.family<Result<String>, CreateSquadParams>((ref, params) {
+    FutureProvider.family<Result<String, Failure>, CreateSquadParams>((ref, params) {
       final repo = ref.watch(squadsRepositoryProvider);
       return repo.createSquad(
         sport: params.sport,
@@ -95,7 +97,7 @@ final createSquadProvider =
       );
     });
 
-final sendFriendRequestProvider = FutureProvider.family<Result<void>, String>((
+final sendFriendRequestProvider = FutureProvider.family<Result<void, Failure>, String>((
   ref,
   peerUserId,
 ) {
@@ -103,21 +105,21 @@ final sendFriendRequestProvider = FutureProvider.family<Result<void>, String>((
   return repo.sendFriendRequest(peerUserId);
 });
 
-final acceptFriendRequestProvider = FutureProvider.family<Result<void>, String>(
+final acceptFriendRequestProvider = FutureProvider.family<Result<void, Failure>, String>(
   (ref, peerUserId) {
     final repo = ref.watch(friendsRepositoryProvider);
     return repo.acceptFriendRequest(peerUserId);
   },
 );
 
-final rejectFriendRequestProvider = FutureProvider.family<Result<void>, String>(
+final rejectFriendRequestProvider = FutureProvider.family<Result<void, Failure>, String>(
   (ref, peerUserId) {
     final repo = ref.watch(friendsRepositoryProvider);
     return repo.rejectFriendRequest(peerUserId);
   },
 );
 
-final removeFriendProvider = FutureProvider.family<Result<void>, String>((
+final removeFriendProvider = FutureProvider.family<Result<void, Failure>, String>((
   ref,
   peerUserId,
 ) {
@@ -125,7 +127,7 @@ final removeFriendProvider = FutureProvider.family<Result<void>, String>((
   return repo.removeFriend(peerUserId);
 });
 
-final blockUserProvider = FutureProvider.family<Result<void>, String>((
+final blockUserProvider = FutureProvider.family<Result<void, Failure>, String>((
   ref,
   peerUserId,
 ) {
@@ -133,7 +135,7 @@ final blockUserProvider = FutureProvider.family<Result<void>, String>((
   return repo.blockUser(peerUserId);
 });
 
-final unblockUserProvider = FutureProvider.family<Result<void>, String>((
+final unblockUserProvider = FutureProvider.family<Result<void, Failure>, String>((
   ref,
   peerUserId,
 ) {
@@ -141,22 +143,22 @@ final unblockUserProvider = FutureProvider.family<Result<void>, String>((
   return repo.unblockUser(peerUserId);
 });
 
-final friendshipsProvider = FutureProvider<Result<List<Friendship>>>((ref) {
+final friendshipsProvider = FutureProvider<Result<List<Friendship>, Failure>>((ref) {
   final repo = ref.watch(friendsRepositoryProvider);
   return repo.listFriendships();
 });
 
-final friendEdgesProvider = FutureProvider<Result<List<FriendEdge>>>((ref) {
+final friendEdgesProvider = FutureProvider<Result<List<FriendEdge>, Failure>>((ref) {
   final repo = ref.watch(friendsRepositoryProvider);
   return repo.listFriendEdges();
 });
 
-final inboxProvider = FutureProvider<Result<List<Map<String, dynamic>>>>((ref) {
+final inboxProvider = FutureProvider<Result<List<Map<String, dynamic>>, Failure>>((ref) {
   final repo = ref.watch(friendsRepositoryProvider);
   return repo.inbox();
 });
 
-final outboxProvider = FutureProvider<Result<List<Map<String, dynamic>>>>((
+final outboxProvider = FutureProvider<Result<List<Map<String, dynamic>>, Failure>>((
   ref,
 ) {
   final repo = ref.watch(friendsRepositoryProvider);

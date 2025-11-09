@@ -19,24 +19,21 @@ class RatingsRepositoryImpl extends BaseRepository
   // --- lists ---------------------------------------------------------------
 
   @override
-  Future<Result<List<Rating>>> listGiven({
+  Future<Result<List<Rating>, Failure>> listGiven({
     DateTime? from,
     DateTime? to,
     int limit = 200,
   }) async {
     return guard<List<Rating>>(() async {
       final uid = _uid;
-      if (uid == null) throw Failure.unauthorized('Not signed in');
+      if (uid == null) throw const AuthFailure(message: 'Not signed in');
 
-      final q = _db
-          .from('ratings')
-          .select()
-          .eq('rater_user_id', uid)
-          .order('created_at', ascending: false)
-          .limit(limit);
+      dynamic q = _db.from('ratings').select().eq('rater_user_id', uid);
 
-      if (from != null) q.gte('created_at', from.toUtc().toIso8601String());
-      if (to != null) q.lte('created_at', to.toUtc().toIso8601String());
+      if (from != null) q = q.gte('created_at', from.toUtc().toIso8601String());
+      if (to != null) q = q.lte('created_at', to.toUtc().toIso8601String());
+
+      q = q.order('created_at', ascending: false).limit(limit);
 
       // RLS: allowed when rater_user_id = auth.uid() (and for admins).
       final rows = await q;
@@ -45,24 +42,21 @@ class RatingsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<List<Rating>>> listAboutMe({
+  Future<Result<List<Rating>, Failure>> listAboutMe({
     DateTime? from,
     DateTime? to,
     int limit = 200,
   }) async {
     return guard<List<Rating>>(() async {
       final uid = _uid;
-      if (uid == null) throw Failure.unauthorized('Not signed in');
+      if (uid == null) throw const AuthFailure(message: 'Not signed in');
 
-      final q = _db
-          .from('ratings')
-          .select()
-          .eq('target_user_id', uid)
-          .order('created_at', ascending: false)
-          .limit(limit);
+      dynamic q = _db.from('ratings').select().eq('target_user_id', uid);
 
-      if (from != null) q.gte('created_at', from.toUtc().toIso8601String());
-      if (to != null) q.lte('created_at', to.toUtc().toIso8601String());
+      if (from != null) q = q.gte('created_at', from.toUtc().toIso8601String());
+      if (to != null) q = q.lte('created_at', to.toUtc().toIso8601String());
+
+      q = q.order('created_at', ascending: false).limit(limit);
 
       // RLS: allowed when target_user_id = auth.uid() (and for admins).
       final rows = await q;
@@ -71,22 +65,19 @@ class RatingsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<List<Rating>>> listForGame(
+  Future<Result<List<Rating>, Failure>> listForGame(
     String gameId, {
     DateTime? from,
     DateTime? to,
     int limit = 200,
   }) async {
     return guard<List<Rating>>(() async {
-      final q = _db
-          .from('ratings')
-          .select()
-          .eq('target_game_id', gameId)
-          .order('created_at', ascending: false)
-          .limit(limit);
+      dynamic q = _db.from('ratings').select().eq('target_game_id', gameId);
 
-      if (from != null) q.gte('created_at', from.toUtc().toIso8601String());
-      if (to != null) q.lte('created_at', to.toUtc().toIso8601String());
+      if (from != null) q = q.gte('created_at', from.toUtc().toIso8601String());
+      if (to != null) q = q.lte('created_at', to.toUtc().toIso8601String());
+
+      q = q.order('created_at', ascending: false).limit(limit);
 
       // RLS: allowed for the game's host via policy, or admin.
       final rows = await q;
@@ -95,22 +86,19 @@ class RatingsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<List<Rating>>> listForVenue(
+  Future<Result<List<Rating>, Failure>> listForVenue(
     String venueId, {
     DateTime? from,
     DateTime? to,
     int limit = 200,
   }) async {
     return guard<List<Rating>>(() async {
-      final q = _db
-          .from('ratings')
-          .select()
-          .eq('target_venue_id', venueId)
-          .order('created_at', ascending: false)
-          .limit(limit);
+      dynamic q = _db.from('ratings').select().eq('target_venue_id', venueId);
 
-      if (from != null) q.gte('created_at', from.toUtc().toIso8601String());
-      if (to != null) q.lte('created_at', to.toUtc().toIso8601String());
+      if (from != null) q = q.gte('created_at', from.toUtc().toIso8601String());
+      if (to != null) q = q.lte('created_at', to.toUtc().toIso8601String());
+
+      q = q.order('created_at', ascending: false).limit(limit);
 
       // RLS: allowed for venue owners/managers via policy, or admin.
       final rows = await q;
@@ -121,11 +109,13 @@ class RatingsRepositoryImpl extends BaseRepository
   // --- aggregates ----------------------------------------------------------
 
   @override
-  Future<Result<RatingAggregate?>> getUserAggregate(String userId) async {
+  Future<Result<RatingAggregate?, Failure>> getUserAggregate(
+    String userId,
+  ) async {
     return guard<RatingAggregate?>(() async {
       final row = await _db
           .from('user_reputation_aggregate')
-          .select<Map<String, dynamic>>()
+          .select()
           .eq('user_id', userId)
           .maybeSingle();
       if (row == null) return null;
@@ -134,11 +124,13 @@ class RatingsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<RatingAggregate?>> getGameAggregate(String gameId) async {
+  Future<Result<RatingAggregate?, Failure>> getGameAggregate(
+    String gameId,
+  ) async {
     return guard<RatingAggregate?>(() async {
       final row = await _db
           .from('game_rating_aggregate')
-          .select<Map<String, dynamic>>()
+          .select()
           .eq('game_id', gameId)
           .maybeSingle();
       if (row == null) return null;
@@ -147,11 +139,13 @@ class RatingsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<RatingAggregate?>> getVenueAggregate(String venueId) async {
+  Future<Result<RatingAggregate?, Failure>> getVenueAggregate(
+    String venueId,
+  ) async {
     return guard<RatingAggregate?>(() async {
       final row = await _db
           .from('venue_rating_aggregate')
-          .select<Map<String, dynamic>>()
+          .select()
           .eq('venue_id', venueId)
           .maybeSingle();
       if (row == null) return null;

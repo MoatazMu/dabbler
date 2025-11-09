@@ -112,7 +112,7 @@ class PostModel extends Post {
           'Unknown User',
       authorAvatar:
           authorData['avatar_url'] ?? authorData['profile_picture'] ?? '',
-      content: json['content'] ?? '',
+      content: json['body'] ?? json['content'] ?? '',
       mediaUrls: mediaUrls,
       createdAt: _parseDateTime(json['created_at']),
       updatedAt: _parseDateTime(json['updated_at']),

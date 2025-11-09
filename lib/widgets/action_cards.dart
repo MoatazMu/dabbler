@@ -68,7 +68,7 @@ class ActionCards extends StatelessWidget {
               title,
               style: const TextStyle(
                 color: Colors.white,
-                fontFamily: 'Inter',
+                fontFamily: 'Roboto',
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
                 height: 1.2,
@@ -81,7 +81,7 @@ class ActionCards extends StatelessWidget {
               subtitle,
               style: TextStyle(
                 color: Colors.white.withOpacity(0.6),
-                fontFamily: 'Inter',
+                fontFamily: 'Roboto',
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
                 height: 1.4,

@@ -1,8 +1,7 @@
-import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import '../models/profile.dart';
 
-typedef Result<T> = core.Result<T, Failure>;
 
 /// Username operations over the `profiles` table (citext unique).
 ///
@@ -13,30 +12,30 @@ typedef Result<T> = core.Result<T, Failure>;
 /// - Availability checks may be conservative due to RLS visibility; the UNIQUE index on `username` is the source of truth.
 abstract class UsernameRepository {
   /// Returns true if no visible row uses this username (case-insensitive).
-  Future<Result<bool>> isAvailable(String username);
+  Future<Result<bool, Failure>> isAvailable(String username);
 
   /// Get a profile by exact username (case-insensitive).
-  Future<Result<Profile>> getByUsername(String username);
+  Future<Result<Profile, Failure>> getByUsername(String username);
 
   /// Case-insensitive search on username (ilike); best-effort public listing.
-  Future<Result<List<Profile>>> search({
+  Future<Result<List<Profile>, Failure>> search({
     required String query,
     int limit = 20,
     int offset = 0,
   });
 
   /// Set username for the given profile (owned by current user).
-  Future<Result<Profile>> setUsernameForProfile({
+  Future<Result<Profile, Failure>> setUsernameForProfile({
     required String profileId,
     required String username,
   });
 
   /// Set username for my profile by type ('player'|'organiser').
-  Future<Result<Profile>> setMyUsernameForType({
+  Future<Result<Profile, Failure>> setMyUsernameForType({
     required String profileType,
     required String username,
   });
 
   /// Stream my profile by type to observe username changes.
-  Stream<Result<Profile>> myProfileTypeStream(String profileType);
+  Stream<Result<Profile, Failure>> myProfileTypeStream(String profileType);
 }

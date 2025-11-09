@@ -4,6 +4,8 @@ import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class EmailInputScreen extends ConsumerStatefulWidget {
   const EmailInputScreen({super.key});
@@ -120,193 +122,344 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
   Widget build(BuildContext context) {
     debugPrint('📧 [DEBUG] EmailInputScreen: build called');
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sign In'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        automaticallyImplyLeading: false,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.language),
-            onPressed: () {
-              debugPrint(
-                '🌐 [DEBUG] EmailInputScreen: Language button pressed',
-              );
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Language button pressed!')),
-              );
-            },
-            tooltip: 'Select Language',
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 32),
-              // Simple test header
-              const Center(
-                child: Text(
-                  'Welcome to Dabbler Player',
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Center(
-                child: Text(
-                  'Enter your email to get started',
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 48),
+    return TwoSectionLayout(
+      topSection: _buildTopSection(),
+      bottomSection: _buildBottomSection(),
+    );
+  }
 
-              // Simple email input
-              Form(
-                key: _formKey,
-                child: TextFormField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email Address',
-                    hintText: 'Enter your email address',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.emailAddress,
-                  onChanged: _onEmailChanged,
-                  validator: _validateEmail,
-                ),
-              ),
-
-              const SizedBox(height: 36),
-
-              // Simple continue button
-              ElevatedButton(
-                onPressed: _isLoading
-                    ? null
-                    : () {
-                        debugPrint(
-                          '📧 [DEBUG] EmailInputScreen: Continue button pressed',
-                        );
-                        debugPrint(
-                          '📧 [DEBUG] EmailInputScreen: Button state - mounted: $mounted, isLoading: $_isLoading',
-                        );
-
-                        _handleSubmit();
-                      },
-                child: Text(_isLoading ? 'Sending...' : 'Continue'),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Continue as Guest button
-              OutlinedButton(
-                onPressed: () async {
-                  debugPrint(
-                    '👤 [DEBUG] EmailInputScreen: Guest button pressed',
-                  );
-                  debugPrint(
-                    '👤 [DEBUG] EmailInputScreen: Button state - mounted: $mounted',
-                  );
-
-                  // Sign in as guest first
-                  try {
-                    debugPrint(
-                      '👤 [DEBUG] EmailInputScreen: Signing in as guest...',
-                    );
-                    final guestSignIn = ref.read(guestSignInProvider);
-                    await guestSignIn();
-                    debugPrint(
-                      '👤 [DEBUG] EmailInputScreen: Guest sign in successful',
-                    );
-
-                    // Then navigate to home
-                    if (mounted) {
-                      debugPrint(
-                        '👤 [DEBUG] EmailInputScreen: Navigating to home...',
-                      );
-                      context.go(RoutePaths.home);
-                      debugPrint(
-                        '📧 [DEBUG] EmailInputScreen: Navigation successful',
-                      );
-                    }
-                  } catch (e) {
-                    debugPrint(
-                      '❌ [DEBUG] EmailInputScreen: Guest sign in or navigation error: $e',
-                    );
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Guest sign in failed: $e')),
-                      );
-                    }
-                  }
-                },
-                child: const Text('Continue as Guest'),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Continue with Phone button
-              OutlinedButton(
-                onPressed: () {
-                  debugPrint(
-                    '📱 [DEBUG] EmailInputScreen: Phone button pressed',
-                  );
-                  debugPrint(
-                    '📱 [DEBUG] EmailInputScreen: Button state - mounted: $mounted',
-                  );
-
-                  // Navigate to phone input
-                  try {
-                    debugPrint(
-                      '📱 [DEBUG] EmailInputScreen: Navigating to phone input...',
-                    );
-                    context.go(RoutePaths.phoneInput);
-                    debugPrint(
-                      '📱 [DEBUG] EmailInputScreen: Navigation successful',
-                    );
-                  } catch (e) {
-                    debugPrint(
-                      '❌ [DEBUG] EmailInputScreen: Navigation error: $e',
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Navigation failed: $e')),
-                    );
-                  }
-                },
-                child: const Text('Continue with Phone'),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Debug info
-              if (_errorMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  color: Colors.red.withOpacity(0.1),
-                  child: Text(
-                    _errorMessage!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-
-              if (_successMessage != null)
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  color: Colors.green.withOpacity(0.1),
-                  child: Text(
-                    _successMessage!,
-                    style: const TextStyle(color: Colors.green),
-                  ),
-                ),
-            ],
+  Widget _buildTopSection() {
+    return Column(
+      children: [
+        SizedBox(height: AppSpacing.huge),
+        // Dabbler logo and text
+        _buildLogo(),
+        SizedBox(height: AppSpacing.huge),
+        // Welcome text
+        Text(
+          'Welcome to dabbler!',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
+        SizedBox(height: AppSpacing.sm),
+        Text(
+          'Enter your email address to get started',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w500,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLogo() {
+    return Column(
+      children: [
+        // Dabbler geometric icon
+        SvgPicture.asset(
+          'assets/images/dabbler_logo.svg',
+          width: 80,
+          height: 88,
+        ),
+        SizedBox(height: AppSpacing.md),
+        // Dabbler text logo
+        SvgPicture.asset(
+          'assets/images/dabbler_text_logo.svg',
+          width: 110,
+          height: 21,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomSection() {
+    return Column(
+      children: [
+        // Email input field
+        _buildEmailInput(),
+        SizedBox(height: AppSpacing.lg),
+
+        // Continue with Email button
+        _buildContinueButton(),
+
+        SizedBox(height: AppSpacing.xl),
+
+        // Divider with "or"
+        _buildDivider(),
+
+        SizedBox(height: AppSpacing.xl),
+
+        // Continue with Google button
+        _buildGoogleButton(),
+
+        SizedBox(height: AppSpacing.md),
+
+        // Continue with Phone button
+        _buildPhoneButton(),
+
+        SizedBox(height: AppSpacing.xxl),
+
+        // Terms and privacy
+        _buildTermsText(),
+
+        // Error/Success messages
+        if (_errorMessage != null) ...[
+          SizedBox(height: AppSpacing.lg),
+          Container(
+            padding: EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.error.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppSpacing.sm),
+              border: Border.all(color: AppColors.error.withOpacity(0.3)),
+            ),
+            child: Text(
+              _errorMessage!,
+              style: TextStyle(color: AppColors.error),
+            ),
+          ),
+        ],
+
+        if (_successMessage != null) ...[
+          SizedBox(height: AppSpacing.lg),
+          Container(
+            padding: EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: AppColors.success.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppSpacing.sm),
+              border: Border.all(color: AppColors.success.withOpacity(0.3)),
+            ),
+            child: Text(
+              _successMessage!,
+              style: TextStyle(color: AppColors.success),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildEmailInput() {
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.lg,
+        vertical: AppSpacing.xs,
       ),
+      decoration: BoxDecoration(
+        color: AppColors.cardColor(context),
+        borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
+        border: Border.all(color: AppColors.borderDark),
+      ),
+      child: Form(
+        key: _formKey,
+        child: TextFormField(
+          controller: _emailController,
+          decoration: InputDecoration(
+            hintText: 'email@example.com',
+            hintStyle: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+          ),
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          keyboardType: TextInputType.emailAddress,
+          onChanged: _onEmailChanged,
+          validator: _validateEmail,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildContinueButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : _handleSubmit,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.primaryPurple,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+          ),
+        ),
+        child: _isLoading
+            ? SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('📧', style: TextStyle(fontSize: 18)),
+                  SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'Continue with Email',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  Widget _buildDivider() {
+    return Row(
+      children: [
+        Expanded(child: Container(height: 1, color: AppColors.borderDark)),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: Text(
+            'or',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+        Expanded(child: Container(height: 1, color: AppColors.borderDark)),
+      ],
+    );
+  }
+
+  Widget _buildGoogleButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: () {
+          // TODO: Implement Google sign in
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Google sign-in coming soon')));
+        },
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: AppColors.categoryBgMain(context),
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'G',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            ),
+            SizedBox(width: AppSpacing.sm),
+            Text(
+              'Continue with Google',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhoneButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 56,
+      child: ElevatedButton(
+        onPressed: () {
+          debugPrint('📱 [DEBUG] EmailInputScreen: Phone button pressed');
+          context.go(RoutePaths.phoneInput);
+        },
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: AppColors.categoryBgMain(context),
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('📱', style: TextStyle(fontSize: 18)),
+            SizedBox(width: AppSpacing.sm),
+            Text(
+              'Continue with Phone',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTermsText() {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 4,
+      children: [
+        Text(
+          'By continuing, you agree to our',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            // TODO: Open Terms of Service
+          },
+          child: Text(
+            'Terms of Service',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.onSurface,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+        Text(
+          'and',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+        GestureDetector(
+          onTap: () {
+            // TODO: Open Privacy Policy
+          },
+          child: Text(
+            'Privacy Policy',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.onSurface,
+              decoration: TextDecoration.underline,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

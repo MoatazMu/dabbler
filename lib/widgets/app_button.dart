@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../themes/app_theme.dart';
-import '../utils/ui_constants.dart';
+import 'package:dabbler/themes/app_theme.dart';
+import 'package:dabbler/utils/ui_constants.dart';
 
 /// Consistent app button widget with multiple variants
 class AppButton extends StatelessWidget {

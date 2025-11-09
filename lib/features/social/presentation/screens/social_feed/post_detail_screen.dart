@@ -11,6 +11,7 @@ import 'package:dabbler/features/social/presentation/widgets/post/post_author_wi
 import 'package:dabbler/features/social/presentation/widgets/post/share_post_bottom_sheet.dart';
 import 'package:dabbler/features/social/presentation/widgets/comments/comments_thread.dart';
 import 'package:dabbler/features/social/presentation/widgets/comments/comment_input.dart';
+import '../../../services/social_service.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
@@ -60,9 +61,16 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
         data: (post) => _buildPostContent(context, theme, post),
         loading: () => const Center(child: LoadingWidget()),
         error: (error, stack) => Center(
-          child: core.ErrorWidget(
-            message: error.toString(),
-            onRetry: () => ref.refresh(postDetailsProvider(widget.postId)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Error: ${error.toString()}'),
+              ElevatedButton(
+                onPressed: () =>
+                    ref.refresh(postDetailsProvider(widget.postId)),
+                child: const Text('Retry'),
+              ),
+            ],
           ),
         ),
       ),
@@ -137,10 +145,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                     children: [
                       // Author info
                       PostAuthorWidget(
-                        author: post.author,
+                        author: _AuthorData(
+                          name: post.authorName,
+                          avatar: post.authorAvatar,
+                          isVerified: post.authorVerified ?? false,
+                        ),
                         createdAt: post.createdAt,
-                        location: post.location,
-                        isEdited: post.isEdited,
+                        location: post.locationName,
+                        isEdited: post.isEdited ?? false,
                         onProfileTap: () => _navigateToProfile(post.authorId),
                         actions: isOwnPost
                             ? [
@@ -168,29 +180,119 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
 
                       const SizedBox(height: 12),
 
+                      // Debug: Print post content
+                      Builder(
+                        builder: (context) {
+                          print(
+                            'DEBUG POST DETAIL: content="${post.content}", length=${post.content.length}',
+                          );
+                          print(
+                            'DEBUG POST DETAIL: authorName="${post.authorName}"',
+                          );
+                          print(
+                            'DEBUG POST DETAIL: mediaUrls=${post.mediaUrls}',
+                          );
+                          print('DEBUG POST DETAIL: tags=${post.tags}');
+                          return const SizedBox.shrink();
+                        },
+                      ),
+
                       // Post content
                       PostContentWidget(
                         content: post.content,
-                        media: post.media,
-                        sports: post.sports,
-                        mentions: post.mentions,
-                        hashtags: post.hashtags,
+                        media: post.mediaUrls,
+                        sports: post.tags,
+                        mentions: post.mentionedUsers,
+                        hashtags: post.tags,
                         onMediaTap: (mediaIndex) =>
-                            _viewMedia(post.media, mediaIndex),
+                            _viewMedia(post.mediaUrls, mediaIndex),
                         onMentionTap: (userId) => _navigateToProfile(userId),
                         onHashtagTap: (hashtag) => _searchHashtag(hashtag),
                       ),
 
                       const SizedBox(height: 16),
 
-                      // Post actions
-                      PostActionsWidget(
-                        post: post,
-                        onLike: () => _handleLike(post.id),
-                        onComment: () => _focusCommentInput(),
-                        onShare: () => _sharePost(post),
-                        onReaction: (reaction) =>
-                            _handleReaction(post.id, reaction),
+                      // Post actions (simplified for MVP)
+                      Row(
+                        children: [
+                          // Like button
+                          InkWell(
+                            onTap: () => _handleLike(post.id),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    post.isLiked
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    size: 20,
+                                    color: post.isLiked
+                                        ? Colors.red
+                                        : theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${post.likesCount}',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: post.isLiked
+                                          ? theme.colorScheme.primary
+                                          : theme.colorScheme.onSurfaceVariant,
+                                      fontWeight: post.isLiked
+                                          ? FontWeight.w600
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 16),
+
+                          // Comment button
+                          InkWell(
+                            onTap: () => _focusCommentInput(),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.comment_outlined,
+                                    size: 20,
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    '${post.commentsCount}',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Divider
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Divider(
+                          color: theme.colorScheme.outline.withOpacity(0.2),
+                          height: 1,
+                        ),
                       ),
 
                       // Engagement stats
@@ -418,6 +520,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   Widget _buildCommentInput(BuildContext context, ThemeData theme) {
+    // Prevent DOM errors by checking if widget is still mounted
+    if (!mounted) return const SizedBox.shrink();
+
     return Container(
       padding: EdgeInsets.only(
         left: 16,
@@ -505,16 +610,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
-  void _handleLike(String postId) {
-    ref
-        .read(socialFeedControllerProvider.notifier)
-        .reactToPost(postId, ReactionType.like.toString().split('.').last);
-  }
+  void _handleLike(String postId) async {
+    try {
+      final socialService = SocialService();
+      await socialService.toggleLike(postId);
 
-  void _handleReaction(String postId, ReactionType reaction) {
-    ref
-        .read(socialFeedControllerProvider.notifier)
-        .reactToPost(postId, reaction.toString().split('.').last);
+      // Refresh post details to get updated like count
+      ref.invalidate(postDetailsProvider(postId));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to toggle like: $e')));
+      }
+    }
   }
 
   void _focusCommentInput() {
@@ -539,9 +648,9 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     _focusCommentInput();
   }
 
-  void _submitComment(String content) {
+  void _submitComment(String content) async {
     if (content.trim().isNotEmpty) {
-      ref
+      final success = await ref
           .read(socialFeedControllerProvider.notifier)
           .addComment(
             postId: widget.postId,
@@ -549,8 +658,25 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             parentCommentId: _replyingToCommentId,
           );
 
-      _commentController.clear();
-      setState(() => _replyingToCommentId = null);
+      if (success) {
+        _commentController.clear();
+        setState(() => _replyingToCommentId = null);
+
+        // Refresh comments to show the new comment
+        ref.invalidate(postCommentsProvider(widget.postId));
+
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Comment added')));
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to add comment')),
+          );
+        }
+      }
     }
   }
 
@@ -584,9 +710,27 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             child: const Text('Cancel'),
           ),
           TextButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(context);
-              // Implement delete comment
+              try {
+                final socialService = SocialService();
+                await socialService.deleteComment(commentId);
+
+                // Refresh comments
+                ref.invalidate(postCommentsProvider(widget.postId));
+
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Comment deleted')),
+                  );
+                }
+              } catch (e) {
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to delete comment: $e')),
+                  );
+                }
+              }
             },
             child: const Text('Delete'),
           ),
@@ -901,3 +1045,12 @@ class _ReportDialogState extends State<ReportDialog> {
 }
 
 enum ReportType { post, comment }
+
+/// Simple author data class for passing to PostAuthorWidget
+class _AuthorData {
+  final String name;
+  final String? avatar;
+  final bool isVerified;
+
+  _AuthorData({required this.name, this.avatar, this.isVerified = false});
+}

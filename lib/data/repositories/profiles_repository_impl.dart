@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
@@ -16,34 +15,34 @@ class ProfilesRepositoryImpl extends BaseRepository
   static const String _table = 'profiles';
 
   @override
-  Future<Result<Profile>> getMyProfile() async {
+  Future<Result<Profile, Failure>> getMyProfile() async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
 
     final result = await _fetchProfileOptional(uid);
     return result.fold(
-      (l) => Left(l),
+      (failure) => Err(failure),
       (profile) => profile != null
-          ? Right(profile)
-          : const Left(NotFoundFailure(message: 'Profile not found')),
+          ? Ok(profile)
+          : const Err(NotFoundFailure(message: 'Profile not found')),
     );
   }
 
   @override
-  Future<Result<Profile>> getByUserId(String userId) async {
+  Future<Result<Profile, Failure>> getByUserId(String userId) async {
     final result = await _fetchProfileOptional(userId);
     return result.fold(
-      (l) => Left(l),
+      (failure) => Err(failure),
       (profile) => profile != null
-          ? Right(profile)
-          : const Left(NotFoundFailure(message: 'Profile not found')),
+          ? Ok(profile)
+          : const Err(NotFoundFailure(message: 'Profile not found')),
     );
   }
 
   @override
-  Future<Result<Profile?>> getPublicByUsername(String username) {
+  Future<Result<Profile?, Failure>> getPublicByUsername(String username) {
     return guard(() async {
       final response = await svc.client
           .from(_table)
@@ -61,13 +60,13 @@ class ProfilesRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<void>> upsert(Profile profile) async {
+  Future<Result<void, Failure>> upsert(Profile profile) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
     if (profile.userId != uid) {
-      return left(
+      return Err(
         PermissionFailure(message: "Cannot upsert another user's profile"),
       );
     }
@@ -78,10 +77,10 @@ class ProfilesRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<void>> deactivateMe() async {
+  Future<Result<void, Failure>> deactivateMe() async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
 
     return guard(() async {
@@ -96,10 +95,10 @@ class ProfilesRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<void>> reactivateMe() async {
+  Future<Result<void, Failure>> reactivateMe() async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
 
     return guard(() async {
@@ -114,16 +113,16 @@ class ProfilesRepositoryImpl extends BaseRepository
   }
 
   @override
-  Stream<Result<Profile?>> watchMyProfile() {
+  Stream<Result<Profile?, Failure>> watchMyProfile() {
     final uid = svc.authUserId();
     if (uid == null) {
-      return Stream.value(const Left(AuthFailure(message: 'Not signed in')));
+      return Stream.value(const Err(AuthFailure(message: 'Not signed in')));
     }
 
-    final controller = StreamController<Result<Profile?>>();
+    final controller = StreamController<Result<Profile?, Failure>>();
     final channel = svc.client.channel('public:$_table');
 
-    void emit(Result<Profile?> result) {
+    void emit(Result<Profile?, Failure> result) {
       if (!controller.isClosed) {
         controller.add(result);
       }
@@ -155,7 +154,7 @@ class ProfilesRepositoryImpl extends BaseRepository
       try {
         channel.subscribe();
       } catch (error) {
-        emit(Left(svc.mapPostgrest(error as PostgrestException)));
+        emit(Err(svc.mapPostgrest(error as PostgrestException)));
       }
     };
 
@@ -169,13 +168,13 @@ class ProfilesRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<void>> deleteSoft(String userId) async {
+  Future<Result<void, Failure>> deleteSoft(String userId) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
     if (userId != uid) {
-      return left(
+      return Err(
         PermissionFailure(message: "Cannot delete another user's profile"),
       );
     }
@@ -191,7 +190,7 @@ class ProfilesRepositoryImpl extends BaseRepository
     });
   }
 
-  Future<Result<Profile?>> _fetchProfileOptional(String userId) {
+  Future<Result<Profile?, Failure>> _fetchProfileOptional(String userId) {
     return guard(() async {
       final response = await svc.client
           .from(_table)

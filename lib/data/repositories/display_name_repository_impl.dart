@@ -18,7 +18,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
   SupabaseClient get _db => svc.client;
 
   @override
-  Future<Result<bool>> isAvailable(String displayName) async {
+  Future<Result<bool, Failure>> isAvailable(String displayName) async {
     try {
       final norm = DisplayNameRules.normalize(displayName);
       final row = await _db
@@ -26,14 +26,14 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .select('id')
           .eq('display_name_norm', norm)
           .maybeSingle();
-      return right(row == null);
+      return Ok(row == null);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   @override
-  Future<Result<List<Profile>>> search({
+  Future<Result<List<Profile>, Failure>> search({
     required String query,
     int limit = 20,
     int offset = 0,
@@ -52,19 +52,19 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .map((row) => Map<String, dynamic>.from(row as Map))
           .toList();
       final profiles = rows.map(Profile.fromJson).toList();
-      return right(profiles);
+      return Ok(profiles);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   @override
-  Future<Result<Profile>> setDisplayNameForProfile({
+  Future<Result<Profile, Failure>> setDisplayNameForProfile({
     required String profileId,
     required String displayName,
   }) async {
     if (!DisplayNameRules.isLengthValid(displayName)) {
-      return left(
+      return Err(
         const ValidationFailure(message: 'Display name must be 2–50 chars.'),
       );
     }
@@ -81,47 +81,47 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .select()
           .maybeSingle();
       if (response == null) {
-        return left(
+        return Err(
           const NotFoundFailure(message: 'Profile not found or not owned'),
         );
       }
       final row = Map<String, dynamic>.from(response as Map);
-      return right(Profile.fromJson(row));
+      return Ok(Profile.fromJson(row));
     } on PostgrestException catch (error) {
       final code = error.code;
       if (code == '23505') {
-        return left(
+        return Err(
           const ConflictFailure(message: 'Display name already in use'),
         );
       }
       if (code == '23514') {
-        return left(
+        return Err(
           const ValidationFailure(
             message:
                 'Display name violates server rules or conflicts with username',
           ),
         );
       }
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   @override
-  Future<Result<Profile>> setMyDisplayNameForType({
+  Future<Result<Profile, Failure>> setMyDisplayNameForType({
     required String profileType,
     required String displayName,
   }) async {
     if (!DisplayNameRules.isLengthValid(displayName)) {
-      return left(
+      return Err(
         const ValidationFailure(message: 'Display name must be 2–50 chars.'),
       );
     }
 
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure(message: 'Not signed in'));
+      return Err(const AuthFailure(message: 'Not signed in'));
     }
 
     try {
@@ -132,7 +132,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .eq('profile_type', profileType)
           .maybeSingle();
       if (existing == null) {
-        return left(
+        return Err(
           NotFoundFailure(
             message: 'Profile of type $profileType not found for current user',
           ),
@@ -150,42 +150,42 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
           .select()
           .maybeSingle();
       if (response == null) {
-        return left(
+        return Err(
           const NotFoundFailure(message: 'Profile not found after update'),
         );
       }
       final row = Map<String, dynamic>.from(response as Map);
-      return right(Profile.fromJson(row));
+      return Ok(Profile.fromJson(row));
     } on PostgrestException catch (error) {
       final code = error.code;
       if (code == '23505') {
-        return left(
+        return Err(
           const ConflictFailure(message: 'Display name already in use'),
         );
       }
       if (code == '23514') {
-        return left(
+        return Err(
           const ValidationFailure(
             message:
                 'Display name violates server rules or conflicts with username',
           ),
         );
       }
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   @override
-  Stream<Result<Profile>> myProfileTypeStream(String profileType) async* {
+  Stream<Result<Profile, Failure>> myProfileTypeStream(String profileType) async* {
     final uid = svc.authUserId();
     if (uid == null) {
-      yield left(const AuthFailure(message: 'Not signed in'));
+      yield Err(const AuthFailure(message: 'Not signed in'));
       return;
     }
 
-    Future<Result<Profile>> fetch() async {
+    Future<Result<Profile, Failure>> fetch() async {
       try {
         final response = await _db
             .from('profiles')
@@ -194,12 +194,12 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
             .eq('profile_type', profileType)
             .maybeSingle();
         if (response == null) {
-          return left(const NotFoundFailure(message: 'Profile not found'));
+          return Err(const NotFoundFailure(message: 'Profile not found'));
         }
         final row = Map<String, dynamic>.from(response as Map);
-        return right(Profile.fromJson(row));
+        return Ok(Profile.fromJson(row));
       } catch (error) {
-        return left(svc.mapPostgrestError(error));
+        return Err(svc.mapPostgrestError(error));
       }
     }
 
@@ -212,7 +212,7 @@ class DisplayNameRepositoryImpl implements DisplayNameRepository {
         yield await fetch();
       }
     } catch (error) {
-      yield left(svc.mapPostgrest(error as PostgrestException));
+      yield Err(svc.mapPostgrest(error as PostgrestException));
     }
   }
 }

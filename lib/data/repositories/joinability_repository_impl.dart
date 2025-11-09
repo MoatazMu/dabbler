@@ -1,11 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import '../models/joinability_rule.dart';
 import 'joinability_repository.dart';
-
-typedef Result<T> = core.Result<T, Failure>;
 
 final joinabilityRepositoryProvider = Provider<JoinabilityRepository>((ref) {
   return JoinabilityRepositoryImpl();
@@ -13,15 +11,15 @@ final joinabilityRepositoryProvider = Provider<JoinabilityRepository>((ref) {
 
 class JoinabilityRepositoryImpl implements JoinabilityRepository {
   @override
-  Result<JoinabilityDecision> evaluate(JoinabilityInputs inputs) {
+  Result<JoinabilityDecision, Failure> evaluate(JoinabilityInputs inputs) {
     // 1) Viewer presence
     if (inputs.viewerId == null || inputs.viewerId!.isEmpty) {
-      return core.Ok(_deny(reason: JoinabilityReason.notLoggedIn));
+      return Ok(_deny(reason: JoinabilityReason.notLoggedIn));
     }
 
     // 2) Already joined → no join/request/waitlist; allow leave
     if (inputs.alreadyJoined) {
-      return core.Ok(
+      return Ok(
         JoinabilityDecision(
           canJoin: false,
           canRequest: false,
@@ -34,17 +32,17 @@ class JoinabilityRepositoryImpl implements JoinabilityRepository {
 
     // 3) Already requested → no direct join; keep "cancel request" at feature layer
     if (inputs.alreadyRequested) {
-      return core.Ok(_deny(reason: JoinabilityReason.alreadyRequested));
+      return Ok(_deny(reason: JoinabilityReason.alreadyRequested));
     }
 
     // 4) Admin/Owner short-circuit (UI may still hide buttons contextually)
     if (inputs.viewerIsOwner) {
       // Owner typically doesn't "join" their own game; treat as deny with a specific reason.
-      return core.Ok(_deny(reason: JoinabilityReason.viewerIsOwner));
+      return Ok(_deny(reason: JoinabilityReason.viewerIsOwner));
     }
     if (inputs.viewerIsAdmin) {
       // Admin override: let UI show join (or management UI) as appropriate
-      return core.Ok(
+      return Ok(
         JoinabilityDecision(
           canJoin: true,
           canRequest: false,
@@ -62,13 +60,13 @@ class JoinabilityRepositoryImpl implements JoinabilityRepository {
         break;
       case 'circle':
         if (!inputs.areSyncedWithOwner) {
-          return core.Ok(_deny(reason: JoinabilityReason.circleNotSynced));
+          return Ok(_deny(reason: JoinabilityReason.circleNotSynced));
         }
         break;
       case 'hidden':
-        return core.Ok(_deny(reason: JoinabilityReason.hiddenToViewer));
+        return Ok(_deny(reason: JoinabilityReason.hiddenToViewer));
       default:
-        return core.Ok(_deny(reason: JoinabilityReason.unknownVisibility));
+        return Ok(_deny(reason: JoinabilityReason.unknownVisibility));
     }
 
     // 6) Time window
@@ -76,7 +74,7 @@ class JoinabilityRepositoryImpl implements JoinabilityRepository {
       // Might still allow waitlisting even when window is closed (product choice).
       // Here we deny join but advertise waitlist if available.
       if (inputs.waitlistHasRoom) {
-        return core.Ok(
+        return Ok(
           JoinabilityDecision(
             canJoin: false,
             canRequest: false,
@@ -86,14 +84,14 @@ class JoinabilityRepositoryImpl implements JoinabilityRepository {
           ),
         );
       }
-      return core.Ok(_deny(reason: JoinabilityReason.windowClosed));
+      return Ok(_deny(reason: JoinabilityReason.windowClosed));
     }
 
     // 7) Invite / approval
     if (inputs.requiresInvite && !inputs.viewerInvited) {
       // You might allow waitlisting even without invite; reflect product policy here.
       if (inputs.waitlistHasRoom) {
-        return core.Ok(
+        return Ok(
           JoinabilityDecision(
             canJoin: false,
             canRequest: false,
@@ -103,14 +101,14 @@ class JoinabilityRepositoryImpl implements JoinabilityRepository {
           ),
         );
       }
-      return core.Ok(_deny(reason: JoinabilityReason.inviteRequired));
+      return Ok(_deny(reason: JoinabilityReason.inviteRequired));
     }
 
     // Approval flow: prefer "request" over direct join if required.
     if (inputs.requiresApproval) {
       // If roster has room, prefer a join-request; if full, offer waitlist.
       if (inputs.rosterHasRoom) {
-        return core.Ok(
+        return Ok(
           JoinabilityDecision(
             canJoin: false,
             canRequest: true,
@@ -121,7 +119,7 @@ class JoinabilityRepositoryImpl implements JoinabilityRepository {
         );
       }
       if (inputs.waitlistHasRoom) {
-        return core.Ok(
+        return Ok(
           JoinabilityDecision(
             canJoin: false,
             canRequest: false,
@@ -131,12 +129,12 @@ class JoinabilityRepositoryImpl implements JoinabilityRepository {
           ),
         );
       }
-      return core.Ok(_deny(reason: JoinabilityReason.rosterFull));
+      return Ok(_deny(reason: JoinabilityReason.rosterFull));
     }
 
     // 8) Roster capacity
     if (inputs.rosterHasRoom) {
-      return core.Ok(
+      return Ok(
         const JoinabilityDecision(
           canJoin: true,
           canRequest: false,
@@ -149,7 +147,7 @@ class JoinabilityRepositoryImpl implements JoinabilityRepository {
 
     // 9) Waitlist path
     if (inputs.waitlistHasRoom) {
-      return core.Ok(
+      return Ok(
         JoinabilityDecision(
           canJoin: false,
           canRequest: false,
@@ -161,7 +159,7 @@ class JoinabilityRepositoryImpl implements JoinabilityRepository {
     }
 
     // 10) Full stop
-    return core.Ok(_deny(reason: JoinabilityReason.rosterFull));
+    return Ok(_deny(reason: JoinabilityReason.rosterFull));
   }
 
   JoinabilityDecision _deny({required JoinabilityReason reason}) {

@@ -34,33 +34,33 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
   }
 
   @override
-  Future<Result<Profile>> getMyProfileByType(String profileType) async {
+  Future<Result<Profile, Failure>> getMyProfileByType(String profileType) async {
     try {
       final uid = svc.authUserId();
       if (uid == null) {
-        return left(const AuthFailure(message: 'Not signed in'));
+        return Err(const AuthFailure(message: 'Not signed in'));
       }
 
       final row = await _findMyProfileRow(uid, profileType);
       if (row == null) {
-        return left(
+        return Err(
           NotFoundFailure(
             message: 'Profile ($profileType) not found for current user',
           ),
         );
       }
-      return right(Profile.fromJson(row));
+      return Ok(Profile.fromJson(row));
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<bool>> isMyProfileActive(String profileType) async {
+  Future<Result<bool, Failure>> isMyProfileActive(String profileType) async {
     try {
       final uid = svc.authUserId();
       if (uid == null) {
-        return left(const AuthFailure(message: 'Not signed in'));
+        return Err(const AuthFailure(message: 'Not signed in'));
       }
       final row = await _db
           .from('profiles')
@@ -69,24 +69,24 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .eq('profile_type', profileType)
           .maybeSingle();
       if (row == null) {
-        return left(
+        return Err(
           NotFoundFailure(
             message: 'Profile ($profileType) not found for current user',
           ),
         );
       }
-      return right((row['is_active'] as bool?) ?? false);
+      return Ok((row['is_active'] as bool?) ?? false);
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<Profile>> benchMyProfile(String profileType) async {
+  Future<Result<Profile, Failure>> benchMyProfile(String profileType) async {
     try {
       final uid = svc.authUserId();
       if (uid == null) {
-        return left(const AuthFailure(message: 'Not signed in'));
+        return Err(const AuthFailure(message: 'Not signed in'));
       }
       final now = DateTime.now().toIso8601String();
       final row = await _db
@@ -97,24 +97,24 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(
+        return Err(
           NotFoundFailure(
             message: 'Profile ($profileType) not found or not owned',
           ),
         );
       }
-      return right(Profile.fromJson(Map<String, dynamic>.from(row)));
+      return Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<Profile>> unbenchMyProfile(String profileType) async {
+  Future<Result<Profile, Failure>> unbenchMyProfile(String profileType) async {
     try {
       final uid = svc.authUserId();
       if (uid == null) {
-        return left(const AuthFailure(message: 'Not signed in'));
+        return Err(const AuthFailure(message: 'Not signed in'));
       }
       final now = DateTime.now().toIso8601String();
       final row = await _db
@@ -125,38 +125,38 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
           .select()
           .maybeSingle();
       if (row == null) {
-        return left(
+        return Err(
           NotFoundFailure(
             message: 'Profile ($profileType) not found or not owned',
           ),
         );
       }
-      return right(Profile.fromJson(Map<String, dynamic>.from(row)));
+      return Ok(Profile.fromJson(Map<String, dynamic>.from(row)));
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Stream<Result<Profile>> myProfileStream(String profileType) async* {
+  Stream<Result<Profile, Failure>> myProfileStream(String profileType) async* {
     try {
       final uid = svc.authUserId();
       if (uid == null) {
-        yield left(const AuthFailure(message: 'Not signed in'));
+        yield Err(const AuthFailure(message: 'Not signed in'));
         return;
       }
 
-      Future<Result<Profile>> fetch() async {
+      Future<Result<Profile, Failure>> fetch() async {
         try {
           final row = await _findMyProfileRow(uid, profileType);
           if (row == null) {
-            return left(
+            return Err(
               NotFoundFailure(message: 'Profile ($profileType) not found'),
             );
           }
-          return right(Profile.fromJson(row));
+          return Ok(Profile.fromJson(row));
         } catch (e) {
-          return left(svc.mapPostgrestError(e));
+          return Err(svc.mapPostgrestError(e));
         }
       }
 
@@ -170,7 +170,7 @@ class BenchModeRepositoryImpl implements BenchModeRepository {
         yield await fetch();
       }
     } catch (e) {
-      yield left(svc.mapPostgrest(e as PostgrestException));
+      yield Err(svc.mapPostgrest(e as PostgrestException));
     }
   }
 }

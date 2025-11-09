@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../themes/app_theme.dart';
+import 'package:lucide_icons/lucide_icons.dart';
+import 'package:dabbler/themes/app_theme.dart';
 import '../utils/ui_constants.dart';
 
 /// Consistent card widget with proper spacing and elevation

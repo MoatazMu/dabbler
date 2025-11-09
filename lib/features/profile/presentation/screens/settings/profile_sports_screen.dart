@@ -406,26 +406,23 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
           ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
         ),
         const SizedBox(height: 8),
-        Row(
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: SkillLevel.values.map((level) {
             final isSelected = preference.skillLevel == level;
-            return Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: FilterChip(
-                  label: Text(level.displayName),
-                  selected: isSelected,
-                  onSelected: (selected) {
-                    if (selected) {
-                      setState(() {
-                        _sportPreferences[sportKey] = preference.copyWith(
-                          skillLevel: level,
-                        );
-                      });
-                    }
-                  },
-                ),
-              ),
+            return FilterChip(
+              label: Text(level.displayName),
+              selected: isSelected,
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() {
+                    _sportPreferences[sportKey] = preference.copyWith(
+                      skillLevel: level,
+                    );
+                  });
+                }
+              },
             );
           }).toList(),
         ),

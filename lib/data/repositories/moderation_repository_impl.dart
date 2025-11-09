@@ -1,10 +1,9 @@
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import 'package:dabbler/core/fp/result.dart' show Result;
+import 'package:dabbler/core/fp/result.dart';
 import '../repositories/base_repository.dart';
-import 'moderation_repository.dart' hide Result;
+import 'moderation_repository.dart';
 
 class ModerationRepositoryImpl extends BaseRepository
     implements ModerationRepository {
@@ -13,35 +12,37 @@ class ModerationRepositoryImpl extends BaseRepository
   SupabaseClient get _db => svc.client;
 
   @override
-  Future<Result<bool>> isAdmin() async {
+  Future<Result<bool, Failure>> isAdmin() async {
     try {
       final uid = _db.auth.currentUser?.id;
       if (uid == null) {
-        return left(AuthFailure(message: 'No auth user'));
+        return Err(AuthFailure(message: 'No auth user'));
       }
       final res = await _db.rpc('is_admin', params: {'u': uid});
       // unwrap the response
       final data = res as bool?;
-      return right(data == true);
+      return Ok(data == true);
     } on PostgrestException catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     } catch (e) {
-      return left(UnknownFailure(message: e.toString()));
+      return Err(UnknownFailure(message: e.toString()));
     }
   }
 
   // ---------- helpers ----------
-  Future<Result<void>> _requireAdmin() async {
+  Future<Result<void, Failure>> _requireAdmin() async {
     final admin = await isAdmin();
     return admin.fold(
-      (f) => left(f),
-      (ok) => ok ? right(null) : left(PermissionFailure(message: 'Admin only')),
+      (f) => Err(f),
+      (ok) => ok ? Ok(null) : Err(PermissionFailure(message: 'Admin only')),
     );
   }
 
-  Future<Result<T>> _guardAdmin<T>(Future<Result<T>> Function() action) async {
+  Future<Result<T, Failure>> _guardAdmin<T>(
+    Future<Result<T, Failure>> Function() action,
+  ) async {
     final gate = await _requireAdmin();
-    return gate.fold((f) => Future.value(left<Failure, T>(f)), (_) => action());
+    return gate.fold((f) => Future.value(Err(f)), (_) => action());
   }
 
   PostgrestFilterBuilder _applyWhere(
@@ -59,48 +60,48 @@ class ModerationRepositoryImpl extends BaseRepository
 
   // ---------- Flags ----------
   @override
-  Future<Result<List<Map<String, dynamic>>>> listFlags({
+  Future<Result<List<Map<String, dynamic>>, Failure>> listFlags({
     int limit = 50,
     int offset = 0,
     Map<String, dynamic>? where,
   }) async {
     return _guardAdmin(() async {
       try {
-        var q = _db.from('moderation_flags').select();
+        dynamic q = _db.from('moderation_flags').select();
         q = _applyWhere(q, where).range(offset, offset + limit - 1);
         final rows = await q;
-        return right(List<Map<String, dynamic>>.from(rows));
+        return Ok(List<Map<String, dynamic>>.from(rows));
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }
 
   // ---------- Tickets ----------
   @override
-  Future<Result<List<Map<String, dynamic>>>> listTickets({
+  Future<Result<List<Map<String, dynamic>>, Failure>> listTickets({
     int limit = 50,
     int offset = 0,
     Map<String, dynamic>? where,
   }) async {
     return _guardAdmin(() async {
       try {
-        var q = _db.from('moderation_tickets').select();
+        dynamic q = _db.from('moderation_tickets').select();
         q = _applyWhere(q, where).range(offset, offset + limit - 1);
         final rows = await q;
-        return right(List<Map<String, dynamic>>.from(rows));
+        return Ok(List<Map<String, dynamic>>.from(rows));
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }
 
   @override
-  Future<Result<Map<String, dynamic>>> createTicket(
+  Future<Result<Map<String, dynamic>, Failure>> createTicket(
     Map<String, dynamic> values,
   ) async {
     return _guardAdmin(() async {
@@ -110,17 +111,17 @@ class ModerationRepositoryImpl extends BaseRepository
             .insert(values)
             .select()
             .single();
-        return right(Map<String, dynamic>.from(rows));
+        return Ok(Map<String, dynamic>.from(rows));
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }
 
   @override
-  Future<Result<Map<String, dynamic>>> updateTicket(
+  Future<Result<Map<String, dynamic>, Failure>> updateTicket(
     String id,
     Map<String, dynamic> patch,
   ) async {
@@ -134,19 +135,19 @@ class ModerationRepositoryImpl extends BaseRepository
             .maybeSingle();
 
         if (rows == null) {
-          return left(NotFoundFailure(message: 'Ticket not found'));
+          return Err(NotFoundFailure(message: 'Ticket not found'));
         }
-        return right(Map<String, dynamic>.from(rows));
+        return Ok(Map<String, dynamic>.from(rows));
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }
 
   @override
-  Future<Result<int>> setTicketStatus(String id, String status) async {
+  Future<Result<int, Failure>> setTicketStatus(String id, String status) async {
     return _guardAdmin(() async {
       try {
         final res = await _db
@@ -154,39 +155,39 @@ class ModerationRepositoryImpl extends BaseRepository
             .update({'status': status})
             .eq('id', id);
         // PostgREST update returns affected rows count only in newer clients; fallback to select check:
-        if (res is int) return right(res);
-        return right(1); // assume one row updated if no error thrown
+        if (res is int) return Ok(res);
+        return Ok(1); // assume one row updated if no error thrown
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }
 
   // ---------- Actions ----------
   @override
-  Future<Result<List<Map<String, dynamic>>>> listActions({
+  Future<Result<List<Map<String, dynamic>>, Failure>> listActions({
     int limit = 50,
     int offset = 0,
     Map<String, dynamic>? where,
   }) async {
     return _guardAdmin(() async {
       try {
-        var q = _db.from('moderation_actions').select();
+        dynamic q = _db.from('moderation_actions').select();
         q = _applyWhere(q, where).range(offset, offset + limit - 1);
         final rows = await q;
-        return right(List<Map<String, dynamic>>.from(rows));
+        return Ok(List<Map<String, dynamic>>.from(rows));
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }
 
   @override
-  Future<Result<Map<String, dynamic>>> recordAction(
+  Future<Result<Map<String, dynamic>, Failure>> recordAction(
     Map<String, dynamic> values,
   ) async {
     return _guardAdmin(() async {
@@ -196,38 +197,38 @@ class ModerationRepositoryImpl extends BaseRepository
             .insert(values)
             .select()
             .single();
-        return right(Map<String, dynamic>.from(row));
+        return Ok(Map<String, dynamic>.from(row));
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }
 
   // ---------- Ban terms ----------
   @override
-  Future<Result<List<Map<String, dynamic>>>> listBanTerms({
+  Future<Result<List<Map<String, dynamic>>, Failure>> listBanTerms({
     int limit = 100,
     int offset = 0,
     Map<String, dynamic>? where,
   }) async {
     return _guardAdmin(() async {
       try {
-        var q = _db.from('moderation_ban_terms').select();
+        dynamic q = _db.from('moderation_ban_terms').select();
         q = _applyWhere(q, where).range(offset, offset + limit - 1);
         final rows = await q;
-        return right(List<Map<String, dynamic>>.from(rows));
+        return Ok(List<Map<String, dynamic>>.from(rows));
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }
 
   @override
-  Future<Result<Map<String, dynamic>>> upsertBanTerm(
+  Future<Result<Map<String, dynamic>, Failure>> upsertBanTerm(
     Map<String, dynamic> values,
   ) async {
     return _guardAdmin(() async {
@@ -237,29 +238,29 @@ class ModerationRepositoryImpl extends BaseRepository
             .upsert(values)
             .select()
             .single();
-        return right(Map<String, dynamic>.from(row));
+        return Ok(Map<String, dynamic>.from(row));
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }
 
   @override
-  Future<Result<int>> deleteBanTerm(String id) async {
+  Future<Result<int, Failure>> deleteBanTerm(String id) async {
     return _guardAdmin(() async {
       try {
         final res = await _db
             .from('moderation_ban_terms')
             .delete()
             .eq('id', id);
-        if (res is int) return right(res);
-        return right(1);
+        if (res is int) return Ok(res);
+        return Ok(1);
       } on PostgrestException catch (e) {
-        return left(svc.mapPostgrestError(e));
+        return Err(svc.mapPostgrestError(e));
       } catch (e) {
-        return left(UnknownFailure(message: e.toString()));
+        return Err(UnknownFailure(message: e.toString()));
       }
     });
   }

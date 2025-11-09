@@ -348,7 +348,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
                       Text(
                         widget.replyToMessage?.content ?? 'Message',
                         style: AppTextStyles.bodySmall.copyWith(
-                          color: AppColors.textSecondary,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -386,14 +386,14 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
                 child: Text(
                   'Uploading...',
                   style: AppTextStyles.bodySmall.copyWith(
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
               Text(
                 '${(widget.uploadProgress * 100).toInt()}%',
                 style: AppTextStyles.bodySmall.copyWith(
-                  color: AppColors.textSecondary,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -438,7 +438,11 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: widget.onAttachmentTap ?? _showAttachmentOptions,
-          child: Icon(Icons.add, color: AppColors.textSecondary, size: 24),
+          child: Icon(
+            Icons.add,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            size: 24,
+          ),
         ),
       ),
     );
@@ -464,7 +468,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
         decoration: InputDecoration(
           hintText: widget.hintText,
           hintStyle: AppTextStyles.bodyMedium.copyWith(
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(
@@ -493,7 +497,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
           onTap: widget.onEmojiTap,
           child: Icon(
             Icons.emoji_emotions_outlined,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: 24,
           ),
         ),
@@ -552,7 +556,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
                   widget.isRecording ? Icons.stop : Icons.mic,
                   color: widget.isRecording
                       ? Colors.white
-                      : AppColors.textSecondary,
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
                   size: 20,
                 ),
               ),
@@ -655,7 +659,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
           Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),

@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
-import '../../../../themes/app_theme.dart';
+import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/data/models/rewards/leaderboard_entry.dart';
 import 'package:dabbler/data/models/rewards/badge_tier.dart';
 import 'package:dabbler/data/models/rewards/tier.dart';

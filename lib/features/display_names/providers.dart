@@ -1,3 +1,5 @@
+import 'package:dabbler/core/fp/failure.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dabbler/core/fp/result.dart';
@@ -13,13 +15,13 @@ final displayNameRepositoryProvider =
     });
 
 final displayNameAvailabilityProvider = FutureProvider.autoDispose
-    .family<Result<bool>, String>((ref, name) {
+    .family<Result<bool, Failure>, String>((ref, name) {
       final repo = ref.watch(displayNameRepositoryProvider);
       return repo.isAvailable(name);
     });
 
 final displayNameSearchProvider = FutureProvider.autoDispose
-    .family<Result<List<Profile>>, ({String query, int limit, int offset})>((
+    .family<Result<List<Profile>, Failure>, ({String query, int limit, int offset})>((
       ref,
       args,
     ) {
@@ -32,7 +34,7 @@ final displayNameSearchProvider = FutureProvider.autoDispose
     });
 
 final setDisplayNameForProfileProvider = FutureProvider.autoDispose
-    .family<Result<Profile>, ({String profileId, String displayName})>((
+    .family<Result<Profile, Failure>, ({String profileId, String displayName})>((
       ref,
       args,
     ) {
@@ -44,7 +46,7 @@ final setDisplayNameForProfileProvider = FutureProvider.autoDispose
     });
 
 final setMyDisplayNameForTypeProvider = FutureProvider.autoDispose
-    .family<Result<Profile>, ({String profileType, String displayName})>((
+    .family<Result<Profile, Failure>, ({String profileType, String displayName})>((
       ref,
       args,
     ) {
@@ -56,7 +58,7 @@ final setMyDisplayNameForTypeProvider = FutureProvider.autoDispose
     });
 
 final myProfileDisplayStreamProvider = StreamProvider.autoDispose
-    .family<Result<Profile>, String>((ref, type) {
+    .family<Result<Profile, Failure>, String>((ref, type) {
       final repo = ref.watch(displayNameRepositoryProvider);
       return repo.myProfileTypeStream(type);
     });

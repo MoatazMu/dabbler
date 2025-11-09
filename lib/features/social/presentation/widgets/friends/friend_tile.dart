@@ -286,7 +286,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
         Text(
           widget.friend.email ?? '@unknown',
           style: AppTextStyles.bodySmall.copyWith(
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         if (widget.showLastSeen) ...[
@@ -329,7 +329,9 @@ class _FriendTileState extends ConsumerState<FriendTile>
 
     return Text(
       'Last seen ${TimeFormatter.format(DateTime.now().subtract(const Duration(hours: 2)))}',
-      style: AppTextStyles.bodySmall.copyWith(color: AppColors.textSecondary),
+      style: AppTextStyles.bodySmall.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
     );
   }
 
@@ -422,7 +424,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.all(8),
-            child: Icon(icon, size: 20, color: AppColors.textSecondary),
+            child: Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ),
       ),
@@ -431,7 +433,11 @@ class _FriendTileState extends ConsumerState<FriendTile>
 
   Widget _buildMoreActionsButton() {
     return PopupMenuButton<String>(
-      icon: Icon(Icons.more_horiz, size: 20, color: AppColors.textSecondary),
+      icon: Icon(
+        Icons.more_horiz,
+        size: 20,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+      ),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       itemBuilder: (context) => [
         PopupMenuItem(

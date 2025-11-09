@@ -138,19 +138,7 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
 
       final response = await _supabaseClient
           .from('venues')
-          .select('''
-            *,
-            amenities,
-            photos,
-            sport_configs(*),
-            reviews(
-              id,
-              rating,
-              comment,
-              created_at,
-              user:profiles(full_name, avatar_url)
-            )
-          ''')
+          .select('*')
           .eq('id', venueId)
           .single();
 
@@ -271,14 +259,36 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
   @override
   Future<List<SportConfigModel>> getVenueSports(String venueId) async {
     try {
+      // Query venue_spaces to get sports supported at this venue
       final response = await _supabaseClient
-          .from('sport_configs')
-          .select('*')
+          .from('venue_spaces')
+          .select('sport')
           .eq('venue_id', venueId)
-          .order('sport_name');
+          .eq('is_active', true);
 
-      return response
-          .map<SportConfigModel>((json) => SportConfigModel.fromJson(json))
+      if (response.isEmpty) {
+        return [];
+      }
+
+      // Extract unique sports from venue spaces
+      final sports = <String>{};
+      for (final space in response) {
+        final sport = space['sport'] as String?;
+        if (sport != null && sport.isNotEmpty) {
+          sports.add(sport);
+        }
+      }
+
+      // Map to SportConfigModel using available sports
+      return SportConfigModel.availableSports
+          .where(
+            (config) => sports.any(
+              (sport) =>
+                  sport.toLowerCase() == config.name.toLowerCase() ||
+                  sport.toLowerCase() ==
+                      config.type.toString().split('.').last.toLowerCase(),
+            ),
+          )
           .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');

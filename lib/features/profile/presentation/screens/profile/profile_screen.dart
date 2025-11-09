@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:dabbler/core/design_system/colors/app_colors.dart';
+import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 import '../../controllers/profile_controller.dart';
-import '../../../../../features/games/providers/games_providers.dart';
 import '../../controllers/sports_profile_controller.dart';
 import '../../providers/profile_providers.dart';
 import 'package:dabbler/data/models/profile/user_profile.dart';
@@ -25,7 +26,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   late AnimationController _refreshController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  double _myAverageRating = 0.0;
 
   @override
   void initState() {
@@ -80,13 +80,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Future<void> _loadAverageRating() async {
-    final repository = ref.read(gamesRepositoryProvider);
-    final avgRes = await repository.myAverageRating();
-    if (mounted) {
-      setState(() {
-        _myAverageRating = avgRes.isSuccess ? avgRes.requireValue : 0.0;
-      });
-    }
+    // Rating data loading (not displayed in top section)
   }
 
   Future<void> _onRefresh() async {
@@ -100,194 +94,353 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final profileState = ref.watch(profileControllerProvider);
     final sportsState = ref.watch(sportsProfileControllerProvider);
 
-    return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: _onRefresh,
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            _buildAppBar(context),
-            SliverToBoxAdapter(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Column(
+    return TwoSectionLayout(
+      category: 'profile',
+      topSection: _buildTopSection(context, profileState),
+      bottomSection: _buildBottomSection(context, profileState, sportsState),
+    );
+  }
+
+  Widget _buildTopSection(BuildContext context, ProfileState profileState) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 48, left: 24, right: 24, bottom: 18),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Bar
+          SizedBox(
+            width: double.infinity,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => context.go('/home'),
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: ShapeDecoration(
+                      color: Colors.white.withOpacity(0.7),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16777200),
+                      ),
+                    ),
+                    child: Text(
+                      '🏠',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontFamily: 'Inter',
+                        height: 0,
+                      ),
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => context.push('/settings'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 10,
+                    ),
+                    decoration: ShapeDecoration(
+                      color: Color(0xFFFEFEFE),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(22),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          '⚙',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 22,
+                            fontFamily: 'Inter',
+                            height: 0,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Settings',
+                          style: TextStyle(
+                            color: Color(0xFF191919),
+                            fontSize: 14,
+                            fontFamily: 'Inter',
+                            height: 0.10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          // Profile Avatar and Stats
+          _buildProfileHeaderContent(context, profileState),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomSection(
+    BuildContext context,
+    ProfileState profileState,
+    SportsProfileState sportsState,
+  ) {
+    return RefreshIndicator(
+      onRefresh: _onRefresh,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: Column(
+              children: [
+                _buildProfileCompletion(context, profileState),
+                _buildBasicInfo(context, profileState),
+                _buildRewardsSection(context),
+                _buildSportsProfiles(context, sportsState),
+                _buildStatisticsSummary(context, profileState),
+                const SizedBox(height: 100), // Bottom spacing
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHeaderContent(
+    BuildContext context,
+    ProfileState profileState,
+  ) {
+    final profile = profileState.profile;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Avatar and Stats Row
+        SizedBox(
+          width: double.infinity,
+          height: 96,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Avatar
+              Container(
+                width: 96,
+                height: 96,
+                clipBehavior: Clip.antiAlias,
+                decoration: ShapeDecoration(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(25165800),
+                  ),
+                ),
+                child: profile?.avatarUrl != null
+                    ? Image.network(profile!.avatarUrl!, fit: BoxFit.cover)
+                    : Container(
+                        decoration: ShapeDecoration(
+                          color: Colors.grey.shade300,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25165800),
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.person,
+                          size: 48,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+              ),
+              const SizedBox(width: 16),
+              // Stats Container
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: ShapeDecoration(
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      _buildProfileHeader(context, profileState),
-                      _buildProfileCompletion(context, profileState),
-                      _buildBasicInfo(context, profileState),
-                      _buildRewardsSection(context),
-                      _buildSportsProfiles(context, sportsState),
-                      _buildStatisticsSummary(context, profileState),
-                      const SizedBox(height: 100), // Bottom spacing
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                '156',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: const Color(0xFF191919),
+                                  fontSize: 15,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.20,
+                                ),
+                              ),
+                              Text(
+                                'Games',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: const Color(0xFF191919),
+                                  fontSize: 12,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.67,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 1,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF262626),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                '89',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: const Color(0xFF191919),
+                                  fontSize: 15,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.20,
+                                ),
+                              ),
+                              Text(
+                                'Wins',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: const Color(0xFF191919),
+                                  fontSize: 12,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.67,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 1,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF262626),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: SizedBox(
+                          height: 48,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                '4',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: const Color(0xFF191919),
+                                  fontSize: 15,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w500,
+                                  height: 1.20,
+                                ),
+                              ),
+                              Text(
+                                'Teams',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  color: const Color(0xFF191919),
+                                  fontSize: 12,
+                                  fontFamily: 'Roboto',
+                                  fontWeight: FontWeight.w400,
+                                  height: 1.67,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: false,
-      pinned: true,
-      elevation: 0,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      leading: IconButton(
-        onPressed: () => context.go('/home'),
-        icon: const Icon(Icons.arrow_back),
-        tooltip: 'Back to Home',
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          'My Profile',
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: false,
-        titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-      ),
-      actions: [
-        IconButton(
-          onPressed: () => context.push('/settings'),
-          icon: const Icon(Icons.settings_outlined),
-          tooltip: 'Settings',
-        ),
-        const SizedBox(width: 8),
-      ],
-    );
-  }
-
-  Widget _buildProfileHeader(BuildContext context, ProfileState profileState) {
-    final profile = profileState.profile;
-
-    return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            ],
           ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Stack(
+        ),
+        const SizedBox(height: 18),
+        // Name
+        Text(
+          profile?.getDisplayName() ?? 'Add Your Name',
+          style: TextStyle(
+            color: Color(0xFF191919),
+            fontSize: 24,
+            fontFamily: 'Roboto',
+            height: 0.06,
+            letterSpacing: -0.14,
+          ),
+        ),
+        const SizedBox(height: 18),
+        // Status
+        Container(
+          padding: const EdgeInsets.only(right: 49),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Hero(
-                tag: 'profile-avatar',
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Theme.of(
-                    context,
-                  ).primaryColor.withValues(alpha: 0.1),
-                  backgroundImage: profile?.avatarUrl != null
-                      ? (profile!.avatarUrl!.startsWith('assets/')
-                            ? AssetImage(profile.avatarUrl!) as ImageProvider
-                            : NetworkImage(profile.avatarUrl!))
-                      : null,
-                  child: profile?.avatarUrl == null
-                      ? Icon(
-                          Icons.person,
-                          size: 50,
-                          color: Theme.of(context).primaryColor,
-                        )
-                      : null,
-                ),
-              ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: GestureDetector(
-                  onTap: () => context.push('/profile/photo'),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).primaryColor,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        width: 3,
-                      ),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt,
-                      color: Colors.white,
-                      size: 16,
-                    ),
-                  ),
+              Text(
+                'Active Now • Level 15 • Member 2y',
+                style: TextStyle(
+                  color: Color(0xFF179F4B),
+                  fontSize: 16,
+                  fontFamily: 'Inter',
+                  height: 0.09,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Text(
-            profile?.getDisplayName() ?? 'Add Your Name',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          if (profile?.bio != null) ...[
-            const SizedBox(height: 8),
-            Text(
-              profile!.bio!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildStatItem(context, 'Games', '12'),
-              _buildStatItem(context, 'Wins', '8'),
-              _buildStatItem(
-                context,
-                'My Rating',
-                _myAverageRating > 0
-                    ? _myAverageRating.toStringAsFixed(1)
-                    : '—',
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(BuildContext context, String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
         ),
       ],
     );
@@ -330,9 +483,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               const SizedBox(width: 8),
               Text(
                 'Profile Completion',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               const Spacer(),
               Text(
@@ -347,7 +501,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           const SizedBox(height: 12),
           LinearProgressIndicator(
             value: completion / 100,
-            backgroundColor: Colors.grey[300],
+            backgroundColor: AppColors.stroke(context),
             valueColor: AlwaysStoppedAnimation<Color>(
               Theme.of(context).primaryColor,
             ),
@@ -395,9 +549,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             children: [
               Text(
                 'Basic Information',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               const Spacer(),
               IconButton(
@@ -440,10 +595,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
+          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+            child: Text(
+              text,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: AppColors.bodyTxt(context),
+              ),
+            ),
           ),
         ],
       ),
@@ -463,9 +623,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             children: [
               Text(
                 'Sports Profiles',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               const Spacer(),
               TextButton(
@@ -555,9 +716,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             const SizedBox(height: 12),
             Text(
               sport.sportName,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -572,9 +734,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             const SizedBox(height: 8),
             Text(
               '${sport.yearsPlaying} years',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
             if (sport.achievements.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -632,9 +794,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         children: [
           Text(
             'Activity Summary',
-            style: Theme.of(
-              context,
-            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 16),
           Row(
@@ -711,9 +874,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           textAlign: TextAlign.center,
         ),
       ],
@@ -724,19 +887,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
+        color: AppColors.sectionBg(context),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        border: Border.all(color: AppColors.stroke(context)),
       ),
       child: Column(
         children: [
-          Icon(Icons.info_outline, color: Colors.grey[400], size: 32),
+          Icon(
+            Icons.info_outline,
+            color: AppColors.disabledTxt(context),
+            size: 32,
+          ),
           const SizedBox(height: 8),
           Text(
             message,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
         ],

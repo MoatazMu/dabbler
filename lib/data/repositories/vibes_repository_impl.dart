@@ -17,7 +17,7 @@ class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
   static const _table = 'post_vibes';
 
   @override
-  Future<Result<Vibe?>> getForPost(String postId) async {
+  Future<Result<Vibe?, Failure>> getForPost(String postId) async {
     return guard<Vibe?>(() async {
       final rows = await _db
           .from(_table)
@@ -32,7 +32,7 @@ class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
   }
 
   @override
-  Future<Result<Map<String, int>>> countsForPost(String postId) async {
+  Future<Result<Map<String, int>, Failure>> countsForPost(String postId) async {
     return guard<Map<String, int>>(() async {
       final rows = await _db
           .from(_table)
@@ -49,13 +49,13 @@ class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
   }
 
   @override
-  Future<Result<void>> setVibe({
+  Future<Result<void, Failure>> setVibe({
     required String postId,
     required String vibe,
   }) async {
     return guard<void>(() async {
       if (postId.isEmpty || vibe.isEmpty) {
-        throw Failure.badRequest('postId and vibe are required');
+        throw const ValidationFailure(message: 'postId and vibe are required');
       }
 
       // Conservative, RLS-safe approach:
@@ -72,9 +72,10 @@ class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
   }
 
   @override
-  Future<Result<void>> clearVibe(String postId) async {
+  Future<Result<void, Failure>> clearVibe(String postId) async {
     return guard<void>(() async {
-      if (postId.isEmpty) throw Failure.badRequest('postId is required');
+      if (postId.isEmpty)
+        throw const ValidationFailure(message: 'postId is required');
       await _db.from(_table).delete().eq('post_id', postId);
     });
   }

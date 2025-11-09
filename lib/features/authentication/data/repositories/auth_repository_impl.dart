@@ -137,7 +137,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Result<void, Failure>> signOut() async {
-    final result = await guardResult<void>(() async {
+    final result = await guardResult<void, Failure>(() async {
       await remoteDataSource.signOut();
       _cachedUser = null;
     });
@@ -193,7 +193,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Result<void, Failure>> resetPassword({required String email}) async {
-    return guardResult<void>(() async {
+    return guardResult<void, Failure>(() async {
       try {
         await remoteDataSource.resetPassword(email: email);
       } on AuthException catch (e) {
@@ -206,7 +206,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Result<void, Failure>> updatePassword({
     required String newPassword,
   }) async {
-    return guardResult<void>(() async {
+    return guardResult<void, Failure>(() async {
       try {
         await remoteDataSource.updatePassword(newPassword: newPassword);
       } on WeakPasswordException {

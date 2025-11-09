@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import 'package:dabbler/core/fp/failure.dart';
@@ -13,7 +12,7 @@ class CircleRepositoryImpl implements CircleRepository {
   SupabaseClient get _db => svc.client;
 
   @override
-  Future<Result<List<CircleContact>>> circleList() async {
+  Future<Result<List<CircleContact>, Failure>> circleList() async {
     try {
       final rows = await _db.rpc('rpc_circle_list');
       if (rows is List) {
@@ -21,35 +20,34 @@ class CircleRepositoryImpl implements CircleRepository {
             .cast<Map<String, dynamic>>()
             .map(CircleContact.fromJson)
             .toList();
-        return right(list);
+        return Ok(list);
       }
-      return left(
+      return Err(
         ServerFailure(message: 'rpc_circle_list returned unexpected shape'),
       );
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<List<Map<String, dynamic>>>> circleView({
+  Future<Result<List<Map<String, dynamic>>, Failure>> circleView({
     int? limit,
     int? offset,
   }) async {
     try {
-      var q = _db.from('v_circle').select();
-      if (limit != null && offset != null) {
-        q = q.range(offset, offset + limit - 1);
-      }
+      final dynamic q = limit != null && offset != null
+          ? _db.from('v_circle').select().range(offset, offset + limit - 1)
+          : _db.from('v_circle').select();
       final rows = await q;
-      return right(rows.cast<Map<String, dynamic>>());
+      return Ok(rows.cast<Map<String, dynamic>>());
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<List<Map<String, dynamic>>>> circleFeed({
+  Future<Result<List<Map<String, dynamic>>, Failure>> circleFeed({
     int limit = 30,
     int offset = 0,
   }) async {
@@ -59,14 +57,14 @@ class CircleRepositoryImpl implements CircleRepository {
           .select()
           // no ordering assumptions; keep pagination simple
           .range(offset, offset + limit - 1);
-      return right(rows.cast<Map<String, dynamic>>());
+      return Ok(rows.cast<Map<String, dynamic>>());
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Stream<Result<List<Map<String, dynamic>>>> circleFeedStream({
+  Stream<Result<List<Map<String, dynamic>>, Failure>> circleFeedStream({
     int limit = 30,
     int offset = 0,
   }) async* {
@@ -76,56 +74,57 @@ class CircleRepositoryImpl implements CircleRepository {
     try {
       final uid = svc.authUserId();
       if (uid == null) {
-        yield left(const AuthFailure(message: 'Not authenticated'));
+        yield Err(const AuthFailure(message: 'Not authenticated'));
         return;
       }
 
       // Start with an initial fetch
       yield await circleFeed(limit: limit, offset: offset);
 
-      final edgesStream = _db
-          .from('friend_edges')
-          .stream(primaryKey: ['id'])
-          .or('user_a.eq.$uid,user_b.eq.$uid');
+      // Note: .or() is not available on stream builder in newer Supabase versions
+      // We'll stream all friend_edges changes for now (RLS will filter to user's edges)
+      final edgesStream = _db.from('friend_edges').stream(primaryKey: ['id']);
 
       await for (final _ in edgesStream) {
         yield await circleFeed(limit: limit, offset: offset);
       }
     } catch (e) {
-      yield left(svc.mapPostgrestError(e));
+      yield Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<List<Map<String, dynamic>>>> friendRequestsInbox() async {
+  Future<Result<List<Map<String, dynamic>>, Failure>>
+  friendRequestsInbox() async {
     try {
       final rows = await _db.rpc('rpc_friend_requests_inbox');
-      if (rows is List) return right(rows.cast<Map<String, dynamic>>());
-      return left(ServerFailure(message: 'Unexpected inbox shape'));
+      if (rows is List) return Ok(rows.cast<Map<String, dynamic>>());
+      return Err(ServerFailure(message: 'Unexpected inbox shape'));
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<List<Map<String, dynamic>>>> friendRequestsOutbox() async {
+  Future<Result<List<Map<String, dynamic>>, Failure>>
+  friendRequestsOutbox() async {
     try {
       final rows = await _db.rpc('rpc_friend_requests_outbox');
-      if (rows is List) return right(rows.cast<Map<String, dynamic>>());
-      return left(ServerFailure(message: 'Unexpected outbox shape'));
+      if (rows is List) return Ok(rows.cast<Map<String, dynamic>>());
+      return Err(ServerFailure(message: 'Unexpected outbox shape'));
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<List<Map<String, dynamic>>>> squadCards({
+  Future<Result<List<Map<String, dynamic>>, Failure>> squadCards({
     String? squadId,
     int? limit,
     int? offset,
   }) async {
     try {
-      var q = _db.from('v_squad_card').select();
+      dynamic q = _db.from('v_squad_card').select();
       if (squadId != null) {
         q = q.eq('id', squadId); // best-effort generic filter
       }
@@ -133,19 +132,21 @@ class CircleRepositoryImpl implements CircleRepository {
         q = q.range(offset, offset + limit - 1);
       }
       final rows = await q;
-      return right(rows.cast<Map<String, dynamic>>());
+      return Ok(rows.cast<Map<String, dynamic>>());
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<List<Map<String, dynamic>>>> squadDetail(String squadId) async {
+  Future<Result<List<Map<String, dynamic>>, Failure>> squadDetail(
+    String squadId,
+  ) async {
     try {
       final rows = await _db.from('v_squad_detail').select().eq('id', squadId);
-      return right(rows.cast<Map<String, dynamic>>());
+      return Ok(rows.cast<Map<String, dynamic>>());
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 }

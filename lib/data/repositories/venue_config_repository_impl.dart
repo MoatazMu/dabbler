@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/result.dart';
@@ -15,7 +16,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
   SupabaseClient get _db => svc.client;
 
   @override
-  Future<Result<List<VenueSpace>>> listActiveSpaces({
+  Future<Result<List<VenueSpace>, Failure>> listActiveSpaces({
     String? venueId,
     int limit = 100,
   }) async {
@@ -38,7 +39,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<List<OpeningHour>>> getOpeningHours(String venueSpaceId) async {
+  Future<Result<List<OpeningHour>, Failure>> getOpeningHours(String venueSpaceId) async {
     return guard<List<OpeningHour>>(() async {
       // RLS: public read (hours_public_read).
       final rows = await _db
@@ -52,7 +53,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<List<SpacePrice>>> getActivePrices(String venueSpaceId) async {
+  Future<Result<List<SpacePrice>, Failure>> getActivePrices(String venueSpaceId) async {
     return guard<List<SpacePrice>>(() async {
       // RLS: public read but only is_active=true (prices_public_read).
       final rows = await _db
@@ -67,7 +68,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<VenueSpace>> upsertSpace(VenueSpace space) async {
+  Future<Result<VenueSpace, Failure>> upsertSpace(VenueSpace space) async {
     return guard<VenueSpace>(() async {
       // RLS: write allowed when user is venue admin/manager (spaces_manage / vspaces_write).
       final row = await _db
@@ -81,7 +82,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<OpeningHour>> upsertOpeningHour(OpeningHour hour) async {
+  Future<Result<OpeningHour, Failure>> upsertOpeningHour(OpeningHour hour) async {
     return guard<OpeningHour>(() async {
       // RLS: write allowed when user is venue admin/manager (hours_manage).
       final row = await _db
@@ -95,7 +96,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<SpacePrice>> upsertSpacePrice(SpacePrice price) async {
+  Future<Result<SpacePrice, Failure>> upsertSpacePrice(SpacePrice price) async {
     return guard<SpacePrice>(() async {
       // RLS: write allowed when user is venue admin/manager (vprices_write / prices_manage).
       final row = await _db
@@ -109,7 +110,7 @@ class VenueConfigRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<VenueSpace>> setSpaceActive({
+  Future<Result<VenueSpace, Failure>> setSpaceActive({
     required String spaceId,
     required bool isActive,
   }) async {

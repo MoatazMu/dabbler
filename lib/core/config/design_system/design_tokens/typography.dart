@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 /// Typography tokens following Ant Design hierarchy while maintaining Dabbler's brand style
 class DabblerTypography {
   // Font Families
-  static const String primaryFontFamily = 'Inter';
-  static const String displayFontFamily = 'Poppins';
+  static const String primaryFontFamily = 'Roboto';
+  static const String displayFontFamily = 'Roboto';
 
   // Base Font Sizes (Following 8pt Grid)
   static const double _baseFontSize = 16.0;

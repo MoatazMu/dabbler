@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/result.dart';
@@ -17,7 +18,7 @@ class AuditSafetyRepositoryImpl extends BaseRepository
   String? get _uid => _db.auth.currentUser?.id;
 
   @override
-  Future<Result<AbuseFlag>> submitPostReport({
+  Future<Result<AbuseFlag, Failure>> submitPostReport({
     required String postId,
     String? reason,
     String? details,
@@ -45,7 +46,7 @@ class AuditSafetyRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<List<AbuseFlag>>> getMyReports({int limit = 50}) async {
+  Future<Result<List<AbuseFlag>, Failure>> getMyReports({int limit = 50}) async {
     return guard<List<AbuseFlag>>(() async {
       final uid = _uid;
       if (uid == null) throw AuthException('Not authenticated');
@@ -65,7 +66,7 @@ class AuditSafetyRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<List<AbuseFlag>>> getAllReports({
+  Future<Result<List<AbuseFlag>, Failure>> getAllReports({
     int limit = 100,
     DateTime? since,
   }) async {

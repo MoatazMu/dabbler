@@ -38,12 +38,12 @@ class SquadsRepositoryImpl implements SquadsRepository {
     return null;
   }
 
-  Result<T> _unexpected<T>(String message) =>
-      left(ServerFailure(message: message));
+  Result<T, Failure> _unexpected<T>(String message) =>
+      Err(ServerFailure(message: message));
 
   /// Relies on RLS policy `squads_insert_self`.
   @override
-  Future<Result<String>> createSquad({
+  Future<Result<String, Failure>> createSquad({
     required String sport,
     required String name,
     String? bio,
@@ -55,7 +55,7 @@ class SquadsRepositoryImpl implements SquadsRepository {
   }) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure(message: 'Not authenticated'));
+      return Err(const AuthFailure(message: 'Not authenticated'));
     }
 
     try {
@@ -76,19 +76,19 @@ class SquadsRepositoryImpl implements SquadsRepository {
 
         final id = _extractId(response);
         if (id != null) {
-          return right(id);
+          return Ok(id);
         }
         if (response is Map && response['data'] is Map) {
           final data = Map<String, dynamic>.from(response['data'] as Map);
           final nestedId = data['id'] as String?;
           if (nestedId != null) {
-            return right(nestedId);
+            return Ok(nestedId);
           }
         }
         return _unexpected('rpc_squad_create returned no identifier');
       } on PostgrestException catch (error) {
         if (!_isRpcMissing(error, 'squad_create')) {
-          return left(svc.mapPostgrestError(error));
+          return Err(svc.mapPostgrestError(error));
         }
         final payload = <String, dynamic>{
           'sport': sport,
@@ -114,30 +114,30 @@ class SquadsRepositoryImpl implements SquadsRepository {
         if (id == null) {
           return _unexpected('Insert squads returned no identifier');
         }
-        return right(id);
+        return Ok(id);
       }
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `squads_read`.
   @override
-  Future<Result<Squad>> getSquadById(String id) async {
+  Future<Result<Squad, Failure>> getSquadById(String id) async {
     try {
       final row = await _db.from('squads').select().eq('id', id).maybeSingle();
       if (row == null) {
-        return left(const NotFoundFailure(message: 'Squad not found'));
+        return Err(const NotFoundFailure(message: 'Squad not found'));
       }
-      return right(Squad.fromJson(Map<String, dynamic>.from(row as Map)));
+      return Ok(Squad.fromJson(Map<String, dynamic>.from(row as Map)));
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `squads_read_public`.
   @override
-  Future<Result<List<Squad>>> listDiscoverableSquads({
+  Future<Result<List<Squad>, Failure>> listDiscoverableSquads({
     String? sport,
     String? city,
     String? search,
@@ -166,16 +166,16 @@ class SquadsRepositoryImpl implements SquadsRepository {
                 Squad.fromJson(Map<String, dynamic>.from(row as Map)),
           )
           .toList(growable: false);
-      return right(squads);
+      return Ok(squads);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `squad_members_read`.
   @override
-  Stream<Result<List<SquadMember>>> membersStream(String squadId) {
-    final controller = StreamController<Result<List<SquadMember>>>.broadcast();
+  Stream<Result<List<SquadMember>, Failure>> membersStream(String squadId) {
+    final controller = StreamController<Result<List<SquadMember>, Failure>>.broadcast();
     StreamSubscription<List<dynamic>>? subscription;
 
     void emitError(Object error) {
@@ -216,7 +216,7 @@ class SquadsRepositoryImpl implements SquadsRepository {
 
   /// Relies on RLS policy `squad_invites_owner_write` via RPC.
   @override
-  Future<Result<String>> inviteToSquad({
+  Future<Result<String, Failure>> inviteToSquad({
     required String squadId,
     required String toProfileId,
     DateTime? expiresAt,
@@ -233,16 +233,16 @@ class SquadsRepositoryImpl implements SquadsRepository {
         );
         final id = _extractId(response);
         if (id != null) {
-          return right(id);
+          return Ok(id);
         }
         return _unexpected('rpc_squad_invite returned no identifier');
       } on PostgrestException catch (error) {
         if (!_isRpcMissing(error, 'squad_invite')) {
-          return left(svc.mapPostgrestError(error));
+          return Err(svc.mapPostgrestError(error));
         }
         final uid = svc.authUserId();
         if (uid == null) {
-          return left(const AuthFailure(message: 'Not authenticated'));
+          return Err(const AuthFailure(message: 'Not authenticated'));
         }
         final profileRow = await _db
             .from('profiles')
@@ -300,16 +300,16 @@ class SquadsRepositoryImpl implements SquadsRepository {
         if (id == null) {
           return _unexpected('Insert squad_invites returned no identifier');
         }
-        return right(id);
+        return Ok(id);
       }
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy enforced inside `rpc_squad_respond_invite`.
   @override
-  Future<Result<String>> respondToInvite({
+  Future<Result<String, Failure>> respondToInvite({
     required String inviteId,
     required String action,
     required String profileId,
@@ -324,15 +324,15 @@ class SquadsRepositoryImpl implements SquadsRepository {
         },
       );
       final message = response is String ? response : 'ok';
-      return right(message);
+      return Ok(message);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy encapsulated within `rpc_squad_request_join`.
   @override
-  Future<Result<String>> requestJoin({
+  Future<Result<String, Failure>> requestJoin({
     required String squadId,
     required String profileId,
     String? message,
@@ -348,15 +348,15 @@ class SquadsRepositoryImpl implements SquadsRepository {
           'p_link_token': linkToken,
         },
       );
-      return right(response is String ? response : 'ok');
+      return Ok(response is String ? response : 'ok');
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `squad_members_owner_captain_write` via RPC.
   @override
-  Future<Result<String>> addMember({
+  Future<Result<String, Failure>> addMember({
     required String squadId,
     required String profileId,
     bool asCaptain = false,
@@ -370,15 +370,15 @@ class SquadsRepositoryImpl implements SquadsRepository {
           'p_as_captain': asCaptain,
         },
       );
-      return right(response is String ? response : 'ok');
+      return Ok(response is String ? response : 'ok');
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `squad_members_owner_captain_write` via RPC.
   @override
-  Future<Result<String>> removeMember({
+  Future<Result<String, Failure>> removeMember({
     required String squadId,
     required String profileId,
   }) async {
@@ -387,15 +387,15 @@ class SquadsRepositoryImpl implements SquadsRepository {
         'rpc_squad_remove_member',
         params: {'p_squad_id': squadId, 'p_profile_id': profileId},
       );
-      return right(response is String ? response : 'ok');
+      return Ok(response is String ? response : 'ok');
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `squad_members_owner_captain_write` via RPC.
   @override
-  Future<Result<String>> setCaptain({
+  Future<Result<String, Failure>> setCaptain({
     required String squadId,
     required String profileId,
     required bool isCaptain,
@@ -409,18 +409,18 @@ class SquadsRepositoryImpl implements SquadsRepository {
           'p_is_captain': isCaptain,
         },
       );
-      return right(response is String ? response : 'ok');
+      return Ok(response is String ? response : 'ok');
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `squad_invites_read`.
   @override
-  Future<Result<List<SquadInvite>>> mySquadInvites() async {
+  Future<Result<List<SquadInvite>, Failure>> mySquadInvites() async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure(message: 'Not authenticated'));
+      return Err(const AuthFailure(message: 'Not authenticated'));
     }
     try {
       final rows = await _db
@@ -434,15 +434,15 @@ class SquadsRepositoryImpl implements SquadsRepository {
                 SquadInvite.fromJson(Map<String, dynamic>.from(row as Map)),
           )
           .toList(growable: false);
-      return right(invites);
+      return Ok(invites);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `squad_invites_read`.
   @override
-  Future<Result<List<SquadInvite>>> squadInvites(String squadId) async {
+  Future<Result<List<SquadInvite>, Failure>> squadInvites(String squadId) async {
     try {
       final rows = await _db
           .from('squad_invites')
@@ -455,15 +455,15 @@ class SquadsRepositoryImpl implements SquadsRepository {
                 SquadInvite.fromJson(Map<String, dynamic>.from(row as Map)),
           )
           .toList(growable: false);
-      return right(invites);
+      return Ok(invites);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policy `squad_members_owner_captain_write` for visibility via join request RPC/queries.
   @override
-  Future<Result<List<SquadJoinRequest>>> squadJoinRequests(
+  Future<Result<List<SquadJoinRequest>, Failure>> squadJoinRequests(
     String squadId,
   ) async {
     try {
@@ -479,18 +479,18 @@ class SquadsRepositoryImpl implements SquadsRepository {
             ),
           )
           .toList(growable: false);
-      return right(requests);
+      return Ok(requests);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policies `squads_read` and `squad_members_read`.
   @override
-  Future<Result<List<Squad>>> mySquads() async {
+  Future<Result<List<Squad>, Failure>> mySquads() async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure(message: 'Not authenticated'));
+      return Err(const AuthFailure(message: 'Not authenticated'));
     }
     try {
       final ownedResponse = await _db
@@ -546,16 +546,16 @@ class SquadsRepositoryImpl implements SquadsRepository {
       final squads = combined.values
           .map((row) => Squad.fromJson(Map<String, dynamic>.from(row)))
           .toList(growable: false);
-      return right(squads);
+      return Ok(squads);
     } catch (error) {
-      return left(svc.mapPostgrestError(error));
+      return Err(svc.mapPostgrestError(error));
     }
   }
 
   /// Relies on RLS policies `squads_read` and `squad_members_read` for realtime updates.
   @override
-  Stream<Result<List<Squad>>> mySquadsStream() {
-    final controller = StreamController<Result<List<Squad>>>.broadcast();
+  Stream<Result<List<Squad>, Failure>> mySquadsStream() {
+    final controller = StreamController<Result<List<Squad>, Failure>>.broadcast();
     StreamSubscription<List<dynamic>>? ownerSubscription;
     StreamSubscription<List<dynamic>>? memberSubscription;
 

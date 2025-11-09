@@ -115,10 +115,6 @@ class PostActionsWidget extends StatelessWidget {
 
   Widget _buildReactionPicker(ThemeData theme) {
     return PopupMenuButton<ReactionType>(
-      icon: Icon(
-        Icons.add_reaction_outlined,
-        color: theme.colorScheme.onSurfaceVariant,
-      ),
       onSelected: onReaction,
       itemBuilder: (context) => [
         _buildReactionMenuItem(theme, ReactionType.like, '👍', 'Like'),

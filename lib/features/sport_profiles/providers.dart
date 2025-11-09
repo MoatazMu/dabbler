@@ -1,3 +1,5 @@
+import 'package:dabbler/core/fp/failure.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:dabbler/core/fp/result.dart';
@@ -14,11 +16,11 @@ final sportProfilesRepositoryProvider = Provider<SportProfilesRepository>((
 });
 
 final mySportProfilesStreamProvider =
-    StreamProvider<Result<List<SportProfile>>>((ref) {
+    StreamProvider<Result<List<SportProfile>, Failure>>((ref) {
       return ref.watch(sportProfilesRepositoryProvider).watchMySports();
     });
 
-final mySportProfilesProvider = FutureProvider<Result<List<SportProfile>>>((
+final mySportProfilesProvider = FutureProvider<Result<List<SportProfile>, Failure>>((
   ref,
 ) async {
   return ref.watch(sportProfilesRepositoryProvider).getMySports();

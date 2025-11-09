@@ -110,9 +110,7 @@ mixin AnalyticsTrackingMixin {
       venueId: venueId,
       venueName: venueName,
       sportType: sportType,
-      distanceKm: distanceKm,
-      price: price,
-      selectionSource: source,
+      selectionMethod: source,
     );
   }
 
@@ -120,7 +118,7 @@ mixin AnalyticsTrackingMixin {
   Future<void> trackScreen(String screenName, [String? screenClass]) {
     return _analytics.trackScreenView(
       screenName: screenName,
-      screenClass: screenClass,
+      properties: screenClass != null ? {'screen_class': screenClass} : null,
     );
   }
 
@@ -146,7 +144,7 @@ mixin AnalyticsTrackingMixin {
       errorType: errorType,
       errorMessage: errorMessage,
       stackTrace: stackTrace,
-      screen: screen,
+      context: screen != null ? {'screen': screen} : null,
     );
   }
 
@@ -159,9 +157,12 @@ mixin AnalyticsTrackingMixin {
   ]) {
     return _analytics.trackGameEngagement(
       gameId: gameId,
+      sportType: '', // TODO: Add sport type parameter
       action: action,
-      timeSpent: timeSpent,
-      source: source,
+      metadata: {
+        'time_spent': timeSpent.inSeconds,
+        if (source != null) 'source': source,
+      },
     );
   }
 }
@@ -330,12 +331,15 @@ class SearchAnalytics {
     Map<String, dynamic>? filters,
     String? location,
   }) {
+    final filterData = filters ?? {};
+    if (location != null) {
+      filterData['location'] = location;
+    }
     return AnalyticsService().trackGameSearch(
       query: query,
       resultsCount: resultsCount,
       sportType: sportType,
-      filters: filters ?? {},
-      location: location,
+      filters: filterData,
     );
   }
 
@@ -348,7 +352,7 @@ class SearchAnalytics {
     return AnalyticsService().trackSearchResultClicked(
       gameId: gameId,
       query: query,
-      resultPosition: position,
+      position: position,
       sportType: sportType,
     );
   }
@@ -398,9 +402,8 @@ class CheckInAnalytics {
       ),
       AnalyticsService().trackCheckInAttempt(
         gameId: gameId,
-        method: method,
         success: successful,
-        attemptNumber: attemptNumber,
+        failureReason: error,
       ),
     ]);
   }
@@ -435,8 +438,7 @@ class PerformanceAnalytics {
     return AnalyticsService().trackPerformanceMetric(
       metricName: 'screen_load_time',
       value: loadTime.inMilliseconds.toDouble(),
-      unit: 'ms',
-      additionalData: {'screen_name': screenName},
+      tags: {'screen_name': screenName, 'unit': 'ms'},
     );
   }
 
@@ -447,8 +449,7 @@ class PerformanceAnalytics {
     return AnalyticsService().trackPerformanceMetric(
       metricName: 'api_response_time',
       value: responseTime.inMilliseconds.toDouble(),
-      unit: 'ms',
-      additionalData: {'endpoint': endpoint},
+      tags: {'endpoint': endpoint, 'unit': 'ms'},
     );
   }
 
@@ -456,8 +457,7 @@ class PerformanceAnalytics {
     return AnalyticsService().trackPerformanceMetric(
       metricName: 'image_load_time',
       value: loadTime.inMilliseconds.toDouble(),
-      unit: 'ms',
-      additionalData: {'image_url': imageUrl},
+      tags: {'image_url': imageUrl, 'unit': 'ms'},
     );
   }
 
@@ -465,7 +465,7 @@ class PerformanceAnalytics {
     return AnalyticsService().trackPerformanceMetric(
       metricName: 'memory_usage',
       value: memoryMb,
-      unit: 'mb',
+      tags: {'unit': 'mb'},
     );
   }
 }

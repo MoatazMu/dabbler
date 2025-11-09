@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/games/game_model.dart';
 import 'package:dabbler/data/models/games/game.dart' as domain;
 import 'base_repository.dart';
@@ -15,7 +15,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   static const String table = 'games';
 
   @override
-  Future<Result<domain.Game>> createGame({
+  Future<Result<domain.Game, Failure>> createGame({
     required String gameType,
     required String sport,
     String? title,
@@ -34,30 +34,30 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   }) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure(message: 'Not signed in'));
+      return Err(const AuthFailure(message: 'Not signed in'));
     }
 
     if (capacity < 2 || capacity > 64) {
-      return left(
+      return Err(
         const ValidationFailure(message: 'Capacity must be between 2 and 64'),
       );
     }
     if (minSkill != null && (minSkill < 1 || minSkill > 10)) {
-      return left(
+      return Err(
         const ValidationFailure(
           message: 'Minimum skill must be between 1 and 10',
         ),
       );
     }
     if (maxSkill != null && (maxSkill < 1 || maxSkill > 10)) {
-      return left(
+      return Err(
         const ValidationFailure(
           message: 'Maximum skill must be between 1 and 10',
         ),
       );
     }
     if (minSkill != null && maxSkill != null && minSkill > maxSkill) {
-      return left(
+      return Err(
         const ValidationFailure(
           message: 'Minimum skill cannot exceed maximum skill',
         ),
@@ -85,22 +85,24 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
     };
 
     try {
-      final response = await svc.maybeSingle(
-        svc.from(table).insert(payload).select(),
-      );
+      final response = await svc
+          .from(table)
+          .insert(payload)
+          .select()
+          .maybeSingle();
 
       if (response == null) {
-        return left(const UnexpectedFailure(message: 'Failed to create game'));
+        return Err(const UnexpectedFailure(message: 'Failed to create game'));
       }
 
-      return right(GameModel.fromJson(response));
+      return Ok(GameModel.fromJson(response));
     } catch (error, stackTrace) {
-      return left(svc.mapGeneric(error, stackTrace));
+      return Err(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Future<Result<void>> updateGame(
+  Future<Result<void, Failure>> updateGame(
     String gameId, {
     String? title,
     String? venueSpaceId,
@@ -116,30 +118,30 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   }) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure(message: 'Not signed in'));
+      return Err(const AuthFailure(message: 'Not signed in'));
     }
 
     if (capacity != null && (capacity < 2 || capacity > 64)) {
-      return left(
+      return Err(
         const ValidationFailure(message: 'Capacity must be between 2 and 64'),
       );
     }
     if (minSkill != null && (minSkill < 1 || minSkill > 10)) {
-      return left(
+      return Err(
         const ValidationFailure(
           message: 'Minimum skill must be between 1 and 10',
         ),
       );
     }
     if (maxSkill != null && (maxSkill < 1 || maxSkill > 10)) {
-      return left(
+      return Err(
         const ValidationFailure(
           message: 'Maximum skill must be between 1 and 10',
         ),
       );
     }
     if (minSkill != null && maxSkill != null && minSkill > maxSkill) {
-      return left(
+      return Err(
         const ValidationFailure(
           message: 'Minimum skill cannot exceed maximum skill',
         ),
@@ -182,7 +184,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
     }
 
     if (patch.isEmpty) {
-      return right(null);
+      return Ok(null);
     }
 
     try {
@@ -192,17 +194,20 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
           .eq('id', gameId)
           .eq('host_user_id', uid);
 
-      return right(null);
+      return Ok(null);
     } catch (error, stackTrace) {
-      return left(svc.mapGeneric(error, stackTrace));
+      return Err(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Future<Result<void>> cancelGame(String gameId, {String? reason}) async {
+  Future<Result<void, Failure>> cancelGame(
+    String gameId, {
+    String? reason,
+  }) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure(message: 'Not signed in'));
+      return Err(const AuthFailure(message: 'Not signed in'));
     }
 
     final payload = <String, dynamic>{
@@ -218,31 +223,33 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
           .eq('id', gameId)
           .eq('host_user_id', uid);
 
-      return right(null);
+      return Ok(null);
     } catch (error, stackTrace) {
-      return left(svc.mapGeneric(error, stackTrace));
+      return Err(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Future<Result<domain.Game>> getGameById(String gameId) async {
+  Future<Result<domain.Game, Failure>> getGameById(String gameId) async {
     try {
-      final response = await svc.maybeSingle(
-        svc.from(table).select().eq('id', gameId),
-      );
+      final response = await svc
+          .from(table)
+          .select()
+          .eq('id', gameId)
+          .maybeSingle();
 
       if (response == null) {
-        return left(const NotFoundFailure(message: 'Game not found'));
+        return Err(const NotFoundFailure(message: 'Game not found'));
       }
 
-      return right(GameModel.fromJson(response));
+      return Ok(GameModel.fromJson(response));
     } catch (error, stackTrace) {
-      return left(svc.mapGeneric(error, stackTrace));
+      return Err(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Future<Result<List<domain.Game>>> listDiscoverableGames({
+  Future<Result<List<domain.Game>, Failure>> listDiscoverableGames({
     String? sport,
     DateTime? from,
     DateTime? to,
@@ -253,7 +260,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
     int offset = 0,
   }) async {
     try {
-      var query = svc.from(table).select();
+      dynamic query = svc.from(table).select();
 
       if (sport != null) {
         query = query.eq('sport', sport);
@@ -262,7 +269,7 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
         query = query.gte('start_at', from.toIso8601String());
       }
       if (to != null) {
-        query = query.lte('end_at', to.toIso8601String());
+        query = query.lte('start_at', to.toIso8601String());
       }
       if (visibility != null) {
         query = query.eq('listing_visibility', visibility);
@@ -283,14 +290,14 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
       final games = rows
           .map((row) => GameModel.fromJson(row) as domain.Game)
           .toList();
-      return right(games);
+      return Ok(games);
     } catch (error, stackTrace) {
-      return left(svc.mapGeneric(error, stackTrace));
+      return Err(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Future<Result<List<domain.Game>>> listMyHostedGames({
+  Future<Result<List<domain.Game>, Failure>> listMyHostedGames({
     DateTime? from,
     DateTime? to,
     bool includeCancelled = false,
@@ -299,11 +306,11 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
   }) async {
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(const AuthFailure(message: 'Not signed in'));
+      return Err(const AuthFailure(message: 'Not signed in'));
     }
 
     try {
-      var query = svc.from(table).select().eq('host_user_id', uid);
+      dynamic query = svc.from(table).select().eq('host_user_id', uid);
 
       if (from != null) {
         query = query.gte('start_at', from.toIso8601String());
@@ -324,15 +331,16 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
       final games = rows
           .map((row) => GameModel.fromJson(row) as domain.Game)
           .toList();
-      return right(games);
+      return Ok(games);
     } catch (error, stackTrace) {
-      return left(svc.mapGeneric(error, stackTrace));
+      return Err(svc.mapGeneric(error, stackTrace));
     }
   }
 
   @override
-  Stream<Result<domain.Game>> watchGame(String gameId) {
-    final controller = StreamController<Result<domain.Game>>.broadcast();
+  Stream<Result<domain.Game, Failure>> watchGame(String gameId) {
+    final controller =
+        StreamController<Result<domain.Game, Failure>>.broadcast();
     RealtimeChannel? channel;
 
     Future<void> emitCurrent() async {
@@ -341,7 +349,9 @@ class GamesRepositoryImpl extends BaseRepository implements GamesRepository {
     }
 
     void emitError(Object error, [StackTrace? stackTrace]) {
-      controller.add(left(svc.mapGeneric(error, stackTrace)));
+      controller.add(
+        Err(svc.mapGeneric(error, stackTrace ?? StackTrace.current)),
+      );
     }
 
     controller.onListen = () {

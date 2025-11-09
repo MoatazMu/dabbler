@@ -1,4 +1,5 @@
 import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 import '../models/squad.dart';
 import '../models/squad_invite.dart';
@@ -13,7 +14,7 @@ import '../models/squad_member.dart';
 /// - Member mutations rely on `squad_members_owner_captain_write`.
 /// - Invite operations use `squad_invites_owner_write` and reads via `squad_invites_read`.
 abstract class SquadsRepository {
-  Future<Result<String>> createSquad({
+  Future<Result<String, Failure>> createSquad({
     required String sport,
     required String name,
     String? bio,
@@ -24,9 +25,9 @@ abstract class SquadsRepository {
     String? city,
   });
 
-  Future<Result<Squad>> getSquadById(String id);
+  Future<Result<Squad, Failure>> getSquadById(String id);
 
-  Future<Result<List<Squad>>> listDiscoverableSquads({
+  Future<Result<List<Squad>, Failure>> listDiscoverableSquads({
     String? sport,
     String? city,
     String? search,
@@ -34,51 +35,51 @@ abstract class SquadsRepository {
     int offset = 0,
   });
 
-  Stream<Result<List<SquadMember>>> membersStream(String squadId);
+  Stream<Result<List<SquadMember>, Failure>> membersStream(String squadId);
 
-  Future<Result<String>> inviteToSquad({
+  Future<Result<String, Failure>> inviteToSquad({
     required String squadId,
     required String toProfileId,
     DateTime? expiresAt,
   });
 
-  Future<Result<String>> respondToInvite({
+  Future<Result<String, Failure>> respondToInvite({
     required String inviteId,
     required String action,
     required String profileId,
   });
 
-  Future<Result<String>> requestJoin({
+  Future<Result<String, Failure>> requestJoin({
     required String squadId,
     required String profileId,
     String? message,
     String? linkToken,
   });
 
-  Future<Result<String>> addMember({
+  Future<Result<String, Failure>> addMember({
     required String squadId,
     required String profileId,
     bool asCaptain = false,
   });
 
-  Future<Result<String>> removeMember({
+  Future<Result<String, Failure>> removeMember({
     required String squadId,
     required String profileId,
   });
 
-  Future<Result<String>> setCaptain({
+  Future<Result<String, Failure>> setCaptain({
     required String squadId,
     required String profileId,
     required bool isCaptain,
   });
 
-  Future<Result<List<SquadInvite>>> mySquadInvites();
+  Future<Result<List<SquadInvite>, Failure>> mySquadInvites();
 
-  Future<Result<List<SquadInvite>>> squadInvites(String squadId);
+  Future<Result<List<SquadInvite>, Failure>> squadInvites(String squadId);
 
-  Future<Result<List<SquadJoinRequest>>> squadJoinRequests(String squadId);
+  Future<Result<List<SquadJoinRequest>, Failure>> squadJoinRequests(String squadId);
 
-  Future<Result<List<Squad>>> mySquads();
+  Future<Result<List<Squad>, Failure>> mySquads();
 
-  Stream<Result<List<Squad>>> mySquadsStream();
+  Stream<Result<List<Squad>, Failure>> mySquadsStream();
 }

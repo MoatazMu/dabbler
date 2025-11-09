@@ -108,11 +108,11 @@ class _MessageStatusIndicatorState extends State<MessageStatusIndicator>
 
     switch (_messageStatus) {
       case MessageStatus.sending:
-        return AppColors.textSecondary;
+        return Theme.of(context).colorScheme.onSurfaceVariant;
       case MessageStatus.sent:
-        return AppColors.textSecondary;
+        return Theme.of(context).colorScheme.onSurfaceVariant;
       case MessageStatus.delivered:
-        return AppColors.textSecondary;
+        return Theme.of(context).colorScheme.onSurfaceVariant;
       case MessageStatus.read:
         return AppColors.primary;
       case MessageStatus.failed:
@@ -349,7 +349,7 @@ class _DetailedMessageStatusIndicatorState
                         ? Icon(
                             Icons.person,
                             size: widget.size * 0.6,
-                            color: AppColors.textSecondary,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
                           )
                         : null,
                   ),

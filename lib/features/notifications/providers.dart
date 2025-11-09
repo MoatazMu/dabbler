@@ -1,3 +1,5 @@
+import 'package:dabbler/core/fp/failure.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -23,21 +25,21 @@ final notificationsStreamProvider =
 
 /// One-shot fetch (e.g., for pull-to-refresh).
 final notificationsLatestProvider =
-    FutureProvider.autoDispose<Result<List<AppNotification>>>((ref) async {
+    FutureProvider.autoDispose<Result<List<AppNotification>, Failure>>((ref) async {
       final repo = ref.read(notificationsRepositoryProvider);
       return repo.getLatest(limit: 50);
     });
 
 /// Mark a single notification as read.
 final markNotificationReadProvider = FutureProvider.family
-    .autoDispose<Result<int>, String>((ref, id) async {
+    .autoDispose<Result<int, Failure>, String>((ref, id) async {
       final repo = ref.read(notificationsRepositoryProvider);
       return repo.markAsRead(id);
     });
 
 /// Mark all notifications as read (optionally before a timestamp).
 final markAllNotificationsReadProvider = FutureProvider.family
-    .autoDispose<Result<int>, DateTime?>((ref, before) async {
+    .autoDispose<Result<int, Failure>, DateTime?>((ref, before) async {
       final repo = ref.read(notificationsRepositoryProvider);
       return repo.markAllAsRead(before: before);
     });

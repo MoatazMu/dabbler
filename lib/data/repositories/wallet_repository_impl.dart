@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/utils/json.dart';
@@ -12,7 +13,7 @@ class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
   const WalletRepositoryImpl(super.svc);
 
   @override
-  Future<Result<Wallet?>> getWallet() {
+  Future<Result<Wallet?, Failure>> getWallet() {
     return guard<Wallet?>(() async {
       // RLS should scope to the caller's row; we fetch one.
       final row = await svc.client
@@ -26,7 +27,7 @@ class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
   }
 
   @override
-  Future<Result<List<WalletLedgerEntry>>> getLedger({
+  Future<Result<List<WalletLedgerEntry>, Failure>> getLedger({
     int limit = 50,
     int offset = 0,
   }) {
@@ -42,7 +43,7 @@ class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
   }
 
   @override
-  Future<Result<List<Payout>>> getPayouts({int limit = 50, int offset = 0}) {
+  Future<Result<List<Payout>, Failure>> getPayouts({int limit = 50, int offset = 0}) {
     return guard<List<Payout>>(() async {
       final rows = await svc.client
           .from('payouts')

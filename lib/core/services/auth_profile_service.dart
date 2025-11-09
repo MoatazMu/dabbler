@@ -1,5 +1,4 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import 'package:dabbler/data/models/profile.dart';
@@ -42,8 +41,8 @@ class AuthProfileService {
   // =====================================================
 
   /// Get current user's profile
-  /// Returns Result<Profile> - use fold() to handle success/failure
-  Future<Result<Profile>> getMyProfile() async {
+  /// Returns Result<Profile, Failure> - use fold() to handle success/failure
+  Future<Result<Profile, Failure>> getMyProfile() async {
     if (!isAuthenticated) {
       return failure(const AuthFailure(message: 'User not authenticated'));
     }
@@ -52,20 +51,22 @@ class AuthProfileService {
   }
 
   /// Get profile by user ID
-  /// Returns Result<Profile> - use fold() to handle success/failure
-  Future<Result<Profile>> getProfileByUserId(String userId) async {
+  /// Returns Result<Profile, Failure> - use fold() to handle success/failure
+  Future<Result<Profile, Failure>> getProfileByUserId(String userId) async {
     return await _profilesRepository.getByUserId(userId);
   }
 
   /// Get public profile by username
-  /// Returns Result<Profile?> - profile may not exist
-  Future<Result<Profile?>> getPublicProfileByUsername(String username) async {
+  /// Returns Result<Profile?, Failure> - profile may not exist
+  Future<Result<Profile?, Failure>> getPublicProfileByUsername(
+    String username,
+  ) async {
     return await _profilesRepository.getPublicByUsername(username);
   }
 
   /// Watch current user's profile for real-time updates
-  /// Returns a stream that emits Result<Profile?> on changes
-  Stream<Result<Profile?>> watchMyProfile() {
+  /// Returns a stream that emits Result<Profile?, Failure> on changes
+  Stream<Result<Profile?, Failure>> watchMyProfile() {
     if (!isAuthenticated) {
       return Stream.value(
         failure(const AuthFailure(message: 'User not authenticated')),
@@ -107,7 +108,7 @@ class AuthProfileService {
   /// Update current user's profile
   /// This uses the legacy AuthService.updateUserProfile method
   /// TODO: Migrate to use ProfilesRepository.upsert instead
-  Future<Result<Map<String, dynamic>>> updateProfile({
+  Future<Result<Map<String, dynamic>, Failure>> updateProfile({
     String? displayName,
     String? username,
     String? bio,
@@ -158,7 +159,7 @@ class AuthProfileService {
   // =====================================================
 
   /// Sign out current user
-  Future<Result<void>> signOut() async {
+  Future<Result<void, Failure>> signOut() async {
     try {
       await _authService.signOut();
       return success(null);
@@ -168,7 +169,7 @@ class AuthProfileService {
   }
 
   /// Sign in with email and password
-  Future<Result<AuthResponse>> signInWithEmail({
+  Future<Result<AuthResponse, Failure>> signInWithEmail({
     required String email,
     required String password,
   }) async {
@@ -183,17 +184,15 @@ class AuthProfileService {
     }
   }
 
-  /// Sign up with email, password, and metadata
-  Future<Result<AuthResponse>> signUpWithEmailAndMetadata({
+  /// Sign up with email and password
+  Future<Result<AuthResponse, Failure>> signUpWithEmailAndPassword({
     required String email,
     required String password,
-    required Map<String, dynamic> metadata,
   }) async {
     try {
-      final response = await _authService.signUpWithEmailAndMetadata(
+      final response = await _authService.signUpWithEmailAndPassword(
         email: email,
         password: password,
-        metadata: metadata,
       );
       return success(response);
     } catch (e) {
@@ -202,7 +201,7 @@ class AuthProfileService {
   }
 
   /// Refresh auth session
-  Future<Result<AuthResponse?>> refreshSession() async {
+  Future<Result<AuthResponse?, Failure>> refreshSession() async {
     try {
       final response = await _authService.refreshSession();
       return success(response);
@@ -266,5 +265,5 @@ class AuthenticatedUserWithProfile {
 }
 
 // Helper functions to create Result values
-Result<T> success<T>(T value) => Right(value);
-Result<T> failure<T>(Failure error) => Left(error);
+Result<T, Failure> success<T>(T value) => Ok(value);
+Result<T, Failure> failure<T>(Failure error) => Err(error);

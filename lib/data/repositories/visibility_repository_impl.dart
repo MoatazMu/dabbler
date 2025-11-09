@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart';
+import 'package:dabbler/core/fp/failure.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -17,43 +18,43 @@ class VisibilityRepositoryImpl extends BaseRepository
   VisibilityRepositoryImpl(super.svc);
 
   @override
-  Future<Result<bool>> canViewOwner({
+  Future<Result<bool, Failure>> canViewOwner({
     required String ownerId,
     required String visibility,
   }) async {
     final viewer = svc.authUserId();
     if (viewer == null) {
-      return right(false);
+      return Ok(false);
     }
 
     if (viewer == ownerId) {
-      return right(true);
+      return Ok(true);
     }
 
     final adminResult = await isAdmin();
     final isViewerAdmin = adminResult.fold((_) => false, (value) => value);
     if (isViewerAdmin) {
-      return right(true);
+      return Ok(true);
     }
 
     switch (visibility) {
       case 'public':
-        return right(true);
+        return Ok(true);
       case 'hidden':
-        return right(false);
+        return Ok(false);
       case 'circle':
         final syncedResult = await areSynced(ownerId);
         return syncedResult.fold(
-          (_) => right(false),
-          (isSynced) => right(isSynced),
+          (_) => Ok(false),
+          (isSynced) => Ok(isSynced),
         );
       default:
-        return right(false);
+        return Ok(false);
     }
   }
 
   @override
-  Future<Result<bool>> canReadRow({
+  Future<Result<bool, Failure>> canReadRow({
     required String ownerId,
     required String visibility,
   }) {
@@ -61,10 +62,10 @@ class VisibilityRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<bool>> areSynced(String otherUserId) async {
+  Future<Result<bool, Failure>> areSynced(String otherUserId) async {
     final viewer = svc.authUserId();
     if (viewer == null) {
-      return right(false);
+      return Ok(false);
     }
 
     try {
@@ -79,19 +80,19 @@ class VisibilityRepositoryImpl extends BaseRepository
           .limit(1)
           .maybeSingle();
 
-      return right(response != null);
+      return Ok(response != null);
     } on PostgrestException {
-      return right(false);
+      return Ok(false);
     } catch (_) {
-      return right(false);
+      return Ok(false);
     }
   }
 
   @override
-  Future<Result<bool>> isAdmin() async {
+  Future<Result<bool, Failure>> isAdmin() async {
     final userId = svc.authUserId();
     if (userId == null) {
-      return right(false);
+      return Ok(false);
     }
 
     try {
@@ -102,11 +103,11 @@ class VisibilityRepositoryImpl extends BaseRepository
           .limit(1)
           .maybeSingle();
 
-      return right(response != null);
+      return Ok(response != null);
     } on PostgrestException {
-      return right(false);
+      return Ok(false);
     } catch (_) {
-      return right(false);
+      return Ok(false);
     }
   }
 }

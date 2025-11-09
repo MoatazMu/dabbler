@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:go_router/go_router.dart';
 import '../utils/constants/route_constants.dart';
-import '../themes/app_theme.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final IconData? actionIcon;
@@ -42,19 +41,27 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 end: Alignment.bottomCenter,
                 colors: isDark
                     ? [
-                        VioletShades.darkBackground.withValues(alpha: 0.85),
-                        VioletShades.darkBackground.withValues(alpha: 0.75),
+                        Theme.of(
+                          context,
+                        ).colorScheme.surface.withValues(alpha: 0.85),
+                        Theme.of(
+                          context,
+                        ).colorScheme.surface.withValues(alpha: 0.75),
                       ]
                     : [
-                        VioletShades.lightBackground.withValues(alpha: 0.85),
-                        VioletShades.lightBackground.withValues(alpha: 0.75),
+                        Theme.of(
+                          context,
+                        ).colorScheme.surface.withValues(alpha: 0.85),
+                        Theme.of(
+                          context,
+                        ).colorScheme.surface.withValues(alpha: 0.75),
                       ],
               ),
               border: Border(
                 bottom: BorderSide(
-                  color: isDark
-                      ? VioletShades.darkBorder.withValues(alpha: 0.15)
-                      : VioletShades.lightBorder.withValues(alpha: 0.3),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.outline.withValues(alpha: isDark ? 0.15 : 0.3),
                   width: 1,
                 ),
               ),
@@ -76,18 +83,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         Icon(
                           Iconsax.home_hashtag_copy,
                           size: 20,
-                          color: isDark
-                              ? Colors.white
-                              : VioletShades.lightTextPrimary,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         const SizedBox(width: 8),
                         Flexible(
                           child: Text(
                             'Home',
                             style: TextStyle(
-                              color: isDark
-                                  ? Colors.white
-                                  : VioletShades.lightTextPrimary,
+                              color: Theme.of(context).colorScheme.onSurface,
                               fontFamily: 'Inter',
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -225,17 +228,17 @@ class _AppBarIconButtonState extends State<_AppBarIconButton> {
         padding: const EdgeInsets.all(11),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          color: isDark
-              ? (_isPressed
-                    ? VioletShades.darkCardBackground.withValues(alpha: 0.9)
-                    : VioletShades.darkCardBackground.withValues(alpha: 0.7))
-              : (_isPressed
-                    ? VioletShades.lightCardBackground
-                    : VioletShades.lightCardBackground.withValues(alpha: 0.8)),
+          color: _isPressed
+              ? Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.9)
+              : Theme.of(context).colorScheme.surfaceContainer.withValues(
+                  alpha: isDark ? 0.7 : 0.8,
+                ),
           border: Border.all(
-            color: isDark
-                ? VioletShades.darkBorder.withValues(alpha: 0.4)
-                : VioletShades.lightBorder.withValues(alpha: 0.6),
+            color: Theme.of(
+              context,
+            ).colorScheme.outline.withValues(alpha: isDark ? 0.4 : 0.6),
             width: 1.5,
           ),
           boxShadow: _isPressed
@@ -251,9 +254,7 @@ class _AppBarIconButtonState extends State<_AppBarIconButton> {
         child: Icon(
           widget.icon,
           size: 22,
-          color: isDark
-              ? VioletShades.darkTextPrimary
-              : VioletShades.lightTextPrimary,
+          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );

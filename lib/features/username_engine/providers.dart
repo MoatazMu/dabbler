@@ -1,13 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:dabbler/core/fp/result.dart' as core;
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import 'package:dabbler/data/models/profile.dart';
 import '../../data/repositories/username_repository.dart';
 import '../../data/repositories/username_repository_impl.dart';
 
-typedef Result<T> = core.Result<T, Failure>;
 
 final usernameRepositoryProvider = Provider.autoDispose<UsernameRepository>((
   ref,
@@ -18,21 +17,21 @@ final usernameRepositoryProvider = Provider.autoDispose<UsernameRepository>((
 
 // availability
 final usernameAvailabilityProvider = FutureProvider.autoDispose
-    .family<Result<bool>, String>((ref, username) {
+    .family<Result<bool, Failure>, String>((ref, username) {
       final repo = ref.watch(usernameRepositoryProvider);
       return repo.isAvailable(username);
     });
 
 // exact fetch
 final profileByUsernameProvider = FutureProvider.autoDispose
-    .family<Result<Profile>, String>((ref, username) {
+    .family<Result<Profile, Failure>, String>((ref, username) {
       final repo = ref.watch(usernameRepositoryProvider);
       return repo.getByUsername(username);
     });
 
 // search
 final usernameSearchProvider = FutureProvider.autoDispose
-    .family<Result<List<Profile>>, ({String query, int limit, int offset})>((
+    .family<Result<List<Profile>, Failure>, ({String query, int limit, int offset})>((
       ref,
       args,
     ) {
@@ -46,7 +45,7 @@ final usernameSearchProvider = FutureProvider.autoDispose
 
 // set for profile id
 final setUsernameForProfileProvider = FutureProvider.autoDispose
-    .family<Result<Profile>, ({String profileId, String username})>((
+    .family<Result<Profile, Failure>, ({String profileId, String username})>((
       ref,
       args,
     ) {
@@ -59,7 +58,7 @@ final setUsernameForProfileProvider = FutureProvider.autoDispose
 
 // set for my profile type
 final setMyUsernameForTypeProvider = FutureProvider.autoDispose
-    .family<Result<Profile>, ({String profileType, String username})>((
+    .family<Result<Profile, Failure>, ({String profileType, String username})>((
       ref,
       args,
     ) {
@@ -72,7 +71,7 @@ final setMyUsernameForTypeProvider = FutureProvider.autoDispose
 
 // stream my profile of a type
 final myProfileTypeStreamProvider = StreamProvider.autoDispose
-    .family<Result<Profile>, String>((ref, profileType) {
+    .family<Result<Profile, Failure>, String>((ref, profileType) {
       final repo = ref.watch(usernameRepositoryProvider);
       return repo.myProfileTypeStream(profileType);
     });

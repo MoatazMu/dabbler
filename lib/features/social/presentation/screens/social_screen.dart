@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/themes/app_theme.dart';
+import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 import '../widgets/feed/post_card.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
-import 'package:dabbler/widgets/custom_app_bar.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import '../../services/social_service.dart';
 import '../../services/social_rewards_handler.dart';
@@ -82,6 +81,7 @@ class _SocialScreenState extends State<SocialScreen> {
     }
   }
 
+  // ignore: unused_element
   Future<void> _refreshPosts() async {
     await _loadPosts();
   }
@@ -149,12 +149,8 @@ class _SocialScreenState extends State<SocialScreen> {
       );
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening comments for post $postId'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    // Navigate to PostDetailScreen to view and add comments
+    context.push('/social-post-detail/$postId');
   }
 
   void _sharePost(String postId) {
@@ -191,59 +187,74 @@ class _SocialScreenState extends State<SocialScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: const CustomAppBar(actionIcon: Iconsax.people_copy),
-      body: SafeArea(
-        bottom: false,
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.only(top: 0),
-          child: _buildFeed(),
+    return TwoSectionLayout(
+      category: 'social',
+      topPadding: EdgeInsets.zero,
+      bottomPadding: EdgeInsets.zero,
+      topSection: _buildTopSection(),
+      bottomSection: _buildFeed(),
+    );
+  }
+
+  Widget _buildTopSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Top row: Home icon
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 48, 20, 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Home icon button
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: IconButton(
+                  icon: const Text(
+                    '🏠',
+                    style: TextStyle(fontSize: 24, fontFamily: 'Roboto'),
+                  ),
+                  onPressed: () => context.go('/home'),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
+        // What's on your mind input
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: ThoughtsInput(onTap: _navigateToCreatePost),
+        ),
+      ],
     );
   }
 
   Widget _buildFeed() {
     if (_isLoading && _posts.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const SizedBox(
+        height: 200,
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
     if (_posts.isEmpty) {
       return _buildEmptyState();
     }
 
-    return RefreshIndicator(
-      onRefresh: _refreshPosts,
-      child: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          // Create post prompt
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: ThoughtsInput(onTap: _navigateToCreatePost),
-            ),
-          ),
-
-          // Posts feed
-          SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final post = _posts[index];
-              return PostCard(
-                post: post,
-                onLike: () => _likePost(post.id),
-                onComment: () => _openComments(post.id),
-                onShare: () => _sharePost(post.id),
-                onProfileTap: () => _openProfile(post.authorId),
-              );
-            }, childCount: _posts.length),
-          ),
-
-          // Bottom padding for navigation
-          //const SliverToBoxAdapter(child: SizedBox(height: 100)),
-        ],
-      ),
+    return Column(
+      children: _posts.map((post) {
+        return PostCard(
+          post: post,
+          onLike: () => _likePost(post.id),
+          onComment: () => _openComments(post.id),
+          onShare: () => _sharePost(post.id),
+          onProfileTap: () => _openProfile(post.authorId),
+        );
+      }).toList(),
     );
   }
 

@@ -17,11 +17,11 @@ class SportProfilesRepositoryImpl extends BaseRepository
   bool _isValidSkillLevel(int value) => value >= 1 && value <= 10;
 
   @override
-  Future<Result<List<SportProfile>>> getMySports() async {
+  Future<Result<List<SportProfile>, Failure>> getMySports() async {
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
 
     try {
@@ -36,18 +36,18 @@ class SportProfilesRepositoryImpl extends BaseRepository
           .map(SportProfile.fromJson)
           .toList(growable: false);
 
-      return right(rows);
+      return Ok(rows);
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<SportProfile?>> getMySportByKey(String sportKey) async {
+  Future<Result<SportProfile?, Failure>> getMySportByKey(String sportKey) async {
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
 
     try {
@@ -59,29 +59,29 @@ class SportProfilesRepositoryImpl extends BaseRepository
           .maybeSingle();
 
       if (response == null) {
-        return right(null);
+        return Ok(null);
       }
 
       final map = Map<String, dynamic>.from(response as Map);
-      return right(SportProfile.fromJson(map));
+      return Ok(SportProfile.fromJson(map));
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<void>> addMySport({
+  Future<Result<void, Failure>> addMySport({
     required String sportKey,
     required int skillLevel,
   }) async {
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
 
     if (!_isValidSkillLevel(skillLevel)) {
-      return left(
+      return Err(
         ValidationFailure(message: 'Skill level must be between 1 and 10'),
       );
     }
@@ -92,30 +92,30 @@ class SportProfilesRepositoryImpl extends BaseRepository
         'sport_key': sportKey,
         'skill_level': skillLevel,
       });
-      return right(null);
+      return Ok(null);
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
-        return left(ConflictFailure(message: 'Already added'));
+        return Err(ConflictFailure(message: 'Already added'));
       }
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<void>> updateMySport({
+  Future<Result<void, Failure>> updateMySport({
     required String sportKey,
     required int skillLevel,
   }) async {
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
 
     if (!_isValidSkillLevel(skillLevel)) {
-      return left(
+      return Err(
         ValidationFailure(message: 'Skill level must be between 1 and 10'),
       );
     }
@@ -126,18 +126,18 @@ class SportProfilesRepositoryImpl extends BaseRepository
           .update({'skill_level': skillLevel})
           .eq('user_id', uid)
           .eq('sport_key', sportKey);
-      return right(null);
+      return Ok(null);
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Future<Result<void>> removeMySport({required String sportKey}) async {
+  Future<Result<void, Failure>> removeMySport({required String sportKey}) async {
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
-      return left(AuthFailure(message: 'Not signed in'));
+      return Err(AuthFailure(message: 'Not signed in'));
     }
 
     try {
@@ -146,16 +146,16 @@ class SportProfilesRepositoryImpl extends BaseRepository
           .delete()
           .eq('user_id', uid)
           .eq('sport_key', sportKey);
-      return right(null);
+      return Ok(null);
     } catch (e) {
-      return left(svc.mapPostgrestError(e));
+      return Err(svc.mapPostgrestError(e));
     }
   }
 
   @override
-  Stream<Result<List<SportProfile>>> watchMySports() {
+  Stream<Result<List<SportProfile>, Failure>> watchMySports() {
     const table = _table;
-    final controller = StreamController<Result<List<SportProfile>>>.broadcast();
+    final controller = StreamController<Result<List<SportProfile>, Failure>>.broadcast();
     RealtimeChannel? channel;
 
     Future<void> emitCurrent() async {

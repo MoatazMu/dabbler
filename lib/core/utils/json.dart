@@ -3,6 +3,12 @@ library;
 
 T? asT<T>(Object? v) => v is T ? v : null;
 
+String asString(Object? v) {
+  if (v == null) return '';
+  if (v is String) return v;
+  return v.toString();
+}
+
 int? asInt(Object? v) {
   if (v is int) return v;
   if (v is double) return v.toInt();

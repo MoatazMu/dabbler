@@ -52,7 +52,7 @@ class GameModel extends Game {
         minPlayers: 2, // Default - not in DB schema
         maxPlayers:
             json['capacity'] as int? ?? 10, // Map capacity to maxPlayers
-        currentPlayers: 0, // TODO: Calculate from game_players join
+        currentPlayers: 0, // TODO: Calculate from game_roster join
         organizerId: json['host_user_id'] as String? ?? '',
         skillLevel: _parseSkillLevel(json), // Parse from min_skill/max_skill
         pricePerPlayer: 0.0, // Default - not in DB schema

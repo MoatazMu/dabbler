@@ -17,7 +17,7 @@ class AvailabilityRepositoryImpl extends BaseRepository
   String? get _userId => _db.auth.currentUser?.id;
 
   @override
-  Future<Result<List<Slot>>> listSlots({
+  Future<Result<List<Slot>, Failure>> listSlots({
     required String venueSpaceId,
     required DateTime from,
     required DateTime to,
@@ -25,32 +25,33 @@ class AvailabilityRepositoryImpl extends BaseRepository
     int limit = 500,
   }) async {
     return guard<List<Slot>>(() async {
-      final query = _db
+      var query = _db
           .from('space_slot_grid')
           .select()
-          .eq('venue_space_id', venueSpaceId)
-          .gte('start_ts', from.toUtc().toIso8601String())
-          .lt('end_ts', to.toUtc().toIso8601String())
-          .order('start_ts', ascending: true)
-          .limit(limit);
+          .eq('venue_space_id', venueSpaceId);
 
       if (onlyAvailable) {
         // Be tolerant: check any of these columns if present.
         // Supabase will ignore .eq on missing columns, so we add OR logic via server expressions if needed.
         // Here we use simple filters that common grid views expose.
-        query.eq('is_open', true);
-        query.eq('is_booked', false);
-        query.eq('is_held', false);
+        query = query
+            .eq('is_open', true)
+            .eq('is_booked', false)
+            .eq('is_held', false);
       }
 
+      query = query
+          .gte('start_ts', from.toUtc().toIso8601String())
+          .lt('end_ts', to.toUtc().toIso8601String());
+
       // RLS: grid_public_read permits SELECT for everyone.
-      final rows = await query;
+      final rows = await query.order('start_ts', ascending: true).limit(limit);
       return rows.map((r) => Slot.fromMap(asMap(r))).toList();
     });
   }
 
   @override
-  Future<Result<List<SlotHold>>> listMyHolds({
+  Future<Result<List<SlotHold>, Failure>> listMyHolds({
     String? venueSpaceId,
     DateTime? from,
     DateTime? to,
@@ -59,30 +60,30 @@ class AvailabilityRepositoryImpl extends BaseRepository
     return guard<List<SlotHold>>(() async {
       final uid = _userId;
       if (uid == null) {
-        throw Failure.unauthorized('Not signed in');
+        throw const AuthFailure(message: 'Not signed in');
       }
 
-      final q = _db
-          .from('space_slot_holds')
-          .select()
-          .eq('created_by', uid)
-          .order('start_ts', ascending: true)
-          .limit(limit);
+      var q = _db.from('space_slot_holds').select().eq('created_by', uid);
 
       if (venueSpaceId != null && venueSpaceId.isNotEmpty) {
-        q.eq('venue_space_id', venueSpaceId);
+        q = q.eq('venue_space_id', venueSpaceId);
       }
-      if (from != null) q.gte('start_ts', from.toUtc().toIso8601String());
-      if (to != null) q.lt('end_ts', to.toUtc().toIso8601String());
+      if (from != null) {
+        q = q.gte('start_ts', from.toUtc().toIso8601String());
+      }
+      if (to != null) {
+        q = q.lt('end_ts', to.toUtc().toIso8601String());
+      }
+
+      final rows = await q.order('start_ts', ascending: true).limit(limit);
 
       // RLS: holds_read allows creator/admin/venue staff to read.
-      final rows = await q;
       return rows.map((m) => SlotHold.fromMap(asMap(m))).toList();
     });
   }
 
   @override
-  Future<Result<SlotHold>> createHold({
+  Future<Result<SlotHold, Failure>> createHold({
     required String venueSpaceId,
     required DateTime start,
     required DateTime end,
@@ -91,7 +92,7 @@ class AvailabilityRepositoryImpl extends BaseRepository
     return guard<SlotHold>(() async {
       final uid = _userId;
       if (uid == null) {
-        throw Failure.unauthorized('Not signed in');
+        throw const AuthFailure(message: 'Not signed in');
       }
 
       final insert = SlotHold(
@@ -107,15 +108,15 @@ class AvailabilityRepositoryImpl extends BaseRepository
       final row = await _db
           .from('space_slot_holds')
           .insert(insert)
-          .select<Map<String, dynamic>>()
+          .select()
           .single();
 
-      return SlotHold.fromMap(row);
+      return SlotHold.fromMap(asMap(row));
     });
   }
 
   @override
-  Future<Result<void>> releaseHold(String holdId) async {
+  Future<Result<void, Failure>> releaseHold(String holdId) async {
     return guard<void>(() async {
       // RLS: holds_write lets creator delete their own holds.
       final _ = await _db.from('space_slot_holds').delete().eq('id', holdId);

@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:dabbler/core/fp/failure.dart';
 
 import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/utils/json.dart';
@@ -14,19 +15,21 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
   const OrganiserBenefitsRepositoryImpl(super.svc);
 
   @override
-  Future<Result<List<Benefit>>> listMine({
+  Future<Result<List<Benefit>, Failure>> listAll({
     bool onlyActive = true,
     int limit = 50,
     int offset = 0,
   }) {
     return guard<List<Benefit>>(() async {
-      final q = svc.client
-          .from(_table)
-          .select()
+      dynamic q = svc.client.from(_table).select();
+
+      if (onlyActive) {
+        q = q.eq('is_active', true);
+      }
+
+      q = q
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
-
-      if (onlyActive) q.eq('is_active', true);
 
       final rows = await q;
       return rows.map((m) => Benefit.fromMap(asMap(m))).toList();
@@ -34,21 +37,22 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<List<Benefit>>> listForVenue(
+  Future<Result<List<Benefit>, Failure>> listForVenue(
     String venueId, {
     bool onlyActive = true,
     int limit = 50,
     int offset = 0,
   }) {
     return guard<List<Benefit>>(() async {
-      final q = svc.client
-          .from(_table)
-          .select()
-          .eq('venue_id', venueId)
+      dynamic q = svc.client.from(_table).select().eq('venue_id', venueId);
+
+      if (onlyActive) {
+        q = q.eq('is_active', true);
+      }
+
+      q = q
           .order('created_at', ascending: false)
           .range(offset, offset + limit - 1);
-
-      if (onlyActive) q.eq('is_active', true);
 
       final rows = await q;
       return rows.map((m) => Benefit.fromMap(asMap(m))).toList();
@@ -56,11 +60,11 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<Benefit?>> getById(String id) {
+  Future<Result<Benefit?, Failure>> getById(String id) {
     return guard<Benefit?>(() async {
       final row = await svc.client
           .from(_table)
-          .select<Map<String, dynamic>>()
+          .select()
           .eq('id', id)
           .maybeSingle();
 
@@ -69,7 +73,7 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<Benefit>> create({
+  Future<Result<Benefit, Failure>> create({
     required String title,
     String? description,
     String? venueId,
@@ -96,7 +100,7 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
       final row = await svc.client
           .from(_table)
           .insert(payload)
-          .select<Map<String, dynamic>>()
+          .select()
           .single();
 
       return Benefit.fromMap(asMap(row));
@@ -104,7 +108,7 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<void>> update(
+  Future<Result<void, Failure>> update(
     String id, {
     String? title,
     String? description,
@@ -136,7 +140,7 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<void>> delete(String id) {
+  Future<Result<void, Failure>> delete(String id) {
     return guard<void>(() async {
       await svc.client.from(_table).delete().eq('id', id);
     });

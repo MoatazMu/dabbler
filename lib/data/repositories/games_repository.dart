@@ -1,13 +1,10 @@
-import 'package:fpdart/fpdart.dart';
-
 import 'package:dabbler/core/fp/failure.dart';
+import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/games/game.dart';
-
-typedef Result<T> = Either<Failure, T>;
 
 abstract class GamesRepository {
   /// Create a game (hosted by current user). RLS: games_modify_owner (host_user_id = auth.uid()).
-  Future<Result<Game>> createGame({
+  Future<Result<Game, Failure>> createGame({
     required String gameType,
     required String sport,
     String? title,
@@ -26,7 +23,7 @@ abstract class GamesRepository {
   });
 
   /// Update mutable fields. RLS: games_modify_owner.
-  Future<Result<void>> updateGame(
+  Future<Result<void, Failure>> updateGame(
     String gameId, {
     String? title,
     String? venueSpaceId,
@@ -42,13 +39,13 @@ abstract class GamesRepository {
   });
 
   /// Cancel a game. RLS: games_modify_owner.
-  Future<Result<void>> cancelGame(String gameId, {String? reason});
+  Future<Result<void, Failure>> cancelGame(String gameId, {String? reason});
 
   /// Get by id. RLS: games_select (owner/admin or can_view_with_scope()).
-  Future<Result<Game>> getGameById(String gameId);
+  Future<Result<Game, Failure>> getGameById(String gameId);
 
   /// Discoverable list (public scope). RLS: games_select.
-  Future<Result<List<Game>>> listDiscoverableGames({
+  Future<Result<List<Game>, Failure>> listDiscoverableGames({
     String? sport,
     DateTime? from, // start_at >= from
     DateTime? to, // end_at   <= to
@@ -60,7 +57,7 @@ abstract class GamesRepository {
   });
 
   /// My hosted games. RLS: games_select (owner scope).
-  Future<Result<List<Game>>> listMyHostedGames({
+  Future<Result<List<Game>, Failure>> listMyHostedGames({
     DateTime? from,
     DateTime? to,
     bool includeCancelled = false,
@@ -69,5 +66,5 @@ abstract class GamesRepository {
   });
 
   /// Realtime: watch a single game row by id.
-  Stream<Result<Game>> watchGame(String gameId);
+  Stream<Result<Game, Failure>> watchGame(String gameId);
 }

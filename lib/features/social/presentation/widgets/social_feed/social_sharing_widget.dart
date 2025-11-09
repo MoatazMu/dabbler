@@ -182,11 +182,15 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
           else
             CircleAvatar(
               radius: 24,
-              backgroundImage: widget.post.author?.avatar != null
-                  ? NetworkImage(widget.post.author.avatar!)
+              backgroundImage:
+                  widget.post.authorAvatar != null &&
+                      widget.post.authorAvatar!.isNotEmpty
+                  ? NetworkImage(widget.post.authorAvatar!)
                   : null,
-              child: widget.post.author?.avatar == null
-                  ? Text(widget.post.author?.name?[0]?.toUpperCase() ?? '?')
+              child:
+                  widget.post.authorAvatar == null ||
+                      widget.post.authorAvatar!.isEmpty
+                  ? Text(widget.post.authorName?[0]?.toUpperCase() ?? '?')
                   : null,
             ),
 
@@ -198,7 +202,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.post.author?.name ?? 'Unknown User',
+                  widget.post.authorName ?? 'Unknown User',
                   style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -481,7 +485,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
   }
 
   String _getDefaultMessage() {
-    final authorName = widget.post.author?.name ?? 'Someone';
+    final authorName = widget.post.authorName ?? 'Someone';
     final postType = widget.post.type ?? 'post';
 
     switch (postType) {
@@ -622,7 +626,7 @@ class _SocialSharingWidgetState extends State<SocialSharingWidget>
     final postUrl = 'https://dabbler.app/post/${widget.post.id}';
     final message = _messageController.text.trim();
     final subject =
-        'Check out this post from ${widget.post.author?.name ?? 'Dabbler'}';
+        'Check out this post from ${widget.post.authorName ?? 'Dabbler'}';
     final body = message.isNotEmpty
         ? '$message\n\n$postUrl'
         : 'I thought you might find this interesting:\n\n$postUrl';

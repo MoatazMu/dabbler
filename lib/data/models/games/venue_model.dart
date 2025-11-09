@@ -51,12 +51,18 @@ class VenueModel extends Venue {
             json['address_line2'] as String? ??
             json['address_line_2'] as String?,
         city: json['city'] as String? ?? '',
-        state: json['state'] as String? ?? '',
+        state: json['district'] as String? ?? json['state'] as String? ?? '',
         country: json['country'] as String? ?? '',
         postalCode: json['postal_code'] as String? ?? '',
-        latitude: (json['latitude'] as num?)?.toDouble() ?? 0.0,
-        longitude: (json['longitude'] as num?)?.toDouble() ?? 0.0,
-        phone: json['phone_number'] as String? ?? json['phone'] as String?,
+        latitude:
+            (json['latitude'] as num?)?.toDouble() ??
+            (json['lat'] as num?)?.toDouble() ??
+            0.0,
+        longitude:
+            (json['longitude'] as num?)?.toDouble() ??
+            (json['lng'] as num?)?.toDouble() ??
+            0.0,
+        phone: json['phone'] as String? ?? json['phone_number'] as String?,
         email: json['email'] as String?,
         website: json['website'] as String?,
         openingTime: _parseTime(json['opening_time']) ?? '09:00',

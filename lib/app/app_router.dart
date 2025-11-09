@@ -16,6 +16,14 @@ import 'package:dabbler/features/misc/presentation/screens/set_password_screen.d
 import 'package:dabbler/features/misc/presentation/screens/set_username_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/welcome_screen.dart';
 
+// Profile Onboarding screens
+import 'package:dabbler/features/profile/presentation/screens/onboarding/onboarding_welcome_screen.dart';
+import 'package:dabbler/features/profile/presentation/screens/onboarding/onboarding_basic_info_screen.dart';
+import 'package:dabbler/features/profile/presentation/screens/onboarding/onboarding_sports_screen.dart';
+import 'package:dabbler/features/profile/presentation/screens/onboarding/onboarding_preferences_screen.dart';
+import 'package:dabbler/features/profile/presentation/screens/onboarding/onboarding_privacy_screen.dart';
+import 'package:dabbler/features/profile/presentation/screens/onboarding/onboarding_completion_screen.dart';
+
 // Authentication screens
 import 'package:dabbler/features/authentication/presentation/screens/forgot_password_screen.dart';
 import 'package:dabbler/features/authentication/presentation/screens/enter_password_screen.dart';
@@ -395,6 +403,66 @@ class AppRouter {
           child: WelcomeScreen(displayName: displayName ?? 'Player'),
         );
       },
+    ),
+
+    // Profile Onboarding Routes
+    GoRoute(
+      path: RoutePaths.onboardingWelcome,
+      name: RouteNames.onboardingWelcome,
+      pageBuilder: (context, state) => SlideTransitionPage(
+        key: state.pageKey,
+        child: const ProfileOnboardingWelcomeScreen(),
+        direction: SlideDirection.fromLeft,
+      ),
+    ),
+
+    GoRoute(
+      path: RoutePaths.onboardingBasicInfo,
+      name: RouteNames.onboardingBasicInfo,
+      pageBuilder: (context, state) => SlideTransitionPage(
+        key: state.pageKey,
+        child: const OnboardingBasicInfoScreen(),
+        direction: SlideDirection.fromLeft,
+      ),
+    ),
+
+    GoRoute(
+      path: RoutePaths.onboardingSports,
+      name: RouteNames.onboardingSports,
+      pageBuilder: (context, state) => SlideTransitionPage(
+        key: state.pageKey,
+        child: const OnboardingSportsScreen(),
+        direction: SlideDirection.fromLeft,
+      ),
+    ),
+
+    GoRoute(
+      path: RoutePaths.onboardingPreferences,
+      name: RouteNames.onboardingPreferences,
+      pageBuilder: (context, state) => SlideTransitionPage(
+        key: state.pageKey,
+        child: const OnboardingPreferencesScreen(),
+        direction: SlideDirection.fromLeft,
+      ),
+    ),
+
+    GoRoute(
+      path: RoutePaths.onboardingPrivacy,
+      name: RouteNames.onboardingPrivacy,
+      pageBuilder: (context, state) => SlideTransitionPage(
+        key: state.pageKey,
+        child: const OnboardingPrivacyScreen(),
+        direction: SlideDirection.fromLeft,
+      ),
+    ),
+
+    GoRoute(
+      path: RoutePaths.onboardingCompletion,
+      name: RouteNames.onboardingCompletion,
+      pageBuilder: (context, state) => ScaleTransitionPage(
+        key: state.pageKey,
+        child: const OnboardingCompletionScreen(),
+      ),
     ),
 
     // Home route

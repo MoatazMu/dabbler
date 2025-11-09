@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import '../../themes/design_system.dart';
+import 'package:dabbler/core/design_system/ds.dart';
 
 class BookingSummaryModal extends StatelessWidget {
   final Map<String, dynamic> venue;

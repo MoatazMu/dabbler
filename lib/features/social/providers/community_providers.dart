@@ -1,3 +1,5 @@
+import 'package:dabbler/core/fp/failure.dart';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/repositories/friends_repository.dart';
 import '../../../data/repositories/friends_repository_impl.dart';
@@ -97,7 +99,7 @@ final hasPendingRequestsProvider = Provider.autoDispose<bool>((ref) {
 // =============================================================================
 
 /// Send a friend request to a user
-final sendFriendRequestProvider = FutureProvider.family<Result<void>, String>((
+final sendFriendRequestProvider = FutureProvider.family<Result<void, Failure>, String>((
   ref,
   peerUserId,
 ) async {
@@ -106,7 +108,7 @@ final sendFriendRequestProvider = FutureProvider.family<Result<void>, String>((
 });
 
 /// Accept a friend request
-final acceptFriendRequestProvider = FutureProvider.family<Result<void>, String>(
+final acceptFriendRequestProvider = FutureProvider.family<Result<void, Failure>, String>(
   (ref, peerUserId) async {
     final repo = ref.watch(friendsRepositoryProvider);
     final result = await repo.acceptFriendRequest(peerUserId);
@@ -122,7 +124,7 @@ final acceptFriendRequestProvider = FutureProvider.family<Result<void>, String>(
 );
 
 /// Reject a friend request
-final rejectFriendRequestProvider = FutureProvider.family<Result<void>, String>(
+final rejectFriendRequestProvider = FutureProvider.family<Result<void, Failure>, String>(
   (ref, peerUserId) async {
     final repo = ref.watch(friendsRepositoryProvider);
     final result = await repo.rejectFriendRequest(peerUserId);
@@ -137,7 +139,7 @@ final rejectFriendRequestProvider = FutureProvider.family<Result<void>, String>(
 );
 
 /// Remove a friend
-final removeFriendProvider = FutureProvider.family<Result<void>, String>((
+final removeFriendProvider = FutureProvider.family<Result<void, Failure>, String>((
   ref,
   peerUserId,
 ) async {
@@ -154,7 +156,7 @@ final removeFriendProvider = FutureProvider.family<Result<void>, String>((
 });
 
 /// Block a user
-final blockUserProvider = FutureProvider.family<Result<void>, String>((
+final blockUserProvider = FutureProvider.family<Result<void, Failure>, String>((
   ref,
   peerUserId,
 ) async {
@@ -171,7 +173,7 @@ final blockUserProvider = FutureProvider.family<Result<void>, String>((
 });
 
 /// Unblock a user
-final unblockUserProvider = FutureProvider.family<Result<void>, String>((
+final unblockUserProvider = FutureProvider.family<Result<void, Failure>, String>((
   ref,
   peerUserId,
 ) async {

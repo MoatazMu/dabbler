@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:dabbler/data/models/social/post_model.dart';
-import '../../../../../themes/app_theme.dart';
 
 /// A card widget for displaying social posts in the feed
 class PostCard extends StatelessWidget {
@@ -27,41 +26,69 @@ class PostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     return Opacity(
       opacity: isOptimistic ? 0.6 : 1.0,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 1),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: BoxDecoration(
-          color: isDark
-              ? VioletShades.darkCardBackground
-              : VioletShades.lightCardBackground,
-          border: Border(
-            bottom: BorderSide(
-              color: isDark
-                  ? VioletShades.darkBorder.withOpacity(0.2)
-                  : VioletShades.lightBorder.withOpacity(0.3),
-              width: 1,
-            ),
-          ),
-        ),
-        child: Column(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with Display Name & Time
-            _buildHeader(context),
+            // First Column: Avatar
+            GestureDetector(
+              onTap: onProfileTap,
+              child: Container(
+                height: 40,
+                width: 40,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  image: post.authorAvatar.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(post.authorAvatar),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                  color: post.authorAvatar.isEmpty
+                      ? theme.colorScheme.primary.withOpacity(0.1)
+                      : null,
+                ),
+                child: post.authorAvatar.isEmpty
+                    ? Center(
+                        child: Text(
+                          post.authorName.isNotEmpty
+                              ? post.authorName[0].toUpperCase()
+                              : 'U',
+                          style: TextStyle(
+                            color: theme.colorScheme.primary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    : null,
+              ),
+            ),
 
-            const SizedBox(height: 12),
+            const SizedBox(width: 12),
 
-            // Content
-            _buildContent(context),
+            // Second Column: Post Content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with Display Name & Time
+                  _buildHeader(context),
 
-            const SizedBox(height: 12),
+                  const SizedBox(height: 4),
 
-            // Actions
-            _buildActions(context),
+                  // Content
+                  _buildContent(context),
+
+                  // Actions
+                  _buildActions(context),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -69,133 +96,106 @@ class PostCard extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Row(
       children: [
-        // User Avatar
-        GestureDetector(
-          onTap: onProfileTap,
-          child: Container(
-            height: 40,
-            width: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              image: post.authorAvatar.isNotEmpty
-                  ? DecorationImage(
-                      image: NetworkImage(post.authorAvatar),
-                      fit: BoxFit.cover,
-                    )
-                  : null,
-              color: post.authorAvatar.isEmpty
-                  ? theme.colorScheme.primary.withOpacity(0.1)
-                  : null,
-            ),
-            child: post.authorAvatar.isEmpty
-                ? Center(
-                    child: Text(
-                      post.authorName.isNotEmpty
-                          ? post.authorName[0].toUpperCase()
-                          : 'U',
-                      style: TextStyle(
-                        color: theme.colorScheme.primary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  )
-                : null,
-          ),
-        ),
-
-        const SizedBox(width: 12),
-
         // Display Name and Time
         Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              // Display Name from Database
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      post.authorName,
-                      style: TextStyle(
-                        color: isDark
-                            ? VioletShades.darkTextPrimary
-                            : VioletShades.lightTextPrimary,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: -0.2,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (post.authorVerified) ...[
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.verified,
-                      size: 14,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ],
-                  const SizedBox(width: 6),
-                  Text(
-                    '· ${_formatTimeAgo(post.createdAt)}',
-                    style: TextStyle(
-                      color: isDark
-                          ? VioletShades.darkTextMuted
-                          : VioletShades.lightTextMuted,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-                ],
+              Text(
+                post.authorName,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                _formatTimeAgo(post.createdAt),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ],
           ),
         ),
 
-        // More Icon
-        IconButton(
-          onPressed: () {},
-          icon: Icon(
-            Icons.more_horiz,
-            size: 20,
-            color: isDark
-                ? VioletShades.darkTextMuted.withOpacity(0.6)
-                : VioletShades.lightTextMuted.withOpacity(0.6),
-          ),
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+        // Three Dots Menu
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Stack(
+              children: [
+                Container(
+                  width: 18,
+                  height: 18,
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     );
   }
 
   Widget _buildContent(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (post.content.isNotEmpty) ...[
-          Text(
-            post.content,
-            style: TextStyle(
-              color: isDark
-                  ? VioletShades.darkTextPrimary
-                  : VioletShades.lightTextPrimary,
-              fontSize: 15,
-              fontWeight: FontWeight.w400,
-              height: 1.4,
-              letterSpacing: -0.1,
+          Directionality(
+            textDirection: TextDirection.ltr,
+            child: Align(
+              alignment: _isRtl(post.content)
+                  ? Alignment.centerRight
+                  : Alignment.centerLeft,
+              child: Text(
+                post.content,
+                textDirection: _isRtl(post.content)
+                    ? TextDirection.rtl
+                    : TextDirection.ltr,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 12),
+          if (post.mediaUrls.isNotEmpty) const SizedBox(height: 12),
         ],
 
         // Media display
@@ -204,9 +204,19 @@ class PostCard extends StatelessWidget {
     );
   }
 
+  bool _isRtl(String text) {
+    if (text.isEmpty) return false;
+    final firstChar = text.trimLeft().codeUnitAt(0);
+    // Arabic Unicode range: 0x0600 to 0x06FF
+    // Arabic Supplement: 0x0750 to 0x077F
+    // Arabic Extended-A: 0x08A0 to 0x08FF
+    return (firstChar >= 0x0600 && firstChar <= 0x06FF) ||
+        (firstChar >= 0x0750 && firstChar <= 0x077F) ||
+        (firstChar >= 0x08A0 && firstChar <= 0x08FF);
+  }
+
   Widget _buildMediaContent(BuildContext context) {
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
 
     if (post.mediaUrls.isEmpty) return const SizedBox.shrink();
 
@@ -223,9 +233,7 @@ class PostCard extends StatelessWidget {
         child: isVideo
             ? Container(
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? VioletShades.darkWidgetBackground
-                      : VioletShades.lightWidgetBackground,
+                  color: theme.colorScheme.surfaceContainerHighest,
                 ),
                 child: Center(
                   child: Container(
@@ -248,9 +256,7 @@ class PostCard extends StatelessWidget {
                 loadingBuilder: (context, child, loadingProgress) {
                   if (loadingProgress == null) return child;
                   return Container(
-                    color: isDark
-                        ? VioletShades.darkWidgetBackground
-                        : VioletShades.lightWidgetBackground,
+                    color: theme.colorScheme.surfaceContainerHighest,
                     child: Center(
                       child: CircularProgressIndicator(
                         value: loadingProgress.expectedTotalBytes != null
@@ -264,14 +270,10 @@ class PostCard extends StatelessWidget {
                 },
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
-                    color: isDark
-                        ? VioletShades.darkWidgetBackground
-                        : VioletShades.lightWidgetBackground,
+                    color: theme.colorScheme.surfaceContainerHighest,
                     child: Icon(
                       Icons.broken_image_outlined,
-                      color: isDark
-                          ? VioletShades.darkTextMuted
-                          : VioletShades.lightTextMuted,
+                      color: theme.colorScheme.onSurfaceVariant,
                       size: 48,
                     ),
                   );
@@ -282,94 +284,65 @@ class PostCard extends StatelessWidget {
   }
 
   Widget _buildActions(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Row(
-      children: [
-        _buildActionButton(
-          context: context,
-          icon: post.isLiked ? Icons.favorite : Icons.favorite_border,
-          label: post.likesCount.toString(),
-          isActive: post.isLiked,
-          isDark: isDark,
-          onTap: onLike,
-        ),
-        const SizedBox(width: 8),
-        _buildActionButton(
-          context: context,
-          icon: Icons.chat_bubble_outline,
-          label: post.commentsCount.toString(),
-          isActive: false,
-          isDark: isDark,
-          onTap: onComment,
-        ),
-        const SizedBox(width: 8),
-        _buildActionButton(
-          context: context,
-          icon: Icons.repeat,
-          label: post.sharesCount.toString(),
-          isActive: false,
-          isDark: isDark,
-          onTap: onShare,
-        ),
-        const Spacer(),
-        _buildActionButton(
-          context: context,
-          icon: Icons.bookmark_border,
-          label: '',
-          isActive: false,
-          isDark: isDark,
-          onTap: () {},
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Row(
+        children: [
+          _buildActionButton(
+            context: context,
+            emoji: '🩶',
+            label: post.likesCount.toString(),
+            isActive: false,
+            onTap: onLike,
+            isDark: isDark,
+          ),
+          const SizedBox(width: 24),
+          _buildActionButton(
+            context: context,
+            emoji: '💬',
+            label: post.commentsCount.toString(),
+            isActive: false,
+            onTap: onComment,
+            isDark: isDark,
+          ),
+        ],
+      ),
     );
   }
 
   Widget _buildActionButton({
     required BuildContext context,
-    required IconData icon,
+    required String emoji,
     required String label,
     required bool isActive,
     required bool isDark,
     VoidCallback? onTap,
   }) {
-    final theme = Theme.of(context);
-
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 19,
-              color: isActive
-                  ? theme.colorScheme.primary
-                  : (isDark
-                        ? VioletShades.darkTextMuted.withOpacity(0.7)
-                        : VioletShades.lightTextMuted.withOpacity(0.7)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            emoji,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Roboto',
             ),
-            if (label.isNotEmpty) ...[
-              const SizedBox(width: 4),
-              Text(
-                label,
-                style: TextStyle(
-                  color: isActive
-                      ? theme.colorScheme.primary
-                      : (isDark
-                            ? VioletShades.darkTextMuted
-                            : VioletShades.lightTextMuted),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ],
-        ),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -379,15 +352,15 @@ class PostCard extends StatelessWidget {
     final difference = now.difference(dateTime);
 
     if (difference.inDays > 7) {
-      return '${(difference.inDays / 7).floor()}w ago';
+      return '${(difference.inDays / 7).floor()}w';
     } else if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
+      return '${difference.inDays}d';
     } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
+      return '${difference.inHours}h';
     } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
+      return '${difference.inMinutes}m';
     } else {
-      return 'just now';
+      return 'now';
     }
   }
 }

@@ -171,7 +171,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
-            color: Colors.white,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         SizedBox(height: AppSpacing.sm),
@@ -180,7 +180,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w500,
-            color: Colors.white70,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),
@@ -281,7 +281,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: AppColors.backgroundCardDark,
+        color: AppColors.cardColor(context),
         borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
         border: Border.all(color: AppColors.borderDark),
       ),
@@ -296,7 +296,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w400,
-                color: AppColors.textPrimary,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             SizedBox(width: AppSpacing.md),
@@ -308,7 +308,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                   hintStyle: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.textSecondary,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   border: InputBorder.none,
                   contentPadding: EdgeInsets.zero,
@@ -316,7 +316,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.textPrimary,
+                  color: Theme.of(context).colorScheme.onSurface,
                 ),
                 keyboardType: TextInputType.phone,
                 onChanged: _onPhoneChanged,
@@ -330,7 +330,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   }
 
   Widget _buildEmailButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
@@ -358,7 +358,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                   Text('📱', style: TextStyle(fontSize: 18)),
                   SizedBox(width: AppSpacing.sm),
                   Text(
-                    'Login with Email',
+                    'Login with phone',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                   ),
                 ],
@@ -378,7 +378,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w400,
-              color: AppColors.textSecondary,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
         ),
@@ -388,20 +388,20 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   }
 
   Widget _buildGoogleButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 56,
-      child: OutlinedButton(
+      child: ElevatedButton(
         onPressed: () {
           // TODO: Implement Google sign in
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text('Google sign-in coming soon')));
         },
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: AppColors.borderDark),
-          backgroundColor: AppColors.backgroundCardDark,
-          foregroundColor: AppColors.textPrimary,
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: AppColors.categoryBgMain(context),
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
           ),
@@ -425,18 +425,18 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   }
 
   Widget _buildContinueEmailButton() {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 56,
-      child: OutlinedButton(
+      child: ElevatedButton(
         onPressed: () {
           debugPrint('📧 [DEBUG] PhoneInputScreen: Email button pressed');
           context.go(RoutePaths.emailInput);
         },
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: AppColors.borderDark),
-          backgroundColor: AppColors.backgroundCardDark,
-          foregroundColor: AppColors.textPrimary,
+        style: ElevatedButton.styleFrom(
+          elevation: 0,
+          backgroundColor: AppColors.categoryBgMain(context),
+          foregroundColor: Theme.of(context).colorScheme.onSurface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
           ),
@@ -467,7 +467,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         GestureDetector(
@@ -479,7 +479,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
               decoration: TextDecoration.underline,
             ),
           ),
@@ -489,7 +489,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w400,
-            color: AppColors.textSecondary,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
         GestureDetector(
@@ -501,7 +501,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
-              color: AppColors.textPrimary,
+              color: Theme.of(context).colorScheme.onSurface,
               decoration: TextDecoration.underline,
             ),
           ),
