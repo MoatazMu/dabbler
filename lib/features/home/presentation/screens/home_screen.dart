@@ -12,7 +12,6 @@ import 'package:dabbler/features/games/presentation/screens/join_game/game_detai
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
-import 'package:dabbler/themes/app_theme.dart';
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {
@@ -59,109 +58,194 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     // Get display name from users table - NO FALLBACK to 'Player'
     final displayName =
         _userProfile?['display_name'] != null &&
-            (_userProfile!['display_name'] as String).isNotEmpty
-        ? (_userProfile!['display_name'] as String).split(' ').first
-        : null;
+                (_userProfile!['display_name'] as String).isNotEmpty
+            ? (_userProfile!['display_name'] as String).split(' ').first
+            : null;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  _buildHeaderCard(displayName),
-                  const SizedBox(height: 20),
-                  _buildUpcomingGameSection(),
-                  const SizedBox(height: 20),
-                  const ThoughtsInput(
-                    onTap: null, // TODO: Navigate to create post screen
-                  ),
-                  const SizedBox(height: 24),
-                  _buildQuickAccessSection(),
-                  const SizedBox(height: 24),
-                  _buildNewlyJoinedSection(),
-                  const SizedBox(height: 24),
-                  _buildActivitiesButton(),
-                  if (FeatureFlags.socialFeed) ...[
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const SizedBox(height: 16),
+              _buildHeroSection(displayName),
+              const SizedBox(height: 240),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildQuickAccessSection(),
                     const SizedBox(height: 24),
-                    _buildLatestFeedsSection(),
+                    _buildNewlyJoinedSection(),
+                    const SizedBox(height: 24),
+                    _buildActivitiesButton(),
+                    if (FeatureFlags.socialFeed) ...[
+                      const SizedBox(height: 24),
+                      _buildLatestFeedsSection(),
+                    ],
+                    const SizedBox(height: 24),
+                    _buildRecentGamesSection(),
+                    const SizedBox(height: 32),
                   ],
-                  const SizedBox(height: 24),
-                  _buildRecentGamesSection(),
-                  const SizedBox(height: 32),
-                ]),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeaderCard(String? displayName) {
-    final textTheme = Theme.of(context).textTheme;
+  Widget _buildHeroSection(String? displayName) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    return Card(
-      elevation: 0,
-      color: colorScheme.surfaceContainerHigh,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${_getGreeting()},',
-                    style: textTheme.titleMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                      fontWeight: FontWeight.w600,
+    final heroGradient = LinearGradient(
+      colors: [
+        colorScheme.primaryContainer.withOpacity(0.9),
+        colorScheme.primary,
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
+    final onPrimary = colorScheme.onPrimary;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 128),
+            decoration: BoxDecoration(
+              gradient: heroGradient,
+              borderRadius: BorderRadius.circular(32),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withOpacity(0.35),
+                  blurRadius: 40,
+                  offset: const Offset(0, 24),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '${_getGreeting()},',
+                            style: textTheme.titleMedium?.copyWith(
+                              color: onPrimary.withOpacity(0.85),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          if (displayName != null)
+                            Text(
+                              '$displayName!',
+                              style: textTheme.headlineSmall?.copyWith(
+                                color: onPrimary,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            )
+                          else ...[
+                            Text(
+                              'Complete your profile',
+                              style: textTheme.titleMedium?.copyWith(
+                                color: onPrimary,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            FilledButton.tonal(
+                              onPressed: () => context.go(RoutePaths.profile),
+                              style: FilledButton.styleFrom(
+                                backgroundColor:
+                                    onPrimary.withOpacity(0.15),
+                                foregroundColor: onPrimary,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text('Update now'),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
+                    GestureDetector(
+                      onTap: () => context.go(RoutePaths.profile),
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: onPrimary.withOpacity(0.18),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(4),
+                          child: SvgNetworkOrAssetAvatar(
+                            imageUrlOrAsset: _userProfile?['avatar_url'],
+                            radius: 32,
+                            fallbackIcon: Icons.person,
+                            backgroundColor: onPrimary,
+                            fallbackColor: colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  "Here's what's coming up for you",
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: onPrimary.withOpacity(0.75),
+                    fontWeight: FontWeight.w500,
                   ),
-                  const SizedBox(height: 8),
-                  if (displayName != null)
-                    Text(
-                      '$displayName!',
-                      style: textTheme.headlineSmall?.copyWith(
-                        color: colorScheme.onSurface,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    )
-                  else
-                    Text(
-                      'Complete your profile',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.error,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
-            GestureDetector(
-              onTap: () => context.go(RoutePaths.profile),
-              child: SvgNetworkOrAssetAvatar(
-                imageUrlOrAsset: _userProfile?['avatar_url'],
-                radius: 32,
-                fallbackIcon: Icons.person,
-                backgroundColor: colorScheme.surfaceContainer,
-                fallbackColor: colorScheme.primary,
-              ),
+          ),
+          Positioned(
+            left: 16,
+            right: 16,
+            bottom: -124,
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: _buildUpcomingGameSection(),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: const ThoughtsInput(
+                    onTap: null, // TODO: Navigate to create post screen
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -238,32 +322,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
 
   Widget _buildActivitiesButton() {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
-    return Card(
-      elevation: 0,
-      child: InkWell(
-        onTap: () => context.go(RoutePaths.activities),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('⚡', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 8),
-                Text(
-                  'Activities',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return FilledButton.tonalIcon(
+      onPressed: () => context.go(RoutePaths.activities),
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: colorScheme.secondaryContainer,
+        foregroundColor: colorScheme.onSecondaryContainer,
+      ),
+      icon: const Text(
+        '⚡',
+        style: TextStyle(fontSize: 18),
+      ),
+      label: Text(
+        'Activities',
+        style: textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
