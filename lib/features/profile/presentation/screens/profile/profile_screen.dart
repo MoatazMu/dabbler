@@ -2,13 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 import '../../controllers/profile_controller.dart';
 import '../../controllers/sports_profile_controller.dart';
 import '../../providers/profile_providers.dart';
 import 'package:dabbler/data/models/profile/user_profile.dart';
 import 'package:dabbler/data/models/profile/sports_profile.dart';
+import 'package:dabbler/data/models/profile/profile_statistics.dart';
 import 'package:dabbler/features/profile/presentation/widgets/profile_rewards_widget.dart';
 import '../../../../../utils/constants/route_constants.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -94,340 +93,358 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final profileState = ref.watch(profileControllerProvider);
     final sportsState = ref.watch(sportsProfileControllerProvider);
 
-    return TwoSectionLayout(
-      category: 'profile',
-      topSection: _buildTopSection(context, profileState),
-      bottomSection: _buildBottomSection(context, profileState, sportsState),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: colorScheme.primary,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
+            _buildHeroAppBar(context, profileState, sportsState),
+            SliverToBoxAdapter(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+                        _buildQuickActions(context),
+                        const SizedBox(height: 24),
+                        _buildProfileCompletion(context, profileState),
+                        _buildBasicInfo(context, profileState),
+                        _buildRewardsSection(context),
+                        _buildSportsProfiles(context, sportsState),
+                        _buildStatisticsSummary(context, profileState),
+                        const SizedBox(height: 48),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildTopSection(BuildContext context, ProfileState profileState) {
+  SliverAppBar _buildHeroAppBar(
+    BuildContext context,
+    ProfileState profileState,
+    SportsProfileState sportsState,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return SliverAppBar(
+      pinned: true,
+      stretch: true,
+      expandedHeight: 320,
+      backgroundColor: colorScheme.surface,
+      foregroundColor: colorScheme.onSurface,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.settings_outlined),
+          onPressed: () => context.push('/settings'),
+        ),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
+        collapseMode: CollapseMode.pin,
+        stretchModes: const [
+          StretchMode.zoomBackground,
+          StretchMode.fadeTitle,
+        ],
+        background: _buildProfileHero(context, profileState, sportsState),
+        title: Text(
+          profileState.profile?.getDisplayName() ?? 'Your Profile',
+        ),
+        titlePadding: const EdgeInsetsDirectional.only(
+          start: 72,
+          bottom: 16,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileHero(
+    BuildContext context,
+    ProfileState profileState,
+    SportsProfileState sportsState,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final profile = profileState.profile;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            colorScheme.primaryContainer.withOpacity(0.85),
+            colorScheme.surface,
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 32, 24, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  _buildAvatar(context, profile),
+                  const SizedBox(width: 20),
+                  Expanded(child: _buildHeroDetails(context, profileState)),
+                ],
+              ),
+              const SizedBox(height: 24),
+              _buildHeroStats(context, profileState, sportsState),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: [
+        FilledButton.icon(
+          onPressed: () => context.push('/profile/edit'),
+          icon: const Icon(Icons.edit_outlined),
+          label: const Text('Edit profile'),
+        ),
+        OutlinedButton.icon(
+          onPressed: () => context.push('/settings'),
+          icon: const Icon(Icons.settings_outlined),
+          label: const Text('Settings'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: colorScheme.primary,
+          ),
+        ),
+        OutlinedButton.icon(
+          onPressed: () => context.push(RoutePaths.rewards),
+          icon: const Icon(Icons.emoji_events_outlined),
+          label: const Text('Rewards'),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAvatar(BuildContext context, UserProfile? profile) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      width: 96,
+      height: 96,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: colorScheme.onPrimaryContainer.withOpacity(0.16)),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
+          ? Image.network(profile.avatarUrl!, fit: BoxFit.cover)
+          : Container(
+              color: colorScheme.surfaceContainerHighest,
+              child: Icon(
+                Icons.person_outline,
+                size: 42,
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+    );
+  }
+
+  Widget _buildHeroDetails(BuildContext context, ProfileState profileState) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final profile = profileState.profile;
+    final subtitle = profile?.bio?.isNotEmpty == true
+        ? profile!.bio!
+        : 'Add a short bio so teammates know what to expect.';
+
+    final chips = <Widget>[
+      _buildInfoChip(
+        context,
+        Icons.bolt_outlined,
+        profile?.getActivityStatus() ?? 'New member',
+      ),
+    ];
+
+    if (profile?.location?.isNotEmpty == true) {
+      chips.add(
+        _buildInfoChip(context, Icons.location_on_outlined, profile!.location!),
+      );
+    }
+
+    chips.add(
+      _buildInfoChip(
+        context,
+        Icons.calendar_today_outlined,
+        _formatMemberSince(profile?.createdAt),
+      ),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          profile?.getDisplayName().isNotEmpty == true
+              ? profile!.getDisplayName()
+              : 'Complete your profile',
+          style: textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          subtitle,
+          style: textTheme.bodyMedium?.copyWith(
+            color: colorScheme.onSurfaceVariant,
+          ),
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 16),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: chips,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroStats(
+    BuildContext context,
+    ProfileState profileState,
+    SportsProfileState sportsState,
+  ) {
+    final profile = profileState.profile;
+    final statistics = profile?.statistics ?? const ProfileStatistics();
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
-    return Padding(
-      padding: const EdgeInsets.only(top: 48, left: 24, right: 24, bottom: 18),
-      child: Column(
+
+    final statTiles = [
+      _HeroStat(
+        label: 'Games',
+        value: statistics.totalGamesPlayed.toString(),
+        icon: Icons.sports_soccer,
+      ),
+      _HeroStat(
+        label: 'Win rate',
+        value: statistics.winRateFormatted,
+        icon: Icons.emoji_events_outlined,
+      ),
+      _HeroStat(
+        label: 'Sports',
+        value: sportsState.profiles.length.toString(),
+        icon: Icons.sports_handball,
+      ),
+    ];
+
+    return Card(
+      margin: EdgeInsets.zero,
+      color: colorScheme.surface.withOpacity(0.75),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Row(
+          children: statTiles
+              .map((stat) => Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(stat.icon, size: 20, color: colorScheme.primary),
+                        const SizedBox(height: 8),
+                        Text(
+                          stat.value,
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          stat.label,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ))
+              .toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(BuildContext context, IconData icon, String label) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header Bar
-          SizedBox(
-            width: double.infinity,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Home icon button - Material 3 IconButton.filled
-                IconButton.filled(
-                  onPressed: () => context.go('/home'),
-                  icon: const Text(
-                    '🏠',
-                    style: TextStyle(fontSize: 22),
-                  ),
-                  style: IconButton.styleFrom(
-                    backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
-                    foregroundColor: colorScheme.onPrimary,
-                    minimumSize: const Size(44, 44),
-                  ),
+          Icon(icon, size: 16, color: colorScheme.onSurfaceVariant),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
-                const Spacer(),
-                // Settings button - Material 3 FilledButton
-                FilledButton.icon(
-                  onPressed: () => context.push('/settings'),
-                  icon: const Text(
-                    '⚙',
-                    style: TextStyle(fontSize: 22),
-                  ),
-                  label: Text(
-                    'Settings',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  style: FilledButton.styleFrom(
-                    backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
-                    foregroundColor: colorScheme.onPrimary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 10,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
-          const SizedBox(height: 18),
-          // Profile Avatar and Stats
-          _buildProfileHeaderContent(context, profileState),
         ],
       ),
     );
   }
 
-  Widget _buildBottomSection(
-    BuildContext context,
-    ProfileState profileState,
-    SportsProfileState sportsState,
-  ) {
-    return RefreshIndicator(
-      onRefresh: _onRefresh,
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Column(
-              children: [
-                _buildProfileCompletion(context, profileState),
-                _buildBasicInfo(context, profileState),
-                _buildRewardsSection(context),
-                _buildSportsProfiles(context, sportsState),
-                _buildStatisticsSummary(context, profileState),
-                const SizedBox(height: 100), // Bottom spacing
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  String _formatMemberSince(DateTime? createdAt) {
+    if (createdAt == null) {
+      return 'Joined recently';
+    }
 
-  Widget _buildProfileHeaderContent(
-    BuildContext context,
-    ProfileState profileState,
-  ) {
-    final profile = profileState.profile;
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Avatar and Stats Row
-        SizedBox(
-          width: double.infinity,
-          height: 96,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Avatar
-              Container(
-                width: 96,
-                height: 96,
-                clipBehavior: Clip.antiAlias,
-                decoration: ShapeDecoration(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(25165800),
-                  ),
-                ),
-                child: profile?.avatarUrl != null
-                    ? Image.network(profile!.avatarUrl!, fit: BoxFit.cover)
-                    : Builder(
-                        builder: (context) {
-                          final colorScheme = Theme.of(context).colorScheme;
-                          return Container(
-                            decoration: ShapeDecoration(
-                              color: colorScheme.surfaceContainerHigh,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25165800),
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.person,
-                              size: 48,
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          );
-                        },
-                      ),
-              ),
-              const SizedBox(width: 16),
-              // Stats Container
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: ShapeDecoration(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 48,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                '156',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: const Color(0xFF191919),
-                                  fontSize: 15,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.20,
-                                ),
-                              ),
-                              Text(
-                                'Games',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: const Color(0xFF191919),
-                                  fontSize: 12,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.67,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 1,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF262626),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: SizedBox(
-                          height: 48,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                '89',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: const Color(0xFF191919),
-                                  fontSize: 15,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.20,
-                                ),
-                              ),
-                              Text(
-                                'Wins',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: const Color(0xFF191919),
-                                  fontSize: 12,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.67,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        width: 1,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF262626),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: SizedBox(
-                          height: 48,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                '4',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: const Color(0xFF191919),
-                                  fontSize: 15,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w500,
-                                  height: 1.20,
-                                ),
-                              ),
-                              Text(
-                                'Teams',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  color: const Color(0xFF191919),
-                                  fontSize: 12,
-                                  fontFamily: 'Roboto',
-                                  fontWeight: FontWeight.w400,
-                                  height: 1.67,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 18),
-        // Name
-        Text(
-          profile?.getDisplayName() ?? 'Add Your Name',
-          style: TextStyle(
-            color: Color(0xFF191919),
-            fontSize: 24,
-            fontFamily: 'Roboto',
-            height: 0.06,
-            letterSpacing: -0.14,
-          ),
-        ),
-        const SizedBox(height: 18),
-        // Status
-        Container(
-          padding: const EdgeInsets.only(right: 49),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'Active Now • Level 15 • Member 2y',
-                style: TextStyle(
-                  color: Color(0xFF179F4B),
-                  fontSize: 16,
-                  fontFamily: 'Inter',
-                  height: 0.09,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+    final now = DateTime.now();
+    final difference = now.difference(createdAt);
+    final years = difference.inDays ~/ 365;
+    if (years > 0) {
+      return 'Member for ${years}y';
+    }
+    final months = difference.inDays ~/ 30;
+    if (months > 0) {
+      return 'Member for ${months}mo';
+    }
+    final weeks = difference.inDays ~/ 7;
+    if (weeks > 0) {
+      return 'Member for ${weeks}w';
+    }
+    return 'Joined this week';
   }
 
   Widget _buildProfileCompletion(
@@ -436,86 +453,73 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   ) {
     final completion = _calculateCompletion(profileState.profile);
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).primaryColor.withValues(alpha: 0.1),
-            Theme.of(context).primaryColor.withValues(alpha: 0.05),
-          ],
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Theme.of(context).primaryColor.withValues(alpha: 0.2),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(
-                Icons.trending_up,
-                color: Theme.of(context).primaryColor,
-                size: 20,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Profile Completion',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      color: colorScheme.surfaceContainerHighest,
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.trending_up, color: colorScheme.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Profile completion',
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        completion >= 80
+                            ? 'Looking great! Keep your info fresh.'
+                            : 'Finish a few more details to unlock better matches.',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const Spacer(),
-              Text(
-                '${completion.toInt()}%',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).primaryColor,
+                Text(
+                  '${completion.toInt()}%',
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.primary,
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            LinearProgressIndicator(
+              value: completion / 100,
+              backgroundColor: colorScheme.surface,
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              minHeight: 6,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            if (completion < 80) ...[
+              const SizedBox(height: 16),
+              FilledButton.tonalIcon(
+                onPressed: () => context.push('/profile/edit'),
+                icon: const Icon(Icons.auto_fix_high_outlined),
+                label: const Text('Complete profile'),
               ),
             ],
-          ),
-          const SizedBox(height: 12),
-          Builder(
-            builder: (context) {
-              final colorScheme = Theme.of(context).colorScheme;
-              return LinearProgressIndicator(
-                value: completion / 100,
-                backgroundColor: colorScheme.surfaceContainerHighest,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  colorScheme.primary,
-                ),
-                minHeight: 6,
-              );
-            },
-          ),
-          if (completion < 80) ...[
-            const SizedBox(height: 12),
-            GestureDetector(
-              onTap: () => context.push('/profile/edit'),
-              child: Builder(
-                builder: (context) {
-                  final colorScheme = Theme.of(context).colorScheme;
-                  final textTheme = Theme.of(context).textTheme;
-                  return Text(
-                    'Complete your profile to get better matches',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.primary,
-                      decoration: TextDecoration.underline,
-                    ),
-                  );
-                },
-              ),
-            ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -527,7 +531,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     return Card(
       elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 20),
+      color: colorScheme.surfaceContainerHighest,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -536,43 +542,43 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             Row(
               children: [
                 Text(
-                  'Basic Information',
-                  style: textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
+                  'Contact & basics',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                     color: colorScheme.onSurface,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
+                  tooltip: 'Edit profile',
                   onPressed: () => context.push('/profile/edit'),
                   icon: const Icon(Icons.edit_outlined),
-                  iconSize: 20,
                 ),
               ],
             ),
             const SizedBox(height: 16),
-          if (profile != null && profile.email.isNotEmpty)
-            _buildInfoRow(context, Icons.email_outlined, profile.email),
-          if (profile?.phoneNumber != null)
-            _buildInfoRow(context, Icons.phone_outlined, profile!.phoneNumber!),
-          if (profile?.location != null)
-            _buildInfoRow(
-              context,
-              Icons.location_on_outlined,
-              profile!.location!,
-            ),
-          if (profile?.dateOfBirth != null)
-            _buildInfoRow(
-              context,
-              Icons.cake_outlined,
-              '${_calculateAge(profile!.dateOfBirth!)} years old',
-            ),
-          if (profile == null ||
-              (profile.email.isEmpty &&
-                  profile.phoneNumber == null &&
-                  profile.location == null &&
-                  profile.dateOfBirth == null))
-            _buildEmptyState(context, 'Add your basic information'),
+            if (profile != null && profile.email.isNotEmpty)
+              _buildInfoRow(context, Icons.email_outlined, profile.email),
+            if (profile?.phoneNumber?.isNotEmpty == true)
+              _buildInfoRow(context, Icons.phone_outlined, profile!.phoneNumber!),
+            if (profile?.location?.isNotEmpty == true)
+              _buildInfoRow(
+                context,
+                Icons.location_on_outlined,
+                profile!.location!,
+              ),
+            if (profile?.dateOfBirth != null)
+              _buildInfoRow(
+                context,
+                Icons.cake_outlined,
+                '${_calculateAge(profile!.dateOfBirth!)} years old',
+              ),
+            if (profile == null ||
+                (profile.email.isEmpty &&
+                    profile.phoneNumber == null &&
+                    profile.location == null &&
+                    profile.dateOfBirth == null))
+              _buildEmptyState(context, 'Add your basic information'),
           ],
         ),
       ),
@@ -582,7 +588,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -606,44 +612,55 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     BuildContext context,
     SportsProfileState sportsState,
   ) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Sports Profiles',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 20),
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Sports focus',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: () => context.push('/profile/sports-preferences'),
-                child: const Text('Manage'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          if (sportsState.profiles.isNotEmpty)
-            SizedBox(
-              height: 200,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount: sportsState.profiles.length,
-                itemBuilder: (context, index) {
-                  final sport = sportsState.profiles[index];
-                  return _buildSportCard(context, sport);
-                },
-              ),
-            )
-          else
-            _buildEmptyState(context, 'Add your favorite sports'),
-        ],
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: () => context.push('/profile/sports-preferences'),
+                  icon: const Icon(Icons.tune_outlined, size: 18),
+                  label: const Text('Manage'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            if (sportsState.profiles.isNotEmpty)
+              SizedBox(
+                height: 208,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: sportsState.profiles.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 16),
+                  itemBuilder: (context, index) {
+                    final sport = sportsState.profiles[index];
+                    return _buildSportCard(context, sport);
+                  },
+                ),
+              )
+            else
+              _buildEmptyState(context, 'Add your favorite sports'),
+          ],
+        ),
       ),
     );
   }
@@ -651,105 +668,91 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildSportCard(BuildContext context, SportProfile sport) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(right: 16),
-      child: SizedBox(
-        width: 160,
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+
+    return Container(
+      width: 180,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.4)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(
-                      _getSportIcon(sport.sportName),
-                      color: colorScheme.onPrimaryContainer,
-                      size: 24,
-                    ),
-                  ),
-                  if (sport.isPrimarySport) ...[
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        Icons.star,
-                        color: colorScheme.onPrimaryContainer,
-                        size: 12,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-              const SizedBox(height: 12),
-              Text(
-                sport.sportName,
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: colorScheme.onSurface,
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _getSkillLevelText(sport.skillLevel),
-                style: textTheme.bodySmall?.copyWith(
-                  color: _getSkillLevelColor(context, sport.skillLevel),
-                  fontWeight: FontWeight.w500,
+                child: Icon(
+                  _getSportIcon(sport.sportName),
+                  color: colorScheme.onPrimaryContainer,
+                  size: 24,
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                '${sport.yearsPlaying} years',
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if (sport.achievements.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 4,
-                  children: sport.achievements.take(2).map((achievement) {
-                    return Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        achievement,
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
-                          fontSize: 10,
-                        ),
-                      ),
-                    );
-                  }).toList(),
+              if (sport.isPrimarySport) ...[
+                const Spacer(),
+                Icon(
+                  Icons.star_rounded,
+                  size: 22,
+                  color: colorScheme.primary,
                 ),
               ],
             ],
           ),
-        ),
+          const SizedBox(height: 16),
+          Text(
+            sport.sportName,
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            _getSkillLevelText(sport.skillLevel),
+            style: textTheme.bodySmall?.copyWith(
+              color: _getSkillLevelColor(context, sport.skillLevel),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            '${sport.yearsPlaying} years experience',
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+          if (sport.achievements.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: sport.achievements.take(2).map((achievement) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    achievement,
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -760,64 +763,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+    final statistics = profileState.profile?.statistics ?? const ProfileStatistics();
+
     return Card(
       elevation: 0,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      margin: const EdgeInsets.only(bottom: 24),
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Activity Summary',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+              'Activity snapshot',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
                 color: colorScheme.onSurface,
               ),
             ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatColumn(
-                  context,
-                  'Games Played',
-                  '12',
-                  Icons.sports_soccer,
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatColumn(
+                    context,
+                    'Games played',
+                    statistics.totalGamesPlayed.toString(),
+                    Icons.sports_esports_outlined,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: _buildStatColumn(
-                  context,
-                  'Win Rate',
-                  '67%',
-                  Icons.emoji_events,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildStatColumn(
+                    context,
+                    'Win rate',
+                    statistics.winRateFormatted,
+                    Icons.emoji_events_outlined,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatColumn(
-                  context,
-                  'Average Rating',
-                  '4.8',
-                  Icons.star,
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatColumn(
+                    context,
+                    'Avg. rating',
+                    statistics.ratingFormatted,
+                    Icons.star_rate_rounded,
+                  ),
                 ),
-              ),
-              Expanded(
-                child: _buildStatColumn(
-                  context,
-                  'Friends Made',
-                  '24',
-                  Icons.people,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _buildStatColumn(
+                    context,
+                    'Teammates',
+                    statistics.uniqueTeammates.toString(),
+                    Icons.groups_2_outlined,
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           ],
         ),
       ),
@@ -832,67 +840,66 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   ) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: colorScheme.primary),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: colorScheme.onSurface,
+            ),
           ),
-          child: Icon(
-            icon,
-            color: colorScheme.onPrimaryContainer,
-            size: 24,
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: colorScheme.primary,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildEmptyState(BuildContext context, String message) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
-    return Card(
-      elevation: 0,
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          children: [
-            Icon(
-              Icons.info_outline,
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.4)),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.info_outline,
+            color: colorScheme.onSurfaceVariant,
+            size: 28,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: textTheme.bodyMedium?.copyWith(
               color: colorScheme.onSurfaceVariant,
-              size: 32,
             ),
-            const SizedBox(height: 8),
-            Text(
-              message,
-              style: textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
@@ -995,30 +1002,42 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       return const SizedBox.shrink();
     }
 
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(24),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           ProfileRewardsWidget(userId: userProfile.id),
-          const SizedBox(height: 12),
+          const SizedBox(height: 16),
           Align(
             alignment: Alignment.centerRight,
             child: OutlinedButton.icon(
               onPressed: () => context.push(RoutePaths.leaderboard),
               icon: const Icon(Icons.leaderboard_outlined, size: 18),
-              label: const Text('View Leaderboard'),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 10,
-                ),
-                textStyle: const TextStyle(fontWeight: FontWeight.w600),
-              ),
+              label: const Text('View leaderboard'),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _HeroStat {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _HeroStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
 }
