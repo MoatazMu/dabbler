@@ -58,7 +58,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     
     // Get display name from users table - NO FALLBACK to 'Player'
@@ -68,133 +67,171 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ? (_userProfile!['display_name'] as String).split(' ').first
         : null;
 
-    return TwoSectionLayout(
-      topSection: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Greeting and Avatar Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: CustomScrollView(
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  _buildHeaderCard(displayName),
+                  const SizedBox(height: 20),
+                  _buildUpcomingGameSection(),
+                  const SizedBox(height: 20),
+                  const ThoughtsInput(
+                    onTap: null, // TODO: Navigate to create post screen
+                  ),
+                  const SizedBox(height: 24),
+                  _buildQuickAccessSection(),
+                  const SizedBox(height: 24),
+                  _buildNewlyJoinedSection(),
+                  const SizedBox(height: 24),
+                  _buildActivitiesButton(),
+                  if (FeatureFlags.socialFeed) ...[
+                    const SizedBox(height: 24),
+                    _buildLatestFeedsSection(),
+                  ],
+                  const SizedBox(height: 24),
+                  _buildRecentGamesSection(),
+                  const SizedBox(height: 32),
+                ]),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderCard(String? displayName) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${_getGreeting()},',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (displayName != null)
                     Text(
-                      '${_getGreeting()},',
+                      '$displayName!',
                       style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w500,
+                        color: colorScheme.onSurface,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    )
+                  else
+                    Text(
+                      'Complete your profile',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.error,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
-                    if (displayName != null)
-                      Text(
-                        '$displayName!',
-                        style: textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      )
-                    else
-                      Text(
-                        'Complete your profile',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.error,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                  ],
-                ),
+                ],
               ),
-              // User Avatar
-              GestureDetector(
-                onTap: () => context.go(RoutePaths.profile),
-                child: SvgNetworkOrAssetAvatar(
-                  imageUrlOrAsset: _userProfile?['avatar_url'],
-                  radius: 30,
-                  fallbackIcon: Icons.person,
-                  backgroundColor: colorScheme.categoryMain,
-                  fallbackColor: colorScheme.primary,
-                ),
+            ),
+            GestureDetector(
+              onTap: () => context.go(RoutePaths.profile),
+              child: SvgNetworkOrAssetAvatar(
+                imageUrlOrAsset: _userProfile?['avatar_url'],
+                radius: 32,
+                fallbackIcon: Icons.person,
+                backgroundColor: colorScheme.surfaceContainer,
+                fallbackColor: colorScheme.primary,
               ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Upcoming Game Card
-          _buildUpcomingGameSection(),
-          const SizedBox(height: 20),
-
-          // Thoughts Input
-          const ThoughtsInput(
-            onTap: null, // TODO: Navigate to create post screen
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
-      bottomSection: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Category Buttons
-          Row(
-            children: [
-              Expanded(
-                child: AppButtonCard(
-                  emoji: '📚',
-                  label: 'Community',
-                  onTap: () => context.go(RoutePaths.social),
-                ),
+    );
+  }
+
+  Widget _buildQuickAccessSection() {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerLow,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Quick access',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface,
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AppButtonCard(
-                  emoji: '🏆',
-                  label: 'Sports',
-                  onTap: () => context.go(RoutePaths.sports),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: AppButtonCard(
+                    emoji: '📚',
+                    label: 'Community',
+                    onTap: () => context.go(RoutePaths.social),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Newly joined section
-          _buildNewlyJoinedSection(),
-          const SizedBox(height: 24),
-
-          // Action Cards
-          Row(
-            children: [
-              Expanded(
-                child: AppActionCard(
-                  emoji: '➕',
-                  title: 'Create Game',
-                  subtitle: 'Start a new match',
-                  onTap: () => context.go(RoutePaths.createGame),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppButtonCard(
+                    emoji: '🏆',
+                    label: 'Sports',
+                    onTap: () => context.go(RoutePaths.sports),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AppActionCard(
-                  emoji: '🔍',
-                  title: 'Join Game',
-                  subtitle: 'Find nearby games',
-                  onTap: () => context.go(RoutePaths.sports),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: AppActionCard(
+                    emoji: '➕',
+                    title: 'Create Game',
+                    subtitle: 'Start a new match',
+                    onTap: () => context.go(RoutePaths.createGame),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Activities button
-          _buildActivitiesButton(),
-          const SizedBox(height: 24),
-
-          // Latest feeds (if social enabled)
-          if (FeatureFlags.socialFeed) _buildLatestFeedsSection(),
-          if (FeatureFlags.socialFeed)
-            const SizedBox(height: 24),
-
-          // Recent Games
-          _buildRecentGamesSection(),
-          const SizedBox(height: 24),
-        ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AppActionCard(
+                    emoji: '🔍',
+                    title: 'Join Game',
+                    subtitle: 'Find nearby games',
+                    onTap: () => context.go(RoutePaths.sports),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
