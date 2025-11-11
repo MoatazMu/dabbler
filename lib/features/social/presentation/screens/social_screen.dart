@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
+import 'package:dabbler/utils/constants/route_constants.dart';
 import '../widgets/feed/post_card.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
@@ -187,113 +187,274 @@ class _SocialScreenState extends State<SocialScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return TwoSectionLayout(
-      category: 'social',
-      topPadding: EdgeInsets.zero,
-      bottomPadding: EdgeInsets.zero,
-      topSection: _buildTopSection(),
-      bottomSection: _buildFeed(),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: CustomScrollView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(child: _buildHeaderSection()),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            SliverToBoxAdapter(child: _buildComposerCard()),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            if (_isLoading && _posts.isEmpty)
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 80),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+              ),
+            if (!_isLoading && _posts.isEmpty)
+              SliverToBoxAdapter(child: _buildEmptyState()),
+            if (_posts.isNotEmpty)
+              _buildPostsSliver(),
+          ],
+        ),
+      ),
     );
   }
 
-  Widget _buildTopSection() {
+  Widget _buildHeaderSection() {
     final colorScheme = Theme.of(context).colorScheme;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Top row: Home icon
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 48, 20, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final textTheme = Theme.of(context).textTheme;
+
+    final heroGradient = LinearGradient(
+      colors: [
+        colorScheme.secondaryContainer,
+        colorScheme.primaryContainer,
+      ],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+
+    final onHero = colorScheme.onSecondaryContainer;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              // Home icon button - Material 3 IconButton.filled
-              IconButton.filled(
-                onPressed: () => context.go('/home'),
-                icon: const Icon(Icons.home_rounded, size: 28),
+              IconButton.filledTonal(
+                onPressed: () => context.go(RoutePaths.home),
+                icon: const Icon(Icons.home_rounded),
                 style: IconButton.styleFrom(
-                  backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
-                  foregroundColor: colorScheme.onPrimary,
-                  minimumSize: const Size(56, 56),
+                  backgroundColor: colorScheme.surfaceContainerHigh,
+                  foregroundColor: colorScheme.onSurface,
+                  minimumSize: const Size(48, 48),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Community',
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'See what players around you are sharing today.',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              FilledButton.tonalIcon(
+                onPressed: () => context.push(RoutePaths.socialSearch),
+                icon: const Icon(Icons.search_rounded),
+                label: const Text('Find friends'),
+                style: FilledButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-        // What's on your mind input
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-          child: ThoughtsInput(onTap: _navigateToCreatePost),
-        ),
-      ],
+          const SizedBox(height: 24),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              gradient: heroGradient,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withOpacity(0.18),
+                  blurRadius: 24,
+                  offset: const Offset(0, 16),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Community spotlight',
+                  style: textTheme.labelLarge?.copyWith(
+                    color: onHero.withOpacity(0.8),
+                    letterSpacing: 0.6,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Celebrate your highlights',
+                  style: textTheme.headlineSmall?.copyWith(
+                    color: onHero,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Share match recaps, training wins, and invite others to join upcoming sessions.',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: onHero.withOpacity(0.85),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: const [
+                    _CommunityTagChip(label: '#weekendRun'),
+                    _CommunityTagChip(label: '#padelCrew'),
+                    _CommunityTagChip(label: '#findTeam'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildFeed() {
-    if (_isLoading && _posts.isEmpty) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (_posts.isEmpty) {
-      return _buildEmptyState();
-    }
+  Widget _buildComposerCard() {
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return Column(
-      children: _posts.map((post) {
-        return PostCard(
-          post: post,
-          onLike: () => _likePost(post.id),
-          onComment: () => _openComments(post.id),
-          onShare: () => _sharePost(post.id),
-          onProfileTap: () => _openProfile(post.authorId),
-        );
-      }).toList(),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Card(
+        elevation: 0,
+        color: colorScheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: ThoughtsInput(onTap: _navigateToCreatePost),
+        ),
+      ),
+    );
+  }
+
+  SliverPadding _buildPostsSliver() {
+    return SliverPadding(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final post = _posts[index];
+            return Padding(
+              padding: EdgeInsets.only(bottom: index == _posts.length - 1 ? 0 : 20),
+              child: PostCard(
+                post: post,
+                onLike: () => _likePost(post.id),
+                onComment: () => _openComments(post.id),
+                onShare: () => _sharePost(post.id),
+                onProfileTap: () => _openProfile(post.authorId),
+              ),
+            );
+          },
+          childCount: _posts.length,
+        ),
+      ),
     );
   }
 
   Widget _buildEmptyState() {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.group,
-              size: 64,
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 64),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.group,
+            size: 64,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No posts yet',
+            style: textTheme.headlineSmall?.copyWith(
+              color: colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Follow friends and join the conversation!',
+            style: textTheme.bodyLarge?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(height: 16),
-            Text(
-              'No posts yet',
-              style: textTheme.headlineSmall?.copyWith(
-                color: colorScheme.onSurface,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 24),
+          FilledButton.tonalIcon(
+            onPressed: _navigateToCreatePost,
+            icon: const Icon(Icons.add_rounded),
+            label: const Text('Create your first post'),
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(18),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Follow friends and join the conversation!',
-              style: textTheme.bodyLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            FilledButton.icon(
-              onPressed: _navigateToCreatePost,
-              icon: const Icon(Icons.add),
-              label: const Text('Create your first post'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-            ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CommunityTagChip extends StatelessWidget {
+  final String label;
+
+  const _CommunityTagChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.onSecondaryContainer.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        label,
+        style: textTheme.labelMedium?.copyWith(
+          color: colorScheme.onSecondaryContainer,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );

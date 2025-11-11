@@ -76,24 +76,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               const SizedBox(height: 16),
               _buildHeroSection(displayName),
-              const SizedBox(height: 240),
+              const SizedBox(height: 220),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildQuickAccessSection(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     _buildNewlyJoinedSection(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     _buildActivitiesButton(),
                     if (FeatureFlags.socialFeed) ...[
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
                       _buildLatestFeedsSection(),
                     ],
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 36),
                     _buildRecentGamesSection(),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 40),
                   ],
                 ),
               ),

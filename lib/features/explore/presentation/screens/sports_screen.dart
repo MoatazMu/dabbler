@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
-import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 import 'package:dabbler/core/design_system/widgets/app_filter_chip.dart';
 import 'package:dabbler/core/design_system/widgets/app_search_input.dart';
 import 'package:dabbler/core/design_system/ds.dart';
@@ -813,222 +812,279 @@ class _ExploreScreenState extends State<ExploreScreen>
 
   @override
   Widget build(BuildContext context) {
-    return TwoSectionLayout(
-      category: 'sports',
-      topPadding: EdgeInsets.zero,
-      bottomPadding: EdgeInsets.zero,
-      topSection: _buildTopSection(),
-      bottomSection: _buildBottomSection(),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildTopSection(),
+            Expanded(child: _buildBottomSection()),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildTopSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Top row: Home icon and Create game button
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 48, 20, 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              // Home icon button - Material 3 IconButton.filled
-              Builder(
-                builder: (context) {
-                  final colorScheme = Theme.of(context).colorScheme;
-                  return IconButton.filled(
-                    onPressed: () => context.go('/home'),
-                    icon: const Text(
-                      '🏠',
-                      style: TextStyle(fontSize: 24),
-                    ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
-                      foregroundColor: colorScheme.onPrimary,
-                      minimumSize: const Size(56, 56),
-                    ),
-                  );
-                },
+              IconButton.filledTonal(
+                onPressed: () => context.go(RoutePaths.home),
+                icon: const Icon(Icons.home_rounded),
+                style: IconButton.styleFrom(
+                  backgroundColor: colorScheme.surfaceContainerHigh,
+                  foregroundColor: colorScheme.onSurface,
+                  minimumSize: const Size(48, 48),
+                ),
               ),
-              // Create game button
+              const SizedBox(width: 16),
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16),
-                  child: Builder(
-                    builder: (context) {
-                      final colorScheme = Theme.of(context).colorScheme;
-                      return SizedBox(
-                        height: 56,
-                        child: FilledButton.icon(
-                          onPressed: () => context.push(RoutePaths.createGame),
-                          icon: const Icon(Icons.add, size: 20),
-                          label: const Text('Create game'),
-                          style: FilledButton.styleFrom(
-                            backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
-                            foregroundColor: colorScheme.onPrimary,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 16,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(28),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Explore sports',
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Find games, venues, and teammates nearby.',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              FilledButton.icon(
+                onPressed: () => context.push(RoutePaths.createGame),
+                icon: const Icon(Icons.add_rounded),
+                label: const Text('Create'),
+                style: FilledButton.styleFrom(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Builder(
+            builder: (context) {
+              final heroGradient = LinearGradient(
+                colors: [
+                  colorScheme.primaryContainer,
+                  colorScheme.primary,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              );
+
+              final onPrimary = colorScheme.onPrimary;
+
+              return Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: heroGradient,
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: colorScheme.primary.withOpacity(0.18),
+                      blurRadius: 24,
+                      offset: const Offset(0, 16),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Weekend picks',
+                      style: textTheme.labelLarge?.copyWith(
+                        color: onPrimary.withOpacity(0.8),
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Book a spot before it fills up',
+                      style: textTheme.headlineSmall?.copyWith(
+                        color: onPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Curated sessions from the community tailored to your sports preferences.',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: onPrimary.withOpacity(0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _sports.take(3).map((sport) {
+                        return Chip(
+                          label: Text(
+                            '${sport['emoji']} ${sport['name']}',
+                            style: textTheme.labelLarge?.copyWith(
+                              color: onPrimary,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  ),
+                          backgroundColor: onPrimary.withOpacity(0.15),
+                        );
+                      }).toList(),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              );
+            },
           ),
-        ),
-        // Tab Bar
-        Builder(
-          builder: (context) {
-            final colorScheme = Theme.of(context).colorScheme;
-            final textTheme = Theme.of(context).textTheme;
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: colorScheme.outlineVariant,
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: Material(
-                  color: Colors.transparent,
-                  child: TabBar(
-                    controller: _mainTabController,
-                    tabs: [
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              '🎮',
-                              style: TextStyle(fontSize: 20),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Games',
-                              style: textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Tab(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text(
-                              '🏟️',
-                              style: TextStyle(fontSize: 20),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Venues',
-                              style: textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                    labelColor: colorScheme.onSurface,
-                    unselectedLabelColor: colorScheme.onSurface.withOpacity(0.7),
-                    indicatorColor: colorScheme.onSurface,
-                    indicatorWeight: 3,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    labelStyle: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    unselectedLabelStyle: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w400,
-                    ),
-                    dividerColor: Colors.transparent,
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-        const SizedBox(height: 16),
-        // Search bar and settings
-        Padding(
-          padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-          child: Row(
-            children: [
-              Expanded(
-                child: AppSearchInput(
-                  controller: _searchController,
-                  hintText: 'Search',
-                  lightStyle: true,
-                  onChanged: _onSearchChanged,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Builder(
-                builder: (context) {
-                  final colorScheme = Theme.of(context).colorScheme;
-                  return IconButton.filled(
-                    onPressed: () {
-                      // Show filter modal
-                      _showFilterModal();
-                    },
-                    icon: const Text(
-                      '⚙️',
-                      style: TextStyle(fontSize: 22),
-                    ),
-                    style: IconButton.styleFrom(
-                      backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
-                      foregroundColor: colorScheme.onPrimary,
-                      minimumSize: const Size(52, 52),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-        // Sports Chips (for filtering)
-        _buildSportsChips(),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildBottomSection() {
-    return Column(
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerLowest,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: _buildTabSwitcher(),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: _buildSearchRow(),
+          ),
+          const SizedBox(height: 12),
+          _buildSportsChips(),
+          const SizedBox(height: 16),
+          Expanded(
+            child: TabBarView(
+              controller: _mainTabController,
+              children: [
+                MatchListScreen(
+                  sport: _sports[_selectedSportIndex]['name'],
+                  sportColor: _sports[_selectedSportIndex]['color'],
+                  searchQuery: _searchQuery,
+                ),
+                _buildVenuesTab(
+                  _sports[_selectedSportIndex]['name'],
+                  _searchQuery,
+                  secondarySports: _selectedSecondarySports,
+                  filterArea: _selectedArea,
+                  priceRange: _selectedPriceRange,
+                  rating: _selectedRating,
+                  amenities: _selectedAmenities,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabSwitcher() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: TabBar(
+        controller: _mainTabController,
+        indicator: BoxDecoration(
+          color: colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: colorScheme.onPrimaryContainer,
+        unselectedLabelColor: colorScheme.onSurfaceVariant,
+        labelStyle: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        unselectedLabelStyle:
+            textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
+        tabs: const [
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('🎮', style: TextStyle(fontSize: 18)),
+                SizedBox(width: 8),
+                Text('Games'),
+              ],
+            ),
+          ),
+          Tab(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('🏟️', style: TextStyle(fontSize: 18)),
+                SizedBox(width: 8),
+                Text('Venues'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSearchRow() {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Row(
       children: [
-        // Main TabBarView
-        SizedBox(
-          height: MediaQuery.of(context).size.height * 0.6,
-          child: TabBarView(
-            controller: _mainTabController,
-            children: [
-              // Games Tab: Filtered by selected sport
-              MatchListScreen(
-                sport: _sports[_selectedSportIndex]['name'],
-                sportColor: _sports[_selectedSportIndex]['color'],
-                searchQuery: _searchQuery,
-              ),
-              // Venues Tab: Filtered by selected sport
-              _buildVenuesTab(
-                _sports[_selectedSportIndex]['name'],
-                _searchQuery,
-                secondarySports: _selectedSecondarySports,
-                filterArea: _selectedArea,
-                priceRange: _selectedPriceRange,
-                rating: _selectedRating,
-                amenities: _selectedAmenities,
-              ),
-            ],
+        Expanded(
+          child: AppSearchInput(
+            controller: _searchController,
+            hintText: 'Search games and venues',
+            lightStyle: true,
+            onChanged: _onSearchChanged,
+          ),
+        ),
+        const SizedBox(width: 12),
+        IconButton.filledTonal(
+          onPressed: _showFilterModal,
+          icon: const Icon(Icons.tune_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
           ),
         ),
       ],
@@ -1038,7 +1094,7 @@ class _ExploreScreenState extends State<ExploreScreen>
   Widget _buildSportsChips() {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.only(left: 20, top: 12, bottom: 12),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 12),
       child: Row(
         children: List.generate(_sports.length, (index) {
           final sport = _sports[index];
