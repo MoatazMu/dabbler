@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
+import 'package:dabbler/themes/app_theme.dart';
 
 class PhoneInputScreen extends ConsumerStatefulWidget {
   const PhoneInputScreen({super.key});
@@ -159,28 +160,27 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   }
 
   Widget _buildTopSection() {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Column(
       children: [
-        SizedBox(height: AppSpacing.huge),
+        const SizedBox(height: 32),
         // Dabbler logo and text
         _buildLogo(),
-        SizedBox(height: AppSpacing.huge),
-        // Welcome text
+        const SizedBox(height: 32),
+        // Welcome text - using Material 3 typography
         Text(
           'Welcome to dabbler!',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
+          style: textTheme.headlineSmall?.copyWith(
+            color: colorScheme.onSurface,
           ),
         ),
-        SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: 8),
         Text(
           'Enter your mobile number to get started',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          style: textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),
@@ -213,60 +213,89 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
       children: [
         // Phone input field
         _buildPhoneInput(),
-        SizedBox(height: AppSpacing.lg),
+        const SizedBox(height: 16), // Material 3 spacing: 16dp
 
         // Login with Email button
         _buildEmailButton(),
 
-        SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: 24), // Material 3 spacing: 24dp
 
         // Divider with "or"
         _buildDivider(),
 
-        SizedBox(height: AppSpacing.xl),
+        const SizedBox(height: 24), // Material 3 spacing: 24dp
 
         // Continue with Google button
         _buildGoogleButton(),
 
-        SizedBox(height: AppSpacing.md),
+        const SizedBox(height: 12), // Material 3 spacing: 12dp
 
         // Continue with Email button
         _buildContinueEmailButton(),
 
-        SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: 24), // Material 3 spacing: 24dp
 
         // Terms and privacy
         _buildTermsText(),
 
-        // Error/Success messages
+        // Error/Success messages - using Material 3 colors
         if (_errorMessage != null) ...[
-          SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: 16),
           Container(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.error.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.sm),
-              border: Border.all(color: AppColors.error.withOpacity(0.3)),
+              color: Theme.of(context).colorScheme.errorContainer,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(
-              _errorMessage!,
-              style: TextStyle(color: AppColors.error),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  color: Theme.of(context).colorScheme.onErrorContainer,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _errorMessage!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
 
         if (_successMessage != null) ...[
-          SizedBox(height: AppSpacing.lg),
+          const SizedBox(height: 16),
           Container(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.sm),
-              border: Border.all(color: AppColors.success.withOpacity(0.3)),
+              color: Theme.of(context).extension<AppThemeExtension>()?.success.withOpacity(0.1) ??
+                  Theme.of(context).colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Text(
-              _successMessage!,
-              style: TextStyle(color: AppColors.success),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.check_circle_outline,
+                  color: Theme.of(context).extension<AppThemeExtension>()?.success ??
+                      Theme.of(context).colorScheme.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _successMessage!,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).extension<AppThemeExtension>()?.success ??
+                          Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -275,188 +304,144 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   }
 
   Widget _buildPhoneInput() {
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.cardColor(context),
-        borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
-        border: Border.all(color: AppColors.borderDark),
-      ),
-      child: Form(
-        key: _formKey,
-        child: Row(
-          children: [
-            Text('🇦🇪', style: TextStyle(fontSize: 22)),
-            SizedBox(width: AppSpacing.sm),
-            Text(
-              _countryCode,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: TextFormField(
-                controller: _phoneController,
-                decoration: InputDecoration(
-                  hintText: '505050500',
-                  hintStyle: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.zero,
-                ),
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                keyboardType: TextInputType.phone,
-                onChanged: _onPhoneChanged,
-                validator: _validatePhone,
-              ),
-            ),
-          ],
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
+    // Use Material 3 TextFormField with proper styling and validation
+    return Form(
+      key: _formKey,
+      child: TextFormField(
+        controller: _phoneController,
+        keyboardType: TextInputType.phone,
+        onChanged: _onPhoneChanged,
+        validator: _validatePhone,
+        style: textTheme.bodyLarge?.copyWith(
+          color: colorScheme.onSurface,
         ),
+        decoration: InputDecoration(
+          hintText: '505050500',
+          prefixIcon: Padding(
+            padding: const EdgeInsets.only(left: 16, right: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🇦🇪', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 8),
+                Text(
+                  _countryCode,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  width: 1,
+                  height: 20,
+                  color: colorScheme.outlineVariant,
+                ),
+              ],
+            ),
+          ),
+          // Material 3 uses InputDecorationTheme from theme
+        ).applyDefaults(Theme.of(context).inputDecorationTheme),
       ),
     );
   }
 
   Widget _buildEmailButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _handleSubmit,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryPurple,
-          foregroundColor: Colors.white,
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
-          ),
-        ),
-        child: _isLoading
-            ? SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+    // Use Material 3 FilledButton for primary action
+    return FilledButton.icon(
+      onPressed: _isLoading ? null : _handleSubmit,
+      icon: _isLoading
+          ? SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  Theme.of(context).colorScheme.onPrimary,
                 ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.phone, size: 18),
-                  SizedBox(width: AppSpacing.sm),
-                  Text(
-                    'Login with phone',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                  ),
-                ],
               ),
+            )
+          : const Icon(Icons.phone, size: 20),
+      label: Text(_isLoading ? 'Sending...' : 'Login with phone'),
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(double.infinity, 56),
       ),
     );
   }
 
   Widget _buildDivider() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
+    // Use Material 3 Divider
     return Row(
       children: [
-        Expanded(child: Container(height: 1, color: AppColors.borderDark)),
+        Expanded(
+          child: Divider(
+            color: colorScheme.outlineVariant,
+            thickness: 1,
+          ),
+        ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'or',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ),
-        Expanded(child: Container(height: 1, color: AppColors.borderDark)),
+        Expanded(
+          child: Divider(
+            color: colorScheme.outlineVariant,
+            thickness: 1,
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildGoogleButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: () {
-          // TODO: Implement Google sign in
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Google sign-in coming soon')));
-        },
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: AppColors.categoryBgMain(context),
-          foregroundColor: Theme.of(context).colorScheme.onSurface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'G',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            SizedBox(width: AppSpacing.sm),
-            Text(
-              'Continue with Google',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
+    // Use Material 3 OutlinedButton for secondary actions
+    return OutlinedButton.icon(
+      onPressed: () {
+        // TODO: Implement Google sign in
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Google sign-in coming soon')),
+        );
+      },
+      icon: const Text(
+        'G',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+      ),
+      label: const Text('Continue with Google'),
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 56),
       ),
     );
   }
 
   Widget _buildContinueEmailButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 56,
-      child: ElevatedButton(
-        onPressed: () {
-          debugPrint('📧 [DEBUG] PhoneInputScreen: Email button pressed');
-          context.go(RoutePaths.emailInput);
-        },
-        style: ElevatedButton.styleFrom(
-          elevation: 0,
-          backgroundColor: AppColors.categoryBgMain(context),
-          foregroundColor: Theme.of(context).colorScheme.onSurface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('📨', style: TextStyle(fontSize: 18)),
-            SizedBox(width: AppSpacing.sm),
-            Text(
-              'Continue with Email',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
+    // Use Material 3 FilledButton.tonal for secondary actions
+    return FilledButton.tonalIcon(
+      onPressed: () {
+        debugPrint('📧 [DEBUG] PhoneInputScreen: Email button pressed');
+        context.go(RoutePaths.emailInput);
+      },
+      icon: const Text('📨', style: TextStyle(fontSize: 18)),
+      label: const Text('Continue with Email'),
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(double.infinity, 56),
       ),
     );
   }
 
   Widget _buildTermsText() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -464,44 +449,46 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
       children: [
         Text(
           'By continuing, you agree to our',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
-        GestureDetector(
-          onTap: () {
+        TextButton(
+          onPressed: () {
             // TODO: Open Terms of Service
           },
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
           child: Text(
             'Terms of Service',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface,
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.primary,
               decoration: TextDecoration.underline,
             ),
           ),
         ),
         Text(
           'and',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
-        GestureDetector(
-          onTap: () {
+        TextButton(
+          onPressed: () {
             // TODO: Open Privacy Policy
           },
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
           child: Text(
             'Privacy Policy',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface,
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.primary,
               decoration: TextDecoration.underline,
             ),
           ),
@@ -510,3 +497,4 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
     );
   }
 }
+

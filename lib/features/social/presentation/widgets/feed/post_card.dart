@@ -96,6 +96,9 @@ class PostCard extends StatelessWidget {
   }
 
   Widget _buildHeader(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Row(
       children: [
         // Display Name and Time
@@ -104,19 +107,16 @@ class PostCard extends StatelessWidget {
             children: [
               Text(
                 post.authorName,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 14,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurface,
                   fontWeight: FontWeight.w600,
                 ),
               ),
               const SizedBox(width: 6),
               Text(
                 _formatTimeAgo(post.createdAt),
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -187,10 +187,8 @@ class PostCard extends StatelessWidget {
                 textDirection: _isRtl(post.content)
                     ? TextDirection.rtl
                     : TextDirection.ltr,
-                style: TextStyle(
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
@@ -320,6 +318,9 @@ class PostCard extends StatelessWidget {
     required bool isDark,
     VoidCallback? onTap,
   }) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return GestureDetector(
       onTap: onTap,
       child: Row(
@@ -330,16 +331,13 @@ class PostCard extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              fontFamily: 'Roboto',
             ),
           ),
           const SizedBox(width: 4),
           Text(
             label,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],

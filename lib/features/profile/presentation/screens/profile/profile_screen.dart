@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:dabbler/core/design_system/colors/app_colors.dart';
 import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 import '../../controllers/profile_controller.dart';
 import '../../controllers/sports_profile_controller.dart';
@@ -12,6 +11,7 @@ import 'package:dabbler/data/models/profile/user_profile.dart';
 import 'package:dabbler/data/models/profile/sports_profile.dart';
 import 'package:dabbler/features/profile/presentation/widgets/profile_rewards_widget.dart';
 import '../../../../../utils/constants/route_constants.dart';
+import 'package:dabbler/themes/app_theme.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -102,6 +102,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildTopSection(BuildContext context, ProfileState profileState) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Padding(
       padding: const EdgeInsets.only(top: 48, left: 24, right: 24, bottom: 18),
       child: Column(
@@ -117,66 +120,42 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GestureDetector(
-                  onTap: () => context.go('/home'),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: ShapeDecoration(
-                      color: Colors.white.withOpacity(0.7),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16777200),
-                      ),
-                    ),
-                    child: Text(
-                      '🏠',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontFamily: 'Inter',
-                        height: 0,
-                      ),
-                    ),
+                // Home icon button - Material 3 IconButton.filled
+                IconButton.filled(
+                  onPressed: () => context.go('/home'),
+                  icon: const Text(
+                    '🏠',
+                    style: TextStyle(fontSize: 22),
+                  ),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
+                    foregroundColor: colorScheme.onPrimary,
+                    minimumSize: const Size(44, 44),
                   ),
                 ),
                 const Spacer(),
-                GestureDetector(
-                  onTap: () => context.push('/settings'),
-                  child: Container(
+                // Settings button - Material 3 FilledButton
+                FilledButton.icon(
+                  onPressed: () => context.push('/settings'),
+                  icon: const Text(
+                    '⚙',
+                    style: TextStyle(fontSize: 22),
+                  ),
+                  label: Text(
+                    'Settings',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
+                    foregroundColor: colorScheme.onPrimary,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 10,
                     ),
-                    decoration: ShapeDecoration(
-                      color: Color(0xFFFEFEFE),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          '⚙',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontFamily: 'Inter',
-                            height: 0,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Settings',
-                          style: TextStyle(
-                            color: Color(0xFF191919),
-                            fontSize: 14,
-                            fontFamily: 'Inter',
-                            height: 0.10,
-                          ),
-                        ),
-                      ],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(22),
                     ),
                   ),
                 ),
@@ -252,18 +231,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ),
                 child: profile?.avatarUrl != null
                     ? Image.network(profile!.avatarUrl!, fit: BoxFit.cover)
-                    : Container(
-                        decoration: ShapeDecoration(
-                          color: Colors.grey.shade300,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(25165800),
-                          ),
-                        ),
-                        child: Icon(
-                          Icons.person,
-                          size: 48,
-                          color: Colors.grey.shade600,
-                        ),
+                    : Builder(
+                        builder: (context) {
+                          final colorScheme = Theme.of(context).colorScheme;
+                          return Container(
+                            decoration: ShapeDecoration(
+                              color: colorScheme.surfaceContainerHigh,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25165800),
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.person,
+                              size: 48,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          );
+                        },
                       ),
               ),
               const SizedBox(width: 16),
@@ -272,7 +256,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 child: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: ShapeDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(6),
                     ),
@@ -499,24 +483,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ],
           ),
           const SizedBox(height: 12),
-          LinearProgressIndicator(
-            value: completion / 100,
-            backgroundColor: AppColors.stroke(context),
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Theme.of(context).primaryColor,
-            ),
-            minHeight: 6,
+          Builder(
+            builder: (context) {
+              final colorScheme = Theme.of(context).colorScheme;
+              return LinearProgressIndicator(
+                value: completion / 100,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  colorScheme.primary,
+                ),
+                minHeight: 6,
+              );
+            },
           ),
           if (completion < 80) ...[
             const SizedBox(height: 12),
             GestureDetector(
               onTap: () => context.push('/profile/edit'),
-              child: Text(
-                'Complete your profile to get better matches',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).primaryColor,
-                  decoration: TextDecoration.underline,
-                ),
+              child: Builder(
+                builder: (context) {
+                  final colorScheme = Theme.of(context).colorScheme;
+                  final textTheme = Theme.of(context).textTheme;
+                  return Text(
+                    'Complete your profile to get better matches',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.primary,
+                      decoration: TextDecoration.underline,
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -527,42 +522,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
   Widget _buildBasicInfo(BuildContext context, ProfileState profileState) {
     final profile = profileState.profile;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    return Container(
+    return Card(
+      elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text(
-                'Basic Information',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Theme.of(context).colorScheme.onSurface,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Basic Information',
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: () => context.push('/profile/edit'),
-                icon: const Icon(Icons.edit_outlined),
-                iconSize: 20,
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => context.push('/profile/edit'),
+                  icon: const Icon(Icons.edit_outlined),
+                  iconSize: 20,
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
           if (profile != null && profile.email.isNotEmpty)
             _buildInfoRow(context, Icons.email_outlined, profile.email),
           if (profile?.phoneNumber != null)
@@ -585,23 +573,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   profile.location == null &&
                   profile.dateOfBirth == null))
             _buildEmptyState(context, 'Add your basic information'),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildInfoRow(BuildContext context, IconData icon, String text) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               text,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.bodyTxt(context),
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),
@@ -657,115 +649,106 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildSportCard(BuildContext context, SportProfile sport) {
-    return Container(
-      width: 160,
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
+    return Card(
+      elevation: 0,
       margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).primaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    _getSportIcon(sport.sportName),
-                    color: Theme.of(context).primaryColor,
-                    size: 24,
-                  ),
-                ),
-                if (sport.isPrimarySport) ...[
-                  const Spacer(),
+      child: SizedBox(
+        width: 160,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
-                      color: Colors.orange,
-                      borderRadius: BorderRadius.circular(8),
+                      color: colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Icon(
-                      Icons.star,
-                      color: Colors.white,
-                      size: 12,
+                    child: Icon(
+                      _getSportIcon(sport.sportName),
+                      color: colorScheme.onPrimaryContainer,
+                      size: 24,
                     ),
                   ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              sport.sportName,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _getSkillLevelText(sport.skillLevel),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: _getSkillLevelColor(sport.skillLevel),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${sport.yearsPlaying} years',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            if (sport.achievements.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 4,
-                children: sport.achievements.take(2).map((achievement) {
-                  return Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(
-                        context,
-                      ).primaryColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      achievement,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).primaryColor,
-                        fontSize: 10,
+                  if (sport.isPrimarySport) ...[
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.star,
+                        color: colorScheme.onPrimaryContainer,
+                        size: 12,
                       ),
                     ),
-                  );
-                }).toList(),
+                  ],
+                ],
               ),
+              const SizedBox(height: 12),
+              Text(
+                sport.sportName,
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurface,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _getSkillLevelText(sport.skillLevel),
+                style: textTheme.bodySmall?.copyWith(
+                  color: _getSkillLevelColor(context, sport.skillLevel),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${sport.yearsPlaying} years',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              if (sport.achievements.isNotEmpty) ...[
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 4,
+                  children: sport.achievements.take(2).map((achievement) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        achievement,
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontSize: 10,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -775,30 +758,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     BuildContext context,
     ProfileState profileState,
   ) {
-    return Container(
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
+    return Card(
+      elevation: 0,
       margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Activity Summary',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Activity Summary',
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
             ),
-          ),
           const SizedBox(height: 16),
           Row(
             children: [
@@ -841,7 +818,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ),
             ],
           ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -852,30 +830,37 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     String value,
     IconData icon,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
+            color: colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, color: Theme.of(context).primaryColor, size: 24),
+          child: Icon(
+            icon,
+            color: colorScheme.onPrimaryContainer,
+            size: 24,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          style: textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).primaryColor,
+            color: colorScheme.primary,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
           textAlign: TextAlign.center,
         ),
@@ -884,29 +869,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildEmptyState(BuildContext context, String message) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppColors.sectionBg(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.stroke(context)),
-      ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: AppColors.disabledTxt(context),
-            size: 32,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
+    return Card(
+      elevation: 0,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            Icon(
+              Icons.info_outline,
+              color: colorScheme.onSurfaceVariant,
+              size: 32,
             ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -984,16 +970,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     }
   }
 
-  Color _getSkillLevelColor(SkillLevel skillLevel) {
+  Color _getSkillLevelColor(BuildContext context, SkillLevel skillLevel) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appTheme = Theme.of(context).extension<AppThemeExtension>();
+    
     switch (skillLevel) {
       case SkillLevel.beginner:
-        return Colors.green;
+        return appTheme?.success ?? colorScheme.primaryContainer;
       case SkillLevel.intermediate:
-        return Colors.orange;
+        return appTheme?.warning ?? colorScheme.primaryContainer;
       case SkillLevel.advanced:
-        return Colors.blue;
+        return appTheme?.infoLink ?? colorScheme.primaryContainer;
       case SkillLevel.expert:
-        return Colors.purple;
+        return colorScheme.primary;
     }
   }
 

@@ -11,6 +11,8 @@ import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/features/games/presentation/screens/join_game/game_detail_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
+import 'package:dabbler/widgets/thoughts_input.dart';
+import 'package:dabbler/themes/app_theme.dart';
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {
@@ -56,6 +58,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    
     // Get display name from users table - NO FALLBACK to 'Player'
     final displayName =
         _userProfile?['display_name'] != null &&
@@ -75,14 +80,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${_getGreeting()},', style: AppTypography.greeting),
+                    Text(
+                      '${_getGreeting()},',
+                      style: textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     if (displayName != null)
-                      Text('$displayName!', style: AppTypography.displayLarge)
+                      Text(
+                        '$displayName!',
+                        style: textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
+                      )
                     else
                       Text(
                         'Complete your profile',
-                        style: AppTypography.bodyMedium.copyWith(
-                          color: AppColors.error,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.error,
                           fontStyle: FontStyle.italic,
                         ),
                       ),
@@ -96,20 +111,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   imageUrlOrAsset: _userProfile?['avatar_url'],
                   radius: 30,
                   fallbackIcon: Icons.person,
-                  backgroundColor: AppColors.primaryPurpleLight,
-                  fallbackColor: AppColors.primaryPurple,
+                  backgroundColor: colorScheme.categoryMain,
+                  fallbackColor: colorScheme.primary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sectionSpacing),
+          const SizedBox(height: 24),
 
           // Upcoming Game Card
           _buildUpcomingGameSection(),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: 20),
 
           // Thoughts Input
-          _buildThoughtsInput(),
+          const ThoughtsInput(
+            onTap: null, // TODO: Navigate to create post screen
+          ),
         ],
       ),
       bottomSection: Column(
@@ -125,7 +142,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onTap: () => context.go(RoutePaths.social),
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              const SizedBox(width: 12),
               Expanded(
                 child: AppButtonCard(
                   emoji: '🏆',
@@ -135,11 +152,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sectionSpacing),
+          const SizedBox(height: 24),
 
           // Newly joined section
           _buildNewlyJoinedSection(),
-          const SizedBox(height: AppSpacing.sectionSpacing),
+          const SizedBox(height: 24),
 
           // Action Cards
           Row(
@@ -152,7 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   onTap: () => context.go(RoutePaths.createGame),
                 ),
               ),
-              const SizedBox(width: AppSpacing.md),
+              const SizedBox(width: 12),
               Expanded(
                 child: AppActionCard(
                   emoji: '🔍',
@@ -163,75 +180,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.sectionSpacing),
+          const SizedBox(height: 24),
 
           // Activities button
           _buildActivitiesButton(),
-          const SizedBox(height: AppSpacing.sectionSpacing),
+          const SizedBox(height: 24),
 
           // Latest feeds (if social enabled)
           if (FeatureFlags.socialFeed) _buildLatestFeedsSection(),
           if (FeatureFlags.socialFeed)
-            const SizedBox(height: AppSpacing.sectionSpacing),
+            const SizedBox(height: 24),
 
           // Recent Games
           _buildRecentGamesSection(),
-          const SizedBox(height: AppSpacing.sectionSpacing),
+          const SizedBox(height: 24),
         ],
       ),
     );
   }
 
-  Widget _buildThoughtsInput() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: AppColors.cardColor(context),
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppColors.stroke(context)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              'What\'s on your mind?',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 15,
-              ),
-            ),
-          ),
-          const Text('📝', style: TextStyle(fontSize: 20)),
-        ],
-      ),
-    );
-  }
 
   Widget _buildActivitiesButton() {
-    return GestureDetector(
-      onTap: () => context.go(RoutePaths.activities),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: AppColors.cardColor(context),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.stroke(context)),
-        ),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('⚡', style: TextStyle(fontSize: 18)),
-              const SizedBox(width: 8),
-              Text(
-                'Activities',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurface,
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
+    return Card(
+      elevation: 0,
+      child: InkWell(
+        onTap: () => context.go(RoutePaths.activities),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Center(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('⚡', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 8),
+                Text(
+                  'Activities',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -239,6 +233,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildNewlyJoinedSection() {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _fetchRecentPlayers(),
       builder: (context, snapshot) {
@@ -269,10 +266,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               'Newly joined',
-              style: TextStyle(
-                fontSize: 18,
+              style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),
@@ -297,12 +293,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               backgroundImage: player['avatar_url'] != null
                                   ? NetworkImage(player['avatar_url'])
                                   : null,
-                              backgroundColor: Colors.grey.shade300,
+                              backgroundColor: colorScheme.surfaceContainerHigh,
                               child: player['avatar_url'] == null
                                   ? Icon(
                                       Icons.person,
                                       size: 26,
-                                      color: Colors.grey.shade600,
+                                      color: colorScheme.onSurfaceVariant,
                                     )
                                   : null,
                             ),
@@ -313,19 +309,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 width: 24,
                                 height: 24,
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: colorScheme.surface,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: Colors.white,
+                                    color: colorScheme.surface,
                                     width: 2,
                                   ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
                                 ),
                                 child: Center(
                                   child: Text(
@@ -350,15 +339,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildLatestFeedsSection() {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Latest feeds',
-          style: TextStyle(
-            fontSize: 20,
+          style: textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: colorScheme.onSurface,
           ),
         ),
         const SizedBox(height: 12),
@@ -369,70 +360,71 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildFeedItem(int index) {
-    return Container(
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return Card(
+      elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.cardColor(context),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.stroke(context)),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: AppColors.sectionBg(context),
-            child: Icon(
-              Icons.person,
-              size: 20,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: colorScheme.surfaceContainerHigh,
+              child: Icon(
+                Icons.person,
+                size: 20,
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      'Sarah',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onSurface,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Sarah',
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      '2h',
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      const SizedBox(width: 8),
+                      Text(
+                        '2h',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Had an amazing time at the community cooking class today! 🍳 Learning new recip...',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.bodyTxt(context),
+                    ],
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    'Had an amazing time at the community cooking class today! 🍳 Learning new recip...',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildRecentGamesSection() {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _fetchRecentGames(),
       builder: (context, snapshot) {
@@ -447,10 +439,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               'Recent Games',
-              style: TextStyle(
-                fontSize: 20,
+              style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onSurface,
+                color: colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),
@@ -462,6 +453,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildRecentGameItem(Map<String, dynamic> game) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    
     final sport = game['sport'] ?? 'Football';
     final format = game['format'] ?? 'Futsal';
     final title = game['title'] ?? 'Game';
@@ -473,25 +467,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final currentPlayers = game['current_players'] ?? 5;
     final maxPlayers = game['max_players'] ?? 10;
 
-    return GestureDetector(
-      onTap: () {
-        if (game['id'] != null) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => GameDetailScreen(gameId: game['id']),
-            ),
-          );
-        }
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.cardColor(context),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.stroke(context)),
-        ),
-        child: Column(
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () {
+          if (game['id'] != null) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => GameDetailScreen(gameId: game['id']),
+              ),
+            );
+          }
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
           children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,19 +504,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             children: [
                               Text(
                                 sport,
-                                style: TextStyle(
-                                  fontSize: 14,
+                                style: textTheme.bodyMedium?.copyWith(
                                   fontWeight: FontWeight.w600,
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                               const SizedBox(width: 8),
                               Text(
                                 format,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -535,10 +524,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 '$currentPlayers/$maxPlayers',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                  color: Theme.of(context).colorScheme.onSurface,
+                                style: textTheme.bodySmall?.copyWith(
+                                  color: colorScheme.onSurface,
                                 ),
                               ),
                             ],
@@ -548,10 +535,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       const SizedBox(height: 8),
                       Text(
                         title,
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                     ],
@@ -595,6 +581,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
           ],
+        ),
         ),
       ),
     );
@@ -700,126 +687,129 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // Format date
         final timeFormat = '${game.startTime} - ${game.endTime}';
 
-        return GestureDetector(
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => GameDetailScreen(gameId: game.id),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: AppColors.cardColor(context),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.stroke(context)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        const Text('🕐', style: TextStyle(fontSize: 20)),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Upcoming Game',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      decoration: BoxDecoration(
-                        color: AppColors.danger.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: AppColors.danger.withOpacity(0.3),
-                        ),
-                      ),
-                      child: Row(
+        final textTheme = Theme.of(context).textTheme;
+        final colorScheme = Theme.of(context).colorScheme;
+        
+        return Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => GameDetailScreen(gameId: game.id),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(20),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
                         children: [
-                          const Text('⏰', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 4),
+                          const Text('🕐', style: TextStyle(fontSize: 20)),
+                          const SizedBox(width: 8),
                           Text(
-                            countdownLabel,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.danger,
+                            'Upcoming Game',
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: colorScheme.onSurface,
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  game.title,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    const Text('🕐', style: TextStyle(fontSize: 16)),
-                    const SizedBox(width: 8),
-                    Text(
-                      timeFormat,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Text('📍', style: TextStyle(fontSize: 16)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        game.venueName ?? 'Location TBD',
-                        style: TextStyle(
-                          fontSize: 15,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
                         ),
-                        overflow: TextOverflow.ellipsis,
+                        decoration: BoxDecoration(
+                          color: colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: colorScheme.error.withOpacity(0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('⏰', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 4),
+                            Text(
+                              countdownLabel,
+                              style: textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onErrorContainer,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    game.title,
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      const Text('🕐', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
+                      Text(
+                        timeFormat,
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Text('📍', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          game.venueName ?? 'Location TBD',
+                          style: textTheme.bodyLarge?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         );
       },
-      loading: () => Container(
-        height: 160,
-        decoration: BoxDecoration(
-          color: AppColors.cardColor(context),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.stroke(context)),
-        ),
-        child: const Center(
-          child: CircularProgressIndicator(color: AppColors.primaryPurple),
-        ),
-      ),
+      loading: () {
+        return Card(
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const SizedBox(
+            height: 160,
+            child: Center(
+              child: CircularProgressIndicator(),
+            ),
+          ),
+        );
+      },
       error: (error, stack) {
         print('Error loading upcoming game: $error');
         return const SizedBox.shrink();

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 import '../widgets/feed/post_card.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
@@ -61,16 +60,17 @@ class _SocialScreenState extends State<SocialScreen> {
       });
 
       if (!mounted) return;
+      final colorScheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              Icon(Icons.error_outline, color: Colors.white, size: 16),
+              Icon(Icons.error_outline, color: colorScheme.onError, size: 16),
               const SizedBox(width: 8),
               Expanded(child: Text('Failed to load posts: $e')),
             ],
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: colorScheme.errorContainer,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           margin: const EdgeInsets.all(16),
@@ -117,16 +117,17 @@ class _SocialScreenState extends State<SocialScreen> {
       });
     } catch (e) {
       if (!mounted) return;
+      final colorScheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
-              Icon(Icons.error_outline, color: Colors.white, size: 16),
+              Icon(Icons.error_outline, color: colorScheme.onErrorContainer, size: 16),
               const SizedBox(width: 8),
               const Text('Failed to update like'),
             ],
           ),
-          backgroundColor: Colors.red,
+          backgroundColor: colorScheme.errorContainer,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           margin: const EdgeInsets.all(16),
@@ -196,6 +197,8 @@ class _SocialScreenState extends State<SocialScreen> {
   }
 
   Widget _buildTopSection() {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -205,17 +208,14 @@ class _SocialScreenState extends State<SocialScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Home icon button
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  shape: BoxShape.circle,
-                ),
-                child: IconButton(
-                  icon: const Icon(Icons.home_rounded, size: 28),
-                  onPressed: () => context.go('/home'),
+              // Home icon button - Material 3 IconButton.filled
+              IconButton.filled(
+                onPressed: () => context.go('/home'),
+                icon: const Icon(Icons.home_rounded, size: 28),
+                style: IconButton.styleFrom(
+                  backgroundColor: colorScheme.onPrimary.withOpacity(0.2),
+                  foregroundColor: colorScheme.onPrimary,
+                  minimumSize: const Size(56, 56),
                 ),
               ),
             ],
@@ -255,38 +255,46 @@ class _SocialScreenState extends State<SocialScreen> {
   }
 
   Widget _buildEmptyState() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.group, size: 64, color: context.colors.onSurfaceVariant),
-          const SizedBox(height: 16),
-          Text(
-            'No posts yet',
-            style: context.textTheme.headlineSmall?.copyWith(
-              color: context.colors.onSurface,
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.group,
+              size: 64,
+              color: colorScheme.onSurfaceVariant,
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Follow friends and join the conversation!',
-            style: context.textTheme.bodyLarge?.copyWith(
-              color: context.colors.onSurfaceVariant,
+            const SizedBox(height: 16),
+            Text(
+              'No posts yet',
+              style: textTheme.headlineSmall?.copyWith(
+                color: colorScheme.onSurface,
+              ),
             ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: _navigateToCreatePost,
-            icon: const Icon(Icons.add),
-            label: const Text('Create your first post'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: context.colors.primary,
-              foregroundColor: context.colors.onPrimary,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            const SizedBox(height: 8),
+            Text(
+              'Follow friends and join the conversation!',
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: _navigateToCreatePost,
+              icon: const Icon(Icons.add),
+              label: const Text('Create your first post'),
+              style: FilledButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

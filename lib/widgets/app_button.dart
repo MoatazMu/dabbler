@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:dabbler/themes/app_theme.dart';
-import 'package:dabbler/utils/ui_constants.dart';
 
-/// Consistent app button widget with multiple variants
+/// Material 3 button widget with multiple variants
+///
+/// This widget wraps Material 3 button components (FilledButton, OutlinedButton, TextButton)
+/// to provide a consistent API while using Material 3 design tokens.
 class AppButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
@@ -72,128 +73,159 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textTheme = Theme.of(context).textTheme;
 
-    // Determine colors based on variant
-    Color backgroundColor;
-    Color foregroundColor;
-    Color? borderColor;
-
-    switch (variant) {
-      case ButtonVariant.primary:
-        backgroundColor = colorScheme.primary;
-        foregroundColor = isDark ? Colors.black : Colors.white;
-        borderColor = null;
-        break;
-      case ButtonVariant.secondary:
-        backgroundColor = AppTheme.getCardBackground(context);
-        foregroundColor = AppTheme.getTextPrimary(context);
-        borderColor = null;
-        break;
-      case ButtonVariant.outline:
-        backgroundColor = Colors.transparent;
-        foregroundColor = AppTheme.getTextPrimary(context);
-        borderColor = AppTheme.getBorderColor(context);
-        break;
-      case ButtonVariant.ghost:
-        backgroundColor = Colors.transparent;
-        foregroundColor = AppTheme.getTextPrimary(context);
-        borderColor = null;
-        break;
-    }
-
-    // Determine sizing
-    EdgeInsets padding;
-    double height;
-    double fontSize;
-    double iconSize;
+    // Determine Material 3 button size
+    ButtonStyle? sizeStyle;
+    double? iconSize;
 
     switch (size) {
       case ButtonSize.small:
-        padding = AppButtonSize.smallPadding;
-        height = AppButtonSize.smallHeight;
-        fontSize = 14;
-        iconSize = AppIconSize.xs;
+        sizeStyle = ButtonStyle(
+          padding: WidgetStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          ),
+          textStyle: WidgetStateProperty.all(textTheme.labelLarge),
+          minimumSize: WidgetStateProperty.all(const Size(64, 32)),
+        );
+        iconSize = 18;
         break;
       case ButtonSize.medium:
-        padding = AppButtonSize.mediumPadding;
-        height = AppButtonSize.mediumHeight;
-        fontSize = 15;
-        iconSize = AppIconSize.sm;
+        sizeStyle = ButtonStyle(
+          padding: WidgetStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          ),
+          textStyle: WidgetStateProperty.all(textTheme.labelLarge),
+          minimumSize: WidgetStateProperty.all(const Size(64, 40)),
+        );
+        iconSize = 20;
         break;
       case ButtonSize.large:
-        padding = AppButtonSize.largePadding;
-        height = AppButtonSize.largeHeight;
-        fontSize = 16;
-        iconSize = AppIconSize.sm;
+        sizeStyle = ButtonStyle(
+          padding: WidgetStateProperty.all(
+            const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          ),
+          textStyle: WidgetStateProperty.all(textTheme.labelLarge),
+          minimumSize: WidgetStateProperty.all(const Size(64, 48)),
+        );
+        iconSize = 24;
         break;
     }
 
-    return SizedBox(
-      width: fullWidth ? double.infinity : null,
-      height: height,
-      child: ElevatedButton(
-        onPressed: isLoading
-            ? null
-            : () {
-                HapticFeedback.lightImpact();
-                onPressed?.call();
-              },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          foregroundColor: foregroundColor,
-          disabledBackgroundColor: backgroundColor.withValues(alpha: 0.5),
-          disabledForegroundColor: foregroundColor.withValues(alpha: 0.5),
-          elevation: 0,
-          shadowColor: Colors.transparent,
-          padding: padding,
-          shape: RoundedRectangleBorder(
-            borderRadius: AppRadius.medium,
-            side: borderColor != null
-                ? BorderSide(color: borderColor, width: 1.5)
-                : BorderSide.none,
-          ),
-        ),
-        child: isLoading
-            ? SizedBox(
-                width: iconSize,
-                height: iconSize,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(foregroundColor),
-                ),
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (leadingIcon != null) ...[
-                    Icon(leadingIcon, size: iconSize),
-                    SizedBox(width: AppSpacing.sm),
-                  ],
-                  Flexible(
-                    child: Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: fontSize,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (trailingIcon != null) ...[
-                    SizedBox(width: AppSpacing.sm),
-                    Icon(trailingIcon, size: iconSize),
-                  ],
-                ],
+    // Build button content
+    Widget buttonContent = isLoading
+        ? SizedBox(
+            width: iconSize,
+            height: iconSize,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                _getLoadingColor(context),
               ),
-      ),
-    );
+            ),
+          )
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (leadingIcon != null) ...[
+                Icon(leadingIcon, size: iconSize),
+                const SizedBox(width: 8),
+              ],
+              Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+              if (trailingIcon != null) ...[
+                const SizedBox(width: 8),
+                Icon(trailingIcon, size: iconSize),
+              ],
+            ],
+          );
+
+    // Handle tap with haptic feedback
+    VoidCallback? onTap = isLoading
+        ? null
+        : () {
+            HapticFeedback.lightImpact();
+            onPressed?.call();
+          };
+
+    // Build appropriate Material 3 button based on variant
+    Widget button;
+    switch (variant) {
+      case ButtonVariant.primary:
+        button = FilledButton(
+          onPressed: onTap,
+          style: sizeStyle,
+          child: buttonContent,
+        );
+        break;
+      case ButtonVariant.secondary:
+        // Use FilledButton.tonal for secondary actions (Material 3 pattern)
+        button = FilledButton.tonal(
+          onPressed: onTap,
+          style: sizeStyle,
+          child: buttonContent,
+        );
+        break;
+      case ButtonVariant.outline:
+        button = OutlinedButton(
+          onPressed: onTap,
+          style: sizeStyle,
+          child: buttonContent,
+        );
+        break;
+      case ButtonVariant.ghost:
+        button = TextButton(
+          onPressed: onTap,
+          style: sizeStyle,
+          child: buttonContent,
+        );
+        break;
+    }
+
+    if (fullWidth) {
+      return SizedBox(width: double.infinity, child: button);
+    }
+
+    return button;
+  }
+
+  Color _getLoadingColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    switch (variant) {
+      case ButtonVariant.primary:
+        return colorScheme.onPrimary;
+      case ButtonVariant.secondary:
+        return colorScheme.onSecondaryContainer;
+      case ButtonVariant.outline:
+      case ButtonVariant.ghost:
+        return colorScheme.primary;
+    }
   }
 }
 
-enum ButtonVariant { primary, secondary, outline, ghost }
+/// Button variant types matching Material 3 patterns
+enum ButtonVariant {
+  /// Primary action - uses FilledButton
+  primary,
 
-enum ButtonSize { small, medium, large }
+  /// Secondary action - uses FilledButton.tonal
+  secondary,
+
+  /// Tertiary action - uses OutlinedButton
+  outline,
+
+  /// Text-only action - uses TextButton
+  ghost,
+}
+
+/// Button size variants
+enum ButtonSize {
+  /// Small button (32dp height)
+  small,
+
+  /// Medium button (40dp height) - default
+  medium,
+
+  /// Large button (48dp height)
+  large,
+}

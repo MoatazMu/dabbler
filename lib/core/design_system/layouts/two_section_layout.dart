@@ -81,7 +81,7 @@ class TwoSectionLayout extends StatelessWidget {
                   color:
                       topBackgroundColor ??
                       (category != null
-                          ? AppTheme.getCategoryColor(context, category!)
+                          ? Theme.of(context).colorScheme.getCategoryColor(category!)
                           : Theme.of(context).colorScheme.primary),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.only(

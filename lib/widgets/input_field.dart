@@ -42,23 +42,33 @@ class CustomInputField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
           Text(
             label!,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+            style: textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 8),
         ],
         Row(
           children: [
             if (prefixIcon != null) ...[
-              Icon(prefixIcon!, size: 16, color: Colors.grey[600]),
-              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(left: 16, right: 8),
+                child: Icon(
+                  prefixIcon!,
+                  size: 20,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
             ],
             Expanded(
               child: TextField(
@@ -71,57 +81,22 @@ class CustomInputField extends StatelessWidget {
                 keyboardType: keyboardType,
                 maxLines: maxLines,
                 minLines: minLines,
+                style: textTheme.bodyLarge?.copyWith(
+                  color: colorScheme.onSurface,
+                ),
                 decoration: InputDecoration(
                   hintText: placeholder ?? hintText,
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 12,
-                  ),
-                ),
+                  helperText: helperText,
+                  errorText: errorText,
+                  prefixIcon: null, // Handled separately above
+                  suffixIcon: suffixIcon,
+                  // Material 3 uses InputDecorationTheme from theme
+                  // Only override specific properties if needed
+                ).applyDefaults(Theme.of(context).inputDecorationTheme),
               ),
             ),
-            if (suffixIcon != null) ...[const SizedBox(width: 8), suffixIcon!],
           ],
         ),
-        if (helperText != null || errorText != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            errorText ?? helperText ?? '',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: errorText != null
-                  ? Theme.of(context).colorScheme.error
-                  : Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -155,15 +130,19 @@ class CustomTextArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (label != null) ...[
           Text(
             label!,
-            style: Theme.of(
-              context,
-            ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+            style: textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w500,
+              color: colorScheme.onSurface,
+            ),
           ),
           const SizedBox(height: 8),
         ],
@@ -174,53 +153,16 @@ class CustomTextArea extends StatelessWidget {
           enabled: enabled,
           minLines: minLines,
           maxLines: maxLines,
+          style: textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onSurface,
+          ),
           decoration: InputDecoration(
             hintText: placeholder,
-            filled: true,
-            fillColor: Theme.of(context).colorScheme.surface,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.outline,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide(
-                color: Theme.of(context).colorScheme.error,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 12,
-            ),
-          ),
+            helperText: helperText,
+            errorText: errorText,
+            // Material 3 uses InputDecorationTheme from theme
+          ).applyDefaults(Theme.of(context).inputDecorationTheme),
         ),
-        if (helperText != null || errorText != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            errorText ?? helperText ?? '',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: errorText != null
-                  ? Theme.of(context).colorScheme.error
-                  : Theme.of(
-                      context,
-                    ).colorScheme.onSurface.withValues(alpha: 0.6),
-            ),
-          ),
-        ],
       ],
     );
   }

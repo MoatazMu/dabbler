@@ -19,6 +19,9 @@ class ThoughtsInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return SizedBox(
       width: double.infinity,
       child: Material(
@@ -30,21 +33,17 @@ class ThoughtsInput extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF301C4D),
+              color: colorScheme.surfaceContainerHighest,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
-                color: const Color(0xFFEBD7FA).withOpacity(0.12),
+                color: colorScheme.outlineVariant.withOpacity(0.5),
                 width: 1,
               ),
             ),
             child: Text(
               "What's on your mind?",
-              style: TextStyle(
-                color: const Color(0xFFEBD7FA).withOpacity(0.70),
-                fontFamily: 'Roboto',
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                letterSpacing: -0.312,
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ),

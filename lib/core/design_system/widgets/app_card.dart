@@ -19,9 +19,10 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Material 3 Card uses elevation 0 and surface container colors
     return Card(
-      elevation: elevation ?? 0,
-      color: backgroundColor,
+      elevation: 0, // Material 3 uses color for depth, not elevation
+      color: backgroundColor, // Will use theme's surfaceContainer if null
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -49,8 +50,10 @@ class AppButtonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    
     return Card(
-      elevation: 0,
+      elevation: 0, // Material 3 uses color for depth
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -63,9 +66,9 @@ class AppButtonCard extends StatelessWidget {
               const SizedBox(width: 8),
               Text(
                 label,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
-                    ),
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ],
           ),
@@ -92,8 +95,11 @@ class AppActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Card(
-      elevation: 0,
+      elevation: 0, // Material 3 uses color for depth
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -108,21 +114,19 @@ class AppActionCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurface,
+                    ),
                   ),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
                 subtitle,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.7),
-                    ),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dabbler/themes/app_theme.dart';
 import '../utils/ui_constants.dart';
 
 /// Consistent card widget with proper spacing and elevation
@@ -25,10 +24,13 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final effectivePadding = padding ?? AppSpacing.cardPaddingAll;
-    final effectiveBorderRadius = borderRadius ?? AppRadius.large;
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    // Material 3 Card uses elevation 0 and surface containers
+    final effectivePadding = padding ?? const EdgeInsets.all(16);
+    final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(12);
     final effectiveBackgroundColor =
-        backgroundColor ?? AppTheme.getCardBackground(context);
+        backgroundColor ?? colorScheme.surfaceContainer;
 
     final cardContent = Container(
       padding: effectivePadding,
@@ -37,10 +39,10 @@ class AppCard extends StatelessWidget {
         color: effectiveBackgroundColor,
         borderRadius: effectiveBorderRadius,
         border: Border.all(
-          color: AppTheme.getBorderColor(context).withValues(alpha: 0.1),
+          color: colorScheme.outlineVariant.withOpacity(0.1),
           width: 1,
         ),
-        boxShadow: hasShadow ? AppElevation.cardShadow(context) : null,
+        // Material 3 uses color for depth, not shadows - shadows removed
       ),
       child: child,
     );
@@ -74,8 +76,11 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Padding(
-      padding: padding ?? const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: padding ?? const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -86,17 +91,17 @@ class SectionHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: context.textTheme.headlineSmall?.copyWith(
+                  style: textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: context.textPrimary,
+                    color: colorScheme.onSurface,
                   ),
                 ),
                 if (subtitle != null) ...[
-                  const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: 4),
                   Text(
                     subtitle!,
-                    style: context.textTheme.bodyMedium?.copyWith(
-                      color: context.textMuted,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -104,7 +109,7 @@ class SectionHeader extends StatelessWidget {
             ),
           ),
           if (action != null) ...[
-            const SizedBox(width: AppSpacing.md),
+            const SizedBox(width: 12),
             action!,
           ],
         ],
@@ -130,45 +135,48 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.xxxl),
+        padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(AppSpacing.xl),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: context.violetCardBg,
+                color: colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                size: AppIconSize.xxl,
-                color: context.textMuted,
+                size: 48,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: 20),
             Text(
               title,
-              style: context.textTheme.titleLarge?.copyWith(
+              style: textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.w600,
-                color: context.textPrimary,
+                color: colorScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
             if (subtitle != null) ...[
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: 8),
               Text(
                 subtitle!,
-                style: context.textTheme.bodyMedium?.copyWith(
-                  color: context.textMuted,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
               ),
             ],
             if (action != null) ...[
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: 20),
               action!,
             ],
           ],

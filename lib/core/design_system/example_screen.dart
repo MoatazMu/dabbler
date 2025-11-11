@@ -155,7 +155,7 @@ class ExampleScreen extends StatelessWidget {
                     ),
 
                     // Trailing icon or info
-                    const Icon(
+                    Icon(
                       Icons.chevron_right,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
