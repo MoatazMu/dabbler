@@ -213,10 +213,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       ],
       flexibleSpace: FlexibleSpaceBar(
         collapseMode: CollapseMode.pin,
-        stretchModes: const [
-          StretchMode.zoomBackground,
-          StretchMode.fadeTitle,
-        ],
+        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
         titlePadding: const EdgeInsetsDirectional.only(start: 24, bottom: 16),
         title: Text(
           'Settings',
@@ -295,7 +292,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             borderRadius: BorderRadius.circular(28),
             borderSide: BorderSide.none,
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 18,
+          ),
         ),
       ),
     );
@@ -352,18 +352,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         Card(
           elevation: 0,
           color: colorScheme.surfaceContainerHigh,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           child: Column(
             children: section.items.asMap().entries.map((entry) {
               final index = entry.key;
               final item = entry.value;
               final isLast = index == section.items.length - 1;
 
-              return _buildSettingsItem(
-                context,
-                item,
-                showDivider: !isLast,
-              );
+              return _buildSettingsItem(context, item, showDivider: !isLast);
             }).toList(),
           ),
         ),
@@ -373,9 +371,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
   Widget _buildSettingsItem(
     BuildContext context,
-    SettingsItem item,
-    {required bool showDivider},
-  ) {
+    SettingsItem item, {
+    required bool showDivider,
+  }) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -405,8 +403,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               color: colorScheme.onSurfaceVariant,
             ),
           ),
-          trailing: Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 12,
+          ),
         ),
         if (showDivider)
           Padding(
@@ -454,8 +458,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               color: colorScheme.onSurfaceVariant,
             ),
           ),
-          trailing: Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          trailing: Icon(
+            Icons.chevron_right,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
         ),
       ),
     );
