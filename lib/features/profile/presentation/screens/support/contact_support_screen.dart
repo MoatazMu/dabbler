@@ -253,7 +253,7 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
 
             // Category
             DropdownButtonFormField<String>(
-              value: _selectedCategory,
+              initialValue: _selectedCategory,
               decoration: InputDecoration(
                 labelText: 'Category',
                 border: OutlineInputBorder(

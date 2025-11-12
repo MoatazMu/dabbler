@@ -28,7 +28,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       final cacheValid = await localDataSource.isCacheValid(userId);
 
       if (cachedProfile != null && cacheValid) {
-        return Right(cachedProfile.toEntity());
+        return Right(cachedProfile);
       }
 
       // Fetch from remote if cache miss or expired
@@ -37,12 +37,12 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       // Cache the result
       await localDataSource.cacheProfile(remoteProfile);
 
-      return Right(remoteProfile.toEntity());
+      return Right(remoteProfile);
     } on ServerFailure catch (e) {
       // Try to return stale cache on server error
       final cachedProfile = await localDataSource.getCachedProfile(userId);
       if (cachedProfile != null) {
-        return Right(cachedProfile.toEntity());
+        return Right(cachedProfile);
       }
       return Left(
         ServerFailure(message: 'Failed to fetch profile: ${e.message}'),
@@ -51,7 +51,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       // Return cached data on network issues
       final cachedProfile = await localDataSource.getCachedProfile(userId);
       if (cachedProfile != null) {
-        return Right(cachedProfile.toEntity());
+        return Right(cachedProfile);
       }
       return Left(
         NetworkFailure(message: 'No network connection: ${e.message}'),
@@ -67,20 +67,19 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   ) async {
     try {
       // Optimistic update - update cache immediately
-      final profileModel = ProfileModel.fromEntity(profile);
-      await localDataSource.cacheProfile(profileModel);
+      await localDataSource.cacheProfile(profile);
 
       try {
         // Update remote
         final updatedProfile = await remoteDataSource.updateProfile(
           profile.id,
-          profileModel.toJson(),
+          profile.toJson(),
         );
 
         // Update cache with server response
         await localDataSource.cacheProfile(updatedProfile);
 
-        return Right(updatedProfile.toEntity());
+        return Right(updatedProfile);
       } catch (e) {
         // Rollback cache on remote failure
         await localDataSource.removeCachedProfile(profile.id);
@@ -106,13 +105,13 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     UserProfile profile,
   ) async {
     try {
-      final profileModel = ProfileModel.fromEntity(profile);
+      final profileModel = profile;
       final createdProfile = await remoteDataSource.createProfile(profileModel);
 
       // Cache the created profile
       await localDataSource.cacheProfile(createdProfile);
 
-      return Right(createdProfile.toEntity());
+      return Right(createdProfile);
     } on ValidationFailure catch (e) {
       return Left(
         ValidationFailure(message: 'Invalid profile data: ${e.message}'),
@@ -285,7 +284,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       final cacheValid = await localDataSource.isCacheValid(userId);
 
       if (cachedStats != null && cacheValid) {
-        return Right(cachedStats.toEntity());
+        return Right(cachedStats);
       }
 
       // Fetch from remote
@@ -294,7 +293,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       // Cache the result
       await localDataSource.cacheStatistics(userId, remoteStats);
 
-      return Right(remoteStats.toEntity());
+      return Right(remoteStats);
     } catch (e) {
       return Left(DataFailure(message: 'Failed to get profile statistics: $e'));
     }
@@ -315,7 +314,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       // Update cache
       await localDataSource.cacheStatistics(userId, updatedStats);
 
-      return Right(updatedStats.toEntity());
+      return Right(updatedStats);
     } catch (e) {
       return Left(
         DataFailure(message: 'Failed to update profile statistics: $e'),
@@ -349,7 +348,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       final profilesJson = (data['profiles'] as List)
           .cast<Map<String, dynamic>>();
       final profiles = profilesJson
-          .map((j) => ProfileModel.fromJson(j).toEntity())
+          .map((j) => UserProfile.fromJson(j))
           .toList();
       return Right(profiles);
     } catch (e) {
@@ -369,9 +368,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       );
       final profiles = recs
           .map(
-            (m) => ProfileModel.fromJson(
-              (m['profile'] as Map<String, dynamic>),
-            ).toEntity(),
+            (m) => UserProfile.fromJson((m['profile'] as Map<String, dynamic>)),
           )
           .toList();
       return Right(profiles);
@@ -419,7 +416,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       // Update cache
       await localDataSource.cacheProfile(verifiedProfile);
 
-      return Right(verifiedProfile.toEntity());
+      return Right(verifiedProfile);
     } on ForbiddenFailure catch (e) {
       return Left(
         ForbiddenFailure(
@@ -544,7 +541,7 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       // Update cache
       await localDataSource.cacheProfile(updatedProfile);
 
-      return Right(updatedProfile.toEntity());
+      return Right(updatedProfile);
     } on ValidationFailure catch (e) {
       return Left(
         ValidationFailure(message: 'Invalid update data: ${e.message}'),

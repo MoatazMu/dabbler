@@ -998,7 +998,7 @@ class _DataRetentionSettingsScreenState
       case 'media_files':
         return Icons.photo;
       case 'location_data':
-        return Icons.location_on;
+        return Icons.location_city;
       case 'analytics_data':
         return Icons.analytics;
       default:

@@ -148,7 +148,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               color: DS.primary.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(Icons.location_on, color: DS.primary, size: 24),
+            child: Icon(Icons.location_city, color: DS.primary, size: 24),
           ),
           const SizedBox(width: 12),
           Expanded(

@@ -125,7 +125,7 @@ class UserService extends ChangeNotifier {
     try {
       // Update in Supabase first
       await _authService.updateUserProfile(
-        displayName: updatedUser.firstName,
+        displayName: updatedUser.username,
         age: updatedUser.age,
         gender: updatedUser.gender,
         sports: updatedUser.sports,
@@ -137,7 +137,7 @@ class UserService extends ChangeNotifier {
       // Update cache selectively
       final userId = updatedUser.id;
       await ProfileCacheService().updateProfilePartial(userId, {
-        'name': updatedUser.firstName,
+        'name': updatedUser.username,
         'age': updatedUser.age,
         'gender': updatedUser.gender,
         'sports': updatedUser.sports,
@@ -156,7 +156,7 @@ class UserService extends ChangeNotifier {
       await _saveUserToStorage();
       final userId = updatedUser.id;
       await ProfileCacheService().updateProfilePartial(userId, {
-        'name': updatedUser.firstName,
+        'name': updatedUser.username,
         'age': updatedUser.age,
         'gender': updatedUser.gender,
         'sports': updatedUser.sports,
@@ -181,8 +181,8 @@ class UserService extends ChangeNotifier {
       try {
         // Update local copy first
         final updatedUser = _currentUser!.copyWith(
-          firstName: displayName, // Store display name as firstName
-          lastName: '', // Keep lastName empty
+          username: displayName, // Store display name as firstName
+          displayName: '', // Keep lastName empty
           email: email,
           phone: phone,
           bio: bio,
@@ -213,8 +213,8 @@ class UserService extends ChangeNotifier {
       } catch (e) {
         // Fallback to local update only
         final updatedUser = _currentUser!.copyWith(
-          firstName: displayName,
-          lastName: '',
+          username: displayName,
+          displayName: '',
           email: email,
           phone: phone,
           bio: bio,
@@ -253,7 +253,7 @@ class UserService extends ChangeNotifier {
   // Get user display name with fallback
   String getUserDisplayName() {
     if (_currentUser != null) {
-      return _currentUser!.displayName;
+      return _currentUser!.displayName ?? '';
     }
     return 'Player';
   }

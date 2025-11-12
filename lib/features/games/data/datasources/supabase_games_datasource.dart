@@ -45,6 +45,99 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         });
   }
 
+  /// Helper method to get profile_id from user_id
+  /// Returns the first active profile's id for the user
+  Future<String> _getProfileId(String userId) async {
+    try {
+      final response = await _supabaseClient
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+
+      if (response == null) {
+        throw GameServerException(
+          'No active profile found for user. Please create a profile first.',
+        );
+      }
+
+      return response['id'] as String;
+    } on PostgrestException catch (e) {
+      throw GameServerException('Failed to get profile: ${e.message}');
+    } catch (e) {
+      if (e is GameServerException) rethrow;
+      throw GameServerException('Failed to get profile: ${e.toString()}');
+    }
+  }
+
+  /// Helper method to get current confirmed player count for a game
+  Future<int> _getCurrentPlayerCount(String gameId) async {
+    try {
+      final response = await _supabaseClient
+          .from('game_roster')
+          .select('id')
+          .eq('game_id', gameId)
+          .eq('status', 'confirmed');
+
+      return response.length;
+    } catch (e) {
+      print('⚠️ [Datasource] _getCurrentPlayerCount: Error: $e');
+      return 0;
+    }
+  }
+
+  /// Helper method to check if player is already in game
+  Future<bool> _isPlayerInGame(String gameId, String userId) async {
+    try {
+      final response = await _supabaseClient
+          .from('game_roster')
+          .select('id')
+          .eq('game_id', gameId)
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      return response != null;
+    } catch (e) {
+      print('⚠️ [Datasource] _isPlayerInGame: Error: $e');
+      return false;
+    }
+  }
+
+  /// Helper method to get waitlist position for a player
+  Future<int?> _getWaitlistPosition(String gameId, String userId) async {
+    try {
+      // Get the player's joined_at timestamp
+      final playerResponse = await _supabaseClient
+          .from('game_roster')
+          .select('joined_at')
+          .eq('game_id', gameId)
+          .eq('user_id', userId)
+          .eq('status', 'waitlisted')
+          .maybeSingle();
+
+      if (playerResponse == null) {
+        return null; // Not on waitlist
+      }
+
+      final playerJoinedAt = playerResponse['joined_at'] as String;
+
+      // Count players who joined before this player
+      final countResponse = await _supabaseClient
+          .from('game_roster')
+          .select('id')
+          .eq('game_id', gameId)
+          .eq('status', 'waitlisted')
+          .lt('joined_at', playerJoinedAt);
+
+      return countResponse.length + 1; // 1-indexed position
+    } catch (e) {
+      print('⚠️ [Datasource] _getWaitlistPosition: Error: $e');
+      return null;
+    }
+  }
+
   @override
   Future<GameModel> createGame(Map<String, dynamic> gameData) async {
     try {
@@ -159,35 +252,25 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       print('🔄 [Datasource] joinGame: gameId=$gameId, playerId=$playerId');
 
       // IDEMPOTENT CHECK: First check if player is already in the game
-      final existingPlayerResponse = await _supabaseClient
-          .from('game_roster')
-          .select('game_id')
-          .eq('game_id', gameId)
-          .eq('user_id', playerId)
-          .maybeSingle();
-
-      if (existingPlayerResponse != null) {
+      final isAlreadyInGame = await _isPlayerInGame(gameId, playerId);
+      if (isAlreadyInGame) {
         print(
           '✅ [Datasource] joinGame: Player already in game (idempotent success)',
         );
         return true; // Already joined - idempotent success
       }
 
-      // Check if game exists and get current player count
+      // Get game details
       final gameResponse = await _supabaseClient
           .from('games')
-          .select('*, game_roster(count)')
+          .select('*')
           .eq('id', gameId)
           .single();
 
       final game = GameModel.fromJson(gameResponse);
-      final currentPlayerCount = gameResponse['game_roster'][0]['count'] as int;
 
-      // Check if game is full
-      if (currentPlayerCount >= game.maxPlayers) {
-        print('❌ [Datasource] joinGame: Game is full');
-        throw GameFullException('Game is full');
-      }
+      // Get accurate current player count (only confirmed players)
+      final currentPlayerCount = await _getCurrentPlayerCount(gameId);
 
       // Check if game has already started
       final now = DateTime.now();
@@ -201,19 +284,38 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         );
       }
 
+      // Get profile_id from user_id
+      final profileId = await _getProfileId(playerId);
+
+      // Determine player status based on game capacity
+      final String playerStatus;
+      if (currentPlayerCount >= game.maxPlayers) {
+        if (game.allowsWaitlist) {
+          playerStatus = 'waitlisted';
+          print(
+            '⚠️ [Datasource] joinGame: Game is full, adding to waitlist',
+          );
+        } else {
+          print('❌ [Datasource] joinGame: Game is full and waitlist not allowed');
+          throw GameFullException('Game is full');
+        }
+      } else {
+        playerStatus = 'confirmed';
+      }
+
       // Add player to game
-      // Note: We need profile_id here but only have user_id
-      // This will need to be resolved - for now using user_id for both
       await _supabaseClient.from('game_roster').insert({
         'game_id': gameId,
-        'profile_id': playerId, // TODO: Get actual profile_id
+        'profile_id': profileId,
         'user_id': playerId,
         'role': 'player',
-        'status': 'confirmed',
+        'status': playerStatus,
         'joined_at': DateTime.now().toIso8601String(),
       });
 
-      print('✅ [Datasource] joinGame: Successfully joined game');
+      print(
+        '✅ [Datasource] joinGame: Successfully joined game with status: $playerStatus',
+      );
       return true;
     } on PostgrestException catch (e) {
       print(
@@ -227,9 +329,18 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         );
         return true;
       }
+      if (e.code == '23503') {
+        // Foreign key violation - profile_id doesn't exist
+        throw GameServerException(
+          'Profile not found. Please ensure your profile is active.',
+        );
+      }
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
       if (e is GameFullException || e is GameAlreadyStartedException) {
+        rethrow;
+      }
+      if (e is GameServerException) {
         rethrow;
       }
       print('❌ [Datasource] joinGame: Unexpected error: $e');
@@ -304,14 +415,21 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   @override
   Future<GameModel> getGame(String gameId) async {
     try {
-      // MVP: Simplified query without venue join
+      // Get game data with player count
       final response = await _supabaseClient
           .from('games')
           .select('*')
           .eq('id', gameId)
           .single();
 
-      return GameModel.fromJson(response);
+      // Get current player count (only confirmed players)
+      final currentPlayerCount = await _getCurrentPlayerCount(gameId);
+
+      // Add currentPlayers to response for GameModel parsing
+      final responseWithCount = Map<String, dynamic>.from(response);
+      responseWithCount['current_players'] = currentPlayerCount;
+
+      return GameModel.fromJson(responseWithCount);
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST116') {
         throw GameNotFoundException('Game not found');
@@ -765,6 +883,16 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     // Stubbed for now to return 0.0
     print('⭐ [Datasource] fetchMyAverageRating: returning 0.0 (STUB)');
     return 0.0;
+  }
+
+  @override
+  Future<bool> isPlayerInGame(String gameId, String userId) async {
+    return await _isPlayerInGame(gameId, userId);
+  }
+
+  @override
+  Future<int?> getWaitlistPosition(String gameId, String userId) async {
+    return await _getWaitlistPosition(gameId, userId);
   }
 
   void dispose() {

@@ -60,21 +60,38 @@ class JoinGameUseCase
       );
 
       return joinResult.fold((failure) => Left(failure), (success) async {
-        // Determine the result based on game capacity
-        final isOnWaitlist = game.isFull();
+        // Refresh game to get updated player count and status
+        final updatedGameResult = await gamesRepository.getGame(params.gameId);
+        
+        return updatedGameResult.fold(
+          (failure) => Left(failure),
+          (updatedGame) async {
+            // Check if player is on waitlist by getting their waitlist position
+            // If position is not null, they are on waitlist
+            final positionResult = await gamesRepository.getWaitlistPosition(
+              params.gameId,
+              params.playerId,
+            );
+            
+            final waitlistPosition = positionResult.fold(
+              (failure) => null,
+              (position) => position,
+            );
+            
+            final isOnWaitlist = waitlistPosition != null;
 
-        // Send appropriate notifications
-        await _sendNotifications(game, params.playerId, isOnWaitlist);
+            // Send appropriate notifications
+            await _sendNotifications(updatedGame, params.playerId, isOnWaitlist);
 
-        return Right(
-          JoinGameResult(
-            success: true,
-            isOnWaitlist: isOnWaitlist,
-            position: isOnWaitlist
-                ? await _getWaitlistPosition(params.gameId, params.playerId)
-                : null,
-            message: _getJoinMessage(isOnWaitlist),
-          ),
+            return Right(
+              JoinGameResult(
+                success: true,
+                isOnWaitlist: isOnWaitlist,
+                position: waitlistPosition,
+                message: _getJoinMessage(isOnWaitlist),
+              ),
+            );
+          },
         );
       });
     });
@@ -110,17 +127,12 @@ class JoinGameUseCase
     String gameId,
     String playerId,
   ) async {
-    final myGamesResult = await gamesRepository.getMyGames(
-      playerId,
-      status: 'upcoming',
-      limit: 100, // Check recent games
-    );
+    final isInGameResult = await gamesRepository.isPlayerInGame(gameId, playerId);
 
-    return myGamesResult.fold(
+    return isInGameResult.fold(
       (failure) => null, // If we can't check, proceed anyway
-      (myGames) {
-        final isAlreadyInGame = myGames.any((game) => game.id == gameId);
-        if (isAlreadyInGame) {
+      (isInGame) {
+        if (isInGame) {
           return GameFailure('You are already part of this game');
         }
         return null;
@@ -150,12 +162,6 @@ class JoinGameUseCase
     }
   }
 
-  /// Gets the waitlist position for a player
-  Future<int?> _getWaitlistPosition(String gameId, String playerId) async {
-    // This would typically call a repository method to get waitlist info
-    // For now, returning null as this would require additional repository methods
-    return null;
-  }
 
   /// Sends appropriate notifications based on join result
   Future<void> _sendNotifications(

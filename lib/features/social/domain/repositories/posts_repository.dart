@@ -27,7 +27,7 @@ abstract class PostsRepository {
     List<String>? mediaUrls,
     PostVisibility visibility = PostVisibility.public,
     String? gameId,
-    String? locationName,
+    String? cityName,
     List<String>? tags,
     List<String>? mentionedUsers,
     String? replyToPostId,

@@ -697,6 +697,40 @@ class GamesRepositoryImpl implements GamesRepository {
   bool hasRatedInSession(String gameId) => _ratedInSession.contains(gameId);
 
   // Clear cache method for external use
+  @override
+  Future<Either<Failure, bool>> isPlayerInGame(
+    String gameId,
+    String userId,
+  ) async {
+    try {
+      final isInGame = await remoteDataSource.isPlayerInGame(gameId, userId);
+      return Right(isInGame);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(UnknownFailure('Failed to check player status: ${e.toString()}'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, int?>> getWaitlistPosition(
+    String gameId,
+    String userId,
+  ) async {
+    try {
+      final position = await remoteDataSource.getWaitlistPosition(gameId, userId);
+      return Right(position);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } on NetworkException catch (e) {
+      return Left(NetworkFailure(message: e.message));
+    } catch (e) {
+      return Left(UnknownFailure('Failed to get waitlist position: ${e.toString()}'));
+    }
+  }
+
   void clearCache() {
     _gamesCache.clear();
     _listCache.clear();

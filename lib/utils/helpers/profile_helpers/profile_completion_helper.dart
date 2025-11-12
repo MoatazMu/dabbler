@@ -24,7 +24,7 @@ class UserProfile {
     this.bio,
     this.phoneNumber,
     this.email,
-    this.dateOfBirth,
+    this.age,
     this.gender,
     this.username,
     this.sportsProfiles = const [],
@@ -97,7 +97,7 @@ class ProfileCompletionHelper {
       profile.avatarUrl?.isNotEmpty ?? false,
       profile.bio?.isNotEmpty ?? false,
       profile.phoneNumber?.isNotEmpty ?? false,
-      profile.dateOfBirth != null,
+      profile.age != null,
       profile.gender?.isNotEmpty ?? false,
     ];
     basicCompletion =
@@ -151,7 +151,7 @@ class ProfileCompletionHelper {
     if (profile.avatarUrl?.isEmpty ?? true) missing.add('Profile photo');
     if (profile.bio?.isEmpty ?? true) missing.add('Bio');
     if (profile.phoneNumber?.isEmpty ?? true) missing.add('Phone number');
-    if (profile.dateOfBirth == null) missing.add('Date of birth');
+    if (profile.age == null) missing.add('Date of birth');
 
     // Check sports profiles
     if (profile.sportsProfiles.isEmpty) {

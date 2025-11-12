@@ -77,7 +77,7 @@ class BookingSummaryModal extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
-                      Icons.location_on,
+                      Icons.location_city,
                       color: DS.primary,
                       size: 20,
                     ),

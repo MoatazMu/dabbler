@@ -294,7 +294,7 @@ enum MessageType {
   video('video', 'Video', Icons.videocam),
   audio('audio', 'Audio', Icons.mic),
   file('file', 'File', Icons.attach_file),
-  location('location', 'Location', Icons.location_on),
+  location('location', 'Location', Icons.location_city),
   gameInvite('game_invite', 'Game Invite', Icons.sports),
   system('system', 'System Message', Icons.info);
 
@@ -478,7 +478,7 @@ enum PostActivityType {
   comment('comment', 'Commented', Icons.comment, Colors.green),
   venueRating('venue_rating', 'Rated a venue', Icons.star_rate, Colors.amber),
   gameCreation('game_creation', 'Created a game', Icons.sports, Colors.orange),
-  checkIn('check_in', 'Checked in', Icons.location_on, Colors.red),
+  checkIn('check_in', 'Checked in', Icons.location_city, Colors.red),
   venueBooking(
     'venue_booking',
     'Booked a venue',

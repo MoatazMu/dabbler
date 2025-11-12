@@ -178,8 +178,8 @@ class _SocialScreenState extends State<SocialScreen> {
   }
 
   void _openProfile(String userId) {
-    // Navigate to user's social profile
-    context.go('/social-profile/$userId');
+    // Navigate to user's profile
+    context.go('${RoutePaths.userProfile}/$userId');
   }
 
   void _navigateToCreatePost() {

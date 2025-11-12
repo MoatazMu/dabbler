@@ -180,4 +180,11 @@ abstract class GamesRemoteDataSource {
   /// Fetches the current user's average game rating (0.0-5.0).
   /// Returns 0.0 if no ratings exist or backend not implemented.
   Future<double> fetchMyAverageRating();
+
+  /// Checks if a player is already in a game (any status)
+  Future<bool> isPlayerInGame(String gameId, String userId);
+
+  /// Gets the waitlist position for a player in a game
+  /// Returns null if player is not on waitlist
+  Future<int?> getWaitlistPosition(String gameId, String userId);
 }

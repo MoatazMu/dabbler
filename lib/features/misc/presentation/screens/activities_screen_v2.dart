@@ -653,7 +653,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2> {
               context,
               'Venue Bookings',
               upcomingBookings.length,
-              Icons.location_on,
+              Icons.location_city,
             ),
             const SizedBox(height: 12),
             ...upcomingBookings.map(
@@ -925,7 +925,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2> {
               context,
               bookingsCount.toString(),
               'Bookings',
-              Icons.location_on,
+              Icons.location_city,
             ),
           ),
         ],
@@ -1021,7 +1021,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2> {
         'icon': Icons.sports_esports,
         'color': context.colors.primary,
       },
-      {'name': 'Bookings', 'icon': Icons.location_on, 'color': Colors.green},
+      {'name': 'Bookings', 'icon': Icons.location_city, 'color': Colors.green},
       {'name': 'Payments', 'icon': Icons.credit_card, 'color': Colors.orange},
       {'name': 'Social', 'icon': Icons.group, 'color': Colors.blue},
       {'name': 'Rewards', 'icon': Icons.military_tech, 'color': Colors.amber},
@@ -1217,7 +1217,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2> {
       case ActivityType.game:
         return Icons.sports_esports;
       case ActivityType.booking:
-        return Icons.location_on;
+        return Icons.location_city;
       case ActivityType.payment:
       case ActivityType.refund:
         return Icons.credit_card;
@@ -1304,7 +1304,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2> {
           Row(
             children: [
               Icon(
-                Icons.location_on,
+                Icons.location_city,
                 size: 14,
                 color: context.colors.onSurfaceVariant,
               ),
@@ -1773,7 +1773,7 @@ class _HistoryScreenState extends ConsumerState<_HistoryScreen> {
   IconData _getActivityIcon(String type) {
     final t = type.toLowerCase();
     if (t.contains('game')) return Icons.sports_esports;
-    if (t.contains('booking')) return Icons.location_on;
+    if (t.contains('booking')) return Icons.location_city;
     if (t.contains('payment')) return Icons.credit_card;
     if (t.contains('friend')) return Icons.person_add;
     if (t.contains('post')) return Icons.chat_bubble_outline;

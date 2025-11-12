@@ -335,7 +335,7 @@ class _AchievementCardState extends State<AchievementCard>
         iconData = Icons.person;
         break;
       case AchievementCategory.venue:
-        iconData = Icons.location_on;
+        iconData = Icons.location_city;
         break;
       case AchievementCategory.engagement:
         iconData = Icons.favorite;

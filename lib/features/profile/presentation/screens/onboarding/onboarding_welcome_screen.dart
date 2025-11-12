@@ -282,7 +282,7 @@ class _ProfileOnboardingWelcomeScreenState
           ]
         : [
             BenefitItem(
-              icon: Icons.location_on,
+              icon: Icons.location_city,
               title: 'Local Games',
               description: 'Find games in your neighborhood',
             ),

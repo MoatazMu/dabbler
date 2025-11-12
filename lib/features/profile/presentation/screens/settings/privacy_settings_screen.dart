@@ -379,7 +379,7 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
         _buildPrivacyToggle(
           'Location',
           'Show your general location',
-          Icons.location_on_outlined,
+          Icons.location_city_outlined,
           _showLocation,
           (value) => setState(() => _showLocation = value),
           'Helps with local game matching',

@@ -21,7 +21,7 @@ class LocationSelector extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  Icons.location_on,
+                  Icons.location_city,
                   color: Theme.of(context).colorScheme.primary,
                   size: 20,
                 ),
@@ -53,7 +53,7 @@ class LocationSelector extends StatelessWidget {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.location_on,
+                      Icons.location_city,
                       color: Theme.of(context).colorScheme.primary,
                       size: 16,
                     ),

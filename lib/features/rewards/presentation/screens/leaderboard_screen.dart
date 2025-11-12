@@ -311,7 +311,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
                 value: 'my_rank',
                 child: Row(
                   children: [
-                    Icon(Icons.location_on),
+                    Icon(Icons.location_city),
                     SizedBox(width: 12),
                     Text('Go to My Rank'),
                   ],
@@ -661,7 +661,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.location_on, color: context.colors.primary, size: 20),
+              Icon(Icons.location_city, color: context.colors.primary, size: 20),
               const SizedBox(width: 8),
               Text(
                 'Your Current Rank',
@@ -735,7 +735,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
             backgroundColor: context.colors.primary,
             foregroundColor: context.colors.onPrimary,
             elevation: 2,
-            child: const Icon(Icons.location_on),
+            child: const Icon(Icons.location_city),
           ),
 
         const SizedBox(height: 16),

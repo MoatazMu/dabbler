@@ -124,7 +124,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                         color: context.colors.primary.withValues(alpha: 0.1),
                       ),
                       child: Icon(
-                        Icons.location_on,
+                        Icons.location_city,
                         size: 64,
                         color: context.colors.primary,
                       ),
@@ -234,7 +234,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.location_on, size: 20, color: context.colors.primary),
+              Icon(Icons.location_city, size: 20, color: context.colors.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -248,7 +248,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                       ),
                     ),
                     Text(
-                      widget.match.venue.location,
+                      widget.match.venue.city,
                       style: context.textTheme.bodySmall?.copyWith(
                         color: context.colors.onSurfaceVariant,
                       ),

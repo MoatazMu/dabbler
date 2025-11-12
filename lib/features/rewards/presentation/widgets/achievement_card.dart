@@ -494,7 +494,7 @@ class AchievementCard extends StatelessWidget {
       case AchievementCategory.profile:
         return Icons.person;
       case AchievementCategory.venue:
-        return Icons.location_on;
+        return Icons.location_city;
       case AchievementCategory.engagement:
         return Icons.favorite;
       case AchievementCategory.skillPerformance:

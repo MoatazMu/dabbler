@@ -196,7 +196,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
               const SizedBox(height: 16),
               _buildSummaryRow(
                 context,
-                icon: Icons.location_on,
+                icon: Icons.location_city,
                 label: 'Venue',
                 value: state.selectedVenueSlot?.venueName ?? 'Not selected',
               ),

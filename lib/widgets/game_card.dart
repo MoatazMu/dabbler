@@ -9,7 +9,7 @@ class GameCard extends StatefulWidget {
     required this.title,
     required this.date,
     required this.timeRange,
-    required this.location,
+    required this.city,
     required this.avatarUrls,
     required this.othersCount,
     this.onTap,
@@ -156,14 +156,14 @@ class _GameCardState extends State<GameCard>
                       Row(
                         children: [
                           Icon(
-                            Iconsax.location_copy,
+                            Iconsax.city_copy,
                             size: 18,
                             color: tertiaryColor,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              widget.location,
+                              widget.city,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: primaryColor,

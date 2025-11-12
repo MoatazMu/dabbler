@@ -6,39 +6,39 @@ import '../repositories/profile_repository.dart';
 /// Parameters for updating profile
 class UpdateProfileParams {
   final String userId;
+  final String? username;
   final String? displayName;
   final String? bio;
   final String? email;
   final String? phoneNumber;
-  final String? location;
-  final String? firstName;
-  final String? lastName;
+  final String? city;
+  final String? country;
   final String? gender;
-  final DateTime? dateOfBirth;
+  final int? age;
 
   const UpdateProfileParams({
     required this.userId,
+    this.username,
     this.displayName,
     this.bio,
     this.email,
     this.phoneNumber,
-    this.location,
-    this.firstName,
-    this.lastName,
+    this.city,
+    this.country,
     this.gender,
-    this.dateOfBirth,
+    this.age,
   });
 
   bool get hasUpdates =>
+      username != null ||
       displayName != null ||
       bio != null ||
       email != null ||
       phoneNumber != null ||
-      location != null ||
-      firstName != null ||
-      lastName != null ||
+      city != null ||
+      country != null ||
       gender != null ||
-      dateOfBirth != null;
+      age != null;
 }
 
 /// Result of profile update operation
@@ -99,21 +99,28 @@ class UpdateProfileUseCase {
       // Create updated profile with new values
       final updatedProfile = UserProfile(
         id: currentProfile.id,
-        email: finalParams.email ?? currentProfile.email,
+        userId: currentProfile.userId,
+        username: finalParams.username ?? currentProfile.username,
         displayName: finalParams.displayName ?? currentProfile.displayName,
+        email: finalParams.email ?? currentProfile.email,
         avatarUrl: currentProfile.avatarUrl,
         createdAt: currentProfile.createdAt,
         updatedAt: DateTime.now(),
         bio: finalParams.bio ?? currentProfile.bio,
-        dateOfBirth: finalParams.dateOfBirth ?? currentProfile.dateOfBirth,
-        location: finalParams.location ?? currentProfile.location,
+        age: finalParams.age ?? currentProfile.age,
+        city: finalParams.city ?? currentProfile.city,
+        country: finalParams.country ?? currentProfile.country,
         phoneNumber: finalParams.phoneNumber ?? currentProfile.phoneNumber,
-        firstName: finalParams.firstName ?? currentProfile.firstName,
-        lastName: finalParams.lastName ?? currentProfile.lastName,
         gender: finalParams.gender ?? currentProfile.gender,
-        profileCompletionPercentage: currentProfile.profileCompletionPercentage,
-        isVerified: currentProfile.isVerified,
-        lastActiveAt: currentProfile.lastActiveAt,
+        profileType: currentProfile.profileType,
+        intention: currentProfile.intention,
+        preferredSport: currentProfile.preferredSport,
+        interests: currentProfile.interests,
+        language: currentProfile.language,
+        verified: currentProfile.verified,
+        isActive: currentProfile.isActive,
+        geoLat: currentProfile.geoLat,
+        geoLng: currentProfile.geoLng,
         sportsProfiles: currentProfile.sportsProfiles,
         statistics: currentProfile.statistics,
         privacySettings: currentProfile.privacySettings,
@@ -195,17 +202,17 @@ class UpdateProfileUseCase {
     }
 
     // Validate location
-    if (params.location != null && params.location!.length > 100) {
+    if (params.city != null && params.city!.length > 100) {
       errors.add('Location cannot exceed 100 characters');
     }
 
     // Validate first name
-    if (params.firstName != null && params.firstName!.length > 50) {
+    if (params.username != null && params.username!.length > 50) {
       errors.add('First name cannot exceed 50 characters');
     }
 
     // Validate last name
-    if (params.lastName != null && params.lastName!.length > 50) {
+    if (params.displayName != null && params.displayName!.length > 50) {
       errors.add('Last name cannot exceed 50 characters');
     }
 
@@ -223,12 +230,13 @@ class UpdateProfileUseCase {
       }
     }
 
-    // Validate date of birth
-    if (params.dateOfBirth != null) {
-      final now = DateTime.now();
-      final minAge = Duration(days: 13 * 365); // 13 years
-      if (now.difference(params.dateOfBirth!) < minAge) {
+    // Validate age
+    if (params.age != null) {
+      if (params.age! < 13) {
         errors.add('Minimum age requirement is 13 years');
+      }
+      if (params.age! > 120) {
+        errors.add('Please enter a valid age');
       }
     }
 
@@ -247,11 +255,11 @@ class UpdateProfileUseCase {
       bio: params.bio?.trim(),
       email: params.email?.trim().toLowerCase(),
       phoneNumber: params.phoneNumber?.trim(),
-      location: params.location?.trim(),
-      firstName: params.firstName?.trim(),
-      lastName: params.lastName?.trim(),
+      city: params.city?.trim(),
+      country: params.country?.trim(),
+      username: params.username?.trim(),
       gender: params.gender?.trim().toLowerCase(),
-      dateOfBirth: params.dateOfBirth,
+      age: params.age,
     );
   }
 
@@ -272,11 +280,11 @@ class UpdateProfileUseCase {
           bio: params.bio,
           email: params.email,
           phoneNumber: params.phoneNumber,
-          location: params.location,
-          firstName: params.firstName,
-          lastName: params.lastName,
+          city: params.city,
+          country: params.country,
+          username: params.username,
           gender: params.gender,
-          dateOfBirth: params.dateOfBirth,
+          age: params.age,
         );
       }
     }
@@ -291,11 +299,11 @@ class UpdateProfileUseCase {
           bio: cleanBio,
           email: processedParams.email,
           phoneNumber: processedParams.phoneNumber,
-          location: processedParams.location,
-          firstName: processedParams.firstName,
-          lastName: processedParams.lastName,
+          city: processedParams.city,
+          country: processedParams.country,
+          username: processedParams.username,
           gender: processedParams.gender,
-          dateOfBirth: processedParams.dateOfBirth,
+          age: processedParams.age,
         );
       }
     }
@@ -332,30 +340,30 @@ class UpdateProfileUseCase {
       };
     }
 
-    if (current.location != updated.location) {
-      changes['location'] = {'old': current.location, 'new': updated.location};
+    if (current.city != updated.city) {
+      changes['location'] = {'old': current.city, 'new': updated.city};
     }
 
-    if (current.firstName != updated.firstName) {
+    if (current.username != updated.username) {
       changes['first_name'] = {
-        'old': current.firstName,
-        'new': updated.firstName,
+        'old': current.username,
+        'new': updated.username,
       };
     }
 
-    if (current.lastName != updated.lastName) {
-      changes['last_name'] = {'old': current.lastName, 'new': updated.lastName};
+    if (current.displayName != updated.displayName) {
+      changes['last_name'] = {
+        'old': current.displayName,
+        'new': updated.displayName,
+      };
     }
 
     if (current.gender != updated.gender) {
       changes['gender'] = {'old': current.gender, 'new': updated.gender};
     }
 
-    if (current.dateOfBirth != updated.dateOfBirth) {
-      changes['date_of_birth'] = {
-        'old': current.dateOfBirth,
-        'new': updated.dateOfBirth,
-      };
+    if (current.age != updated.age) {
+      changes['date_of_birth'] = {'old': current.age, 'new': updated.age};
     }
 
     return changes;
@@ -365,13 +373,13 @@ class UpdateProfileUseCase {
   double _calculateCompletionPercentage(UserProfile profile) {
     final requiredFields = [
       profile.displayName.isNotEmpty,
-      profile.email.isNotEmpty,
+      profile.email?.isNotEmpty ?? false,
       profile.bio?.isNotEmpty == true,
-      profile.location?.isNotEmpty == true,
-      profile.dateOfBirth != null,
+      profile.city?.isNotEmpty == true,
+      profile.age != null,
       profile.avatarUrl?.isNotEmpty == true,
-      profile.firstName?.isNotEmpty == true,
-      profile.lastName?.isNotEmpty == true,
+      profile.username?.isNotEmpty == true,
+      profile.displayName?.isNotEmpty == true,
     ];
 
     final optionalFields = [
@@ -422,7 +430,7 @@ class UpdateProfileUseCase {
     }
 
     // Warning: No location
-    if (profile.location == null || profile.location!.isEmpty) {
+    if (profile.city == null || profile.city!.isEmpty) {
       warnings.add('Adding your location helps find nearby games and players.');
     }
 

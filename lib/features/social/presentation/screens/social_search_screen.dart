@@ -26,7 +26,7 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
     SearchTab(key: 'people', label: 'People', icon: Icons.group),
     SearchTab(key: 'posts', label: 'Posts', icon: Icons.chat_bubble_outline),
     SearchTab(key: 'games', label: 'Games', icon: Icons.sports_esports),
-    SearchTab(key: 'venues', label: 'Venues', icon: Icons.location_on),
+    SearchTab(key: 'venues', label: 'Venues', icon: Icons.location_city),
   ];
 
   @override
@@ -171,7 +171,7 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
           _buildSection('Recent Searches', [
             _buildRecentSearchItem('John Doe', Icons.person),
             _buildRecentSearchItem('Basketball game', Icons.sports_esports),
-            _buildRecentSearchItem('Central Park Courts', Icons.location_on),
+            _buildRecentSearchItem('Central Park Courts', Icons.location_city),
           ]),
           const SizedBox(height: 24),
 

@@ -153,4 +153,11 @@ abstract class GamesRepository {
 
   /// Gets all players for a specific game
   Future<Either<Failure, List<Player>>> getGamePlayers(String gameId);
+
+  /// Checks if a player is already in a game (any status)
+  Future<Either<Failure, bool>> isPlayerInGame(String gameId, String userId);
+
+  /// Gets the waitlist position for a player in a game
+  /// Returns null if player is not on waitlist
+  Future<Either<Failure, int?>> getWaitlistPosition(String gameId, String userId);
 }

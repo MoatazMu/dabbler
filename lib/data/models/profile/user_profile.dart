@@ -6,25 +6,32 @@ import 'user_preferences.dart';
 import 'user_settings.dart';
 
 class UserProfile {
-  // Core user information (extends from auth User)
-  final String id;
-  final String email;
+  // Core user information (from profiles table)
+  final String id; // profile id
+  final String userId; // foreign key to auth.users
+  final String? username; // citext
   final String displayName;
   final String? avatarUrl;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  // Enhanced profile fields
+  // Enhanced profile fields (matching actual DB schema)
   final String? bio;
-  final DateTime? dateOfBirth;
-  final String? location;
-  final String? phoneNumber;
-  final String? firstName;
-  final String? lastName;
+  final int? age; // stored as integer in DB (not dateOfBirth)
+  final String? city;
+  final String? country;
+  final String? phoneNumber; // from auth.users, not profiles table
+  final String? email; // from auth.users, not profiles table
   final String? gender;
-  final double profileCompletionPercentage;
-  final bool isVerified;
-  final DateTime? lastActiveAt;
+  final String? profileType; // organiser/player
+  final String? intention; // organise/play
+  final String? preferredSport;
+  final String? interests;
+  final String? language;
+  final bool verified; // matches DB column name
+  final bool isActive;
+  final double? geoLat;
+  final double? geoLng;
 
   // Related entities
   final List<SportProfile> sportsProfiles;
@@ -35,21 +42,28 @@ class UserProfile {
 
   const UserProfile({
     required this.id,
-    required this.email,
+    required this.userId,
+    this.username,
     required this.displayName,
     this.avatarUrl,
     required this.createdAt,
     required this.updatedAt,
     this.bio,
-    this.dateOfBirth,
-    this.location,
+    this.age,
+    this.city,
+    this.country,
     this.phoneNumber,
-    this.firstName,
-    this.lastName,
+    this.email,
     this.gender,
-    this.profileCompletionPercentage = 0.0,
-    this.isVerified = false,
-    this.lastActiveAt,
+    this.profileType,
+    this.intention,
+    this.preferredSport,
+    this.interests,
+    this.language,
+    this.verified = false,
+    this.isActive = true,
+    this.geoLat,
+    this.geoLng,
     this.sportsProfiles = const [],
     this.statistics = const ProfileStatistics(),
     this.privacySettings = const PrivacySettings(),
@@ -60,29 +74,21 @@ class UserProfile {
   /// Creates UserProfile from auth User with default values
   factory UserProfile.fromUser(User user) {
     return UserProfile(
-      id: user.id,
-      email: user.email ?? '',
-      displayName: user.fullName ?? user.username ?? '',
+      id: '', // will be set when profile is created in DB
+      userId: user.id,
+      email: user.email,
+      displayName:
+          user.fullName ?? user.username ?? user.email?.split('@').first ?? '',
+      username: user.username,
       avatarUrl: user.avatarUrl,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-      profileCompletionPercentage: _calculateInitialCompletion(user),
     );
-  }
-
-  static double _calculateInitialCompletion(User user) {
-    double completion = 40.0; // Base for having account
-    if ((user.fullName?.isNotEmpty ?? false) ||
-        (user.username?.isNotEmpty ?? false)) {
-      completion += 10.0;
-    }
-    if (user.avatarUrl != null) completion += 20.0;
-    return completion;
   }
 
   /// Checks if profile is considered complete
   bool isProfileComplete() {
-    return profileCompletionPercentage >= 80.0;
+    return calculateProfileCompletion() >= 80.0;
   }
 
   /// Returns the primary sport (if any)
@@ -98,27 +104,20 @@ class UserProfile {
     }
   }
 
-  /// Returns age calculated from date of birth
+  /// Returns age (stored directly in DB)
   int? getAge() {
-    if (dateOfBirth == null) return null;
-    final now = DateTime.now();
-    int age = now.year - dateOfBirth!.year;
-    if (now.month < dateOfBirth!.month ||
-        (now.month == dateOfBirth!.month && now.day < dateOfBirth!.day)) {
-      age--;
-    }
     return age;
   }
 
   /// Returns full name if available
   String getFullName() {
-    if (firstName != null && lastName != null) {
-      return '$firstName $lastName';
-    }
     if (displayName.isNotEmpty) {
       return displayName;
     }
-    return '';
+    if (username != null && username!.isNotEmpty) {
+      return username!;
+    }
+    return email?.split('@').first ?? 'User';
   }
 
   /// Returns display name with privacy considerations
@@ -143,9 +142,10 @@ class UserProfile {
 
     // Personal details (30%)
     if (bio != null && bio!.isNotEmpty) completion += 10.0;
-    if (dateOfBirth != null) completion += 5.0;
-    if (location != null && location!.isNotEmpty) completion += 5.0;
-    if (firstName != null && lastName != null) completion += 10.0;
+    if (age != null) completion += 5.0;
+    if (city != null && city!.isNotEmpty) completion += 2.5;
+    if (country != null && country!.isNotEmpty) completion += 2.5;
+    if (username != null && username!.isNotEmpty) completion += 10.0;
 
     // Sports profiles (20%)
     if (sportsProfiles.isNotEmpty) completion += 10.0;
@@ -163,29 +163,14 @@ class UserProfile {
     return completion.clamp(0.0, 100.0);
   }
 
-  /// Checks if user is active based on various factors
+  /// Checks if user is active based on is_active flag
   bool isActiveUser() {
-    if (lastActiveAt == null) return false;
-
-    final now = DateTime.now();
-    final daysSinceActive = now.difference(lastActiveAt!).inDays;
-
-    return daysSinceActive <= 7; // Active within last week
+    return isActive;
   }
 
   /// Returns user's activity status
   String getActivityStatus() {
-    if (lastActiveAt == null) return 'New User';
-
-    final now = DateTime.now();
-    final duration = now.difference(lastActiveAt!);
-
-    if (duration.inMinutes < 5) return 'Online';
-    if (duration.inHours < 1) return 'Active';
-    if (duration.inDays < 1) return 'Today';
-    if (duration.inDays < 7) return 'This Week';
-    if (duration.inDays < 30) return 'This Month';
-    return 'Inactive';
+    return isActive ? 'Active' : 'Inactive';
   }
 
   /// Checks compatibility with another user for games
@@ -209,10 +194,16 @@ class UserProfile {
       }
     }
 
-    // Location compatibility (20%)
-    if (location != null && otherUser.location != null) {
-      // Simplified - would need actual distance calculation
-      if (location == otherUser.location) score += 20.0;
+    // Location compatibility (20%) - using city and country
+    if (city != null &&
+        otherUser.city != null &&
+        country != null &&
+        otherUser.country != null) {
+      if (city == otherUser.city && country == otherUser.country) {
+        score += 20.0;
+      } else if (country == otherUser.country) {
+        score += 10.0; // Same country, different city
+      }
     }
 
     // Age compatibility (15%)
@@ -257,21 +248,28 @@ class UserProfile {
   /// Creates a copy with updated fields
   UserProfile copyWith({
     String? id,
+    String? userId,
     String? email,
+    String? username,
     String? displayName,
     String? avatarUrl,
     DateTime? createdAt,
     DateTime? updatedAt,
     String? bio,
-    DateTime? dateOfBirth,
-    String? location,
+    int? age,
+    String? city,
+    String? country,
     String? phoneNumber,
-    String? firstName,
-    String? lastName,
     String? gender,
-    double? profileCompletionPercentage,
-    bool? isVerified,
-    DateTime? lastActiveAt,
+    String? profileType,
+    String? intention,
+    String? preferredSport,
+    String? interests,
+    String? language,
+    bool? verified,
+    bool? isActive,
+    double? geoLat,
+    double? geoLng,
     List<SportProfile>? sportsProfiles,
     ProfileStatistics? statistics,
     PrivacySettings? privacySettings,
@@ -280,22 +278,28 @@ class UserProfile {
   }) {
     return UserProfile(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       email: email ?? this.email,
+      username: username ?? this.username,
       displayName: displayName ?? this.displayName,
       avatarUrl: avatarUrl ?? this.avatarUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       bio: bio ?? this.bio,
-      dateOfBirth: dateOfBirth ?? this.dateOfBirth,
-      location: location ?? this.location,
+      age: age ?? this.age,
+      city: city ?? this.city,
+      country: country ?? this.country,
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
       gender: gender ?? this.gender,
-      profileCompletionPercentage:
-          profileCompletionPercentage ?? this.profileCompletionPercentage,
-      isVerified: isVerified ?? this.isVerified,
-      lastActiveAt: lastActiveAt ?? this.lastActiveAt,
+      profileType: profileType ?? this.profileType,
+      intention: intention ?? this.intention,
+      preferredSport: preferredSport ?? this.preferredSport,
+      interests: interests ?? this.interests,
+      language: language ?? this.language,
+      verified: verified ?? this.verified,
+      isActive: isActive ?? this.isActive,
+      geoLat: geoLat ?? this.geoLat,
+      geoLng: geoLng ?? this.geoLng,
       sportsProfiles: sportsProfiles ?? this.sportsProfiles,
       statistics: statistics ?? this.statistics,
       privacySettings: privacySettings ?? this.privacySettings,
@@ -304,31 +308,43 @@ class UserProfile {
     );
   }
 
-  /// Creates UserProfile from JSON
+  /// Creates UserProfile from JSON (matching actual DB schema)
   factory UserProfile.fromJson(Map<String, dynamic> json) {
+    // Parse nested sport_profiles if included in the response
+    // Note: Database uses simple schema: profile_id, sport_key, skill_level
+    List<SportProfile> parsedSportsProfiles = [];
+    if (json['sport_profiles'] != null && json['sport_profiles'] is List) {
+      parsedSportsProfiles = (json['sport_profiles'] as List)
+          .map((sp) => SportProfile.fromJson(sp as Map<String, dynamic>))
+          .toList();
+    }
+
     return UserProfile(
       id: json['id'] as String,
-      email: json['email'] as String,
+      userId: json['user_id'] as String,
+      username: json['username'] as String?,
       displayName: (json['display_name'] as String?) ?? '',
       avatarUrl: json['avatar_url'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
       bio: json['bio'] as String?,
-      dateOfBirth: json['date_of_birth'] != null
-          ? DateTime.parse(json['date_of_birth'] as String)
-          : null,
-      location: json['location'] as String?,
-      phoneNumber: json['phone_number'] as String?,
-      firstName: json['first_name'] as String?,
-      lastName: json['last_name'] as String?,
+      age: json['age'] as int?,
+      city: json['city'] as String?,
+      country: json['country'] as String?,
+      phoneNumber:
+          json['phone_number'] as String?, // from auth metadata if needed
+      email: json['email'] as String?, // from auth.users if needed
       gender: json['gender'] as String?,
-      profileCompletionPercentage:
-          (json['profile_completion_percentage'] as num?)?.toDouble() ?? 0.0,
-      isVerified: json['is_verified'] as bool? ?? false,
-      lastActiveAt: json['last_active_at'] != null
-          ? DateTime.parse(json['last_active_at'] as String)
-          : null,
-      sportsProfiles: const [], // Placeholder for now
+      profileType: json['profile_type'] as String?,
+      intention: json['intention'] as String?,
+      preferredSport: json['preferred_sport'] as String?,
+      interests: json['interests'] as String?,
+      language: json['language'] as String?,
+      verified: json['verified'] as bool? ?? false,
+      isActive: json['is_active'] as bool? ?? true,
+      geoLat: (json['geo_lat'] as num?)?.toDouble(),
+      geoLng: (json['geo_lng'] as num?)?.toDouble(),
+      sportsProfiles: parsedSportsProfiles,
       statistics: const ProfileStatistics(),
       privacySettings: const PrivacySettings(),
       preferences: const UserPreferences(userId: ''),
@@ -336,31 +352,32 @@ class UserProfile {
     );
   }
 
-  /// Converts UserProfile to JSON
+  /// Converts UserProfile to JSON (matching actual DB schema)
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'email': email,
+      'user_id': userId,
+      'username': username,
       'display_name': displayName,
       'avatar_url': avatarUrl,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
       'bio': bio,
-      'date_of_birth': dateOfBirth?.toIso8601String(),
-      'location': location,
+      'age': age,
+      'city': city,
+      'country': country,
       'phone_number': phoneNumber,
-      'first_name': firstName,
-      'last_name': lastName,
+      'email': email, // typically from auth.users
       'gender': gender,
-      'profile_completion_percentage': profileCompletionPercentage,
-      'is_verified': isVerified,
-      'last_active_at': lastActiveAt?.toIso8601String(),
-      // Placeholders for nested objects
-      'sportsProfiles': [],
-      'statistics': {},
-      'privacySettings': {},
-      'preferences': {},
-      'settings': {},
+      'profile_type': profileType,
+      'intention': intention,
+      'preferred_sport': preferredSport,
+      'interests': interests,
+      'language': language,
+      'verified': verified,
+      'is_active': isActive,
+      'geo_lat': geoLat,
+      'geo_lng': geoLng,
     };
   }
 
@@ -369,21 +386,28 @@ class UserProfile {
     if (identical(this, other)) return true;
     return other is UserProfile &&
         other.id == id &&
+        other.userId == userId &&
         other.email == email &&
+        other.username == username &&
         other.displayName == displayName &&
         other.avatarUrl == avatarUrl &&
         other.createdAt == createdAt &&
         other.updatedAt == updatedAt &&
         other.bio == bio &&
-        other.dateOfBirth == dateOfBirth &&
-        other.location == location &&
+        other.age == age &&
+        other.city == city &&
+        other.country == country &&
         other.phoneNumber == phoneNumber &&
-        other.firstName == firstName &&
-        other.lastName == lastName &&
         other.gender == gender &&
-        other.profileCompletionPercentage == profileCompletionPercentage &&
-        other.isVerified == isVerified &&
-        other.lastActiveAt == lastActiveAt &&
+        other.profileType == profileType &&
+        other.intention == intention &&
+        other.preferredSport == preferredSport &&
+        other.interests == interests &&
+        other.language == language &&
+        other.verified == verified &&
+        other.isActive == isActive &&
+        other.geoLat == geoLat &&
+        other.geoLng == geoLng &&
         _listEquals(other.sportsProfiles, sportsProfiles) &&
         other.statistics == statistics &&
         other.privacySettings == privacySettings &&
@@ -395,21 +419,28 @@ class UserProfile {
   int get hashCode {
     return Object.hashAll([
       id,
+      userId,
       email,
+      username,
       displayName,
       avatarUrl,
       createdAt,
       updatedAt,
       bio,
-      dateOfBirth,
-      location,
+      age,
+      city,
+      country,
       phoneNumber,
-      firstName,
-      lastName,
       gender,
-      profileCompletionPercentage,
-      isVerified,
-      lastActiveAt,
+      profileType,
+      intention,
+      preferredSport,
+      interests,
+      language,
+      verified,
+      isActive,
+      geoLat,
+      geoLng,
       Object.hashAll(sportsProfiles),
       statistics,
       privacySettings,

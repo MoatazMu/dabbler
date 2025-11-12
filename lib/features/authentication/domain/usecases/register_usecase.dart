@@ -11,7 +11,7 @@ class RegisterUseCase
 
   @override
   Future<Result<AuthSession, Failure>> call(RegisterParams params) async {
-    if (params.email.isEmpty || params.password.isEmpty) {
+    if (params.email?.isEmpty ?? true || params.password.isEmpty) {
       return Err<AuthSession, Failure>(
         const AuthFailure(message: 'Email and password must not be empty'),
       );

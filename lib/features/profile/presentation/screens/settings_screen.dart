@@ -182,7 +182,7 @@ class SettingsScreen extends ConsumerWidget {
         context,
         'Location Services',
         'Allow app to access your location',
-        Icons.location_on_outlined,
+        Icons.location_city_outlined,
         true,
         (value) {
           ScaffoldMessenger.of(context).showSnackBar(

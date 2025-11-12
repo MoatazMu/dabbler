@@ -307,9 +307,9 @@ class ProfileController extends StateNotifier<ProfileState> {
     if (profile == null) return true;
 
     return profile.displayName.isEmpty ||
-        profile.email.isEmpty ||
+        (profile.email?.isEmpty ?? true) ||
         profile.bio?.isEmpty != false ||
-        profile.location?.isEmpty != false;
+        profile.city?.isEmpty != false;
   }
 
   /// Get profile strength score (0-100)
@@ -323,7 +323,7 @@ class ProfileController extends StateNotifier<ProfileState> {
     if (profile == null) return false;
 
     return profile.displayName.isNotEmpty &&
-        profile.location?.isNotEmpty == true &&
+        profile.city?.isNotEmpty == true &&
         state.completionPercentage >= 40; // Minimum 40% completion required
   }
 }

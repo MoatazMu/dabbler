@@ -101,7 +101,7 @@ class ProfileHeader extends ConsumerWidget {
                       Row(
                         children: [
                           Icon(
-                            Icons.location_on,
+                            Icons.location_city,
                             color: Colors.white.withOpacity(0.8),
                             size: 16,
                           ),
@@ -371,7 +371,7 @@ class ProfileHeader extends ConsumerWidget {
 
   String _getLocation() {
     // Mock location - would come from profile data
-    return profile.location ?? '';
+    return profile.city ?? '';
   }
 
   int _getGamesPlayed() {

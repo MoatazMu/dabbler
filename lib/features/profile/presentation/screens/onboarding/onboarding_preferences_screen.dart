@@ -346,7 +346,7 @@ class _OnboardingPreferencesScreenState
         Row(
           children: [
             Icon(
-              Icons.location_on,
+              Icons.location_city,
               color: DesignSystem.colors.primary,
               size: 20,
             ),
@@ -368,7 +368,7 @@ class _OnboardingPreferencesScreenState
           initialValue: _selectedCity,
           decoration: InputDecoration(
             labelText: 'Primary City',
-            prefixIcon: const Icon(Icons.location_on),
+            prefixIcon: const Icon(Icons.location_city),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           ),
           items: _cities
@@ -1056,7 +1056,7 @@ class _OnboardingPreferencesScreenState
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.location_on,
+                Icons.location_city,
                 size: 40,
                 color: DesignSystem.colors.success,
               ),

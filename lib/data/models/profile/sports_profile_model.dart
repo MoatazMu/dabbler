@@ -41,12 +41,44 @@ class SportProfileModel {
   }
 
   /// Creates SportProfileModel from JSON (Supabase response)
+  /// Supports simple schema: profile_id, sport_key, skill_level
   factory SportProfileModel.fromJson(Map<String, dynamic> json) {
+    // Handle simple schema from database
+    if (json.containsKey('sport_key')) {
+      final sportKey = json['sport_key'] as String;
+      final skillLevelInt = json['skill_level'] as int? ?? 0;
+      
+      final sportProfile = SportProfile(
+        sportId: sportKey,
+        sportName: _getSportNameFromKey(sportKey),
+        skillLevel: _parseSkillLevel(skillLevelInt),
+        yearsPlaying: 0,
+        preferredPositions: const [],
+        certifications: const [],
+        achievements: const [],
+        isPrimarySport: false,
+        lastPlayed: null,
+        gamesPlayed: 0,
+        averageRating: 0.0,
+      );
+
+      return SportProfileModel(
+        id: '', // Simple schema doesn't have id
+        userId: json['profile_id'] as String? ?? '', // Use profile_id as userId for compatibility
+        sportProfile: sportProfile,
+        isPublic: true,
+        isActive: true,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+    }
+    
+    // Handle full schema (backward compatibility)
     final sportProfile = SportProfile(
-      sportId: json['sport_id'] as String,
-      sportName:
-          json['sport_name'] as String? ??
-          _extractSportName(json), // Extract from sport relation if available
+      sportId: json['sport_id'] as String? ?? json['sport_key'] as String? ?? '',
+      sportName: (json['sport_name'] as String?) ??
+          (json.containsKey('sport') ? _extractSportName(json) : null) ??
+          _getSportNameFromKey(json['sport_key'] as String? ?? ''),
       skillLevel: _parseSkillLevel(json['skill_level']),
       yearsPlaying: json['years_playing'] as int? ?? 0,
       preferredPositions: _parseStringList(json['positions']),
@@ -61,14 +93,59 @@ class SportProfileModel {
     );
 
     return SportProfileModel(
-      id: json['id'] as String,
-      userId: json['user_id'] as String,
+      id: json['id'] as String? ?? '',
+      userId: json['user_id'] as String? ?? json['profile_id'] as String? ?? '',
       sportProfile: sportProfile,
       isPublic: json['is_public'] as bool? ?? true,
       isActive: json['is_active'] as bool? ?? true,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : DateTime.now(),
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : DateTime.now(),
     );
+  }
+  
+  /// Get sport display name from sport_key
+  static String _getSportNameFromKey(String sportKey) {
+    final key = sportKey.toLowerCase();
+    switch (key) {
+      case 'football':
+      case 'soccer':
+        return 'Football';
+      case 'basketball':
+        return 'Basketball';
+      case 'tennis':
+        return 'Tennis';
+      case 'badminton':
+        return 'Badminton';
+      case 'volleyball':
+        return 'Volleyball';
+      case 'tabletennis':
+      case 'table_tennis':
+        return 'Table Tennis';
+      case 'squash':
+        return 'Squash';
+      case 'cricket':
+        return 'Cricket';
+      case 'baseball':
+        return 'Baseball';
+      case 'hockey':
+        return 'Hockey';
+      case 'rugby':
+        return 'Rugby';
+      case 'swimming':
+        return 'Swimming';
+      case 'golf':
+        return 'Golf';
+      case 'padel':
+        return 'Padel';
+      default:
+        return sportKey.isEmpty 
+            ? 'Unknown Sport'
+            : '${sportKey[0].toUpperCase()}${sportKey.substring(1)}';
+    }
   }
 
   /// Creates SportProfileModel from Supabase with sport relation data

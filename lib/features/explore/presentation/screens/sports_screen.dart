@@ -32,7 +32,6 @@ class VenueCard extends StatelessWidget {
       return _buildSkeletonCard();
     }
 
-    final images = (venue['images'] as List<dynamic>?)?.cast<String>() ?? [];
     final name = venue['name'] as String? ?? 'Unknown Venue';
     final area = venue['location'] as String? ?? 'Location not available';
     final sports = (venue['sports'] as List<dynamic>?)?.cast<String>() ?? [];
@@ -50,289 +49,215 @@ class VenueCard extends StatelessWidget {
     final maxSports = 3;
     final visibleSports = sports.take(maxSports).toList();
     final overflowCount = sports.length - maxSports;
-    final thumbnail = images.isNotEmpty ? images.first : null;
 
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 8),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.outline.withOpacity(0.1), width: 1),
-      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Hero image
-            Container(
-              height: 160,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(16),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Venue icon/image
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                color: colorScheme.primaryContainer,
+                child: Icon(
+                  Icons.location_city,
+                  color: colorScheme.onPrimaryContainer,
+                  size: 28,
+                ),
               ),
-              child: Stack(
-                children: [
-                  if (thumbnail != null)
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(16),
-                      ),
-                      child: Image.network(
-                        thumbnail,
-                        width: double.infinity,
-                        height: 160,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildFallbackImage(),
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return _buildImagePlaceholder();
-                        },
-                      ),
-                    )
-                  else
-                    _buildFallbackImage(),
-                  // Status badge
-                  if (isClosed)
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+              const SizedBox(width: 16),
+
+              // Venue info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Name and status
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            displayName,
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'Closed',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
+                        if (isClosed)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.errorContainer,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'Closed',
+                              style: textTheme.labelSmall?.copyWith(
                                 color: colorScheme.onErrorContainer,
                                 fontWeight: FontWeight.w600,
+                                fontSize: 10,
                               ),
-                        ),
-                      ),
-                    ),
-                  // Rating badge
-                  if (showRating)
-                    Positioned(
-                      top: 12,
-                      left: 12,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.star,
-                              size: 12,
-                              color: colorScheme.onPrimaryContainer,
                             ),
-                            const SizedBox(width: 2),
-                            Text(
-                              rating.toStringAsFixed(1),
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: colorScheme.onPrimaryContainer,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 11,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            // Venue info
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Name
-                  Text(
-                    displayName,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Location
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.location_on,
-                        size: 16,
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          area,
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: colorScheme.onSurfaceVariant),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  // Sports chips and distance
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Wrap(
-                          spacing: 4,
-                          runSpacing: 2,
-                          children: [
-                            ...visibleSports.map(
-                              (sport) => _buildSportChip(sport),
-                            ),
-                            if (overflowCount > 0)
-                              _buildOverflowChip(overflowCount),
-                          ],
-                        ),
-                      ),
-                      if (distance.isNotEmpty)
-                        Container(
-                          margin: const EdgeInsets.only(left: 8),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
                           ),
-                          decoration: BoxDecoration(
-                            color: colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(8),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+
+                    // Location
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            area,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
+                        ),
+                        if (distance.isNotEmpty) ...[
+                          const SizedBox(width: 8),
+                          Icon(
+                            Icons.navigation,
+                            size: 12,
+                            color: colorScheme.primary,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            distance,
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Sports and rating
+                    Row(
+                      children: [
+                        // Sports chips
+                        Expanded(
+                          child: Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
                             children: [
-                              Icon(
-                                Icons.navigation,
-                                size: 12,
-                                color: colorScheme.onPrimaryContainer,
+                              ...visibleSports.map(
+                                (sport) => Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '${_getSportEmoji(sport)} $sport',
+                                    style: textTheme.labelSmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ),
                               ),
-                              const SizedBox(width: 2),
-                              Text(
-                                distance,
-                                style: Theme.of(context).textTheme.bodySmall
-                                    ?.copyWith(
-                                      color: colorScheme.onPrimaryContainer,
+                              if (overflowCount > 0)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '+$overflowCount',
+                                    style: textTheme.labelSmall?.copyWith(
+                                      color: colorScheme.onSurfaceVariant,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 11,
                                     ),
-                              ),
+                                  ),
+                                ),
                             ],
                           ),
                         ),
-                    ],
-                  ),
-                  // CTA Button
-                  // SizedBox(
-                  //   width: double.infinity,
-                  //   child: ElevatedButton(
-                  //     onPressed: ctaEnabled ? onTap : null,
-                  //     style: ElevatedButton.styleFrom(
-                  //       backgroundColor: isClosed ? Colors.grey[400] : context.colors.primary,
-                  //       foregroundColor: Colors.white,
-                  //       disabledBackgroundColor: Colors.grey[300],
-                  //       minimumSize: const Size(0, 32),
-                  //       shape: RoundedRectangleBorder(
-                  //         borderRadius: BorderRadius.circular(8),
-                  //       ),
-                  //       padding: const EdgeInsets.symmetric(horizontal: 0),
-                  //       elevation: 0,
-                  //     ),
-                  //     child: Text(
-                  //       ctaLabel,
-                  //       style: context.textTheme.bodySmall?.copyWith(
-                  //         fontWeight: FontWeight.w700,
-                  //         color: Colors.white,
-                  //         fontSize: 12,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
-  Widget _buildSportChip(String sport) {
-    return Builder(
-      builder: (context) {
-        final colorScheme = Theme.of(context).colorScheme;
-        final textTheme = Theme.of(context).textTheme;
-
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(_getSportEmoji(sport), style: const TextStyle(fontSize: 12)),
-              const SizedBox(width: 4),
-              Text(
-                sport,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 11,
+                        // Rating badge
+                        if (showRating) ...[
+                          const SizedBox(width: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.tertiaryContainer,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.star,
+                                  size: 12,
+                                  color: colorScheme.onTertiaryContainer,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  rating.toStringAsFixed(1),
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onTertiaryContainer,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
                 ),
+              ),
+
+              // Arrow icon
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right,
+                color: colorScheme.onSurfaceVariant,
+                size: 20,
               ),
             ],
           ),
-        );
-      },
-    );
-  }
-
-  Widget _buildOverflowChip(int count) {
-    return Builder(
-      builder: (context) {
-        final colorScheme = Theme.of(context).colorScheme;
-        final textTheme = Theme.of(context).textTheme;
-
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-          decoration: BoxDecoration(
-            color: colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            '+$count',
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onPrimaryContainer,
-              fontWeight: FontWeight.w700,
-              fontSize: 11,
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -355,122 +280,63 @@ class VenueCard extends StatelessWidget {
     }
   }
 
-  Widget _buildFallbackImage() {
-    return Builder(
-      builder: (context) {
-        final colorScheme = Theme.of(context).colorScheme;
-        final textTheme = Theme.of(context).textTheme;
-
-        return Container(
-          width: 100,
-          height: 120,
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHigh,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              bottomLeft: Radius.circular(16),
-            ),
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.image,
-                  size: 24,
-                  color: colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'No Image',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                    fontSize: 10,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildImagePlaceholder() {
-    return Builder(
-      builder: (context) {
-        final colorScheme = Theme.of(context).colorScheme;
-
-        return Container(
-          width: 100,
-          height: 120,
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHigh,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(16),
-              bottomLeft: Radius.circular(16),
-            ),
-          ),
-          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-        );
-      },
-    );
-  }
-
   Widget _buildSkeletonCard() {
-    return Container(
-      constraints: const BoxConstraints(minHeight: 120),
-      decoration: DS.cardDecoration,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Skeleton thumbnail
-          Container(
-            width: 100,
-            height: 120,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                bottomLeft: Radius.circular(16),
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Skeleton icon
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-          ),
+            const SizedBox(width: 16),
 
-          // Skeleton content
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(DS.gap16),
+            // Skeleton content
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Skeleton title
                   DS.skeleton(height: 18, width: 150),
-                  const SizedBox(height: DS.gap4),
+                  const SizedBox(height: 8),
 
                   // Skeleton location
-                  DS.skeleton(height: 14, width: 100),
-                  const SizedBox(height: DS.gap8),
+                  DS.skeleton(height: 14, width: 120),
+                  const SizedBox(height: 10),
 
                   // Skeleton chips
                   Row(
                     children: [
-                      DS.skeleton(height: 20, width: 60),
-                      const SizedBox(width: DS.gap4),
-                      DS.skeleton(height: 20, width: 50),
+                      DS.skeleton(height: 24, width: 60),
+                      const SizedBox(width: 6),
+                      DS.skeleton(height: 24, width: 50),
                     ],
                   ),
-
-                  const SizedBox(height: DS.gap8),
-
-                  // Skeleton button
-                  DS.skeleton(height: 32, width: double.infinity),
                 ],
               ),
             ),
-          ),
-        ],
+
+            // Skeleton arrow
+            const SizedBox(width: 8),
+            Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1588,7 +1454,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
               child: Row(
                 children: [
                   Icon(
-                    Icons.location_on,
+                    Icons.location_city,
                     size: 16,
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -1719,7 +1585,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 color: DS.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Icons.location_on, size: 48, color: DS.primary),
+              child: Icon(Icons.location_city, size: 48, color: DS.primary),
             ),
             const SizedBox(height: 24),
             Text(

@@ -189,7 +189,7 @@ class Match {
       'venue': {
         'id': venue.id,
         'name': venue.name,
-        'location': venue.location,
+        'location': venue.city,
         'imageUrl': venue.imageUrl,
         'rating': venue.rating,
         'amenities': venue.amenities,

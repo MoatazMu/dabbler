@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/viewmodels/game_creation_viewmodel.dart';
 
 class BookingConfirmationScreen extends StatefulWidget {
-  final Function(Map<String, dynamic>) onBookingConfirmed;
+  final Function(Map<String, dynamic>)? onBookingConfirmed;
   final Map<String, dynamic> gameData;
+  final GameCreationViewModel? viewModel;
 
   const BookingConfirmationScreen({
     super.key,
-    required this.onBookingConfirmed,
+    this.onBookingConfirmed,
     required this.gameData,
+    this.viewModel,
   });
 
   @override
@@ -211,7 +214,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
           children: [
             Row(
               children: [
-                const Icon(Icons.location_on, color: Colors.green),
+                const Icon(Icons.location_city, color: Colors.green),
                 const SizedBox(width: 8),
                 const Text(
                   'Venue Booking',
@@ -713,20 +716,68 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
   }
 
   Future<void> _confirmBooking() async {
+    if (!_agreedToTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please agree to the terms and conditions'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isProcessing = true;
     });
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-
-      widget.onBookingConfirmed({
-        'paymentMethod': _paymentMethod,
-        'totalCost': _getTotalCost(),
-        'agreedToTerms': _agreedToTerms,
-        'bookingId': 'BK${DateTime.now().millisecondsSinceEpoch}',
-      });
+      // Use viewmodel if provided, otherwise fallback to callback
+      if (widget.viewModel != null) {
+        final success = await widget.viewModel!.createGame();
+        
+        if (mounted) {
+          if (success) {
+            // Call callback if provided
+            if (widget.onBookingConfirmed != null) {
+              widget.onBookingConfirmed!({
+                'paymentMethod': _paymentMethod,
+                'totalCost': _getTotalCost(),
+                'agreedToTerms': _agreedToTerms,
+                'success': true,
+              });
+            } else {
+              // Show success message
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Game created successfully!'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              // Navigate back or to success screen
+              Navigator.of(context).pop(true);
+            }
+          } else {
+            // Show error from viewmodel
+            final error = widget.viewModel!.state.error;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(error ?? 'Failed to create game'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } else if (widget.onBookingConfirmed != null) {
+        // Fallback to callback if no viewmodel
+        widget.onBookingConfirmed!({
+          'paymentMethod': _paymentMethod,
+          'totalCost': _getTotalCost(),
+          'agreedToTerms': _agreedToTerms,
+          'bookingId': 'BK${DateTime.now().millisecondsSinceEpoch}',
+        });
+      } else {
+        throw Exception('No viewmodel or callback provided');
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

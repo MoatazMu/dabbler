@@ -246,7 +246,7 @@ class _GameCreationSuccessScreenState extends State<GameCreationSuccessScreen>
 
             if (venue != null) ...[
               const SizedBox(height: 8),
-              _buildInfoRow(Icons.location_on, venue['name'] ?? 'Venue'),
+              _buildInfoRow(Icons.location_city, venue['name'] ?? 'Venue'),
             ],
 
             const SizedBox(height: 16),

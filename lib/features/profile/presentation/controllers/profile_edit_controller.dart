@@ -81,15 +81,15 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
 
     if (profile != null) {
       final formData = {
+        'username': profile.username ?? '',
         'display_name': profile.displayName,
-        'first_name': profile.firstName ?? '',
-        'last_name': profile.lastName ?? '',
         'bio': profile.bio ?? '',
         'email': profile.email,
         'phone_number': profile.phoneNumber ?? '',
-        'location': profile.location ?? '',
+        'city': profile.city ?? '',
+        'country': profile.country ?? '',
         'gender': profile.gender ?? '',
-        'date_of_birth': profile.dateOfBirth,
+        'age': profile.age,
       };
 
       state = state.copyWith(
@@ -109,8 +109,8 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
 
     final fields = [
       'display_name',
-      'first_name',
-      'last_name',
+      'username',
+      'display_name',
       'bio',
       'email',
       'phone_number',
@@ -176,7 +176,7 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
 
   /// Update date of birth
   void updateDateOfBirth(DateTime? date) {
-    updateField('date_of_birth', date);
+    updateField('age', date);
   }
 
   /// Upload avatar image
@@ -259,14 +259,13 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
       final params = UpdateProfileParams(
         userId: _originalProfile!.id,
         displayName: state.formData['display_name']?.toString().trim(),
-        firstName: state.formData['first_name']?.toString().trim(),
-        lastName: state.formData['last_name']?.toString().trim(),
+        username: state.formData['username']?.toString().trim(),
         bio: state.formData['bio']?.toString().trim(),
         email: state.formData['email']?.toString().trim(),
         phoneNumber: state.formData['phone_number']?.toString().trim(),
-        location: state.formData['location']?.toString().trim(),
+        city: state.formData['location']?.toString().trim(),
         gender: state.formData['gender']?.toString().trim(),
-        dateOfBirth: state.formData['date_of_birth'] as DateTime?,
+        age: state.formData['age'] as int?,
       );
 
       if (_updateProfileUseCase == null) {
@@ -359,8 +358,8 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
         }
         break;
 
-      case 'first_name':
-      case 'last_name':
+      case 'username':
+      case 'display_name':
         if (value != null && value.toString().length > 50) {
           return '${field.replaceAll('_', ' ').titleCase} cannot exceed 50 characters';
         }
@@ -409,14 +408,14 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
     if (_originalProfile == null) return false;
 
     return formData['display_name'] != _originalProfile!.displayName ||
-        formData['first_name'] != (_originalProfile!.firstName ?? '') ||
-        formData['last_name'] != (_originalProfile!.lastName ?? '') ||
+        formData['username'] != (_originalProfile!.username ?? '') ||
         formData['bio'] != (_originalProfile!.bio ?? '') ||
         formData['email'] != _originalProfile!.email ||
         formData['phone_number'] != (_originalProfile!.phoneNumber ?? '') ||
-        formData['location'] != (_originalProfile!.location ?? '') ||
+        formData['city'] != (_originalProfile!.city ?? '') ||
+        formData['country'] != (_originalProfile!.country ?? '') ||
         formData['gender'] != (_originalProfile!.gender ?? '') ||
-        formData['date_of_birth'] != _originalProfile!.dateOfBirth;
+        formData['age'] != _originalProfile!.age;
   }
 
   /// Get field validation status
@@ -450,16 +449,16 @@ class ProfileEditController extends StateNotifier<ProfileEditState> {
     if (state.formData['location']?.toString().trim().isNotEmpty == true) {
       completedFields++;
     }
-    if (state.formData['first_name']?.toString().trim().isNotEmpty == true) {
+    if (state.formData['username']?.toString().trim().isNotEmpty == true) {
       completedFields++;
     }
-    if (state.formData['last_name']?.toString().trim().isNotEmpty == true) {
+    if (state.formData['display_name']?.toString().trim().isNotEmpty == true) {
       completedFields++;
     }
     if (state.formData['phone_number']?.toString().trim().isNotEmpty == true) {
       completedFields++;
     }
-    if (state.formData['date_of_birth'] != null) completedFields++;
+    if (state.formData['age'] != null) completedFields++;
 
     return (completedFields / totalFields * 100).clamp(0.0, 100.0);
   }

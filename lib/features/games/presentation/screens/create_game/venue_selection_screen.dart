@@ -197,7 +197,7 @@ class _VenueSelectionScreenState extends State<VenueSelectionScreen> {
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
-                        Icons.location_on,
+                        Icons.location_city,
                         color: _selectedOption == 'find_venue'
                             ? Colors.white
                             : Colors.grey[600],
@@ -577,7 +577,7 @@ class _VenueSelectionScreenState extends State<VenueSelectionScreen> {
               // Venue details
               Row(
                 children: [
-                  Icon(Icons.location_on, size: 14, color: Colors.grey[600]),
+                  Icon(Icons.location_city, size: 14, color: Colors.grey[600]),
                   const SizedBox(width: 4),
                   Text(
                     '${venue['distance']} km away',
@@ -931,7 +931,7 @@ class _VenueSelectionScreenState extends State<VenueSelectionScreen> {
               trailing: Icon(Icons.arrow_forward_ios),
             ),
             const ListTile(
-              leading: Icon(Icons.location_on),
+              leading: Icon(Icons.location_city),
               title: Text('Distance'),
               subtitle: Text('Within 5 km'),
               trailing: Icon(Icons.arrow_forward_ios),

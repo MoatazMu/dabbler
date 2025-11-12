@@ -122,19 +122,19 @@ abstract class ProfileRemoteDataSource {
   /// Throws [NetworkException] for network errors
   /// Throws [DataNotFoundException] if profile doesn't exist
   /// Throws [AuthenticationException] for auth issues
-  Future<ProfileModel> getProfile(String userId, {bool includeSports = true});
+  Future<UserProfile> getProfile(String userId, {bool includeSports = true});
 
   /// Create a new profile
   /// Throws [ValidationException] for invalid data
   /// Throws [ConflictException] if profile already exists
   /// Throws [AuthenticationException] for auth issues
-  Future<ProfileModel> createProfile(ProfileModel profile);
+  Future<UserProfile> createProfile(UserProfile profile);
 
   /// Update profile with partial data
   /// Throws [ValidationException] for invalid data
   /// Throws [DataNotFoundException] if profile doesn't exist
   /// Throws [PermissionException] for access issues
-  Future<ProfileModel> updateProfile(
+  Future<UserProfile> updateProfile(
     String userId,
     Map<String, dynamic> updates,
   );
@@ -166,7 +166,7 @@ abstract class ProfileRemoteDataSource {
   /// Update avatar URL in profile
   /// Throws [ValidationException] for invalid URL
   /// Throws [DataNotFoundException] if profile doesn't exist
-  Future<ProfileModel> updateAvatarUrl(String userId, String avatarUrl);
+  Future<UserProfile> updateAvatarUrl(String userId, String avatarUrl);
 
   /// Delete avatar from storage and remove from profile
   /// Throws [StorageException] for deletion failures
@@ -270,7 +270,7 @@ abstract class ProfileRemoteDataSource {
   });
 
   /// Get profiles in proximity to location
-  Future<List<ProfileModel>> getProfilesNearLocation(
+  Future<List<UserProfile>> getProfilesNearLocation(
     double latitude,
     double longitude,
     double radiusKm, {
@@ -306,7 +306,7 @@ abstract class ProfileRemoteDataSource {
   // Profile Visibility and Privacy
 
   /// Update profile visibility settings
-  Future<ProfileModel> updateVisibility(
+  Future<UserProfile> updateVisibility(
     String userId,
     Map<String, bool> visibilitySettings,
   );
@@ -323,15 +323,15 @@ abstract class ProfileRemoteDataSource {
   // Batch Operations
 
   /// Batch get multiple profiles
-  /// Returns map of userId -> ProfileModel
-  Future<Map<String, ProfileModel>> batchGetProfiles(
+  /// Returns map of userId -> UserProfile
+  Future<Map<String, UserProfile>> batchGetProfiles(
     List<String> userIds, {
     bool includeSports = true,
   });
 
   /// Batch update multiple profiles
-  /// Returns map of userId -> updated ProfileModel
-  Future<Map<String, ProfileModel>> batchUpdateProfiles(
+  /// Returns map of userId -> updated UserProfile
+  Future<Map<String, UserProfile>> batchUpdateProfiles(
     Map<String, Map<String, dynamic>> updates,
   );
 

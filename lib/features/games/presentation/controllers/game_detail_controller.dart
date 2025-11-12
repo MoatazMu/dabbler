@@ -49,6 +49,7 @@ class GameDetailState {
   final bool isLoadingPlayers;
   final bool isJoining;
   final String? error;
+  final String? joinMessage;
   final JoinGameStatus joinStatus;
   final JoinabilityDecision? joinabilityDecision;
   final bool isOrganizer;
@@ -67,6 +68,7 @@ class GameDetailState {
     this.isLoadingPlayers = false,
     this.isJoining = false,
     this.error,
+    this.joinMessage,
     this.joinStatus = JoinGameStatus.canJoin,
     this.joinabilityDecision,
     this.isOrganizer = false,
@@ -135,6 +137,7 @@ class GameDetailState {
     bool? isLoadingPlayers,
     bool? isJoining,
     String? error,
+    String? joinMessage,
     JoinGameStatus? joinStatus,
     JoinabilityDecision? joinabilityDecision,
     bool? isOrganizer,
@@ -362,12 +365,28 @@ class GameDetailController extends StateNotifier<GameDetailState> {
         (failure) {
           state = state.copyWith(isJoining: false, error: failure.message);
         },
-        (success) {
-          // Refresh game data to get updated player list
-          _loadGamePlayers();
+        (joinResult) async {
+          // Refresh game data to get updated player list and counts
+          await _loadGameDetails();
+          await _loadGamePlayers();
           _updateJoinStatus();
 
-          state = state.copyWith(isJoining: false);
+          // Set success message based on waitlist status
+          String? successMessage;
+          if (joinResult.isOnWaitlist) {
+            final positionText = joinResult.position != null
+                ? ' (Position #${joinResult.position})'
+                : '';
+            successMessage = 'Added to waitlist$positionText. You will be notified if a spot becomes available.';
+          } else {
+            successMessage = joinResult.message;
+          }
+
+          state = state.copyWith(
+            isJoining: false,
+            error: null,
+            joinMessage: successMessage,
+          );
         },
       );
     } catch (e) {

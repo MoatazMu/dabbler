@@ -36,12 +36,12 @@ class MentionSuggestions extends StatelessWidget {
           return ListTile(
             leading: CircleAvatar(
               child: Text(
-                (user.firstName?.isNotEmpty == true) ? user.firstName![0] : '?',
+                (user.username?.isNotEmpty == true) ? user.username![0] : '?',
               ),
             ),
-            title: Text('${user.firstName ?? ''} ${user.lastName ?? ''}'),
+            title: Text('${user.username ?? ''} ${user.displayName ?? ''}'),
             subtitle: Text(
-              '@${(user.firstName ?? '').toLowerCase()}${(user.lastName ?? '').toLowerCase()}',
+              '@${(user.username ?? '').toLowerCase()}${(user.displayName ?? '').toLowerCase()}',
             ),
             onTap: () => onMentionSelected(user),
           );

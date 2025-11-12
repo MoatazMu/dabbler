@@ -71,7 +71,7 @@ import 'package:dabbler/features/misc/presentation/screens/create_game_screen.da
 import 'package:dabbler/features/misc/presentation/screens/add_post_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/social_feed_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/social_search_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/placeholders/social_profile_screen.dart';
+import 'package:dabbler/features/profile/presentation/screens/profile/user_profile_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/social_feed/post_detail_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_welcome_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_friends_screen.dart';
@@ -835,13 +835,13 @@ class AppRouter {
     ),
 
     GoRoute(
-      path: '${RoutePaths.socialProfile}/:userId',
-      name: RouteNames.socialProfile,
+      path: '${RoutePaths.userProfile}/:userId',
+      name: RouteNames.userProfile,
       pageBuilder: (context, state) {
         final userId = state.pathParameters['userId'] ?? '';
         return SharedAxisTransitionPage(
           key: state.pageKey,
-          child: SocialProfileScreen(userId: userId),
+          child: UserProfileScreen(userId: userId),
           type: SharedAxisType.horizontal,
         );
       },

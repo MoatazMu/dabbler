@@ -4,7 +4,7 @@ import 'package:dabbler/core/widgets/custom_avatar.dart';
 class PostAuthorWidget extends StatelessWidget {
   final dynamic author;
   final DateTime createdAt;
-  final String? location;
+  final String? city;
   final bool isEdited;
   final VoidCallback? onProfileTap;
   final List<PostAction>? actions;
@@ -13,7 +13,7 @@ class PostAuthorWidget extends StatelessWidget {
     super.key,
     required this.author,
     required this.createdAt,
-    this.location,
+    this.city,
     this.isEdited = false,
     this.onProfileTap,
     this.actions,
@@ -71,16 +71,16 @@ class PostAuthorWidget extends StatelessWidget {
                     ),
                   ),
 
-                  if (location != null) ...[
+                  if (city != null) ...[
                     const SizedBox(width: 8),
                     Icon(
-                      Icons.location_on_outlined,
+                      Icons.location_city_outlined,
                       size: 14,
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
                     const SizedBox(width: 2),
                     Text(
-                      location!,
+                      city!,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),

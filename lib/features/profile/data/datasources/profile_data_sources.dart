@@ -9,13 +9,13 @@ typedef UploadProgressCallback = void Function(double progress);
 /// Typically implemented with Supabase, Firebase, or REST API
 abstract class ProfileRemoteDataSource {
   /// Fetches user profile from remote server
-  Future<ProfileModel> getProfile(String userId);
+  Future<UserProfile> getProfile(String userId);
 
   /// Creates new user profile on remote server
-  Future<ProfileModel> createProfile(ProfileModel profile);
+  Future<UserProfile> createProfile(UserProfile profile);
 
   /// Updates user profile on remote server
-  Future<ProfileModel> updateProfile(ProfileModel profile);
+  Future<UserProfile> updateProfile(UserProfile profile);
 
   /// Deletes user profile from remote server
   Future<void> deleteProfile(String userId);
@@ -49,7 +49,7 @@ abstract class ProfileRemoteDataSource {
   );
 
   /// Searches profiles with filters
-  Future<List<ProfileModel>> searchProfiles({
+  Future<List<UserProfile>> searchProfiles({
     String? query,
     List<String>? sportIds,
     String? location,
@@ -60,7 +60,7 @@ abstract class ProfileRemoteDataSource {
   });
 
   /// Gets recommended profiles for user
-  Future<List<ProfileModel>> getRecommendedProfiles(
+  Future<List<UserProfile>> getRecommendedProfiles(
     String userId, {
     int limit = 10,
   });
@@ -69,7 +69,7 @@ abstract class ProfileRemoteDataSource {
   Future<bool> profileExists(String userId);
 
   /// Verifies user profile
-  Future<ProfileModel> verifyProfile(String userId);
+  Future<UserProfile> verifyProfile(String userId);
 
   /// Reports user profile
   Future<void> reportProfile(
@@ -92,19 +92,19 @@ abstract class ProfileRemoteDataSource {
   Future<void> updateLastActive(String userId);
 
   /// Gets profile viewers
-  Future<List<ProfileModel>> getProfileViewers(String userId, {int limit = 50});
+  Future<List<UserProfile>> getProfileViewers(String userId, {int limit = 50});
 
   /// Records profile view
   Future<void> recordProfileView(String viewedUserId, String viewerUserId);
 
   /// Bulk updates profile fields
-  Future<ProfileModel> bulkUpdateProfile(
+  Future<UserProfile> bulkUpdateProfile(
     String userId,
     Map<String, dynamic> updates,
   );
 
   /// Imports profile data from external source
-  Future<ProfileModel> importProfileData(
+  Future<UserProfile> importProfileData(
     String userId,
     Map<String, dynamic> externalData,
     String source,
@@ -118,10 +118,10 @@ abstract class ProfileRemoteDataSource {
 /// Typically implemented with Hive, SQLite, or SharedPreferences
 abstract class ProfileLocalDataSource {
   /// Gets cached profile data
-  Future<ProfileModel?> getCachedProfile(String userId);
+  Future<UserProfile?> getCachedProfile(String userId);
 
   /// Caches profile data locally
-  Future<void> cacheProfile(ProfileModel profile);
+  Future<void> cacheProfile(UserProfile profile);
 
   /// Removes profile from cache
   Future<void> removeCachedProfile(String userId);
@@ -165,17 +165,17 @@ abstract class ProfileLocalDataSource {
 
 /// Simple in-memory implementation for development/testing
 class ProfileLocalDataSourceImpl implements ProfileLocalDataSource {
-  final Map<String, ProfileModel> _profileCache = {};
+  final Map<String, UserProfile> _profileCache = {};
   final Map<String, List<SportProfileModel>> _sportsCache = {};
   final Map<String, ProfileStatisticsModel> _statsCache = {};
   final Map<String, DateTime> _timestamps = {};
 
   @override
-  Future<ProfileModel?> getCachedProfile(String userId) async =>
+  Future<UserProfile?> getCachedProfile(String userId) async =>
       _profileCache[userId];
 
   @override
-  Future<void> cacheProfile(ProfileModel profile) async {
+  Future<void> cacheProfile(UserProfile profile) async {
     _profileCache[profile.id] = profile;
     _timestamps[profile.id] = DateTime.now();
   }

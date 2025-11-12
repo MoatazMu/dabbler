@@ -261,7 +261,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
-                    Icons.location_on,
+                    Icons.location_city,
                     color: context.colors.primary,
                     size: 24,
                   ),
@@ -282,14 +282,14 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                       Row(
                         children: [
                           Icon(
-                            Icons.location_on,
+                            Icons.location_city,
                             size: 14,
                             color: context.colors.onSurfaceVariant,
                           ),
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              venue.location,
+                              venue.city,
                               style: context.textTheme.bodySmall?.copyWith(
                                 color: context.colors.onSurfaceVariant,
                               ),

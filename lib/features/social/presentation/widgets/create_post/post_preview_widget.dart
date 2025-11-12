@@ -105,7 +105,7 @@ class PostPreviewWidget extends StatelessWidget {
             Row(
               children: [
                 Icon(
-                  Icons.location_on,
+                  Icons.location_city,
                   color: theme.colorScheme.onSurfaceVariant,
                   size: 16,
                 ),

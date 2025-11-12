@@ -53,6 +53,7 @@ final recentChatContactsProvider = FutureProvider<List<UserProfile>>((
 final currentUserProvider = Provider<UserProfile>((ref) {
   return UserProfile(
     id: 'current_user',
+    userId: 'current_user',
     email: 'user@example.com',
     displayName: 'Current User',
     avatarUrl: null,

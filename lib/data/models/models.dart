@@ -14,7 +14,6 @@ export 'authentication/user_model.dart';
 // Profile models
 export 'profile/privacy_settings.dart';
 export 'profile/privacy_settings_model.dart';
-export 'profile/profile_model.dart';
 export 'profile/profile_statistics.dart';
 export 'profile/profile_statistics_model.dart';
 export 'profile/sport_model.dart';

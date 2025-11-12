@@ -279,7 +279,7 @@ class DataExportService {
       exportData.media = await _getMediaMetadata(userId);
 
       // Location Data (if collected)
-      exportData.locationData = await _getLocationData(userId);
+      exportData.cityData = await _getLocationData(userId);
 
       // Device and Technical Data
       exportData.deviceInfo = await _getDeviceInformation(userId);
@@ -1464,7 +1464,7 @@ Last Updated: ${DateTime.now().toIso8601String()}
     if (data.messages?.isNotEmpty == true) types.add('messages');
     if (data.notifications?.isNotEmpty == true) types.add('notifications');
     if (data.media?.isNotEmpty == true) types.add('media');
-    if (data.locationData?.isNotEmpty == true) types.add('location_data');
+    if (data.cityData?.isNotEmpty == true) types.add('location_data');
     if (data.deviceInfo?.isNotEmpty == true) types.add('device_info');
     if (data.paymentData != null) types.add('payment_data');
     if (data.integrations?.isNotEmpty == true) types.add('integrations');

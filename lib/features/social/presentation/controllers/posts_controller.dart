@@ -377,7 +377,7 @@ class PostsController extends StateNotifier<PostsState> {
         mediaFiles: [], // Media should already be uploaded
         existingMediaUrls: state.currentDraft!.mediaUrls,
         visibility: state.currentDraft!.visibility,
-        locationName: state.currentDraft!.locationName,
+        cityName: state.currentDraft!.cityName,
         tags: state.currentDraft!.tags,
         mentionedUsers: state.currentDraft!.mentionedUsers,
       );

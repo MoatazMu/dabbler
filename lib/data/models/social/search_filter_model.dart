@@ -12,7 +12,7 @@ class SearchFilterModel {
 
   const SearchFilterModel({
     this.sportsCategories = const [],
-    this.location,
+    this.city,
     this.radius,
     this.skillLevels = const [],
     this.minAge,
@@ -31,7 +31,7 @@ class SearchFilterModel {
   }) {
     return SearchFilterModel(
       sportsCategories: sportsCategories ?? this.sportsCategories,
-      location: location ?? this.location,
+      location: location ?? this.city,
       radius: radius ?? this.radius,
       skillLevels: skillLevels ?? this.skillLevels,
       minAge: minAge ?? this.minAge,

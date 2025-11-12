@@ -11,7 +11,7 @@ class FriendModel extends Friend {
   final List<String> mutualFriendIds;
   final Map<String, dynamic>? gameStats;
   final List<String> favorSports;
-  final String? location;
+  final String? city;
   final DateTime? joinedDate;
   final bool isBlocked;
   final bool hasBlockedMe;
@@ -36,7 +36,7 @@ class FriendModel extends Friend {
     this.mutualFriendIds = const [],
     this.gameStats,
     this.favorSports = const [],
-    this.location,
+    this.city,
     this.joinedDate,
     this.isBlocked = false,
     this.hasBlockedMe = false,
@@ -181,7 +181,7 @@ class FriendModel extends Friend {
       mutualFriendIds: mutualFriendIds,
       gameStats: gameStats,
       favorSports: favorSports,
-      location: profileData['location'] ?? profileData['city'],
+      city: profileData['city'],
       joinedDate: profileData['created_at'] != null
           ? _parseDateTime(profileData['created_at'])
           : null,
@@ -293,7 +293,7 @@ class FriendModel extends Friend {
       mutualFriendIds: mutualFriendIds ?? this.mutualFriendIds,
       gameStats: gameStats ?? this.gameStats,
       favorSports: favorSports ?? this.favorSports,
-      location: location ?? this.location,
+      city: city ?? this.city,
       joinedDate: joinedDate ?? this.joinedDate,
       isBlocked: isBlocked ?? this.isBlocked,
       hasBlockedMe: hasBlockedMe ?? this.hasBlockedMe,

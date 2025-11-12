@@ -1,7 +1,7 @@
 class UserModel {
   final String id;
-  final String? firstName;
-  final String? lastName;
+  final String? username;
+  final String? displayName;
   final String? email;
   final String? phone;
   final String? bio;
@@ -21,8 +21,8 @@ class UserModel {
 
   const UserModel({
     required this.id,
-    this.firstName,
-    this.lastName,
+    this.username,
+    this.displayName,
     this.email,
     this.phone,
     this.bio,
@@ -42,37 +42,33 @@ class UserModel {
   });
 
   // Get display name with fallback
-  String get displayName {
-    if (firstName != null && firstName!.isNotEmpty) {
-      return firstName!;
+  String get displayNameOrFallback {
+    if (displayName != null && displayName!.isNotEmpty) {
+      return displayName!;
     }
-    if (lastName != null && lastName!.isNotEmpty) {
-      return lastName!;
+    if (username != null && username!.isNotEmpty) {
+      return username!;
     }
     return 'Player';
   }
 
   // Get full name
   String get fullName {
-    final parts = <String>[];
-    if (firstName != null && firstName!.isNotEmpty) {
-      parts.add(firstName!);
+    if (displayName != null && displayName!.isNotEmpty) {
+      return displayName!;
     }
-    if (lastName != null && lastName!.isNotEmpty) {
-      parts.add(lastName!);
-    }
-    return parts.isEmpty ? 'Player' : parts.join(' ');
+    return displayNameOrFallback;
   }
 
   // Check if user has a valid name
   bool get hasValidName {
-    return (firstName != null && firstName!.isNotEmpty) ||
-        (lastName != null && lastName!.isNotEmpty);
+    return (displayName != null && displayName!.isNotEmpty) ||
+        (username != null && username!.isNotEmpty);
   }
 
   // Sanitize name for display
   String get sanitizedName {
-    final name = displayName;
+    final name = displayNameOrFallback;
     if (name.isEmpty) return 'Player';
 
     // Remove special characters and normalize
@@ -86,8 +82,8 @@ class UserModel {
 
   UserModel copyWith({
     String? id,
-    String? firstName,
-    String? lastName,
+    String? username,
+    String? displayName,
     String? email,
     String? phone,
     String? bio,
@@ -107,8 +103,8 @@ class UserModel {
   }) {
     return UserModel(
       id: id ?? this.id,
-      firstName: firstName ?? this.firstName,
-      lastName: lastName ?? this.lastName,
+      username: username ?? this.username,
+      displayName: displayName ?? this.displayName,
       email: email ?? this.email,
       phone: phone ?? this.phone,
       bio: bio ?? this.bio,
@@ -131,8 +127,8 @@ class UserModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'firstName': firstName,
-      'lastName': lastName,
+      'username': username,
+      'displayName': displayName,
       'email': email,
       'phone': phone,
       'bio': bio,
@@ -155,8 +151,8 @@ class UserModel {
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as String,
-      firstName: json['firstName'] as String?,
-      lastName: json['lastName'] as String?,
+      username: json['username'] as String?,
+      displayName: json['display_name'] as String?,
       email: json['email'] as String?,
       phone: json['phone'] as String?,
       bio: json['bio'] as String?,
@@ -184,9 +180,9 @@ class UserModel {
 
     return UserModel(
       id: json['id'] as String,
-      firstName:
+      username:
           displayName, // Store display name as firstName for compatibility
-      lastName: '', // Keep lastName empty since we're using display name
+      displayName: '', // Keep lastName empty since we're using display name
       email: json['email'] as String?,
       phone: json['phone'] as String?,
       bio: json['bio'] as String?,

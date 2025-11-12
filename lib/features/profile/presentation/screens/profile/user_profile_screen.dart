@@ -1,4 +1,3 @@
-// import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,18 +7,22 @@ import '../../providers/profile_providers.dart';
 import 'package:dabbler/data/models/profile/user_profile.dart';
 import 'package:dabbler/data/models/profile/sports_profile.dart';
 import 'package:dabbler/data/models/profile/profile_statistics.dart';
-import 'package:dabbler/features/profile/presentation/widgets/profile_rewards_widget.dart';
-import '../../../../../utils/constants/route_constants.dart';
 import 'package:dabbler/themes/app_theme.dart';
+import '../../../../../utils/constants/route_constants.dart';
 
-class ProfileScreen extends ConsumerStatefulWidget {
-  const ProfileScreen({super.key});
+class UserProfileScreen extends ConsumerStatefulWidget {
+  final String userId;
+
+  const UserProfileScreen({
+    super.key,
+    required this.userId,
+  });
 
   @override
-  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+  ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
-class _ProfileScreenState extends ConsumerState<ProfileScreen>
+class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
     with TickerProviderStateMixin {
   late AnimationController _animationController;
   late AnimationController _refreshController;
@@ -51,8 +54,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     _animationController.forward();
 
-    // Load initial data
+    // Check if viewing own profile and load data
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkOwnProfile();
       _loadProfileData();
     });
   }
@@ -64,22 +68,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     super.dispose();
   }
 
-  Future<void> _loadProfileData() async {
-    final profileController = ref.read(profileControllerProvider.notifier);
-    final sportsController = ref.read(sportsProfileControllerProvider.notifier);
-    final user = ref.read(currentUserProvider);
-
-    if (user != null) {
-      await Future.wait<void>([
-        profileController.loadProfile(user.id),
-        sportsController.loadSportsProfiles(user.id),
-      ]);
-      await _loadAverageRating();
+  Future<void> _checkOwnProfile() async {
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser != null && currentUser.id == widget.userId) {
+      // Redirect to own profile screen
+      if (mounted) {
+        context.go(RoutePaths.profile);
+      }
     }
   }
 
-  Future<void> _loadAverageRating() async {
-    // Rating data loading (not displayed in top section)
+  Future<void> _loadProfileData() async {
+    final profileController = ref.read(profileControllerProvider.notifier);
+    final sportsController = ref.read(sportsProfileControllerProvider.notifier);
+
+    await Future.wait<void>([
+      profileController.loadProfile(widget.userId),
+      sportsController.loadSportsProfiles(widget.userId),
+    ]);
   }
 
   Future<void> _onRefresh() async {
@@ -92,8 +98,56 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileControllerProvider);
     final sportsState = ref.watch(sportsProfileControllerProvider);
-
     final colorScheme = Theme.of(context).colorScheme;
+
+    // Show loading state
+    if (profileState.isLoading) {
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    // Show error state
+    if (profileState.errorMessage != null && profileState.profile == null) {
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: colorScheme.error,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Profile not found',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  profileState.errorMessage ?? 'Unable to load profile',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                FilledButton.icon(
+                  onPressed: () => context.pop(),
+                  icon: const Icon(Icons.arrow_back),
+                  label: const Text('Go back'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
@@ -133,11 +187,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _buildQuickActions(context),
+                          _buildActionButtons(context),
                           const SizedBox(height: 24),
-                          _buildProfileCompletion(context, profileState),
                           _buildBasicInfo(context, profileState),
-                          _buildRewardsSection(context),
                           _buildSportsProfiles(context, sportsState),
                           _buildStatisticsSummary(context, profileState),
                         ],
@@ -160,9 +212,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Row(
       children: [
         IconButton.filledTonal(
-          onPressed: () =>
-              context.canPop() ? context.pop() : context.go('/home'),
-          icon: const Icon(Icons.dashboard_rounded),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
+          icon: const Icon(Icons.arrow_back_rounded),
           style: IconButton.styleFrom(
             backgroundColor: colorScheme.surfaceContainerHigh,
             foregroundColor: colorScheme.onSurface,
@@ -186,8 +237,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ),
         const SizedBox(width: 16),
         IconButton.filledTonal(
-          onPressed: () => context.push('/settings'),
-          icon: const Icon(Icons.settings_outlined),
+          onPressed: () => _showMoreOptions(context),
+          icon: const Icon(Icons.more_vert),
           style: IconButton.styleFrom(
             backgroundColor: colorScheme.surfaceContainerHigh,
             foregroundColor: colorScheme.onSurface,
@@ -279,7 +330,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final profile = profileState.profile;
     final subtitle = profile?.bio?.isNotEmpty == true
         ? profile!.bio!
-        : 'Add a short bio so teammates know what to expect.';
+        : 'No bio available.';
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
@@ -288,12 +339,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         Text(
           profile?.getDisplayName().isNotEmpty == true
               ? profile!.getDisplayName()
-              : 'Complete your profile',
+              : 'User',
           style: textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w700,
             color: isDarkMode ? Colors.white : Colors.black87,
           ),
         ),
+        if (profile?.username != null && profile!.username!.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            '@${profile.username}',
+            style: textTheme.bodyMedium?.copyWith(
+              color: isDarkMode
+                  ? Colors.white.withOpacity(0.7)
+                  : Colors.black.withOpacity(0.6),
+            ),
+          ),
+        ],
         const SizedBox(height: 8),
         Text(
           subtitle,
@@ -380,7 +442,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  Widget _buildQuickActions(BuildContext context) {
+  Widget _buildActionButtons(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Wrap(
@@ -388,99 +450,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       runSpacing: 12,
       children: [
         FilledButton.icon(
-          onPressed: () => context.push('/profile/edit'),
-          icon: const Icon(Icons.edit_outlined),
-          label: const Text('Edit profile'),
+          onPressed: () => _sendMessage(context),
+          icon: const Icon(Icons.message_outlined),
+          label: const Text('Message'),
         ),
         OutlinedButton.icon(
-          onPressed: () => context.push('/settings'),
-          icon: const Icon(Icons.settings_outlined),
-          label: const Text('Settings'),
+          onPressed: () => _addFriend(context),
+          icon: const Icon(Icons.person_add_outlined),
+          label: const Text('Add Friend'),
           style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
         ),
-        OutlinedButton.icon(
-          onPressed: () => context.push(RoutePaths.rewards),
-          icon: const Icon(Icons.emoji_events_outlined),
-          label: const Text('Rewards'),
-        ),
       ],
-    );
-  }
-
-  Widget _buildProfileCompletion(
-    BuildContext context,
-    ProfileState profileState,
-  ) {
-    final completion = _calculateCompletion(profileState.profile);
-
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Card(
-      color: colorScheme.surfaceContainerHighest,
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.trending_up, color: colorScheme.primary),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Profile completion',
-                        style: textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        completion >= 80
-                            ? 'Looking great! Keep your info fresh.'
-                            : 'Finish a few more details to unlock better matches.',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  '${completion.toInt()}%',
-                  style: textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.primary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            LinearProgressIndicator(
-              value: completion / 100,
-              backgroundColor: colorScheme.surface,
-              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-              minHeight: 6,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            if (completion < 80) ...[
-              const SizedBox(height: 16),
-              FilledButton.tonalIcon(
-                onPressed: () => context.push('/profile/edit'),
-                icon: const Icon(Icons.auto_fix_high_outlined),
-                label: const Text('Complete profile'),
-              ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 
@@ -499,34 +479,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Text(
-                  'Contact & basics',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                IconButton(
-                  tooltip: 'Edit profile',
-                  onPressed: () => context.push('/profile/edit'),
-                  icon: const Icon(Icons.edit_outlined),
-                ),
-              ],
+            Text(
+              'Contact & basics',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 16),
-            if (profile != null && (profile.email?.isNotEmpty ?? false))
-              _buildInfoRow(context, Icons.email_outlined, profile.email ?? ''),
+            if (profile?.email?.isNotEmpty == true)
+              _buildInfoRow(context, Icons.email_outlined, profile!.email ?? ''),
             if (profile?.phoneNumber?.isNotEmpty == true)
               _buildInfoRow(
                 context,
                 Icons.phone_outlined,
                 profile!.phoneNumber!,
               ),
-            // Location: Combine city and country if available
-            if (profile?.city?.isNotEmpty == true || profile?.country?.isNotEmpty == true)
+            if (profile?.city?.isNotEmpty == true ||
+                profile?.country?.isNotEmpty == true)
               _buildInfoRow(
                 context,
                 Icons.location_city_outlined,
@@ -544,7 +514,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     (profile.city == null || profile.city!.isEmpty) &&
                     (profile.country == null || profile.country!.isEmpty) &&
                     profile.age == null))
-              _buildEmptyState(context, 'Add your basic information'),
+              _buildEmptyState(context, 'No information available'),
           ],
         ),
       ),
@@ -591,22 +561,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Text(
-                  'Sports focus',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: colorScheme.onSurface,
-                  ),
-                ),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () => context.push('/profile/sports-preferences'),
-                  icon: const Icon(Icons.tune_outlined, size: 18),
-                  label: const Text('Manage'),
-                ),
-              ],
+            Text(
+              'Sports focus',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 20),
             if (sportsState.profiles.isNotEmpty)
@@ -624,7 +584,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 ),
               )
             else
-              _buildEmptyState(context, 'Add your favorite sports'),
+              _buildEmptyState(context, 'No sports added'),
           ],
         ),
       ),
@@ -852,43 +812,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  double _calculateCompletion(UserProfile? profile) {
-    if (profile == null) return 0.0;
-
-    double completion = 0.0;
-    const double maxScore = 100.0;
-
-    // Basic info (40%)
-    if (profile.username?.isNotEmpty == true) completion += 10.0;
-    if (profile.displayName.isNotEmpty) completion += 10.0;
-    if (profile.email?.isNotEmpty ?? false) completion += 10.0;
-    if (profile.bio?.isNotEmpty == true) completion += 10.0;
-
-    // Contact info (20%)
-    if (profile.phoneNumber?.isNotEmpty == true) completion += 10.0;
-    // Location: city or country counts as location info
-    if (profile.city?.isNotEmpty == true || profile.country?.isNotEmpty == true) {
-      completion += 10.0;
-    }
-
-    // Personal info (20%)
-    if (profile.age != null) completion += 10.0;
-    if (profile.avatarUrl?.isNotEmpty == true) completion += 10.0;
-
-    // Additional info (20%)
-    if (profile.gender?.isNotEmpty == true) completion += 10.0;
-    // Note: interests field doesn't exist in entity, using bio instead
-    if (profile.bio?.isNotEmpty == true) completion += 10.0;
-
-    return completion.clamp(0.0, maxScore);
-  }
-
-  /// Format location string combining city and country
   String _formatLocation(String? city, String? country) {
     final cityStr = city?.trim();
     final countryStr = country?.trim();
-    
-    if (cityStr != null && cityStr.isNotEmpty && countryStr != null && countryStr.isNotEmpty) {
+
+    if (cityStr != null &&
+        cityStr.isNotEmpty &&
+        countryStr != null &&
+        countryStr.isNotEmpty) {
       return '$cityStr, $countryStr';
     } else if (cityStr != null && cityStr.isNotEmpty) {
       return cityStr;
@@ -949,38 +880,52 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     }
   }
 
-  Widget _buildRewardsSection(BuildContext context) {
-    // Get current user ID from profile state
-    final profileState = ref.watch(profileControllerProvider);
-    final userProfile = profileState.profile;
+  void _sendMessage(BuildContext context) {
+    // TODO: Implement message functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Message functionality coming soon')),
+    );
+  }
 
-    if (userProfile == null) {
-      return const SizedBox.shrink();
-    }
+  void _addFriend(BuildContext context) {
+    // TODO: Implement add friend functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Add friend functionality coming soon')),
+    );
+  }
 
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(24),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ProfileRewardsWidget(userId: userProfile.id),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: OutlinedButton.icon(
-              onPressed: () => context.push(RoutePaths.leaderboard),
-              icon: const Icon(Icons.leaderboard_outlined, size: 18),
-              label: const Text('View leaderboard'),
+  void _showMoreOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.block_outlined),
+              title: const Text('Block user'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Implement block functionality
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Block functionality coming soon')),
+                );
+              },
             ),
-          ),
-        ],
+            ListTile(
+              leading: const Icon(Icons.report_outlined),
+              title: const Text('Report user'),
+              onTap: () {
+                Navigator.pop(context);
+                // TODO: Implement report functionality
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Report functionality coming soon')),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -997,3 +942,4 @@ class _HeroStat {
     required this.icon,
   });
 }
+

@@ -608,23 +608,56 @@ class GameCreationViewModel extends ChangeNotifier {
         throw Exception('Waitlist preference is required');
       }
 
-      // Prepare game data for database - ONLY USER-PROVIDED DATA
+      // Get profile_id from user_id
+      final supabase = Supabase.instance.client;
+      final profileResponse = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_active', true)
+          .limit(1)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        throw Exception('No active profile found. Please create a profile first.');
+      }
+
+      final profileId = profileResponse['id'] as String;
+
+      // Combine date and time into start_at and end_at timestamps
+      final startDateTime = DateTime(
+        _state.selectedDate!.year,
+        _state.selectedDate!.month,
+        _state.selectedDate!.day,
+        _state.selectedVenueSlot!.timeSlot.startTime.hour,
+        _state.selectedVenueSlot!.timeSlot.startTime.minute,
+      );
+      final endDateTime = DateTime(
+        _state.selectedDate!.year,
+        _state.selectedDate!.month,
+        _state.selectedDate!.day,
+        _state.selectedVenueSlot!.timeSlot.endTime.hour,
+        _state.selectedVenueSlot!.timeSlot.endTime.minute,
+      );
+
+      // Prepare game data for database - using correct field names
       final gameData = <String, dynamic>{
         'title': _state.gameTitle!,
         'sport': _state.selectedSport!,
-        'scheduled_date': _state.selectedDate!.toIso8601String().split('T')[0],
-        'start_time':
-            '${_state.selectedVenueSlot!.timeSlot.startTime.hour.toString().padLeft(2, '0')}:${_state.selectedVenueSlot!.timeSlot.startTime.minute.toString().padLeft(2, '0')}',
-        'end_time':
-            '${_state.selectedVenueSlot!.timeSlot.endTime.hour.toString().padLeft(2, '0')}:${_state.selectedVenueSlot!.timeSlot.endTime.minute.toString().padLeft(2, '0')}',
-        'max_players': _state.maxPlayers!,
-        'organizer_id': user.id,
-        'skill_level': _state.skillLevel!,
-        'price_per_player': _state.totalCost!.toDouble(),
-        'is_public': _state.participationMode == ParticipationMode.public,
+        'start_at': startDateTime.toIso8601String(),
+        'end_at': endDateTime.toIso8601String(),
+        'capacity': _state.maxPlayers!,
+        'host_user_id': user.id,
+        'host_profile_id': profileId,
+        'min_skill': _parseSkillLevelToInt(_state.skillLevel!),
+        'max_skill': _parseSkillLevelToInt(_state.skillLevel!),
+        'listing_visibility': _state.participationMode == ParticipationMode.public
+            ? 'public'
+            : 'private',
+        'join_policy': 'open', // Default join policy
+        'allow_spectators': false, // Default
+        'is_cancelled': false,
         'allows_waitlist': _state.allowWaitlist!,
-        'created_at': DateTime.now().toIso8601String(),
-        'updated_at': DateTime.now().toIso8601String(),
       };
 
       // Add optional fields only if provided by user
@@ -633,12 +666,12 @@ class GameCreationViewModel extends ChangeNotifier {
         gameData['description'] = _state.gameDescription;
       }
 
-      // Add venue_id if selected and is a valid UUID format
+      // Add venue_space_id if selected and is a valid UUID format
       if (_state.selectedVenueSlot?.venueId != null) {
         final venueId = _state.selectedVenueSlot!.venueId;
         // Check if it's a valid UUID (contains hyphens and is proper length)
         if (venueId.contains('-') && venueId.length >= 36) {
-          gameData['venue_id'] = venueId;
+          gameData['venue_space_id'] = venueId;
         }
       }
 
@@ -782,6 +815,22 @@ class GameCreationViewModel extends ChangeNotifier {
 
     // Auto-save step-specific state
     autoSaveDraft(stepLocalState: _state.stepLocalState);
+  }
+
+  /// Helper method to parse skill level string to integer
+  /// Returns skill level as integer: 1=beginner, 2=intermediate, 3=advanced, 0=mixed
+  int _parseSkillLevelToInt(String skillLevel) {
+    switch (skillLevel.toLowerCase()) {
+      case 'beginner':
+        return 1;
+      case 'intermediate':
+        return 2;
+      case 'advanced':
+        return 3;
+      case 'mixed':
+      default:
+        return 0;
+    }
   }
 
   void updateSelectedDate(DateTime date) {

@@ -15,7 +15,7 @@ class Post {
   final int sharesCount;
   final PostVisibility visibility;
   final String? gameId;
-  final String? locationName;
+  final String? cityName;
   final bool isLiked;
   final bool isBookmarked;
   final String? authorBio;
@@ -44,7 +44,7 @@ class Post {
     required this.sharesCount,
     required this.visibility,
     this.gameId,
-    this.locationName,
+    this.cityName,
     this.isLiked = false,
     this.isBookmarked = false,
     this.authorBio,

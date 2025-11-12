@@ -221,7 +221,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                   context,
                   'Bookings',
                   bookingsCount.toString(),
-                  Icons.location_on,
+                  Icons.location_city,
                   Colors.blue,
                 ),
               ),
@@ -433,7 +433,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
                           if (activity.venue != null)
                             _buildInfoChip(
                               context,
-                              Icons.location_on,
+                              Icons.location_city,
                               activity.venue!,
                             ),
                           if (activity.amount != null)
@@ -505,7 +505,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
         return Icons.group;
       case ActivityType.booking:
       case ActivityType.bookingConfirm:
-        return Icons.location_on;
+        return Icons.location_city;
       case ActivityType.post:
         return Icons.chat_bubble_outline;
       case ActivityType.like:
@@ -536,7 +536,7 @@ class _AllHistoryScreenState extends ConsumerState<AllHistoryScreen> {
       case ActivityType.event:
         return Icons.calendar_today;
       case ActivityType.checkIn:
-        return Icons.location_on;
+        return Icons.location_city;
       default:
         return Icons.show_chart;
     }

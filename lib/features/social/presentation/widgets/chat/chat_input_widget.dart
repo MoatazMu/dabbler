@@ -618,7 +618,7 @@ class _ChatInputWidgetState extends ConsumerState<ChatInputWidget>
                   },
                 ),
                 _buildAttachmentOption(
-                  icon: Icons.location_on,
+                  icon: Icons.location_city,
                   label: 'Location',
                   color: Colors.red,
                   onTap: () {

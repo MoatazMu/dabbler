@@ -325,7 +325,7 @@ class FirstTimeUserGamesWidget extends StatelessWidget {
 
                   _buildFeatureItem(
                     context,
-                    Icons.location_on_rounded,
+                    Icons.location_city_rounded,
                     'Discover Venues',
                     'Find courts, fields, and facilities nearby',
                   ),

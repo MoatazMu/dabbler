@@ -17,7 +17,7 @@ class PostModel extends Post {
     required super.sharesCount,
     required super.visibility,
     super.gameId,
-    super.locationName,
+    super.cityName,
     super.isLiked,
     super.isBookmarked,
     super.authorBio,
@@ -123,7 +123,7 @@ class PostModel extends Post {
       sharesCount: _parseInt(json['shares_count'] ?? json['share_count'] ?? 0),
       visibility: visibility,
       gameId: json['game_id'],
-      locationName: json['location_name'],
+      cityName: json['location_name'],
       isLiked: json['is_liked'] == true || json['user_has_liked'] == true,
       isBookmarked:
           json['is_bookmarked'] == true || json['user_has_bookmarked'] == true,
@@ -163,7 +163,7 @@ class PostModel extends Post {
 
     // Add optional fields only if they have values
     if (gameId != null) json['game_id'] = gameId;
-    if (locationName != null) json['location_name'] = locationName;
+    if (cityName != null) json['location_name'] = cityName;
     if (tags.isNotEmpty) json['tags'] = tags;
     if (mentionedUsers.isNotEmpty) {
       json['mentioned_users'] = mentionedUsers;
@@ -193,7 +193,7 @@ class PostModel extends Post {
     // Add optional fields
     if (mediaUrls.isNotEmpty) json['media_urls'] = mediaUrls;
     if (gameId != null) json['game_id'] = gameId;
-    if (locationName != null) json['location_name'] = locationName;
+    if (cityName != null) json['location_name'] = cityName;
     if (tags.isNotEmpty) json['tags'] = tags;
     if (mentionedUsers.isNotEmpty) {
       json['mentioned_users'] = mentionedUsers;
@@ -217,7 +217,7 @@ class PostModel extends Post {
 
     // Add optional fields
     if (mediaUrls.isNotEmpty) json['media_urls'] = mediaUrls;
-    if (locationName != null) json['location_name'] = locationName;
+    if (cityName != null) json['location_name'] = cityName;
     if (tags.isNotEmpty) json['tags'] = tags;
     if (mentionedUsers.isNotEmpty) {
       json['mentioned_users'] = mentionedUsers;
@@ -267,7 +267,7 @@ class PostModel extends Post {
       sharesCount: sharesCount ?? this.sharesCount,
       visibility: visibility ?? this.visibility,
       gameId: gameId ?? this.gameId,
-      locationName: locationName ?? this.locationName,
+      cityName: cityName ?? this.cityName,
       isLiked: isLiked ?? this.isLiked,
       isBookmarked: isBookmarked ?? this.isBookmarked,
       authorBio: authorBio ?? this.authorBio,

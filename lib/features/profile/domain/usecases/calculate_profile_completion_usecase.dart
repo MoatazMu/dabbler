@@ -130,16 +130,16 @@ class CalculateProfileCompletionUseCase {
     return {
       // Basic Information
       'display_name': profile.displayName.isNotEmpty,
-      'email': profile.email.isNotEmpty,
-      'first_name': profile.firstName?.isNotEmpty ?? false,
-      'last_name': profile.lastName?.isNotEmpty ?? false,
+      'email': profile.email?.isNotEmpty ?? false,
+      'first_name': profile.username?.isNotEmpty ?? false,
+      'last_name': profile.displayName?.isNotEmpty ?? false,
       'bio': profile.bio?.isNotEmpty ?? false,
       'avatar': profile.avatarUrl?.isNotEmpty ?? false,
 
       // Personal Details
-      'date_of_birth': profile.dateOfBirth != null,
+      'date_of_birth': profile.age != null,
       'gender': profile.gender?.isNotEmpty ?? false,
-      'location': profile.location?.isNotEmpty ?? false,
+      'location': profile.city?.isNotEmpty ?? false,
       'phone_number': profile.phoneNumber?.isNotEmpty ?? false,
 
       // Sports & Activities

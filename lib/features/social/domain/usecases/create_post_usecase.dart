@@ -15,7 +15,7 @@ class CreatePostParams {
   final List<String>? existingMediaUrls;
   final PostVisibility visibility;
   final String? gameId;
-  final String? locationName;
+  final String? cityName;
   final double? latitude;
   final double? longitude;
   final List<String>? tags;
@@ -33,7 +33,7 @@ class CreatePostParams {
     this.existingMediaUrls,
     this.visibility = PostVisibility.public,
     this.gameId,
-    this.locationName,
+    this.cityName,
     this.latitude,
     this.longitude,
     this.tags,
@@ -222,7 +222,7 @@ class CreatePostUseCase {
             mediaUrls: mediaUrls.isEmpty ? null : mediaUrls,
             visibility: finalVisibility,
             gameId: params.gameId,
-            locationName: params.locationName,
+            cityName: params.cityName,
             tags: tagsResult.isEmpty ? null : tagsResult,
             mentionedUsers: mentionsResult.mentions.isEmpty
                 ? null
@@ -749,7 +749,7 @@ class CreatePostUseCase {
       'media_urls': mediaUrls,
       'visibility': visibility.name,
       'game_id': params.gameId,
-      'location_name': params.locationName,
+      'location_name': params.cityName,
       'latitude': params.latitude,
       'longitude': params.longitude,
       'tags': tags,
@@ -846,7 +846,7 @@ class CreatePostUseCase {
         'content_length': params.content.length,
         'visibility': params.visibility.name,
         'has_game': params.gameId != null,
-        'has_location': params.locationName != null,
+        'has_location': params.cityName != null,
         'tags_count': post.tags.length,
         'mentions_count': post.mentionedUsers.length,
         'timestamp': DateTime.now().toIso8601String(),

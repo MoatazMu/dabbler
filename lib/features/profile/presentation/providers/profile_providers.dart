@@ -158,11 +158,11 @@ final profileCompletionProvider = Provider<double>((ref) {
   double completion = 0.0;
 
   // Basic profile info (40%)
-  if (profile.firstName?.isNotEmpty == true) completion += 8.0;
-  if (profile.lastName?.isNotEmpty == true) completion += 8.0;
-  if (profile.email.isNotEmpty) completion += 8.0;
+  if (profile.username?.isNotEmpty == true) completion += 8.0;
+  if (profile.displayName?.isNotEmpty == true) completion += 8.0;
+  if (profile.email?.isNotEmpty ?? false) completion += 8.0;
   if (profile.phoneNumber?.isNotEmpty == true) completion += 8.0;
-  if (profile.location?.isNotEmpty == true) completion += 8.0;
+  if (profile.city?.isNotEmpty == true) completion += 8.0;
 
   // Settings (20%)
   if (settings != null) completion += 20.0;
@@ -301,6 +301,7 @@ final currentUserProvider = Provider<UserProfile?>((ref) {
 
   return UserProfile(
     id: authUser.id,
+    userId: authUser.id,
     email: authUser.email ?? '',
     displayName: displayName,
     avatarUrl: avatarUrl,

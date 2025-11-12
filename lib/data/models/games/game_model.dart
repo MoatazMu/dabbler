@@ -37,6 +37,26 @@ class GameModel extends Game {
           ? DateTime.parse(json['end_at'] as String)
           : startAt.add(Duration(hours: 1));
 
+      // Parse currentPlayers from various sources
+      int currentPlayers = 0;
+      if (json.containsKey('current_players')) {
+        // Direct count provided
+        currentPlayers = json['current_players'] as int? ?? 0;
+      } else if (json.containsKey('game_roster')) {
+        // Calculate from game_roster array if provided
+        final roster = json['game_roster'];
+        if (roster is List) {
+          currentPlayers = roster
+              .where((p) =>
+                  p is Map &&
+                  (p['status'] == 'confirmed' || p['status'] == null))
+              .length;
+        } else if (roster is Map && roster.containsKey('count')) {
+          // Handle count aggregation format
+          currentPlayers = roster['count'] as int? ?? 0;
+        }
+      }
+
       return GameModel(
         id: json['id'] as String,
         title: json['title'] as String? ?? 'Untitled Game',
@@ -52,7 +72,7 @@ class GameModel extends Game {
         minPlayers: 2, // Default - not in DB schema
         maxPlayers:
             json['capacity'] as int? ?? 10, // Map capacity to maxPlayers
-        currentPlayers: 0, // TODO: Calculate from game_roster join
+        currentPlayers: currentPlayers,
         organizerId: json['host_user_id'] as String? ?? '',
         skillLevel: _parseSkillLevel(json), // Parse from min_skill/max_skill
         pricePerPlayer: 0.0, // Default - not in DB schema
@@ -61,7 +81,7 @@ class GameModel extends Game {
         isPublic:
             (json['listing_visibility'] as String?) ==
             'public', // Map listing_visibility to isPublic
-        allowsWaitlist: false, // Default - not in DB schema
+        allowsWaitlist: json['allows_waitlist'] as bool? ?? false, // Default to false if not in DB
         checkInEnabled: false, // Default - not in DB schema
         cancellationDeadline: null, // Not in DB schema
         createdAt: _parseDate(

@@ -2,7 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:riverpod/riverpod.dart';
 
 import 'package:dabbler/core/fp/failure.dart';
-import '../models/profile_model.dart';
+import '../models/profile/user_profile.dart';
 import 'profile_repository.dart';
 import '../../features/misc/data/datasources/supabase_error_mapper.dart';
 import '../../features/misc/data/datasources/supabase_remote_data_source.dart';
@@ -20,11 +20,13 @@ class SupabaseProfileRepository implements ProfileRepository {
   static const String _table = 'profiles';
 
   @override
-  Future<Either<Failure, ProfileModel>> fetchProfile(String userId) async {
+  Future<Either<Failure, UserProfile>> fetchProfile(String userId) async {
     try {
-      final response = await _service.maybeSingle(
-        _service.from(_table).select().eq('user_id', userId),
-      );
+      final response = await _service
+          .from(_table)
+          .select()
+          .eq('user_id', userId)
+          .maybeSingle();
 
       if (response == null) {
         return left(
@@ -34,33 +36,24 @@ class SupabaseProfileRepository implements ProfileRepository {
         );
       }
 
-      return right(ProfileModel.fromJson(response));
+      return right(UserProfile.fromJson(response));
     } catch (error, stackTrace) {
       return left(_errorMapper.map(error, stackTrace: stackTrace));
     }
   }
 
   @override
-  Future<Either<Failure, ProfileModel>> upsertProfile(
-    ProfileModel profile,
+  Future<Either<Failure, UserProfile>> upsertProfile(
+    UserProfile profile,
   ) async {
     try {
-      final response = await _service.maybeSingle(
-        _service
-            .from(_table)
-            .upsert(profile.toSupabaseJson(), onConflict: 'user_id')
-            .select(),
-      );
+      final response = await _service
+          .from(_table)
+          .upsert(profile.toJson(), onConflict: 'user_id')
+          .select()
+          .single();
 
-      if (response == null) {
-        return left(
-          UnexpectedFailure(
-            message: 'Supabase did not return the updated profile',
-          ),
-        );
-      }
-
-      return right(ProfileModel.fromJson(response));
+      return right(UserProfile.fromJson(response));
     } catch (error, stackTrace) {
       return left(_errorMapper.map(error, stackTrace: stackTrace));
     }

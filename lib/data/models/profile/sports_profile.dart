@@ -95,27 +95,138 @@ class SportProfile {
   }
 
   /// Creates a SportProfile from JSON
+  /// Supports both simple schema (sport_key, skill_level) and full schema
   factory SportProfile.fromJson(Map<String, dynamic> json) {
+    // Handle simple schema from database: sport_key, skill_level
+    if (json.containsKey('sport_key')) {
+      final sportKey = json['sport_key'] as String;
+      final skillLevelInt = json['skill_level'] as int? ?? 0;
+      
+      return SportProfile(
+        sportId: sportKey,
+        sportName: _getSportNameFromKey(sportKey),
+        skillLevel: _parseSkillLevelFromInt(skillLevelInt),
+        yearsPlaying: 0, // Not in simple schema
+        preferredPositions: const [], // Not in simple schema
+        certifications: const [], // Not in simple schema
+        achievements: const [], // Not in simple schema
+        isPrimarySport: false, // Not in simple schema
+        lastPlayed: null, // Not in simple schema
+        gamesPlayed: 0, // Not in simple schema
+        averageRating: 0.0, // Not in simple schema
+      );
+    }
+    
+    // Handle full schema (backward compatibility)
     return SportProfile(
-      sportId: json['sportId'] as String,
-      sportName: json['sportName'] as String,
-      skillLevel: SkillLevel.values.firstWhere(
-        (e) => e.toString().split('.').last == json['skillLevel'],
-        orElse: () => SkillLevel.beginner,
-      ),
-      yearsPlaying: json['yearsPlaying'] as int? ?? 0,
+      sportId: json['sportId'] as String? ?? json['sport_id'] as String? ?? '',
+      sportName: json['sportName'] as String? ?? json['sport_name'] as String? ?? '',
+      skillLevel: _parseSkillLevel(json['skillLevel'] ?? json['skill_level']),
+      yearsPlaying: json['yearsPlaying'] as int? ?? json['years_playing'] as int? ?? 0,
       preferredPositions: List<String>.from(
-        json['preferredPositions'] as List? ?? [],
+        json['preferredPositions'] as List? ?? json['positions'] as List? ?? [],
       ),
-      certifications: List<String>.from(json['certifications'] as List? ?? []),
-      achievements: List<String>.from(json['achievements'] as List? ?? []),
-      isPrimarySport: json['isPrimarySport'] as bool? ?? false,
+      certifications: List<String>.from(
+        json['certifications'] as List? ?? [],
+      ),
+      achievements: List<String>.from(
+        json['achievements'] as List? ?? [],
+      ),
+      isPrimarySport: json['isPrimarySport'] as bool? ?? json['is_primary_sport'] as bool? ?? false,
       lastPlayed: json['lastPlayed'] != null
           ? DateTime.parse(json['lastPlayed'] as String)
-          : null,
-      gamesPlayed: json['gamesPlayed'] as int? ?? 0,
-      averageRating: (json['averageRating'] as num?)?.toDouble() ?? 0.0,
+          : json['last_played'] != null
+              ? DateTime.parse(json['last_played'] as String)
+              : null,
+      gamesPlayed: json['gamesPlayed'] as int? ?? json['games_played'] as int? ?? 0,
+      averageRating: (json['averageRating'] as num?)?.toDouble() ?? 
+          (json['average_rating'] as num?)?.toDouble() ?? 0.0,
     );
+  }
+  
+  /// Parse skill level from integer (0=beginner, 1=intermediate, 2=advanced, 3=expert)
+  static SkillLevel _parseSkillLevelFromInt(int value) {
+    switch (value) {
+      case 0:
+        return SkillLevel.beginner;
+      case 1:
+        return SkillLevel.intermediate;
+      case 2:
+        return SkillLevel.advanced;
+      case 3:
+        return SkillLevel.expert;
+      default:
+        return SkillLevel.beginner;
+    }
+  }
+  
+  /// Parse skill level from various formats
+  static SkillLevel _parseSkillLevel(dynamic value) {
+    if (value == null) return SkillLevel.beginner;
+    
+    if (value is int) {
+      return _parseSkillLevelFromInt(value);
+    }
+    
+    if (value is String) {
+      switch (value.toLowerCase()) {
+        case 'beginner':
+          return SkillLevel.beginner;
+        case 'intermediate':
+          return SkillLevel.intermediate;
+        case 'advanced':
+          return SkillLevel.advanced;
+        case 'expert':
+          return SkillLevel.expert;
+        default:
+          return SkillLevel.beginner;
+      }
+    }
+    
+    return SkillLevel.beginner;
+  }
+  
+  /// Get sport display name from sport_key
+  static String _getSportNameFromKey(String sportKey) {
+    // Map common sport keys to display names
+    final key = sportKey.toLowerCase();
+    switch (key) {
+      case 'football':
+      case 'soccer':
+        return 'Football';
+      case 'basketball':
+        return 'Basketball';
+      case 'tennis':
+        return 'Tennis';
+      case 'badminton':
+        return 'Badminton';
+      case 'volleyball':
+        return 'Volleyball';
+      case 'tabletennis':
+      case 'table_tennis':
+        return 'Table Tennis';
+      case 'squash':
+        return 'Squash';
+      case 'cricket':
+        return 'Cricket';
+      case 'baseball':
+        return 'Baseball';
+      case 'hockey':
+        return 'Hockey';
+      case 'rugby':
+        return 'Rugby';
+      case 'swimming':
+        return 'Swimming';
+      case 'golf':
+        return 'Golf';
+      case 'padel':
+        return 'Padel';
+      default:
+        // Capitalize first letter as fallback
+        return sportKey.isEmpty 
+            ? 'Unknown Sport'
+            : '${sportKey[0].toUpperCase()}${sportKey.substring(1)}';
+    }
   }
 
   /// Converts SportProfile to JSON

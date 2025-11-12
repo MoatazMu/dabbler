@@ -127,13 +127,13 @@ class SharedActivitiesSection extends StatelessWidget {
                 ),
                 const SizedBox(width: 16),
                 Icon(
-                  Icons.location_on,
+                  Icons.location_city,
                   size: 16,
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(width: 4),
                 Text(
-                  activity.location ?? 'Location not specified',
+                  activity.city ?? 'Location not specified',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),

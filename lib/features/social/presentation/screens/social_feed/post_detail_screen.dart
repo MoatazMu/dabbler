@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:dabbler/core/widgets/loading_widget.dart';
 import '../../providers/social_providers.dart';
 import 'package:dabbler/features/social/presentation/widgets/post/post_content_widget.dart';
@@ -9,6 +10,7 @@ import 'package:dabbler/features/social/presentation/widgets/post/share_post_bot
 import 'package:dabbler/features/social/presentation/widgets/comments/comments_thread.dart';
 import 'package:dabbler/features/social/presentation/widgets/comments/comment_input.dart';
 import '../../../services/social_service.dart';
+import 'package:dabbler/utils/constants/route_constants.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
@@ -221,8 +223,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                             false, // PostModel doesn't have authorVerified
                       ),
                       createdAt: post.createdAt,
-                      location: post
-                          .locationName, // Use 'locationName' not 'location'
+                      city: post.cityName, // Use 'locationName' not 'location'
                       isEdited: false, // PostModel doesn't have isEdited
                       onProfileTap: () => _navigateToProfile(post.authorId),
                       actions: isOwnPost
@@ -910,7 +911,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   void _navigateToProfile(String userId) {
-    Navigator.pushNamed(context, '/profile', arguments: {'userId': userId});
+    context.go('${RoutePaths.userProfile}/$userId');
   }
 
   void _searchHashtag(String hashtag) {
@@ -994,7 +995,7 @@ class LikesListSheet extends ConsumerWidget {
   }
 
   void _navigateToProfile(BuildContext context, String userId) {
-    Navigator.pushNamed(context, '/profile', arguments: {'userId': userId});
+    context.go('${RoutePaths.userProfile}/$userId');
   }
 }
 

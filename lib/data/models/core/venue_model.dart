@@ -17,7 +17,7 @@ class Venue {
   const Venue({
     required this.id,
     required this.name,
-    required this.location,
+    required this.city,
     this.imageUrl,
     this.rating = 0.0,
     this.amenities = const [],

@@ -489,7 +489,7 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.location_on_outlined),
+              leading: const Icon(Icons.location_city_outlined),
               title: const Text('Use location for recommendations'),
               subtitle: const Text('Find games near your current location'),
               trailing: Switch(value: true, onChanged: (value) {}),
