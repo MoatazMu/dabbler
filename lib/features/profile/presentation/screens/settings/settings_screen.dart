@@ -170,92 +170,127 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              _buildAppBar(context),
-              SliverToBoxAdapter(child: _buildSearchBar(context)),
-              ..._buildFilteredSections(context),
-              SliverToBoxAdapter(child: _buildSignOutSection(context)),
-              SliverToBoxAdapter(child: _buildVersionInfo(context)),
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            ],
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // Header
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                  sliver: SliverToBoxAdapter(child: _buildHeader(context)),
+                ),
+                // Hero Section
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  sliver: SliverToBoxAdapter(child: _buildHeroCard(context)),
+                ),
+                // Search Bar
+                SliverToBoxAdapter(child: _buildSearchBar(context)),
+                // Settings Sections
+                ..._buildFilteredSections(context),
+                // Sign Out
+                SliverToBoxAdapter(child: _buildSignOutSection(context)),
+                // Version Info
+                SliverToBoxAdapter(child: _buildVersionInfo(context)),
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
+  Widget _buildHeader(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return SliverAppBar(
-      pinned: true,
-      stretch: true,
-      expandedHeight: 220,
-      backgroundColor: colorScheme.surface,
-      foregroundColor: colorScheme.onSurface,
-      leading: IconButton(
-        onPressed: () => context.pop(),
-        icon: const Icon(Icons.arrow_back),
-      ),
-      actions: [
-        IconButton(
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          onPressed: () => context.pop(),
+          icon: const Icon(Icons.arrow_back_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Settings',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        IconButton.filledTonal(
           onPressed: () => context.push('/help/center'),
           icon: const Icon(Icons.help_outline),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
           tooltip: 'Help center',
         ),
       ],
-      flexibleSpace: FlexibleSpaceBar(
-        collapseMode: CollapseMode.pin,
-        stretchModes: const [StretchMode.zoomBackground, StretchMode.fadeTitle],
-        titlePadding: const EdgeInsetsDirectional.only(start: 24, bottom: 16),
-        title: Text(
-          'Settings',
-          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                colorScheme.primaryContainer.withOpacity(0.85),
-                colorScheme.surface,
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+    );
+  }
+
+  Widget _buildHeroCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Customize your experience',
+            style: textTheme.labelLarge?.copyWith(
+              color: isDarkMode
+                  ? Colors.white.withOpacity(0.8)
+                  : Colors.black.withOpacity(0.7),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.6,
             ),
           ),
-          child: SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 72, 24, 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Tune Dabbler to match how you play.',
-                    style: textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Manage your account, preferences, and notifications all in one place.',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
+          const SizedBox(height: 8),
+          Text(
+            'Tune Dabbler to match how you play',
+            style: textTheme.headlineSmall?.copyWith(
+              color: isDarkMode ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w700,
             ),
           ),
-        ),
+          const SizedBox(height: 12),
+          Text(
+            'Manage your account, preferences, and notifications all in one place.',
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onPrimary.withOpacity(0.8),
+            ),
+          ),
+        ],
       ),
     );
   }

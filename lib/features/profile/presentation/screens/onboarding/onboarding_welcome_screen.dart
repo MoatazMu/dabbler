@@ -194,18 +194,16 @@ class _ProfileOnboardingWelcomeScreenState
   }
 
   Widget _buildHeroSection(String variant) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+
     return Container(
       width: 200,
       height: 200,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            DesignSystem.colors.primary.withOpacity(0.1),
-            DesignSystem.colors.secondary.withOpacity(0.1),
-          ],
-        ),
+        color: heroColor.withOpacity(0.3),
         borderRadius: BorderRadius.circular(100),
       ),
       child: Icon(

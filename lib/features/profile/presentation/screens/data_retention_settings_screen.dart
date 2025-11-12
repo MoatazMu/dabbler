@@ -145,87 +145,249 @@ class _DataRetentionSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: const Center(child: CircularProgressIndicator()),
+      );
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Data Retention Settings'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(40),
-          child: Container(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: const Text(
-              'GDPR Compliance',
-              style: TextStyle(fontSize: 14, color: Colors.grey),
-            ),
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
           ),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildRetentionPolicyCard(),
-            const SizedBox(height: 24),
-            _buildUpcomingCleanupsCard(),
-            const SizedBox(height: 24),
-            _buildAutomationSettingsCard(),
-            const SizedBox(height: 24),
-            _buildInformationCard(),
+          slivers: [
+            // Header
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              sliver: SliverToBoxAdapter(child: _buildHeader(context)),
+            ),
+            // Hero Card
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              sliver: SliverToBoxAdapter(child: _buildHeroCard(context)),
+            ),
+            // Content
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildRetentionPolicyCard(),
+                    const SizedBox(height: 20),
+                    _buildUpcomingCleanupsCard(),
+                    const SizedBox(height: 20),
+                    _buildAutomationSettingsCard(),
+                    const SizedBox(height: 20),
+                    _buildInformationCard(),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(16),
-        child: ElevatedButton(
-          onPressed: _isSaving ? null : _saveRetentionSettings,
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size.fromHeight(50),
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: FilledButton.icon(
+            onPressed: _isSaving ? null : _saveRetentionSettings,
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Icon(Icons.check),
+            label: const Text('Save Settings'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size.fromHeight(50),
+            ),
           ),
-          child: _isSaving
-              ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Text('Save Settings'),
         ),
       ),
     );
   }
 
+  Widget _buildHeader(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          onPressed: () => Navigator.of(context).pop(),
+          icon: const Icon(Icons.arrow_back),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Data Retention',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              Text(
+                'GDPR Compliance',
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.schedule_outlined,
+            size: 48,
+            color: isDarkMode ? Colors.white : Colors.black87,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Manage data lifecycle',
+            style: textTheme.headlineSmall?.copyWith(
+              color: isDarkMode ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Configure how long different types of data are kept before automatic deletion.',
+            style: textTheme.bodyMedium?.copyWith(
+              color: isDarkMode
+                  ? Colors.white.withOpacity(0.85)
+                  : Colors.black.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildRetentionPolicyCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.schedule_outlined, color: Colors.blue),
-                const SizedBox(width: 8),
-                const Text(
-                  'Data Retention Periods',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primaryContainer.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.policy_outlined,
+                    size: 20,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Retention Policies',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Configure how long different types of data are kept before automatic deletion.',
-              style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
 
             ..._retentionPolicies.entries.map(
               (entry) => _buildRetentionPolicyItem(entry.key, entry.value),
+            ),
+
+            const SizedBox(height: 12),
+            Divider(color: colorScheme.outline.withOpacity(0.2)),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.blue.shade50,
+                    Colors.blue.shade100.withOpacity(0.3),
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.blue.shade200, width: 1),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: Colors.blue.shade700,
+                    size: 20,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Customizing policies may affect viewing historical data.',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: Colors.blue.shade900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -234,36 +396,84 @@ class _DataRetentionSettingsScreenState
   }
 
   Widget _buildRetentionPolicyItem(String dataType, Duration duration) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(
-          _getDataTypeIcon(dataType),
-          color: _getDataTypeColor(dataType),
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.2),
+          width: 1,
         ),
-        title: Text(_getDataTypeDisplayName(dataType)),
-        subtitle: Text(_getDataTypeDescription(dataType)),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            DropdownButton<int>(
-              value: duration.inDays,
-              items: _getRetentionOptions(dataType),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _retentionPolicies[dataType] = Duration(days: value);
-                  });
-                }
-              },
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: _getDataTypeColor(dataType).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
-            IconButton(
-              icon: const Icon(Icons.schedule_send, size: 16),
-              onPressed: () => _requestGracePeriod(dataType),
-              tooltip: 'Request grace period',
+            child: Icon(
+              _getDataTypeIcon(dataType),
+              size: 20,
+              color: _getDataTypeColor(dataType),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _getDataTypeDisplayName(dataType),
+                  style: textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _getDataTypeDescription(dataType),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          DropdownButton<int>(
+            value: duration.inDays,
+            items: _getRetentionOptions(dataType),
+            onChanged: (value) {
+              if (value != null) {
+                setState(() {
+                  _retentionPolicies[dataType] = Duration(days: value);
+                });
+              }
+            },
+            underline: const SizedBox(),
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            icon: const Icon(Icons.schedule_send_outlined, size: 20),
+            onPressed: () => _requestGracePeriod(dataType),
+            tooltip: 'Request grace period',
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.primaryContainer.withOpacity(0.3),
+              foregroundColor: colorScheme.primary,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -297,39 +507,61 @@ class _DataRetentionSettingsScreenState
   }
 
   Widget _buildUpcomingCleanupsCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.event_outlined, color: Colors.orange),
-                const SizedBox(width: 8),
-                const Text(
-                  'Upcoming Data Cleanups',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.shade100.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.event_outlined,
+                    size: 20,
+                    color: Colors.orange.shade700,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Upcoming Cleanups',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
             if (_upcomingCleanups.isEmpty) ...[
-              const Center(
+              Center(
                 child: Padding(
-                  padding: EdgeInsets.all(32),
+                  padding: const EdgeInsets.all(32),
                   child: Column(
                     children: [
                       Icon(
                         Icons.check_circle_outline,
                         size: 64,
-                        color: Colors.green,
+                        color: Colors.green.shade400,
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       Text(
                         'No upcoming cleanups scheduled',
-                        style: TextStyle(color: Colors.grey),
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
                       ),
                     ],
                   ),
@@ -347,47 +579,101 @@ class _DataRetentionSettingsScreenState
   }
 
   Widget _buildUpcomingCleanupItem(Map<String, dynamic> cleanup) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final dataType = cleanup['data_type'] as String;
     final scheduledDate = DateTime.parse(cleanup['scheduled_cleanup_date']);
     final daysUntilCleanup = scheduledDate.difference(DateTime.now()).inDays;
+    final isUrgent = daysUntilCleanup <= 7;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: daysUntilCleanup <= 7 ? Colors.red : Colors.orange,
-          child: Icon(
-            _getDataTypeIcon(dataType),
-            color: Colors.white,
-            size: 20,
-          ),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isUrgent
+              ? Colors.red.shade300
+              : colorScheme.outline.withOpacity(0.2),
+          width: 1,
         ),
-        title: Text(_getDataTypeDisplayName(dataType)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Scheduled: ${DateFormat('MMM dd, yyyy').format(scheduledDate)}',
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: isUrgent ? Colors.red.shade100 : Colors.orange.shade100,
+              borderRadius: BorderRadius.circular(12),
             ),
-            Text('Days remaining: $daysUntilCleanup'),
-          ],
-        ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (value) {
-            if (value == 'grace_period') {
-              _requestGracePeriod(dataType);
-            }
-          },
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'grace_period',
-              child: Row(
-                children: [
-                  Icon(Icons.schedule_send, size: 16),
-                  SizedBox(width: 8),
-                  Text('Request Grace Period'),
-                ],
-              ),
+            child: Icon(
+              _getDataTypeIcon(dataType),
+              size: 20,
+              color: isUrgent ? Colors.red.shade700 : Colors.orange.shade700,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _getDataTypeDisplayName(dataType),
+                  style: textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Scheduled: ${DateFormat('MMM dd, yyyy').format(scheduledDate)}',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$daysUntilCleanup days remaining',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: isUrgent
+                        ? Colors.red.shade700
+                        : Colors.orange.shade700,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          IconButton(
+            icon: const Icon(Icons.more_vert, size: 20),
+            onPressed: () => _showCleanupOptions(dataType),
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.primaryContainer.withOpacity(0.3),
+              foregroundColor: colorScheme.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCleanupOptions(String dataType) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.schedule_send_outlined),
+              title: const Text('Request grace period'),
+              onTap: () {
+                Navigator.pop(context);
+                _requestGracePeriod(dataType);
+              },
             ),
           ],
         ),
@@ -396,56 +682,126 @@ class _DataRetentionSettingsScreenState
   }
 
   Widget _buildAutomationSettingsCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.settings_outlined, color: Colors.green),
-                const SizedBox(width: 8),
-                const Text(
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.settings_outlined,
+                    size: 20,
+                    color: Colors.green.shade700,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
                   'Automation Settings',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            SwitchListTile(
-              title: const Text('Enable Automatic Cleanup'),
-              subtitle: const Text(
-                'Automatically delete data based on retention policies',
-              ),
-              value: _autoCleanupEnabled,
-              onChanged: (value) => setState(() => _autoCleanupEnabled = value),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Enable Automatic Cleanup',
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Automatically delete data based on retention policies',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Switch(
+                  value: _autoCleanupEnabled,
+                  onChanged: (value) =>
+                      setState(() => _autoCleanupEnabled = value),
+                ),
+              ],
             ),
 
-            const Divider(),
+            const SizedBox(height: 16),
+            Divider(color: colorScheme.outline.withOpacity(0.2)),
+            const SizedBox(height: 16),
 
-            ListTile(
-              title: const Text('Default Grace Period'),
-              subtitle: const Text(
-                'Time before data deletion where you can request recovery',
-              ),
-              trailing: DropdownButton<int>(
-                value: _gracePeriod.inDays,
-                items: [7, 14, 30, 60, 90]
-                    .map(
-                      (days) => DropdownMenuItem(
-                        value: days,
-                        child: Text('$days days'),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Default Grace Period',
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurface,
+                        ),
                       ),
-                    )
-                    .toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() => _gracePeriod = Duration(days: value));
-                  }
-                },
-              ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Time before data deletion where you can request recovery',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                DropdownButton<int>(
+                  value: _gracePeriod.inDays,
+                  items: [7, 14, 30, 60, 90]
+                      .map(
+                        (days) => DropdownMenuItem(
+                          value: days,
+                          child: Text('$days days'),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _gracePeriod = Duration(days: value));
+                    }
+                  },
+                  underline: const SizedBox(),
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
@@ -454,29 +810,43 @@ class _DataRetentionSettingsScreenState
   }
 
   Widget _buildInformationCard() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.info_outline, color: Colors.blue),
-                const SizedBox(width: 8),
-                const Text(
-                  'Data Retention Information',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade100.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.info_outline,
+                    size: 20,
+                    color: Colors.blue.shade700,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Important Information',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-
-            const Text(
-              'Important Information:',
-              style: TextStyle(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 8),
 
             ...[
               'Data is automatically deleted based on your retention settings',
@@ -486,31 +856,77 @@ class _DataRetentionSettingsScreenState
               'You can export your data before deletion using the Data Export feature',
             ].map(
               (info) => Padding(
-                padding: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.only(bottom: 12),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.info, size: 16, color: Colors.blue),
-                    const SizedBox(width: 8),
-                    Expanded(child: Text(info)),
+                    Container(
+                      margin: const EdgeInsets.only(top: 2),
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100.withOpacity(0.3),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.check_circle_outline,
+                        size: 16,
+                        color: Colors.blue.shade700,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        info,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface.withOpacity(0.8),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
             ),
 
             const SizedBox(height: 16),
+            Divider(color: colorScheme.outline.withOpacity(0.2)),
+            const SizedBox(height: 16),
+
             Row(
               children: [
-                TextButton.icon(
-                  onPressed: () => _showDataTypesHelp(),
-                  icon: const Icon(Icons.help_outline),
-                  label: const Text('Data Types Help'),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => _showDataTypesHelp(),
+                    icon: const Icon(Icons.help_outline, size: 18),
+                    label: const Text('Data Types Help'),
+                    style: TextButton.styleFrom(
+                      backgroundColor: colorScheme.primaryContainer.withOpacity(
+                        0.3,
+                      ),
+                      foregroundColor: colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
                 ),
-                const SizedBox(width: 16),
-                TextButton.icon(
-                  onPressed: () => _showRetentionHelp(),
-                  icon: const Icon(Icons.policy),
-                  label: const Text('Retention Policy'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextButton.icon(
+                    onPressed: () => _showRetentionHelp(),
+                    icon: const Icon(Icons.policy_outlined, size: 18),
+                    label: const Text('Retention Policy'),
+                    style: TextButton.styleFrom(
+                      backgroundColor: colorScheme.primaryContainer.withOpacity(
+                        0.3,
+                      ),
+                      foregroundColor: colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),

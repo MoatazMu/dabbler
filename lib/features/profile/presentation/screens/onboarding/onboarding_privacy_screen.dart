@@ -88,96 +88,126 @@ class _OnboardingPrivacyScreenState
   Widget build(BuildContext context) {
     final controller = ref.watch(onboardingControllerProvider);
     final variant = controller.currentVariant ?? 'control';
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: DesignSystem.colors.background,
-      body: SafeArea(
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: _buildContent(context, variant),
-              ),
-            );
-          },
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => context.go(RoutePaths.onboardingPreferences),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => _skipStep(),
+            child: Text(
+              'Skip',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildContent(BuildContext context, String variant) {
-    return Column(
-      children: [
-        // App bar
-        _buildAppBar(),
-
-        // Content
-        Expanded(
-          child: CustomScrollView(
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: _buildHeader(variant),
-                ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                child: _buildHeroSection(variant),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Privacy sections
+                    _buildProfileVisibilitySection(),
+                    const SizedBox(height: 24),
+                    _buildCommunicationSection(),
+                    const SizedBox(height: 24),
+                    _buildDataSection(),
 
-              // Privacy sections
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    children: [
-                      _buildProfileVisibilitySection(),
-                      const SizedBox(height: 24),
-                      _buildCommunicationSection(),
-                      const SizedBox(height: 24),
-                      _buildDataSection(),
-                    ],
-                  ),
-                ),
-              ),
+                    const SizedBox(height: 24),
 
-              // Privacy review section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: _buildPrivacyReviewSection(variant),
-                ),
-              ),
+                    // Privacy review section
+                    _buildPrivacyReviewSection(variant),
 
-              // Bottom section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      // Personalized tip
-                      _buildPersonalizedTip(variant),
+                    const SizedBox(height: 24),
 
-                      const SizedBox(height: 24),
+                    // Personalized tip
+                    _buildPersonalizedTip(variant),
 
-                      // Complete button
-                      _buildCompleteButton(variant),
+                    const SizedBox(height: 24),
 
-                      const SizedBox(height: 16),
+                    // Complete button
+                    _buildCompleteButton(variant),
 
-                      // Progress indicator
-                      _buildProgressIndicator(),
+                    const SizedBox(height: 16),
 
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+                    // Progress indicator
+                    _buildProgressIndicator(),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildHeroSection(String variant) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.lock, size: 56, color: textColor),
+          const SizedBox(height: 16),
+          Text(
+            variant == 'gamified'
+                ? '🔒 Secure Your Privacy'
+                : 'Privacy & Data Settings',
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            variant == 'gamified'
+                ? 'Control your privacy to earn trust badges and security points!'
+                : 'Choose how your information is shared and stored. You can change these settings anytime.',
+            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 

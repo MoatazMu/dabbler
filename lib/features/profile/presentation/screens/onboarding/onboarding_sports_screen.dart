@@ -182,106 +182,159 @@ class _OnboardingSportsScreenState extends ConsumerState<OnboardingSportsScreen>
   Widget build(BuildContext context) {
     final controller = ref.watch(onboardingControllerProvider);
     final variant = controller.currentVariant ?? 'control';
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: DesignSystem.colors.background,
-      body: SafeArea(
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: _buildContent(context, variant),
-              ),
-            );
-          },
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => context.go(RoutePaths.onboardingBasicInfo),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => _skipStep(),
+            child: Text(
+              'Skip',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildContent(BuildContext context, String variant) {
-    return Column(
-      children: [
-        // App bar
-        _buildAppBar(),
-
-        // Content
-        Expanded(
-          child: CustomScrollView(
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: _buildHeader(variant),
-                ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                child: _buildHeroSection(variant),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Sports categories
+                    ..._sportsByCategory.entries.map((entry) {
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: _buildSportsCategory(
+                          entry.key,
+                          entry.value,
+                          variant,
+                        ),
+                      );
+                    }),
 
-              // Sports categories
-              SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final categories = _sportsByCategory.keys.toList();
-                  final category = categories[index];
-                  final sports = _sportsByCategory[category]!;
-
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0,
-                      vertical: 8.0,
-                    ),
-                    child: _buildSportsCategory(category, sports, variant),
-                  );
-                }, childCount: _sportsByCategory.length),
-              ),
-
-              // Skill levels section
-              if (_selectedSports.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: _buildSkillLevels(variant),
-                  ),
-                ),
-
-              // Want to try section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: _buildWantToTry(variant),
-                ),
-              ),
-
-              // Bottom section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      // Personalized tip
-                      _buildPersonalizedTip(variant),
-
-                      const SizedBox(height: 24),
-
-                      // Continue button
-                      _buildContinueButton(variant),
-
+                    // Skill levels section
+                    if (_selectedSports.isNotEmpty) ...[
                       const SizedBox(height: 16),
-
-                      // Progress indicator
-                      _buildProgressIndicator(),
-
-                      const SizedBox(height: 32),
+                      _buildSkillLevels(variant),
                     ],
-                  ),
+
+                    // Want to try section
+                    const SizedBox(height: 16),
+                    _buildWantToTry(variant),
+
+                    const SizedBox(height: 24),
+
+                    // Personalized tip
+                    _buildPersonalizedTip(variant),
+
+                    const SizedBox(height: 24),
+
+                    // Continue button
+                    _buildContinueButton(variant),
+
+                    const SizedBox(height: 16),
+
+                    // Progress indicator
+                    _buildProgressIndicator(),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildHeroSection(String variant) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          Text('🏆', style: const TextStyle(fontSize: 56)),
+          const SizedBox(height: 16),
+          Text(
+            variant == 'gamified'
+                ? '🏆 Choose Your Sports Arena'
+                : 'What Sports Do You Play?',
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            variant == 'gamified'
+                ? 'Each sport unlocks new game opportunities and rewards!'
+                : 'Select the sports you enjoy playing so we can find perfect matches',
+            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
+            textAlign: TextAlign.center,
+          ),
+          if (variant == 'gamified' && _selectedSports.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: isDarkMode
+                      ? Colors.white.withOpacity(0.15)
+                      : Colors.black.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  '${_selectedSports.length * 5} points earned from sports!',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 

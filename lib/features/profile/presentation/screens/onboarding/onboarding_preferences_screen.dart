@@ -160,102 +160,127 @@ class _OnboardingPreferencesScreenState
   Widget build(BuildContext context) {
     final controller = ref.watch(onboardingControllerProvider);
     final variant = controller.currentVariant ?? 'control';
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: DesignSystem.colors.background,
-      body: SafeArea(
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: _buildContent(context, variant),
-              ),
-            );
-          },
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => context.go(RoutePaths.onboardingSports),
+          icon: Icon(
+            Icons.arrow_back,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
+        actions: [
+          TextButton(
+            onPressed: () => _skipStep(),
+            child: Text(
+              'Skip',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildContent(BuildContext context, String variant) {
-    return Column(
-      children: [
-        // App bar
-        _buildAppBar(),
-
-        // Content
-        Expanded(
-          child: CustomScrollView(
-            slivers: [
-              // Header
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: _buildHeader(variant),
-                ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                child: _buildHeroSection(variant),
               ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Location section
+                    _buildLocationSection(variant),
 
-              // Location section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: _buildLocationSection(variant),
-                ),
-              ),
+                    const SizedBox(height: 32),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                    // Availability section
+                    _buildAvailabilitySection(variant),
 
-              // Availability section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: _buildAvailabilitySection(variant),
-                ),
-              ),
+                    const SizedBox(height: 32),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+                    // Game preferences section
+                    _buildGamePreferencesSection(variant),
 
-              // Game preferences section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: _buildGamePreferencesSection(variant),
-                ),
-              ),
+                    const SizedBox(height: 32),
 
-              // Bottom section
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 32),
+                    // Personalized tip
+                    _buildPersonalizedTip(variant),
 
-                      // Personalized tip
-                      _buildPersonalizedTip(variant),
+                    const SizedBox(height: 24),
 
-                      const SizedBox(height: 24),
+                    // Continue button
+                    _buildContinueButton(variant),
 
-                      // Continue button
-                      _buildContinueButton(variant),
+                    const SizedBox(height: 16),
 
-                      const SizedBox(height: 16),
-
-                      // Progress indicator
-                      _buildProgressIndicator(),
-
-                      const SizedBox(height: 32),
-                    ],
-                  ),
+                    // Progress indicator
+                    _buildProgressIndicator(),
+                  ],
                 ),
               ),
             ],
           ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildHeroSection(String variant) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          Text('📍', style: const TextStyle(fontSize: 56)),
+          const SizedBox(height: 16),
+          Text(
+            variant == 'gamified'
+                ? '📍 Set Your Game Zone'
+                : 'Where & When Do You Play?',
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            variant == 'gamified'
+                ? 'Optimize your preferences to unlock location rewards!'
+                : 'Help us recommend games that fit your schedule and location',
+            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -677,11 +702,7 @@ class _OnboardingPreferencesScreenState
       children: [
         Row(
           children: [
-            Icon(
-              Icons.settings,
-              color: DesignSystem.colors.primary,
-              size: 20,
-            ),
+            Icon(Icons.settings, color: DesignSystem.colors.primary, size: 20),
             const SizedBox(width: 8),
             Text(
               'Game Preferences',

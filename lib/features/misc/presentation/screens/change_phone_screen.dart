@@ -64,143 +64,184 @@ class _ChangePhoneScreenState extends State<ChangePhoneScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Change Phone Number'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.defaultPadding),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                child: _buildHeroSection(),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                child: _buildFormSection(),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeroSection() {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.phone_android, size: 56, color: textColor),
+          const SizedBox(height: 16),
+          Text(
+            'Update Phone Number',
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Enter your new phone number to receive verification code',
+            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFormSection() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Phone Input
+          Row(
+            children: [
+              // Country Code Dropdown
+              Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey[300]!),
+                  borderRadius: BorderRadius.circular(
+                    AppConstants.borderRadius,
+                  ),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _selectedCountryCode,
+                    items: _countryCodes.map((country) {
+                      return DropdownMenuItem(
+                        value: country['code'],
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(country['flag']!),
+                              const SizedBox(width: 4),
+                              Text(country['code']!),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _selectedCountryCode = value);
+                      }
+                    },
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 12),
+
+              // Phone Number Input
+              Expanded(
+                child: CustomInputField(
+                  controller: _phoneController,
+                  label: 'Phone Number',
+                  hintText: 'Enter your new phone number',
+                  keyboardType: TextInputType.phone,
+                  validator: AppValidators.validatePhoneNumber,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 32),
+
+          // Update Button
+          AppButton(
+            onPressed: _isLoading ? null : _handleSubmit,
+            label: _isLoading ? 'Saving...' : 'Continue',
+          ),
+
+          const SizedBox(height: 24),
+
+          // Info Text
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDarkMode
+                  ? colorScheme.primaryContainer.withOpacity(0.3)
+                  : Colors.blue[50],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDarkMode
+                    ? colorScheme.primary.withOpacity(0.5)
+                    : Colors.blue[200]!,
+              ),
+            ),
+            child: Row(
               children: [
-                const SizedBox(height: 32),
-
-                // Header
-                Text(
-                  'Update Phone Number',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
+                Icon(
+                  Icons.info_outline,
+                  color: isDarkMode ? colorScheme.primary : Colors.blue[700],
+                  size: 20,
                 ),
-
-                const SizedBox(height: 8),
-
-                Text(
-                  'Enter your new phone number to receive verification code',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyLarge?.copyWith(color: Colors.grey[600]),
-                  textAlign: TextAlign.center,
-                ),
-
-                const SizedBox(height: 48),
-
-                // Phone Input
-                Row(
-                  children: [
-                    // Country Code Dropdown
-                    Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey[300]!),
-                        borderRadius: BorderRadius.circular(
-                          AppConstants.borderRadius,
-                        ),
-                      ),
-                      child: DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: _selectedCountryCode,
-                          items: _countryCodes.map((country) {
-                            return DropdownMenuItem(
-                              value: country['code'],
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(country['flag']!),
-                                    const SizedBox(width: 4),
-                                    Text(country['code']!),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() => _selectedCountryCode = value);
-                            }
-                          },
-                        ),
-                      ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'A verification code will be sent to your new phone number to confirm the change.',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: isDarkMode
+                          ? colorScheme.onPrimaryContainer
+                          : Colors.blue[700],
                     ),
-
-                    const SizedBox(width: 12),
-
-                    // Phone Number Input
-                    Expanded(
-                      child: CustomInputField(
-                        controller: _phoneController,
-                        label: 'Phone Number',
-                        hintText: 'Enter your new phone number',
-                        keyboardType: TextInputType.phone,
-                        validator: AppValidators.validatePhoneNumber,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 32),
-
-                // Update Button
-                AppButton(
-                  onPressed: _isLoading ? null : _handleSubmit,
-                  label: _isLoading ? 'Saving...' : 'Continue',
-                ),
-
-                const Spacer(),
-
-                // Info Text
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue[50],
-                    borderRadius: BorderRadius.circular(
-                      AppConstants.borderRadius,
-                    ),
-                    border: Border.all(color: Colors.blue[200]!),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Colors.blue[700],
-                        size: 20,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'A verification code will be sent to your new phone number to confirm the change.',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(color: Colors.blue[700]),
-                        ),
-                      ),
-                    ],
                   ),
                 ),
-
-                const SizedBox(height: 16),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }

@@ -78,34 +78,50 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Contact Support'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeaderSection(),
-                  const SizedBox(height: 30),
-                  _buildContactForm(),
-                  const SizedBox(height: 30),
-                  _buildQuickActionsSection(),
-                  const SizedBox(height: 30),
-                  _buildSubmitButton(),
-                ],
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
               ),
+              slivers: [
+                // Header
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                  sliver: SliverToBoxAdapter(child: _buildHeader(context)),
+                ),
+                // Hero Card
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  sliver: SliverToBoxAdapter(child: _buildHeroCard(context)),
+                ),
+                // Content
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
+                  sliver: SliverToBoxAdapter(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildContactForm(),
+                          const SizedBox(height: 20),
+                          _buildQuickActionsSection(),
+                          const SizedBox(height: 24),
+                          _buildSubmitButton(),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -113,42 +129,90 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
     );
   }
 
-  Widget _buildHeaderSection() {
-    return Card(
-      color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Icon(
-              Icons.support_agent,
-              size: 48,
-              color: Theme.of(context).primaryColor,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'How can we help you?',
-              style: Theme.of(
-                context,
-              ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'We\'re here to help! Send us a message and we\'ll get back to you as soon as possible.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            ),
-          ],
+  Widget _buildHeader(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          onPressed: () => context.pop(),
+          icon: const Icon(Icons.arrow_back),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
         ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Contact Support',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.support_agent,
+            size: 48,
+            color: isDarkMode ? Colors.white : Colors.black87,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'How can we help?',
+            style: textTheme.headlineSmall?.copyWith(
+              color: isDarkMode ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Send us a message and we\'ll get back to you as soon as possible.',
+            style: textTheme.bodyMedium?.copyWith(
+              color: isDarkMode
+                  ? Colors.white.withOpacity(0.85)
+                  : Colors.black.withOpacity(0.7),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildContactForm() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -156,19 +220,22 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
           children: [
             Text(
               'Contact Information',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 16),
 
             // Email
             TextFormField(
               controller: _emailController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Your Email',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.email),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                prefixIcon: const Icon(Icons.email_outlined),
               ),
               keyboardType: TextInputType.emailAddress,
               validator: (value) {
@@ -186,11 +253,13 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
 
             // Category
             DropdownButtonFormField<String>(
-              initialValue: _selectedCategory,
-              decoration: const InputDecoration(
+              value: _selectedCategory,
+              decoration: InputDecoration(
                 labelText: 'Category',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.category),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                prefixIcon: const Icon(Icons.category_outlined),
               ),
               items: _categories.map((category) {
                 return DropdownMenuItem(value: category, child: Text(category));
@@ -207,10 +276,12 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
             // Subject
             TextFormField(
               controller: _subjectController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Subject',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.subject),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                prefixIcon: const Icon(Icons.subject_outlined),
               ),
               validator: (value) {
                 if (value == null || value.isEmpty) {
@@ -225,10 +296,12 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
             // Message
             TextFormField(
               controller: _messageController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Message',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.message),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                prefixIcon: const Icon(Icons.message_outlined),
                 alignLabelWithHint: true,
               ),
               maxLines: 5,
@@ -249,7 +322,13 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
   }
 
   Widget _buildQuickActionsSection() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -257,17 +336,30 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
           children: [
             Text(
               'Quick Actions',
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: colorScheme.onSurface,
+              ),
             ),
             const SizedBox(height: 16),
 
             ListTile(
-              leading: const Icon(Icons.help_outline),
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.help_outline,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
+              ),
               title: const Text('Browse FAQ'),
               subtitle: const Text('Find answers to common questions'),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('FAQ section coming soon')),
@@ -275,13 +367,25 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
               },
             ),
 
-            const Divider(),
+            const Divider(height: 24),
 
             ListTile(
-              leading: const Icon(Icons.chat),
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.chat_outlined,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
+              ),
               title: const Text('Live Chat'),
               subtitle: const Text('Chat with our support team'),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Live chat coming soon')),
@@ -289,13 +393,25 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
               },
             ),
 
-            const Divider(),
+            const Divider(height: 24),
 
             ListTile(
-              leading: const Icon(Icons.phone),
+              contentPadding: EdgeInsets.zero,
+              leading: Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.phone_outlined,
+                  size: 20,
+                  color: colorScheme.primary,
+                ),
+              ),
               title: const Text('Call Support'),
               subtitle: const Text('+1 (555) 123-4567'),
-              trailing: const Icon(Icons.arrow_forward_ios),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
               onTap: () {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -313,18 +429,19 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
   Widget _buildSubmitButton() {
     return SizedBox(
       width: double.infinity,
-      child: ElevatedButton(
+      child: FilledButton.icon(
         onPressed: _isSubmitting ? null : _submitForm,
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-        ),
-        child: _isSubmitting
+        icon: _isSubmitting
             ? const SizedBox(
                 height: 20,
                 width: 20,
                 child: CircularProgressIndicator(strokeWidth: 2),
               )
-            : const Text('Send Message'),
+            : const Icon(Icons.send),
+        label: const Text('Send Message'),
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+        ),
       ),
     );
   }
@@ -347,19 +464,15 @@ class _ContactSupportScreenState extends ConsumerState<ContactSupportScreen>
             content: Text(
               'Message sent successfully! We\'ll get back to you soon.',
             ),
-            backgroundColor: Colors.green,
           ),
         );
         context.pop();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to send message: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
       }
     } finally {
       if (mounted) {

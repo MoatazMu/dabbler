@@ -49,73 +49,69 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
     final postAsync = ref.watch(postDetailsProvider(widget.postId));
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      appBar: _buildAppBar(context, theme),
-      body: postAsync.when(
-        data: (post) => _buildPostContent(context, theme, post),
-        loading: () => const Center(child: LoadingWidget()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: postAsync.when(
+          data: (post) => Column(
             children: [
-              Text('Error: ${error.toString()}'),
-              ElevatedButton(
-                onPressed: () =>
-                    ref.refresh(postDetailsProvider(widget.postId)),
-                child: const Text('Retry'),
-              ),
+              Expanded(child: _buildPostContent(context, theme, post)),
+              _buildCommentInput(context, theme),
             ],
+          ),
+          loading: () => const Center(child: LoadingWidget()),
+          error: (error, stack) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    size: 64,
+                    color: colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load post',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton.icon(
+                    onPressed: () =>
+                        ref.refresh(postDetailsProvider(widget.postId)),
+                    icon: const Icon(Icons.refresh_rounded),
+                    label: const Text('Try Again'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
-      bottomNavigationBar: _buildCommentInput(context, theme),
-    );
-  }
-
-  PreferredSizeWidget _buildAppBar(BuildContext context, ThemeData theme) {
-    return AppBar(
-      elevation: 0,
-      backgroundColor: theme.colorScheme.surface,
-      surfaceTintColor: Colors.transparent,
-      leading: IconButton(
-        onPressed: () => Navigator.pop(context),
-        icon: const Icon(Icons.arrow_back),
-      ),
-      title: const Text('Post'),
-      actions: [
-        PopupMenuButton(
-          itemBuilder: (context) => [
-            const PopupMenuItem(
-              value: 'share',
-              child: ListTile(
-                leading: Icon(Icons.share),
-                title: Text('Share'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'copy_link',
-              child: ListTile(
-                leading: Icon(Icons.link),
-                title: Text('Copy Link'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            const PopupMenuItem(
-              value: 'report',
-              child: ListTile(
-                leading: Icon(Icons.flag),
-                title: Text('Report'),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
-          onSelected: (value) => _handleMenuAction(value.toString()),
-        ),
-      ],
     );
   }
 
@@ -124,363 +120,404 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     ThemeData theme,
     dynamic post,
   ) {
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
     final currentUserId = ref.watch(currentUserIdProvider);
     final isOwnPost = post.authorId == currentUserId;
 
-    return Column(
-      children: [
-        Expanded(
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              // Post content
-              SliverToBoxAdapter(
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Author info
-                      PostAuthorWidget(
-                        author: _AuthorData(
-                          name: post.authorName,
-                          avatar: post.authorAvatar,
-                          isVerified: post.authorVerified ?? false,
-                        ),
-                        createdAt: post.createdAt,
-                        location: post.locationName,
-                        isEdited: post.isEdited ?? false,
-                        onProfileTap: () => _navigateToProfile(post.authorId),
-                        actions: isOwnPost
-                            ? [
-                                PostAction(
-                                  icon: Icons.edit,
-                                  label: 'Edit',
-                                  onTap: () => _editPost(post),
-                                ),
-                                PostAction(
-                                  icon: Icons.delete,
-                                  label: 'Delete',
-                                  onTap: () => _deletePost(post.id),
-                                  isDestructive: true,
-                                ),
-                              ]
-                            : [
-                                PostAction(
-                                  icon: Icons.person_off,
-                                  label: 'Block User',
-                                  onTap: () => _blockUser(post.authorId),
-                                  isDestructive: true,
-                                ),
-                              ],
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Debug: Print post content
-                      Builder(
-                        builder: (context) {
-                          print(
-                            'DEBUG POST DETAIL: content="${post.content}", length=${post.content.length}',
-                          );
-                          print(
-                            'DEBUG POST DETAIL: authorName="${post.authorName}"',
-                          );
-                          print(
-                            'DEBUG POST DETAIL: mediaUrls=${post.mediaUrls}',
-                          );
-                          print('DEBUG POST DETAIL: tags=${post.tags}');
-                          return const SizedBox.shrink();
-                        },
-                      ),
-
-                      // Post content
-                      PostContentWidget(
-                        content: post.content,
-                        media: post.mediaUrls,
-                        sports: post.tags,
-                        mentions: post.mentionedUsers,
-                        hashtags: post.tags,
-                        onMediaTap: (mediaIndex) =>
-                            _viewMedia(post.mediaUrls, mediaIndex),
-                        onMentionTap: (userId) => _navigateToProfile(userId),
-                        onHashtagTap: (hashtag) => _searchHashtag(hashtag),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // Post actions (simplified for MVP)
-                      Row(
+    return CustomScrollView(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        // Header with back button and actions
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: Row(
+              children: [
+                IconButton.filledTonal(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.surfaceContainerHigh,
+                    foregroundColor: colorScheme.onSurface,
+                    minimumSize: const Size(48, 48),
+                  ),
+                ),
+                const Spacer(),
+                IconButton.filledTonal(
+                  onPressed: () => _sharePost(post),
+                  icon: const Icon(Icons.share_rounded),
+                  style: IconButton.styleFrom(
+                    backgroundColor: colorScheme.surfaceContainerHigh,
+                    foregroundColor: colorScheme.onSurface,
+                    minimumSize: const Size(48, 48),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                PopupMenuButton(
+                  icon: Icon(
+                    Icons.more_vert_rounded,
+                    color: colorScheme.onSurface,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  itemBuilder: (context) => [
+                    const PopupMenuItem(
+                      value: 'copy_link',
+                      child: Row(
                         children: [
-                          // Like button
-                          InkWell(
-                            onTap: () => _handleLike(post.id),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                          Icon(Icons.link_rounded, size: 20),
+                          SizedBox(width: 12),
+                          Text('Copy Link'),
+                        ],
+                      ),
+                    ),
+                    const PopupMenuItem(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          Icon(Icons.flag_rounded, size: 20),
+                          SizedBox(width: 12),
+                          Text('Report'),
+                        ],
+                      ),
+                    ),
+                  ],
+                  onSelected: (value) => _handleMenuAction(value.toString()),
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+        // Post content card
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withOpacity(0.5),
+                  width: 1,
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Author info
+                    PostAuthorWidget(
+                      author: _AuthorData(
+                        name: post.authorName,
+                        avatar: post.authorAvatar,
+                        isVerified:
+                            false, // PostModel doesn't have authorVerified
+                      ),
+                      createdAt: post.createdAt,
+                      location: post
+                          .locationName, // Use 'locationName' not 'location'
+                      isEdited: false, // PostModel doesn't have isEdited
+                      onProfileTap: () => _navigateToProfile(post.authorId),
+                      actions: isOwnPost
+                          ? [
+                              PostAction(
+                                icon: Icons.edit_rounded,
+                                label: 'Edit',
+                                onTap: () => _editPost(post),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    post.isLiked
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    size: 20,
-                                    color: post.isLiked
-                                        ? Colors.red
-                                        : theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '${post.likesCount}',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: post.isLiked
-                                          ? theme.colorScheme.primary
-                                          : theme.colorScheme.onSurfaceVariant,
-                                      fontWeight: post.isLiked
-                                          ? FontWeight.w600
-                                          : FontWeight.normal,
-                                    ),
-                                  ),
-                                ],
+                              PostAction(
+                                icon: Icons.delete_rounded,
+                                label: 'Delete',
+                                onTap: () => _deletePost(post.id),
+                                isDestructive: true,
+                              ),
+                            ]
+                          : [
+                              PostAction(
+                                icon: Icons.person_off_rounded,
+                                label: 'Block User',
+                                onTap: () => _blockUser(post.authorId),
+                                isDestructive: true,
+                              ),
+                            ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Post content
+                    PostContentWidget(
+                      content: post.content,
+                      media: post.mediaUrls,
+                      sports: const [], // PostModel doesn't have tags
+                      mentions:
+                          const [], // PostModel doesn't have mentionedUsers
+                      hashtags: const [], // PostModel doesn't have tags
+                      onMediaTap: (mediaIndex) =>
+                          _viewMedia(post.mediaUrls, mediaIndex),
+                      onMentionTap: (userId) => _navigateToProfile(userId),
+                      onHashtagTap: (hashtag) => _searchHashtag(hashtag),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Engagement stats - minimal one line
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildStatItem(
+                          theme,
+                          icon: Icons.favorite_rounded,
+                          count: post.likesCount,
+                          onTap: () => _showLikesList(post.id),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 20,
+                          color: colorScheme.outlineVariant.withOpacity(0.3),
+                        ),
+                        _buildStatItem(
+                          theme,
+                          icon: Icons.comment_rounded,
+                          count: post.commentsCount,
+                          onTap: () => _focusCommentInput(),
+                        ),
+                        Container(
+                          width: 1,
+                          height: 20,
+                          color: colorScheme.outlineVariant.withOpacity(0.3),
+                        ),
+                        _buildStatItem(
+                          theme,
+                          icon: Icons.share_rounded,
+                          count: post.sharesCount,
+                          onTap: () => _sharePost(post),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Action buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            onPressed: () => _handleLike(post.id),
+                            icon: Icon(
+                              post.isLiked
+                                  ? Icons.favorite_rounded
+                                  : Icons.favorite_border_rounded,
+                              size: 20,
+                            ),
+                            label: Text(post.isLiked ? 'Liked' : 'Like'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: post.isLiked
+                                  ? colorScheme.primaryContainer
+                                  : colorScheme.surfaceContainerHighest,
+                              foregroundColor: post.isLiked
+                                  ? colorScheme.onPrimaryContainer
+                                  : colorScheme.onSurface,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
                             ),
                           ),
-
-                          const SizedBox(width: 16),
-
-                          // Comment button
-                          InkWell(
-                            onTap: () => _focusCommentInput(),
-                            borderRadius: BorderRadius.circular(8),
-                            child: Padding(
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            onPressed: () => _focusCommentInput(),
+                            icon: const Icon(Icons.comment_rounded, size: 20),
+                            label: const Text('Comment'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor:
+                                  colorScheme.surfaceContainerHighest,
+                              foregroundColor: colorScheme.onSurface,
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
+                                horizontal: 16,
+                                vertical: 12,
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.comment_outlined,
-                                    size: 20,
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    '${post.commentsCount}',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.colorScheme.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+        // Comments section header
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Text(
+                  'Comments',
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Consumer(
+                  builder: (context, ref, child) {
+                    final commentsCount = ref.watch(
+                      postCommentsCountProvider(widget.postId),
+                    );
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '$commentsCount',
+                        style: textTheme.labelMedium?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+        // Comments list
+        Consumer(
+          builder: (context, ref, child) {
+            final commentsAsync = ref.watch(
+              postCommentsProvider(widget.postId),
+            );
+
+            return commentsAsync.when(
+              data: (comments) {
+                if (comments.isEmpty) {
+                  return SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.all(48),
+                      child: Column(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: colorScheme.surfaceContainerHighest,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.comment_outlined,
+                              size: 48,
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            'No comments yet',
+                            style: textTheme.titleMedium?.copyWith(
+                              color: colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Be the first to share your thoughts!',
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
                             ),
                           ),
                         ],
                       ),
+                    ),
+                  );
+                }
 
-                      // Divider
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        child: Divider(
-                          color: theme.colorScheme.outline.withOpacity(0.2),
-                          height: 1,
+                return SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: CommentsThread(
+                          comment: comments[index],
+                          onReply: (commentId) => _replyToComment(commentId),
+                          onLike: (commentId) => _likeComment(commentId),
+                          onReport: (commentId) => _reportComment(commentId),
+                          onDelete: (commentId) => _deleteComment(commentId),
+                          postAuthorId: post.authorId,
                         ),
                       ),
-
-                      // Engagement stats
-                      _buildEngagementStats(theme, post),
-                    ],
+                      childCount: comments.length,
+                    ),
+                  ),
+                );
+              },
+              loading: () => const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: Center(child: LoadingWidget()),
+                ),
+              ),
+              error: (error, stack) => SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(32),
+                  child: Center(
+                    child: Column(
+                      children: [
+                        Icon(
+                          Icons.error_outline_rounded,
+                          size: 48,
+                          color: colorScheme.error,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Failed to load comments',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
-
-              // Comments header
-              SliverToBoxAdapter(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest
-                        .withOpacity(0.3),
-                    border: Border(
-                      top: BorderSide(
-                        color: theme.colorScheme.outline.withOpacity(0.2),
-                      ),
-                      bottom: BorderSide(
-                        color: theme.colorScheme.outline.withOpacity(0.2),
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(
-                        'Comments',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      Consumer(
-                        builder: (context, ref, child) {
-                          final commentsCount = ref.watch(
-                            postCommentsCountProvider(widget.postId),
-                          );
-                          return Text(
-                            '$commentsCount',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Comments thread
-              Consumer(
-                builder: (context, ref, child) {
-                  final commentsAsync = ref.watch(
-                    postCommentsProvider(widget.postId),
-                  );
-
-                  return commentsAsync.when(
-                    data: (comments) {
-                      if (comments.isEmpty) {
-                        return SliverToBoxAdapter(
-                          child: Container(
-                            padding: const EdgeInsets.all(40),
-                            child: Column(
-                              children: [
-                                Icon(
-                                  Icons.comment_outlined,
-                                  size: 48,
-                                  color: theme.colorScheme.onSurfaceVariant,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No comments yet',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Be the first to comment!',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }
-
-                      return SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) => CommentsThread(
-                            comment: comments[index],
-                            onReply: (commentId) => _replyToComment(commentId),
-                            onLike: (commentId) => _likeComment(commentId),
-                            onReport: (commentId) => _reportComment(commentId),
-                            onDelete: (commentId) => _deleteComment(commentId),
-                            postAuthorId: post.authorId,
-                          ),
-                          childCount: comments.length,
-                        ),
-                      );
-                    },
-                    loading: () => const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: Center(child: LoadingWidget()),
-                      ),
-                    ),
-                    error: (error, stack) => SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.all(20),
-                        child: Center(
-                          child: Text('Error loading comments: $error'),
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              // Bottom padding for comment input
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
-          ),
+            );
+          },
         ),
+
+        // Bottom padding for comment input
+        const SliverToBoxAdapter(child: SizedBox(height: 120)),
       ],
     );
   }
 
-  Widget _buildEngagementStats(ThemeData theme, dynamic post) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            _buildStatItem(
-              theme,
-              icon: Icons.favorite,
-              count: post.likesCount,
-              label: 'likes',
-              onTap: () => _showLikesList(post.id),
-            ),
-
-            VerticalDivider(
-              color: theme.colorScheme.outline.withOpacity(0.3),
-              width: 32,
-            ),
-
-            _buildStatItem(
-              theme,
-              icon: Icons.comment,
-              count: post.commentsCount,
-              label: 'comments',
-              onTap: () => _focusCommentInput(),
-            ),
-
-            VerticalDivider(
-              color: theme.colorScheme.outline.withOpacity(0.3),
-              width: 32,
-            ),
-
-            _buildStatItem(
-              theme,
-              icon: Icons.share,
-              count: post.sharesCount,
-              label: 'shares',
-              onTap: () => _sharePost(post),
-            ),
-
-            const Spacer(),
-
-            Text(
-              _formatPostTime(post.createdAt),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatItem(
+  Widget _buildStatColumn(
     ThemeData theme, {
     required IconData icon,
     required int count,
@@ -489,25 +526,19 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
+      borderRadius: BorderRadius.circular(8),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: 4),
+            Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
+            const SizedBox(width: 6),
             Text(
               count.toString(),
-              style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(width: 2),
-            Text(
-              label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ],
@@ -516,63 +547,92 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     );
   }
 
+  // Alias for backward compatibility
+  Widget _buildStatItem(
+    ThemeData theme, {
+    required IconData icon,
+    required int count,
+    required VoidCallback onTap,
+  }) {
+    return _buildStatColumn(
+      theme,
+      icon: icon,
+      count: count,
+      label: '',
+      onTap: onTap,
+    );
+  }
+
   Widget _buildCommentInput(BuildContext context, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     // Prevent DOM errors by checking if widget is still mounted
     if (!mounted) return const SizedBox.shrink();
 
     return Container(
-      padding: EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 8,
-        bottom: 8 + MediaQuery.of(context).viewInsets.bottom,
-      ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: colorScheme.surface,
         border: Border(
-          top: BorderSide(color: theme.colorScheme.outline.withOpacity(0.2)),
+          top: BorderSide(
+            color: colorScheme.outlineVariant.withOpacity(0.5),
+            width: 1,
+          ),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: SafeArea(
+        top: false,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             // Reply indicator
             if (_replyingToCommentId != null)
               Container(
-                padding: const EdgeInsets.all(8),
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
                     Icon(
-                      Icons.reply,
-                      size: 16,
-                      color: theme.colorScheme.onPrimaryContainer,
+                      Icons.reply_rounded,
+                      size: 18,
+                      color: colorScheme.onPrimaryContainer,
                     ),
                     const SizedBox(width: 8),
                     Text(
                       'Replying to comment',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onPrimaryContainer,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onPrimaryContainer,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const Spacer(),
                     InkWell(
                       onTap: () => setState(() => _replyingToCommentId = null),
-                      child: Icon(
-                        Icons.close,
-                        size: 16,
-                        color: theme.colorScheme.onPrimaryContainer,
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.all(4),
+                        child: Icon(
+                          Icons.close_rounded,
+                          size: 18,
+                          color: colorScheme.onPrimaryContainer,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-
-            if (_replyingToCommentId != null) const SizedBox(height: 8),
 
             // Comment input
             CommentInput(
@@ -859,23 +919,6 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       '/social/hashtag',
       arguments: {'hashtag': hashtag},
     );
-  }
-
-  String _formatPostTime(DateTime time) {
-    final now = DateTime.now();
-    final difference = now.difference(time);
-
-    if (difference.inDays > 7) {
-      return '${time.day}/${time.month}/${time.year}';
-    } else if (difference.inDays > 0) {
-      return '${difference.inDays}d ago';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m ago';
-    } else {
-      return 'Just now';
-    }
   }
 }
 

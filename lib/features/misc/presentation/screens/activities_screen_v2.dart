@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/themes/app_theme.dart';
-import 'package:dabbler/widgets/custom_app_bar.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
@@ -43,18 +42,16 @@ class ActivitiesScreenV2 extends ConsumerStatefulWidget {
   ConsumerState<ActivitiesScreenV2> createState() => _ActivitiesScreenV2State();
 }
 
-class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2> {
   final AuthService _authService = AuthService();
   List<ActivityLog> _recentActivities = const [];
   bool _isLoadingRecentActivities = false;
   String? _recentActivitiesError;
+  String _selectedCategory = 'All';
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final user = _authService.getCurrentUser();
       if (user != null) {
@@ -65,7 +62,6 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
 
   @override
   void dispose() {
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -257,130 +253,132 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
   @override
   Widget build(BuildContext context) {
     final user = _authService.getCurrentUser();
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: CustomAppBar(
-        actionIcon: Icons.history,
-        onActionPressed: () {
-          // Navigate to full-screen history view
-          if (user != null) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => _HistoryScreen(userId: user.id),
-              ),
-            );
-          }
-        },
-      ),
-      body: Column(
-        children: [
-          //const SizedBox(height: 100),
-          _buildHeader(context),
-          Expanded(
-            child: user == null
-                ? _buildSignInPrompt(context)
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildUpcomingTab(context, user.id),
-                      _buildStatsTab(context, user.id),
-                    ],
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: user == null
+            ? _buildSignInPrompt(context)
+            : RefreshIndicator(
+                onRefresh: () => _refreshAll(user.id),
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
                   ),
-          ),
-        ],
+                  slivers: [
+                    // Header
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildHeader(context, user),
+                      ),
+                    ),
+                    // Hero Section
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildHeroCard(context),
+                      ),
+                    ),
+                    // Category Filter Chips
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildCategoryChips(context, user.id),
+                      ),
+                    ),
+                    // Activities List
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 16, 24, 48),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildCombinedActivitiesList(context, user.id),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
       ),
     );
   }
 
-  // ============================================================================
-  // HEADER SECTION
-  // ============================================================================
+  Future<void> _refreshAll(String userId) async {
+    await _refreshUpcoming();
+  }
 
-  Widget _buildHeader(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(0, 60, 0, 0),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            const Color(0xFF813FD6),
-            const Color(0xFF813FD6).withValues(alpha: 0.85),
-          ],
+  Widget _buildHeader(BuildContext context, dynamic user) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          onPressed: () => context.go('/home'),
+          icon: const Icon(Icons.dashboard_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
         ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Activities',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroCard(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF),
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title Section
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Activities',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Track everything in one place',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                  ),
-                ),
-              ],
+          Text(
+            'Your activity hub',
+            style: textTheme.labelLarge?.copyWith(
+              color: isDarkMode
+                  ? Colors.white.withOpacity(0.8)
+                  : Colors.black.withOpacity(0.7),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.6,
             ),
           ),
-
-          // Tab Bar
-          Container(
-            margin: const EdgeInsets.only(top: 20),
-            child: Material(
-              color: Colors.transparent,
-              child: TabBar(
-                controller: _tabController,
-                tabs: const [
-                  Tab(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.calendar_today, size: 18),
-                        SizedBox(width: 8),
-                        Text('Upcoming'),
-                      ],
-                    ),
-                  ),
-                  Tab(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.bar_chart, size: 18),
-                        SizedBox(width: 8),
-                        Text('Stats'),
-                      ],
-                    ),
-                  ),
-                ],
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
-                indicatorColor: Colors.white,
-                indicatorWeight: 3,
-                indicatorSize: TabBarIndicatorSize.tab,
-                labelStyle: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 14,
-                ),
-              ),
+          const SizedBox(height: 8),
+          Text(
+            'Track everything in one place',
+            style: textTheme.headlineSmall?.copyWith(
+              color: isDarkMode ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'View your upcoming games, bookings, and activity statistics.',
+            style: textTheme.bodyMedium?.copyWith(
+              color: isDarkMode
+                  ? Colors.white.withOpacity(0.85)
+                  : Colors.black.withOpacity(0.7),
             ),
           ),
         ],
@@ -389,10 +387,224 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
   }
 
   // ============================================================================
-  // TAB 1: UPCOMING ACTIVITIES
+  // COMBINED ACTIVITIES SECTION
   // ============================================================================
 
-  Widget _buildUpcomingTab(BuildContext context, String userId) {
+  Widget _buildActivitiesSectionHeader(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
+    return Text(
+      'Activities',
+      style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+    );
+  }
+
+  Widget _buildCategoryChips(BuildContext context, String userId) {
+    final gamesState = ref.watch(myGamesControllerProvider(userId));
+    final bookingsState = ref.watch(bookingsControllerProvider(userId));
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    final upcomingGamesCount = gamesState.upcomingGames.length;
+    final upcomingBookingsCount = bookingsState.upcomingBookings.length;
+    final recentActivitiesCount = _recentActivities.length;
+    final totalCount =
+        upcomingGamesCount + upcomingBookingsCount + recentActivitiesCount;
+
+    final categories = [
+      {'name': 'All', 'count': totalCount},
+      {'name': 'Games', 'count': upcomingGamesCount},
+      {'name': 'Bookings', 'count': upcomingBookingsCount},
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: categories.map((category) {
+          final isSelected = _selectedCategory == category['name'];
+          final count = category['count'] as int;
+
+          return Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: FilterChip(
+              selected: isSelected,
+              label: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    category['name'] as String,
+                    style: textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: isSelected
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurface,
+                    ),
+                  ),
+                  if (count > 0) ...[
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? colorScheme.onPrimary.withOpacity(0.3)
+                            : colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Text(
+                        count.toString(),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: isSelected
+                              ? colorScheme.onPrimary
+                              : colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              onSelected: (selected) {
+                setState(() {
+                  _selectedCategory = category['name'] as String;
+                });
+              },
+              selectedColor: colorScheme.primary,
+              backgroundColor: colorScheme.surfaceContainerHigh,
+              side: BorderSide(
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.outline.withOpacity(0.2),
+                width: 1,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildCombinedActivitiesList(BuildContext context, String userId) {
+    final gamesState = ref.watch(myGamesControllerProvider(userId));
+    final bookingsState = ref.watch(bookingsControllerProvider(userId));
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    final upcomingGames = gamesState.upcomingGames;
+    final upcomingBookings = bookingsState.upcomingBookings;
+    final isLoading =
+        gamesState.isLoadingUpcoming ||
+        bookingsState.isLoading ||
+        _isLoadingRecentActivities;
+
+    if (isLoading) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(32.0),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    // Filter based on selected category and combine with history
+    List<Widget> activityWidgets = [];
+
+    if (_selectedCategory == 'All') {
+      // Show games
+      if (upcomingGames.isNotEmpty) {
+        activityWidgets.addAll(
+          upcomingGames.map((game) => _buildGameCard(context, game)),
+        );
+      }
+      // Show bookings
+      if (upcomingBookings.isNotEmpty) {
+        activityWidgets.addAll(
+          upcomingBookings.map(
+            (booking) => _buildBookingCard(context, booking, userId),
+          ),
+        );
+      }
+      // Show history
+      if (_recentActivities.isNotEmpty) {
+        activityWidgets.addAll(
+          _recentActivities
+              .take(10)
+              .map((activity) => _buildRecentActivityTile(context, activity)),
+        );
+      }
+    } else if (_selectedCategory == 'Games') {
+      if (upcomingGames.isNotEmpty) {
+        activityWidgets.addAll(
+          upcomingGames.map((game) => _buildGameCard(context, game)),
+        );
+      }
+    } else if (_selectedCategory == 'Bookings') {
+      if (upcomingBookings.isNotEmpty) {
+        activityWidgets.addAll(
+          upcomingBookings.map(
+            (booking) => _buildBookingCard(context, booking, userId),
+          ),
+        );
+      }
+    }
+
+    if (activityWidgets.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              Icons.event_busy,
+              size: 48,
+              color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _selectedCategory == 'All'
+                  ? 'No activities yet'
+                  : 'No ${_selectedCategory.toLowerCase()} activities',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Join a game or book a venue to get started',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            FilledButton.icon(
+              onPressed: () => context.go('/sports'),
+              icon: const Icon(Icons.search),
+              label: const Text('Find Sports Games'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: activityWidgets,
+    );
+  }
+
+  // ============================================================================
+  // LEGACY SECTION (kept for reference)
+  // ============================================================================
+
+  Widget _buildUpcomingSection(BuildContext context, String userId) {
     final gamesState = ref.watch(myGamesControllerProvider(userId));
     final bookingsState = ref.watch(bookingsControllerProvider(userId));
 
@@ -401,58 +613,275 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     final isLoading = gamesState.isLoadingUpcoming || bookingsState.isLoading;
 
     final totalUpcoming = upcomingGames.length + upcomingBookings.length;
+    final textTheme = Theme.of(context).textTheme;
 
-    return RefreshIndicator(
-      onRefresh: _refreshUpcoming,
-      child: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : totalUpcoming == 0
-          ? _buildEmptyUpcoming(context)
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              physics: const AlwaysScrollableScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Summary Card
-                  _buildUpcomingSummary(
-                    context,
-                    upcomingGames.length,
-                    upcomingBookings.length,
-                  ),
-                  const SizedBox(height: 24),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Upcoming',
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 16),
+        if (isLoading)
+          const Center(child: CircularProgressIndicator())
+        else if (totalUpcoming == 0)
+          _buildEmptyUpcomingCard(context)
+        else ...[
+          // Summary Card
+          _buildUpcomingSummary(
+            context,
+            upcomingGames.length,
+            upcomingBookings.length,
+          ),
+          const SizedBox(height: 16),
+          // Upcoming Games
+          if (upcomingGames.isNotEmpty) ...[
+            _buildSectionTitle(
+              context,
+              'Games',
+              upcomingGames.length,
+              Icons.sports_esports,
+            ),
+            const SizedBox(height: 12),
+            ...upcomingGames.map((game) => _buildGameCard(context, game)),
+            const SizedBox(height: 16),
+          ],
+          // Upcoming Bookings
+          if (upcomingBookings.isNotEmpty) ...[
+            _buildSectionTitle(
+              context,
+              'Venue Bookings',
+              upcomingBookings.length,
+              Icons.location_on,
+            ),
+            const SizedBox(height: 12),
+            ...upcomingBookings.map(
+              (booking) => _buildBookingCard(context, booking, userId),
+            ),
+          ],
+        ],
+      ],
+    );
+  }
 
-                  // Upcoming Games
-                  if (upcomingGames.isNotEmpty) ...[
-                    _buildSectionTitle(
-                      context,
-                      'Games',
-                      upcomingGames.length,
-                      Icons.sports_esports,
-                    ),
-                    const SizedBox(height: 12),
-                    ...upcomingGames.map(
-                      (game) => _buildGameCard(context, game),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+  Widget _buildEmptyUpcomingCard(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
 
-                  // Upcoming Bookings
-                  if (upcomingBookings.isNotEmpty) ...[
-                    _buildSectionTitle(
-                      context,
-                      'Venue Bookings',
-                      upcomingBookings.length,
-                      Icons.location_on,
-                    ),
-                    const SizedBox(height: 12),
-                    ...upcomingBookings.map(
-                      (booking) => _buildBookingCard(context, booking, userId),
-                    ),
-                  ],
-                ],
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.event_busy,
+            size: 48,
+            color: colorScheme.onSurfaceVariant.withOpacity(0.5),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'No upcoming activities',
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Join a game or book a venue to get started',
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: () => context.go('/sports'),
+            icon: const Icon(Icons.search),
+            label: const Text('Find Sports Games'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ============================================================================
+  // SECTION 2: STATS
+  // ============================================================================
+
+  Widget _buildStatsSection(BuildContext context, String userId) {
+    final categoryStats = ref.watch(categoryStatsProvider(userId));
+    final activityLog = ref.watch(activityLogControllerProvider(userId));
+    final textTheme = Theme.of(context).textTheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Statistics',
+          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 16),
+        _buildTotalActivitiesCard(context, activityLog.activities.length),
+        const SizedBox(height: 16),
+        Text(
+          'By Category',
+          style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 12),
+        _buildCategoryStatsGrid(context, categoryStats),
+      ],
+    );
+  }
+
+  // ============================================================================
+  // SECTION 3: HISTORY
+  // ============================================================================
+
+  Widget _buildHistorySection(BuildContext context, String userId) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Recent Activity',
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
+            TextButton.icon(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => _HistoryScreen(userId: userId),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.history, size: 18),
+              label: const Text('View All'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (_isLoadingRecentActivities)
+          const Center(child: CircularProgressIndicator())
+        else if (_recentActivitiesError != null)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.error.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.error_outline, color: colorScheme.error),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _recentActivitiesError!,
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.error,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (_recentActivities.isEmpty)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.hourglass_empty,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'No recent activity in the last few days.',
+                    style: textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Column(
+            children: _recentActivities
+                .take(5) // Show only first 5 items
+                .map((activity) => _buildRecentActivityTile(context, activity))
+                .toList(),
+          ),
+      ],
+    );
+  }
+
+  String _formatActivityType(ActivityType type) {
+    final raw = type.name;
+    final withSpaces = raw
+        .replaceAll('_', ' ')
+        .replaceAllMapped(RegExp(r'([A-Z])'), (match) => ' ${match.group(0)}');
+    final trimmed = withSpaces.trim();
+    if (trimmed.isEmpty) {
+      return raw;
+    }
+    return trimmed[0].toUpperCase() + trimmed.substring(1);
+  }
+
+  // ============================================================================
+  // SHARED COMPONENTS
+  // ============================================================================
+
+  Widget _buildSectionTitle(
+    BuildContext context,
+    String title,
+    int count,
+    IconData icon,
+  ) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: context.colors.primary),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: context.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: context.colors.primary.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Text(
+            count.toString(),
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: context.colors.primary,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -461,17 +890,15 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     int gamesCount,
     int bookingsCount,
   ) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final summaryColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            context.colors.primary.withValues(alpha: 0.1),
-            context.colors.primary.withValues(alpha: 0.05),
-          ],
-        ),
+        color: summaryColor.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: context.colors.primary.withValues(alpha: 0.2),
@@ -533,121 +960,17 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
     );
   }
 
-  Widget _buildEmptyUpcoming(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: context.colors.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.event_busy,
-                size: 64,
-                color: context.colors.primary.withValues(alpha: 0.5),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'No upcoming activities',
-              style: context.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Join a game or book a venue to get started',
-              style: context.textTheme.bodyMedium?.copyWith(
-                color: context.colors.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => context.go('/sports'),
-              icon: const Icon(Icons.search),
-              label: const Text('Find Sports Games'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: context.colors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ============================================================================
-  // TAB 2: STATISTICS
-  // ============================================================================
-
-  Widget _buildStatsTab(BuildContext context, String userId) {
-    final categoryStats = ref.watch(categoryStatsProvider(userId));
-    final activityState = ref.watch(activityLogControllerProvider(userId));
-
-    return RefreshIndicator(
-      onRefresh: _refreshStats,
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        physics: const AlwaysScrollableScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Activity Overview',
-              style: context.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildTotalActivitiesCard(context, activityState.activities.length),
-            const SizedBox(height: 24),
-            Text(
-              'By Category',
-              style: context.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildCategoryStatsGrid(context, categoryStats),
-            const SizedBox(height: 24),
-            Text(
-              'Recent Activity',
-              style: context.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildRecentActivitiesSection(context),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildTotalActivitiesCard(BuildContext context, int total) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final cardColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            context.colors.primary,
-            context.colors.primary.withValues(alpha: 0.8),
-          ],
-        ),
+        color: cardColor,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -655,14 +978,12 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: isDarkMode
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(
-              Icons.show_chart,
-              size: 32,
-              color: Colors.white,
-            ),
+            child: Icon(Icons.show_chart, size: 32, color: textColor),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -671,17 +992,17 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
               children: [
                 Text(
                   total.toString(),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 36,
                     fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                    color: textColor,
                   ),
                 ),
-                const Text(
+                Text(
                   'Total Activities',
                   style: TextStyle(
                     fontSize: 14,
-                    color: Colors.white,
+                    color: textColor.withOpacity(0.85),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -701,11 +1022,7 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
         'color': context.colors.primary,
       },
       {'name': 'Bookings', 'icon': Icons.location_on, 'color': Colors.green},
-      {
-        'name': 'Payments',
-        'icon': Icons.credit_card,
-        'color': Colors.orange,
-      },
+      {'name': 'Payments', 'icon': Icons.credit_card, 'color': Colors.orange},
       {'name': 'Social', 'icon': Icons.group, 'color': Colors.blue},
       {'name': 'Rewards', 'icon': Icons.military_tech, 'color': Colors.amber},
       {
@@ -917,58 +1234,6 @@ class _ActivitiesScreenV2State extends ConsumerState<ActivitiesScreenV2>
       default:
         return Icons.show_chart;
     }
-  }
-
-  String _formatActivityType(ActivityType type) {
-    final raw = type.name;
-    final withSpaces = raw
-        .replaceAll('_', ' ')
-        .replaceAllMapped(RegExp(r'([A-Z])'), (match) => ' ${match.group(0)}');
-    final trimmed = withSpaces.trim();
-    if (trimmed.isEmpty) {
-      return raw;
-    }
-    return trimmed[0].toUpperCase() + trimmed.substring(1);
-  }
-
-  // ============================================================================
-  // SHARED COMPONENTS
-  // ============================================================================
-
-  Widget _buildSectionTitle(
-    BuildContext context,
-    String title,
-    int count,
-    IconData icon,
-  ) {
-    return Row(
-      children: [
-        Icon(icon, size: 20, color: context.colors.primary),
-        const SizedBox(width: 8),
-        Text(
-          title,
-          style: context.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: context.colors.primary.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            count.toString(),
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: context.colors.primary,
-            ),
-          ),
-        ),
-      ],
-    );
   }
 
   Widget _buildGameCard(BuildContext context, Game game) {

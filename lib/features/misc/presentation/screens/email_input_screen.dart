@@ -121,44 +121,77 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
   @override
   Widget build(BuildContext context) {
     debugPrint('📧 [DEBUG] EmailInputScreen: build called');
+    final colorScheme = Theme.of(context).colorScheme;
 
-    return TwoSectionLayout(
-      topSection: _buildTopSection(),
-      bottomSection: _buildBottomSection(),
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                child: _buildHeroSection(),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                child: _buildBottomSection(),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildTopSection() {
-    return Column(
-      children: [
-        SizedBox(height: AppSpacing.huge),
-        // Dabbler logo and text
-        _buildLogo(),
-        SizedBox(height: AppSpacing.huge),
-        // Welcome text
-        Text(
-          'Welcome to dabbler!',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
+  Widget _buildHeroSection() {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          // Dabbler logo and text
+          _buildLogo(textColor),
+          const SizedBox(height: 24),
+          // Welcome text
+          Text(
+            'Welcome to dabbler!',
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
           ),
-        ),
-        SizedBox(height: AppSpacing.sm),
-        Text(
-          'Enter your email address to get started',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          const SizedBox(height: 8),
+          Text(
+            'Enter your email address to get started',
+            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
+            textAlign: TextAlign.center,
           ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildLogo(Color iconColor) {
     return Column(
       children: [
         // Dabbler geometric icon
@@ -166,13 +199,15 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
           'assets/images/dabbler_logo.svg',
           width: 80,
           height: 88,
+          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         ),
-        SizedBox(height: AppSpacing.md),
+        const SizedBox(height: 16),
         // Dabbler text logo
         SvgPicture.asset(
           'assets/images/dabbler_text_logo.svg',
           width: 110,
           height: 21,
+          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         ),
       ],
     );

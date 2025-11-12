@@ -122,7 +122,11 @@ class _SocialScreenState extends State<SocialScreen> {
         SnackBar(
           content: Row(
             children: [
-              Icon(Icons.error_outline, color: colorScheme.onErrorContainer, size: 16),
+              Icon(
+                Icons.error_outline,
+                color: colorScheme.onErrorContainer,
+                size: 16,
+              ),
               const SizedBox(width: 8),
               const Text('Failed to update like'),
             ],
@@ -209,8 +213,7 @@ class _SocialScreenState extends State<SocialScreen> {
               ),
             if (!_isLoading && _posts.isEmpty)
               SliverToBoxAdapter(child: _buildEmptyState()),
-            if (_posts.isNotEmpty)
-              _buildPostsSliver(),
+            if (_posts.isNotEmpty) _buildPostsSliver(),
           ],
         ),
       ),
@@ -220,17 +223,15 @@ class _SocialScreenState extends State<SocialScreen> {
   Widget _buildHeaderSection() {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    final heroGradient = LinearGradient(
-      colors: [
-        colorScheme.secondaryContainer,
-        colorScheme.primaryContainer,
-      ],
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-    );
-
-    final onHero = colorScheme.onSecondaryContainer;
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.8)
+        : Colors.black.withOpacity(0.7);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
@@ -241,7 +242,7 @@ class _SocialScreenState extends State<SocialScreen> {
             children: [
               IconButton.filledTonal(
                 onPressed: () => context.go(RoutePaths.home),
-                icon: const Icon(Icons.home_rounded),
+                icon: const Icon(Icons.dashboard_rounded),
                 style: IconButton.styleFrom(
                   backgroundColor: colorScheme.surfaceContainerHigh,
                   foregroundColor: colorScheme.onSurface,
@@ -260,13 +261,6 @@ class _SocialScreenState extends State<SocialScreen> {
                         color: colorScheme.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'See what players around you are sharing today.',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -276,8 +270,10 @@ class _SocialScreenState extends State<SocialScreen> {
                 icon: const Icon(Icons.search_rounded),
                 label: const Text('Find friends'),
                 style: FilledButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 14,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
                   ),
@@ -290,15 +286,8 @@ class _SocialScreenState extends State<SocialScreen> {
             width: double.infinity,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: heroGradient,
+              color: heroColor,
               borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.primary.withOpacity(0.18),
-                  blurRadius: 24,
-                  offset: const Offset(0, 16),
-                ),
-              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -306,7 +295,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 Text(
                   'Community spotlight',
                   style: textTheme.labelLarge?.copyWith(
-                    color: onHero.withOpacity(0.8),
+                    color: subtextColor,
                     letterSpacing: 0.6,
                     fontWeight: FontWeight.w600,
                   ),
@@ -315,7 +304,7 @@ class _SocialScreenState extends State<SocialScreen> {
                 Text(
                   'Celebrate your highlights',
                   style: textTheme.headlineSmall?.copyWith(
-                    color: onHero,
+                    color: textColor,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -323,18 +312,10 @@ class _SocialScreenState extends State<SocialScreen> {
                 Text(
                   'Share match recaps, training wins, and invite others to join upcoming sessions.',
                   style: textTheme.bodyMedium?.copyWith(
-                    color: onHero.withOpacity(0.85),
+                    color: isDarkMode
+                        ? Colors.white.withOpacity(0.85)
+                        : Colors.black.withOpacity(0.7),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: const [
-                    _CommunityTagChip(label: '#weekendRun'),
-                    _CommunityTagChip(label: '#padelCrew'),
-                    _CommunityTagChip(label: '#findTeam'),
-                  ],
                 ),
               ],
             ),
@@ -345,21 +326,9 @@ class _SocialScreenState extends State<SocialScreen> {
   }
 
   Widget _buildComposerCard() {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Card(
-        elevation: 0,
-        color: colorScheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: ThoughtsInput(onTap: _navigateToCreatePost),
-        ),
-      ),
+      child: ThoughtsInput(onTap: _navigateToCreatePost),
     );
   }
 
@@ -367,22 +336,22 @@ class _SocialScreenState extends State<SocialScreen> {
     return SliverPadding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final post = _posts[index];
-            return Padding(
-              padding: EdgeInsets.only(bottom: index == _posts.length - 1 ? 0 : 20),
-              child: PostCard(
-                post: post,
-                onLike: () => _likePost(post.id),
-                onComment: () => _openComments(post.id),
-                onShare: () => _sharePost(post.id),
-                onProfileTap: () => _openProfile(post.authorId),
-              ),
-            );
-          },
-          childCount: _posts.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final post = _posts[index];
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: index == _posts.length - 1 ? 0 : 20,
+            ),
+            child: PostCard(
+              post: post,
+              onLike: () => _likePost(post.id),
+              onComment: () => _openComments(post.id),
+              onShare: () => _sharePost(post.id),
+              onProfileTap: () => _openProfile(post.authorId),
+              onPostTap: () => _openComments(post.id),
+            ),
+          );
+        }, childCount: _posts.length),
       ),
     );
   }
@@ -396,11 +365,7 @@ class _SocialScreenState extends State<SocialScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Icon(
-            Icons.group,
-            size: 64,
-            color: colorScheme.onSurfaceVariant,
-          ),
+          Icon(Icons.group, size: 64, color: colorScheme.onSurfaceVariant),
           const SizedBox(height: 16),
           Text(
             'No posts yet',
@@ -429,33 +394,6 @@ class _SocialScreenState extends State<SocialScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CommunityTagChip extends StatelessWidget {
-  final String label;
-
-  const _CommunityTagChip({required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: colorScheme.onSecondaryContainer.withOpacity(0.12),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Text(
-        label,
-        style: textTheme.labelMedium?.copyWith(
-          color: colorScheme.onSecondaryContainer,
-          fontWeight: FontWeight.w600,
-        ),
       ),
     );
   }

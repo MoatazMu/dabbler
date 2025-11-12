@@ -72,101 +72,125 @@ class _OnboardingBasicInfoScreenState
   Widget build(BuildContext context) {
     final controller = ref.watch(onboardingControllerProvider);
     final variant = controller.currentVariant ?? 'control';
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      backgroundColor: DesignSystem.colors.background,
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () => context.go(AppRoutes.onboardingWelcome),
+          icon: Icon(Icons.arrow_back, color: DesignSystem.colors.textPrimary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => _skipStep(),
+            child: Text(
+              'Skip',
+              style: TextStyle(color: DesignSystem.colors.textSecondary),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
-        child: AnimatedBuilder(
-          animation: _animationController,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: _buildContent(context, variant),
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                child: _buildHeroSection(variant),
               ),
-            );
-          },
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Profile photo section
+                      _buildProfilePhotoSection(variant),
+
+                      const SizedBox(height: 32),
+
+                      // Name field
+                      _buildNameField(),
+
+                      const SizedBox(height: 24),
+
+                      // Bio field (optional)
+                      _buildBioField(variant),
+
+                      const SizedBox(height: 24),
+
+                      // Personalized tip
+                      _buildPersonalizedTip(variant),
+
+                      const SizedBox(height: 24),
+
+                      // Continue button
+                      _buildContinueButton(variant),
+
+                      const SizedBox(height: 16),
+
+                      // Progress indicator
+                      _buildProgressIndicator(),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, String variant) {
-    return CustomScrollView(
-      slivers: [
-        // App bar
-        SliverAppBar(
-          backgroundColor: DesignSystem.colors.background,
-          elevation: 0,
-          leading: IconButton(
-            onPressed: () => context.go(AppRoutes.onboardingWelcome),
-            icon: Icon(
-              Icons.arrow_back,
-              color: DesignSystem.colors.textPrimary,
+  Widget _buildHeroSection(String variant) {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          Icon(Icons.person_add, size: 56, color: textColor),
+          const SizedBox(height: 16),
+          Text(
+            variant == 'gamified'
+                ? '🎯 Create Your Player Profile'
+                : 'Tell Us About Yourself',
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w800,
             ),
+            textAlign: TextAlign.center,
           ),
-          actions: [
-            TextButton(
-              onPressed: () => _skipStep(),
-              child: Text(
-                'Skip',
-                style: TextStyle(color: DesignSystem.colors.textSecondary),
-              ),
-            ),
-          ],
-        ),
-
-        // Content
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header
-                  _buildHeader(variant),
-
-                  const SizedBox(height: 32),
-
-                  // Profile photo section
-                  _buildProfilePhotoSection(variant),
-
-                  const SizedBox(height: 32),
-
-                  // Name field
-                  _buildNameField(),
-
-                  const SizedBox(height: 24),
-
-                  // Bio field (optional)
-                  _buildBioField(variant),
-
-                  const Spacer(),
-
-                  // Personalized tip
-                  _buildPersonalizedTip(variant),
-
-                  const SizedBox(height: 24),
-
-                  // Continue button
-                  _buildContinueButton(variant),
-
-                  const SizedBox(height: 16),
-
-                  // Progress indicator
-                  _buildProgressIndicator(),
-
-                  const SizedBox(height: 32),
-                ],
-              ),
-            ),
+          const SizedBox(height: 8),
+          Text(
+            variant == 'gamified'
+                ? 'Add your photo and name to earn your first 25 points!'
+                : 'Help other players recognize and connect with you',
+            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
+            textAlign: TextAlign.center,
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
