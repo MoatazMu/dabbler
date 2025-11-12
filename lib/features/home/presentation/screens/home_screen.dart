@@ -12,7 +12,6 @@ import 'package:dabbler/features/games/presentation/screens/join_game/game_detai
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
-import 'package:dabbler/themes/app_theme.dart';
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {
@@ -58,9 +57,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     // Get display name from users table - NO FALLBACK to 'Player'
     final displayName =
         _userProfile?['display_name'] != null &&
@@ -68,166 +66,217 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ? (_userProfile!['display_name'] as String).split(' ').first
         : null;
 
-    return TwoSectionLayout(
-      topSection: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Greeting and Avatar Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
+              Padding(
+                padding: const EdgeInsets.only(top: 16),
+                child: _buildHeroSection(displayName),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '${_getGreeting()},',
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                    _buildQuickAccessSection(),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 28),
+                      child: _buildNewlyJoinedSection(),
                     ),
-                    if (displayName != null)
-                      Text(
-                        '$displayName!',
-                        style: textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w800,
-                        ),
-                      )
-                    else
-                      Text(
-                        'Complete your profile',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.error,
-                          fontStyle: FontStyle.italic,
-                        ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 28),
+                      child: _buildActivitiesButton(),
+                    ),
+                    if (FeatureFlags.socialFeed)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 28),
+                        child: _buildLatestFeedsSection(),
                       ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 36),
+                      child: _buildRecentGamesSection(),
+                    ),
                   ],
                 ),
               ),
-              // User Avatar
-              GestureDetector(
-                onTap: () => context.go(RoutePaths.profile),
-                child: SvgNetworkOrAssetAvatar(
-                  imageUrlOrAsset: _userProfile?['avatar_url'],
-                  radius: 30,
-                  fallbackIcon: Icons.person,
-                  backgroundColor: colorScheme.categoryMain,
-                  fallbackColor: colorScheme.primary,
-                ),
-              ),
             ],
           ),
-          const SizedBox(height: 24),
-
-          // Upcoming Game Card
-          _buildUpcomingGameSection(),
-          const SizedBox(height: 20),
-
-          // Thoughts Input
-          const ThoughtsInput(
-            onTap: null, // TODO: Navigate to create post screen
-          ),
-        ],
-      ),
-      bottomSection: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Category Buttons
-          Row(
-            children: [
-              Expanded(
-                child: AppButtonCard(
-                  emoji: '📚',
-                  label: 'Community',
-                  onTap: () => context.go(RoutePaths.social),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AppButtonCard(
-                  emoji: '🏆',
-                  label: 'Sports',
-                  onTap: () => context.go(RoutePaths.sports),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Newly joined section
-          _buildNewlyJoinedSection(),
-          const SizedBox(height: 24),
-
-          // Action Cards
-          Row(
-            children: [
-              Expanded(
-                child: AppActionCard(
-                  emoji: '➕',
-                  title: 'Create Game',
-                  subtitle: 'Start a new match',
-                  onTap: () => context.go(RoutePaths.createGame),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AppActionCard(
-                  emoji: '🔍',
-                  title: 'Join Game',
-                  subtitle: 'Find nearby games',
-                  onTap: () => context.go(RoutePaths.sports),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-
-          // Activities button
-          _buildActivitiesButton(),
-          const SizedBox(height: 24),
-
-          // Latest feeds (if social enabled)
-          if (FeatureFlags.socialFeed) _buildLatestFeedsSection(),
-          if (FeatureFlags.socialFeed)
-            const SizedBox(height: 24),
-
-          // Recent Games
-          _buildRecentGamesSection(),
-          const SizedBox(height: 24),
-        ],
+        ),
       ),
     );
   }
 
-
-  Widget _buildActivitiesButton() {
+  Widget _buildHeroSection(String? displayName) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
-    return Card(
-      elevation: 0,
-      child: InkWell(
-        onTap: () => context.go(RoutePaths.activities),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Center(
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: heroColor,
+              borderRadius: BorderRadius.circular(18),
+            ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text('⚡', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 8),
-                Text(
-                  'Activities',
-                  style: textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: colorScheme.onSurface,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${_getGreeting()},',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: subtextColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: displayName != null
+                            ? Text(
+                                '$displayName!',
+                                style: textTheme.headlineSmall?.copyWith(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              )
+                            : Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Complete your profile',
+                                    style: textTheme.titleMedium?.copyWith(
+                                      color: textColor,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8),
+                                    child: FilledButton.tonal(
+                                      onPressed: () =>
+                                          context.go(RoutePaths.profile),
+                                      style: FilledButton.styleFrom(
+                                        backgroundColor: isDarkMode
+                                            ? Colors.white.withOpacity(0.15)
+                                            : Colors.black.withOpacity(0.1),
+                                        foregroundColor: textColor,
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 10,
+                                        ),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                      ),
+                                      child: const Text('Update now'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => context.go(RoutePaths.profile),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isDarkMode
+                          ? Colors.white.withOpacity(0.18)
+                          : Colors.black.withOpacity(0.1),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4),
+                      child: SvgNetworkOrAssetAvatar(
+                        imageUrlOrAsset: _userProfile?['avatar_url'],
+                        radius: 32,
+                        fallbackIcon: Icons.person,
+                        backgroundColor: isDarkMode
+                            ? Colors.white
+                            : Colors.black87,
+                        fallbackColor: colorScheme.primary,
+                      ),
+                    ),
                   ),
                 ),
               ],
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: _buildUpcomingGameSection(),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: const ThoughtsInput(
+              onTap: null, // TODO: Navigate to create post screen
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickAccessSection() {
+    return Row(
+      children: [
+        Expanded(
+          child: AppButtonCard(
+            emoji: '📚',
+            label: 'Community',
+            onTap: () => context.go(RoutePaths.social),
+          ),
         ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: AppButtonCard(
+            emoji: '🏆',
+            label: 'Sports',
+            onTap: () => context.go(RoutePaths.sports),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActivitiesButton() {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return FilledButton.tonalIcon(
+      onPressed: () => context.go(RoutePaths.activities),
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: colorScheme.secondaryContainer,
+        foregroundColor: colorScheme.onSecondaryContainer,
+      ),
+      icon: const Text('⚡', style: TextStyle(fontSize: 18)),
+      label: Text(
+        'Activities',
+        style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
       ),
     );
   }
@@ -235,7 +284,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildNewlyJoinedSection() {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _fetchRecentPlayers(),
       builder: (context, snapshot) {
@@ -271,65 +320,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 75,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: displayPlayers.length > 6
-                    ? 6
-                    : displayPlayers.length,
-                itemBuilder: (context, index) {
-                  final player = displayPlayers[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Column(
-                      children: [
-                        Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            CircleAvatar(
-                              radius: 26,
-                              backgroundImage: player['avatar_url'] != null
-                                  ? NetworkImage(player['avatar_url'])
-                                  : null,
-                              backgroundColor: colorScheme.surfaceContainerHigh,
-                              child: player['avatar_url'] == null
-                                  ? Icon(
-                                      Icons.person,
-                                      size: 26,
-                                      color: colorScheme.onSurfaceVariant,
-                                    )
-                                  : null,
-                            ),
-                            Positioned(
-                              bottom: -2,
-                              right: -2,
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  color: colorScheme.surface,
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxHeight: 75),
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: displayPlayers.length > 6
+                      ? 6
+                      : displayPlayers.length,
+                  itemBuilder: (context, index) {
+                    final player = displayPlayers[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: Column(
+                        children: [
+                          Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              CircleAvatar(
+                                radius: 26,
+                                backgroundImage: player['avatar_url'] != null
+                                    ? NetworkImage(player['avatar_url'])
+                                    : null,
+                                backgroundColor:
+                                    colorScheme.surfaceContainerHigh,
+                                child: player['avatar_url'] == null
+                                    ? Icon(
+                                        Icons.person,
+                                        size: 26,
+                                        color: colorScheme.onSurfaceVariant,
+                                      )
+                                    : null,
+                              ),
+                              Positioned(
+                                bottom: -2,
+                                right: -2,
+                                child: Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
                                     color: colorScheme.surface,
-                                    width: 2,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: colorScheme.surface,
+                                      width: 2,
+                                    ),
                                   ),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    _getSportEmoji(player['sport_key']),
-                                    style: const TextStyle(fontSize: 12),
+                                  child: Center(
+                                    child: Text(
+                                      _getSportEmoji(player['sport_key']),
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  );
-                },
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ],
@@ -341,7 +393,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildLatestFeedsSection() {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -352,9 +404,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             color: colorScheme.onSurface,
           ),
         ),
-        const SizedBox(height: 12),
-        // Placeholder for 3 recent posts
-        ...List.generate(3, (index) => _buildFeedItem(index)),
+        Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: Column(
+            children: [
+              // Placeholder for 3 recent posts
+              ...List.generate(3, (index) => _buildFeedItem(index)),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -362,7 +420,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildFeedItem(int index) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),
@@ -394,23 +452,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: colorScheme.onSurface,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '2h',
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: Text(
+                          '2h',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Had an amazing time at the community cooking class today! 🍳 Learning new recip...',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Had an amazing time at the community cooking class today! 🍳 Learning new recip...',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
@@ -424,7 +486,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildRecentGamesSection() {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _fetchRecentGames(),
       builder: (context, snapshot) {
@@ -444,8 +506,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 12),
-            ...games.map((game) => _buildRecentGameItem(game)),
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Column(
+                children: [...games.map((game) => _buildRecentGameItem(game))],
+              ),
+            ),
           ],
         );
       },
@@ -455,7 +521,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildRecentGameItem(Map<String, dynamic> game) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     final sport = game['sport'] ?? 'Football';
     final format = game['format'] ?? 'Futsal';
     final title = game['title'] ?? 'Game';
@@ -484,104 +550,115 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _getSportEmoji(sport),
-                  style: const TextStyle(fontSize: 32),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                sport,
-                                style: textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                format,
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              const Text('👥', style: TextStyle(fontSize: 16)),
-                              const SizedBox(width: 4),
-                              Text(
-                                '$currentPlayers/$maxPlayers',
-                                style: textTheme.bodySmall?.copyWith(
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        title,
-                        style: textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ],
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _getSportEmoji(sport),
+                    style: const TextStyle(fontSize: 32),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Row(
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  sport,
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  format,
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                const Text(
+                                  '👥',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$currentPlayers/$maxPlayers',
+                                  style: textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Text(
+                            title,
+                            style: textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Row(
                   children: [
-                    const Text('�', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
-                    Text(
-                      '$date • $time',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    Row(
+                      children: [
+                        const Text('�', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 6),
+                        Text(
+                          '$date • $time',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 16),
+                    Row(
+                      children: [
+                        const Text('�', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 6),
+                        Text(
+                          location,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ],
                 ),
-                const SizedBox(width: 16),
-                Row(
-                  children: [
-                    const Text('�', style: TextStyle(fontSize: 14)),
-                    const SizedBox(width: 6),
-                    Text(
-                      location,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -657,7 +734,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return nextGameAsync.when(
       data: (game) {
         if (game == null) {
-          return const SizedBox.shrink();
+          // Show action cards when no upcoming game
+          return Row(
+            children: [
+              Expanded(
+                child: AppActionCard(
+                  emoji: '➕',
+                  title: 'Create Game',
+                  subtitle: 'Start a new match',
+                  onTap: () => context.go(RoutePaths.createGame),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppActionCard(
+                  emoji: '🔍',
+                  title: 'Join Game',
+                  subtitle: 'Find nearby games',
+                  onTap: () => context.go(RoutePaths.sports),
+                ),
+              ),
+            ],
+          );
         }
 
         // Calculate countdown
@@ -689,7 +787,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         final textTheme = Theme.of(context).textTheme;
         final colorScheme = Theme.of(context).colorScheme;
-        
+
         return Card(
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -753,42 +851,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    game.title,
-                    style: textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: colorScheme.onSurface,
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: Text(
+                      game.title,
+                      style: textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: colorScheme.onSurface,
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      const Text('🕐', style: TextStyle(fontSize: 16)),
-                      const SizedBox(width: 8),
-                      Text(
-                        timeFormat,
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Text('📍', style: TextStyle(fontSize: 16)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          game.venueName ?? 'Location TBD',
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: Row(
+                      children: [
+                        const Text('🕐', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Text(
+                          timeFormat,
                           style: textTheme.bodyLarge?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Row(
+                      children: [
+                        const Text('📍', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            game.venueName ?? 'Location TBD',
+                            style: textTheme.bodyLarge?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -802,11 +906,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20),
           ),
-          child: const SizedBox(
-            height: 160,
-            child: Center(
-              child: CircularProgressIndicator(),
-            ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 60),
+            child: const Center(child: CircularProgressIndicator()),
           ),
         );
       },

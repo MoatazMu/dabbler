@@ -73,20 +73,24 @@ class PostCard extends StatelessWidget {
 
             // Second Column: Post Content
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header with Display Name & Time
-                  _buildHeader(context),
+              child: GestureDetector(
+                onTap: onPostTap,
+                behavior: HitTestBehavior.opaque,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header with Display Name & Time
+                    _buildHeader(context),
 
-                  const SizedBox(height: 4),
+                    const SizedBox(height: 4),
 
-                  // Content
-                  _buildContent(context),
+                    // Content
+                    _buildContent(context),
 
-                  // Actions
-                  _buildActions(context),
-                ],
+                    // Actions
+                    _buildActions(context),
+                  ],
+                ),
               ),
             ),
           ],
@@ -98,7 +102,7 @@ class PostCard extends StatelessWidget {
   Widget _buildHeader(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Row(
       children: [
         // Display Name and Time
@@ -320,7 +324,7 @@ class PostCard extends StatelessWidget {
   }) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Row(
@@ -328,10 +332,7 @@ class PostCard extends StatelessWidget {
         children: [
           Text(
             emoji,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
           ),
           const SizedBox(width: 4),
           Text(

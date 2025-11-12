@@ -22,8 +22,6 @@ class MatchListScreen extends ConsumerStatefulWidget {
 }
 
 class _MatchListScreenState extends ConsumerState<MatchListScreen> {
-  String _selectedFilter = 'All';
-
   @override
   Widget build(BuildContext context) {
     // Watch the public games provider
@@ -87,15 +85,7 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
           );
         }
 
-        return Column(
-          children: [
-            // Filters
-            _buildFilters(),
-
-            // Game list - display directly as Game entities
-            Expanded(child: _buildGamesList(searchFilteredGames)),
-          ],
-        );
+        return _buildGamesList(searchFilteredGames);
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) {
@@ -371,135 +361,5 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
     } else {
       return 'now';
     }
-  }
-
-  Widget _buildFilters() {
-    final filters = _getFiltersForSport();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: context.colors.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: context.colors.outline.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Text(
-          //   '${widget.sport} Games',
-          //   style: context.textTheme.titleLarge?.copyWith(
-          //     fontWeight: FontWeight.w700,
-          //     color: context.colors.onSurface,
-          //   ),
-          // ),
-          // Text(
-          //   _getSportDescription(),
-          //   style: context.textTheme.bodyMedium?.copyWith(
-          //     color: context.colors.onSurfaceVariant,
-          //   ),
-          // ),
-
-          // Filters
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: filters.map((filter) {
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      right: filter != filters.last ? 8 : 0,
-                    ),
-                    child: _buildFilterChip(
-                      filter['label'] ?? '',
-                      filter['value'] ?? '',
-                    ),
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<Map<String, String>> _getFiltersForSport() {
-    switch (widget.sport.toLowerCase()) {
-      case 'football':
-        return [
-          {'label': 'All', 'value': 'all'},
-          {'label': 'Futsal', 'value': 'futsal'},
-          {'label': 'Competitive', 'value': 'competitive'},
-          {'label': 'Substitutional', 'value': 'substitutional'},
-          {'label': 'Association', 'value': 'association'},
-          {'label': 'Free', 'value': 'free'},
-          {'label': 'Today', 'value': 'today'},
-        ];
-      case 'cricket':
-        return [
-          {'label': 'All', 'value': 'all'},
-          {'label': 'T20', 'value': 't20'},
-          {'label': 'ODI', 'value': 'odi'},
-          {'label': 'Test', 'value': 'test'},
-          {'label': 'Practice', 'value': 'practice'},
-          {'label': 'Free', 'value': 'free'},
-          {'label': 'Today', 'value': 'today'},
-        ];
-      case 'padel':
-        return [
-          {'label': 'All', 'value': 'all'},
-          {'label': 'Singles', 'value': 'singles'},
-          {'label': 'Doubles', 'value': 'doubles'},
-          {'label': 'Free', 'value': 'free'},
-          {'label': 'Today', 'value': 'today'},
-        ];
-      default:
-        return [
-          {'label': 'All', 'value': 'all'},
-          {'label': 'Free', 'value': 'free'},
-          {'label': 'Today', 'value': 'today'},
-        ];
-    }
-  }
-
-  Widget _buildFilterChip(String label, String value) {
-    final isSelected = _selectedFilter == value;
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedFilter = value;
-        });
-        // Filter will be applied automatically when publicGamesProvider rebuilds
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? widget.sportColor : context.violetWidgetBg,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected
-                ? widget.sportColor
-                : context.colors.outline.withValues(alpha: 0.1),
-            width: 1,
-          ),
-        ),
-        child: Text(
-          label,
-          style: context.textTheme.bodySmall?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : context.colors.onSurface,
-          ),
-        ),
-      ),
-    );
   }
 }

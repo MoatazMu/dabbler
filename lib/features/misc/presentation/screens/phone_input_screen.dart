@@ -153,42 +153,75 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return TwoSectionLayout(
-      topSection: _buildTopSection(),
-      bottomSection: _buildBottomSection(),
-    );
-  }
-
-  Widget _buildTopSection() {
-    final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
-    
-    return Column(
-      children: [
-        const SizedBox(height: 32),
-        // Dabbler logo and text
-        _buildLogo(),
-        const SizedBox(height: 32),
-        // Welcome text - using Material 3 typography
-        Text(
-          'Welcome to dabbler!',
-          style: textTheme.headlineSmall?.copyWith(
-            color: colorScheme.onSurface,
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                child: _buildHeroSection(),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                child: _buildBottomSection(),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Enter your mobile number to get started',
-          style: textTheme.bodyLarge?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
+      ),
     );
   }
 
-  Widget _buildLogo() {
+  Widget _buildHeroSection() {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          // Dabbler logo and text
+          _buildLogo(textColor),
+          const SizedBox(height: 24),
+          // Welcome text - using Material 3 typography
+          Text(
+            'Welcome to dabbler!',
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Enter your mobile number to get started',
+            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogo(Color iconColor) {
     return Column(
       children: [
         // Dabbler geometric icon
@@ -196,6 +229,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
           'assets/images/dabbler_logo.svg',
           width: 80,
           height: 88,
+          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         ),
         SizedBox(height: AppSpacing.md),
         // Dabbler text logo
@@ -203,6 +237,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
           'assets/images/dabbler_text_logo.svg',
           width: 110,
           height: 21,
+          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         ),
       ],
     );
@@ -214,27 +249,22 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
         // Phone input field
         _buildPhoneInput(),
         const SizedBox(height: 16), // Material 3 spacing: 16dp
-
         // Login with Email button
         _buildEmailButton(),
 
         const SizedBox(height: 24), // Material 3 spacing: 24dp
-
         // Divider with "or"
         _buildDivider(),
 
         const SizedBox(height: 24), // Material 3 spacing: 24dp
-
         // Continue with Google button
         _buildGoogleButton(),
 
         const SizedBox(height: 12), // Material 3 spacing: 12dp
-
         // Continue with Email button
         _buildContinueEmailButton(),
 
         const SizedBox(height: 24), // Material 3 spacing: 24dp
-
         // Terms and privacy
         _buildTermsText(),
 
@@ -273,7 +303,10 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).extension<AppThemeExtension>()?.success.withOpacity(0.1) ??
+              color:
+                  Theme.of(
+                    context,
+                  ).extension<AppThemeExtension>()?.success.withOpacity(0.1) ??
                   Theme.of(context).colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(12),
             ),
@@ -281,7 +314,10 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
               children: [
                 Icon(
                   Icons.check_circle_outline,
-                  color: Theme.of(context).extension<AppThemeExtension>()?.success ??
+                  color:
+                      Theme.of(
+                        context,
+                      ).extension<AppThemeExtension>()?.success ??
                       Theme.of(context).colorScheme.primary,
                   size: 20,
                 ),
@@ -290,7 +326,10 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
                   child: Text(
                     _successMessage!,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).extension<AppThemeExtension>()?.success ??
+                      color:
+                          Theme.of(
+                            context,
+                          ).extension<AppThemeExtension>()?.success ??
                           Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
                   ),
@@ -306,7 +345,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   Widget _buildPhoneInput() {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     // Use Material 3 TextFormField with proper styling and validation
     return Form(
       key: _formKey,
@@ -315,9 +354,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
         keyboardType: TextInputType.phone,
         onChanged: _onPhoneChanged,
         validator: _validatePhone,
-        style: textTheme.bodyLarge?.copyWith(
-          color: colorScheme.onSurface,
-        ),
+        style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
         decoration: InputDecoration(
           hintText: '505050500',
           prefixIcon: Padding(
@@ -374,15 +411,12 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   Widget _buildDivider() {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     // Use Material 3 Divider
     return Row(
       children: [
         Expanded(
-          child: Divider(
-            color: colorScheme.outlineVariant,
-            thickness: 1,
-          ),
+          child: Divider(color: colorScheme.outlineVariant, thickness: 1),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -394,10 +428,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
           ),
         ),
         Expanded(
-          child: Divider(
-            color: colorScheme.outlineVariant,
-            thickness: 1,
-          ),
+          child: Divider(color: colorScheme.outlineVariant, thickness: 1),
         ),
       ],
     );
@@ -441,7 +472,7 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   Widget _buildTermsText() {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -497,4 +528,3 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
     );
   }
 }
-

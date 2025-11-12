@@ -1,37 +1,137 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
-import 'package:dabbler/widgets/custom_app_bar.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: CustomAppBar(actionIcon: Iconsax.setting_2_copy),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 116, 20, 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildAccountSection(context),
-            const SizedBox(height: 24),
-            const SizedBox(height: 24),
-            _buildPrivacySection(context),
-            const SizedBox(height: 24),
-            _buildGeneralSection(context),
-            const SizedBox(height: 24),
-            _buildSupportSection(context),
-            const SizedBox(height: 24),
-            _buildAboutSection(context),
-            const SizedBox(height: 32),
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          slivers: [
+            // Header
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              sliver: SliverToBoxAdapter(child: _buildHeader(context)),
+            ),
+            // Hero Card
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              sliver: SliverToBoxAdapter(child: _buildHeroCard(context)),
+            ),
+            // Content
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildAccountSection(context),
+                    const SizedBox(height: 20),
+                    _buildPrivacySection(context),
+                    const SizedBox(height: 20),
+                    _buildGeneralSection(context),
+                    const SizedBox(height: 20),
+                    _buildSupportSection(context),
+                    const SizedBox(height: 20),
+                    _buildAboutSection(context),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/home'),
+          icon: const Icon(Icons.dashboard_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Settings',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Customize your experience',
+            style: textTheme.labelLarge?.copyWith(
+              color: isDarkMode
+                  ? Colors.white.withOpacity(0.8)
+                  : Colors.black.withOpacity(0.7),
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.6,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Preferences & controls',
+            style: textTheme.headlineSmall?.copyWith(
+              color: isDarkMode ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Manage your account, privacy, and app settings all in one place.',
+            style: textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onPrimary.withOpacity(0.8),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -42,7 +142,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Profile Information',
         'Update your personal details',
-        Icons.person,
+        Icons.person_outlined,
         () {
           context.push('/edit_profile');
         },
@@ -51,12 +151,11 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Password & Security',
         'Change password and security settings',
-        Icons.shield,
+        Icons.shield_outlined,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('🔐 Password & Security - Coming soon!'),
-              backgroundColor: Colors.indigo,
             ),
           );
         },
@@ -70,7 +169,6 @@ class SettingsScreen extends StatelessWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('🔗 Connected Accounts - Link your social media!'),
-              backgroundColor: Colors.indigo,
             ),
           );
         },
@@ -84,7 +182,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Location Services',
         'Allow app to access your location',
-        Icons.location_on,
+        Icons.location_on_outlined,
         true,
         (value) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -94,7 +192,6 @@ class SettingsScreen extends StatelessWidget {
                     ? '📍 Location services enabled!'
                     : '📍 Location services disabled!',
               ),
-              backgroundColor: value ? Colors.green : Colors.grey,
             ),
           );
         },
@@ -103,7 +200,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Profile Visibility',
         'Make your profile visible to others',
-        Icons.visibility,
+        Icons.visibility_outlined,
         true,
         (value) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -113,7 +210,6 @@ class SettingsScreen extends StatelessWidget {
                     ? '👁️ Profile is now visible to others!'
                     : '👁️ Profile is now private!',
               ),
-              backgroundColor: value ? Colors.green : Colors.grey,
             ),
           );
         },
@@ -122,12 +218,11 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Data & Privacy',
         'Manage your data and privacy settings',
-        Icons.storage,
+        Icons.storage_outlined,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('🗃️ Data & Privacy settings - Coming soon!'),
-              backgroundColor: Colors.purple,
             ),
           );
         },
@@ -141,7 +236,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Payment Methods',
         'Manage your payment cards and methods',
-        Icons.credit_card,
+        Icons.credit_card_outlined,
         () {
           context.push('/payment_methods');
         },
@@ -150,12 +245,11 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Language',
         'Choose your preferred language',
-        Icons.language,
+        Icons.language_outlined,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('🌍 Language: English (Arabic coming soon!)'),
-              backgroundColor: Colors.teal,
             ),
           );
         },
@@ -164,7 +258,7 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Theme & Appearance',
         'Switch between light and dark mode',
-        Icons.palette,
+        Icons.palette_outlined,
         () {
           context.push('/theme_settings');
         },
@@ -178,12 +272,11 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Help & Support',
         'Get help and contact support',
-        Icons.info_outline,
+        Icons.help_outline,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('💬 Help & Support - FAQ available soon!'),
-              backgroundColor: Colors.amber,
             ),
           );
         },
@@ -192,12 +285,11 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Report a Problem',
         'Report bugs or issues',
-        Icons.flag,
+        Icons.flag_outlined,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('🚩 Report Problem - Thank you for feedback!'),
-              backgroundColor: Colors.amber,
             ),
           );
         },
@@ -206,13 +298,10 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Contact Us',
         'Get in touch with our team',
-        Icons.email,
+        Icons.email_outlined,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('📧 Contact: support@dabbler.app'),
-              backgroundColor: Colors.amber,
-            ),
+            const SnackBar(content: Text('📧 Contact: support@dabbler.app')),
           );
         },
       ),
@@ -228,10 +317,7 @@ class SettingsScreen extends StatelessWidget {
         Icons.info_outline,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('ℹ️ App Version: 1.0.0 Beta'),
-              backgroundColor: Colors.blueGrey,
-            ),
+            const SnackBar(content: Text('ℹ️ App Version: 1.0.0 Beta')),
           );
         },
       ),
@@ -239,14 +325,13 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Terms of Service',
         'Read our terms and conditions',
-        Icons.description,
+        Icons.description_outlined,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
                 '📄 Terms of Service - Legal document coming soon!',
               ),
-              backgroundColor: Colors.blueGrey,
             ),
           );
         },
@@ -255,52 +340,53 @@ class SettingsScreen extends StatelessWidget {
         context,
         'Privacy Policy',
         'Learn how we protect your data',
-        Icons.shield,
+        Icons.shield_outlined,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('🛡️ Privacy Policy - We protect your data!'),
-              backgroundColor: Colors.blueGrey,
             ),
           );
         },
       ),
       const SizedBox(height: 16),
-      Divider(
-        color: Colors.grey.withValues(alpha: 0.2),
-        thickness: 1,
-        height: 1,
-      ),
-      const SizedBox(height: 8),
       _buildSignOutItem(context),
     ]);
   }
 
   Widget _buildSignOutItem(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        // color: Colors.red.shade50,
-        borderRadius: BorderRadius.circular(12),
-        // border: Border.all(color: Colors.red.shade200),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-        leading: Icon(Icons.logout, color: Colors.red.shade600),
-        title: Text(
-          'Sign Out',
-          style: TextStyle(
-            color: Colors.red.shade600,
-            fontWeight: FontWeight.w600,
-          ),
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
         ),
-        trailing: Icon(
-          Icons.chevron_right,
-          size: 16,
-          color: Colors.red.shade600,
-        ),
-        onTap: () => _showSignOutDialog(context),
+        child: const Icon(Icons.logout_outlined, size: 20, color: Colors.red),
       ),
+      title: Text(
+        'Sign Out',
+        style: textTheme.bodyLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: Colors.red,
+        ),
+      ),
+      subtitle: Text(
+        'Sign out of your account',
+        style: textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: Icon(
+        Icons.arrow_forward_ios,
+        size: 16,
+        color: Colors.red.withOpacity(0.7),
+      ),
+      onTap: () => _showSignOutDialog(context),
     );
   }
 
@@ -466,20 +552,26 @@ class SettingsScreen extends StatelessWidget {
     String title,
     List<Widget> children,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
-        padding: const EdgeInsets.all(6.0),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.w700,
-                fontSize: 18,
+                color: colorScheme.onSurface,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             ...children,
           ],
         ),
@@ -494,34 +586,36 @@ class SettingsScreen extends StatelessWidget {
     IconData icon,
     VoidCallback onTap,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: Container(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
+            color: colorScheme.primaryContainer.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          child: Icon(icon, size: 20, color: colorScheme.primary),
         ),
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontSize: 13,
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
-        trailing: Icon(Icons.chevron_right, size: 16),
+        trailing: Icon(
+          Icons.arrow_forward_ios,
+          size: 16,
+          color: colorScheme.onSurfaceVariant,
+        ),
         onTap: onTap,
       ),
     );
@@ -535,43 +629,32 @@ class SettingsScreen extends StatelessWidget {
     bool value,
     ValueChanged<bool> onChanged,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         contentPadding: EdgeInsets.zero,
         leading: Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
+            color: colorScheme.primaryContainer.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(
-            icon,
-            size: 18,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
+          child: Icon(icon, size: 20, color: colorScheme.primary),
         ),
         title: Text(
           title,
-          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+          style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-            fontSize: 13,
+          style: textTheme.bodySmall?.copyWith(
+            color: colorScheme.onSurfaceVariant,
           ),
         ),
-        trailing: Switch(
-          value: value,
-          onChanged: (v) {
-            Future.delayed(
-              const Duration(milliseconds: 350),
-              () => onChanged(v),
-            );
-          },
-          activeThumbColor: Theme.of(context).colorScheme.primary,
-        ),
+        trailing: Switch(value: value, onChanged: onChanged),
       ),
     );
   }

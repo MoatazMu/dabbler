@@ -508,19 +508,16 @@ class _OnboardingCompletionScreenState
     if (_celebration?.specialOffer == null) return const SizedBox();
 
     final offer = _celebration!.specialOffer!;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final offerColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            DesignSystem.colors.primary.withValues(alpha: 0.1),
-            DesignSystem.colors.secondary.withValues(alpha: 0.1),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: offerColor.withOpacity(0.3),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: DesignSystem.colors.primary.withValues(alpha: 0.3),

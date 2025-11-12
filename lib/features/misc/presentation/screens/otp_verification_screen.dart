@@ -269,57 +269,100 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return TwoSectionLayout(
-      topSection: _buildTopSection(),
-      bottomSection: _buildBottomSection(),
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      backgroundColor: colorScheme.surface,
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                child: _buildHeroSection(),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
+                child: _buildBottomSection(),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildTopSection() {
+  Widget _buildHeroSection() {
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        children: [
+          // Logo
+          _buildLogo(textColor),
+          const SizedBox(height: 24),
+          // Header
+          Text(
+            'Verify Your Phone',
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w800,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'We\'ve sent a 6-digit code to',
+            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            widget.phoneNumber ?? '',
+            style: textTheme.bodyLarge?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w600,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogo(Color iconColor) {
     return Column(
       children: [
-        SizedBox(height: AppSpacing.huge),
-        // Logo
         SvgPicture.asset(
           'assets/images/dabbler_logo.svg',
           width: 80,
           height: 88,
+          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         ),
-        SizedBox(height: AppSpacing.md),
+        const SizedBox(height: 16),
         SvgPicture.asset(
           'assets/images/dabbler_text_logo.svg',
           width: 110,
           height: 21,
-        ),
-        SizedBox(height: AppSpacing.huge),
-        // Header
-        Text(
-          'Verify Your Phone',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        SizedBox(height: AppSpacing.sm),
-        Text(
-          'We\'ve sent a 6-digit code to',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: AppColors.textLight70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: AppSpacing.xs),
-        Text(
-          widget.phoneNumber ?? '',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          textAlign: TextAlign.center,
+          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
         ),
       ],
     );

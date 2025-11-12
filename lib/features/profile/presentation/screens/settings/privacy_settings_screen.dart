@@ -74,54 +74,127 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              _buildAppBar(context),
-              SliverToBoxAdapter(child: _buildPrivacyPresetsSection(context)),
-              SliverToBoxAdapter(
-                child: _buildProfileVisibilitySection(context),
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
               ),
-              SliverToBoxAdapter(child: _buildDataSharingSection(context)),
-              SliverToBoxAdapter(child: _buildBlockedUsersSection(context)),
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
-            ],
+              slivers: [
+                // Header
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                  sliver: SliverToBoxAdapter(child: _buildHeader(context)),
+                ),
+                // Hero Card
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  sliver: SliverToBoxAdapter(child: _buildHeroCard(context)),
+                ),
+                // Content
+                SliverToBoxAdapter(child: _buildPrivacyPresetsSection(context)),
+                SliverToBoxAdapter(
+                  child: _buildProfileVisibilitySection(context),
+                ),
+                SliverToBoxAdapter(child: _buildDataSharingSection(context)),
+                SliverToBoxAdapter(child: _buildBlockedUsersSection(context)),
+                const SliverToBoxAdapter(child: SizedBox(height: 48)),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildAppBar(BuildContext context) {
-    return SliverAppBar(
-      expandedHeight: 120,
-      floating: false,
-      pinned: true,
-      elevation: 0,
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      leading: IconButton(
-        onPressed: () => context.pop(),
-        icon: const Icon(Icons.arrow_back),
-      ),
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(
-          'Privacy Settings',
-          style: Theme.of(
-            context,
-          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+  Widget _buildHeader(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          onPressed: () => context.pop(),
+          icon: const Icon(Icons.arrow_back),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
         ),
-        centerTitle: false,
-        titlePadding: const EdgeInsets.only(left: 56, bottom: 16),
-      ),
-      actions: [
-        TextButton(onPressed: _saveSettings, child: const Text('Save')),
-        const SizedBox(width: 8),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Privacy Settings',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+            ],
+          ),
+        ),
+        FilledButton.tonalIcon(
+          onPressed: _saveSettings,
+          icon: const Icon(Icons.check, size: 20),
+          label: const Text('Save'),
+          style: FilledButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildHeroCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF),
+        borderRadius: BorderRadius.circular(28),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.shield_outlined,
+            size: 48,
+            color: isDarkMode ? Colors.white : Colors.black87,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Control your privacy',
+            style: textTheme.headlineSmall?.copyWith(
+              color: isDarkMode ? Colors.white : Colors.black87,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Manage what information others can see about you and how your data is used.',
+            style: textTheme.bodyMedium?.copyWith(
+              color: isDarkMode
+                  ? Colors.white.withOpacity(0.85)
+                  : Colors.black.withOpacity(0.7),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -138,20 +211,23 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: Colors.blue.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: Colors.blue.withOpacity(0.3)),
+            gradient: LinearGradient(
+              colors: [
+                Colors.blue.shade50,
+                Colors.blue.shade100.withOpacity(0.3),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.blue.shade200),
           ),
           child: Row(
             children: [
-              const Icon(Icons.info_outline, color: Colors.blue, size: 20),
-              const SizedBox(width: 8),
+              Icon(Icons.info_outline, color: Colors.blue.shade700, size: 20),
+              const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   'You can always customize individual settings below',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: Colors.blue[800]),
+                  style: TextStyle(color: Colors.blue.shade800, fontSize: 13),
                 ),
               ),
             ],
@@ -506,11 +582,15 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
     String description,
     List<Widget> children,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      margin: const EdgeInsets.fromLTRB(24, 20, 24, 0),
       child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        elevation: 0,
+        color: colorScheme.surfaceContainerHigh,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -518,16 +598,17 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
             children: [
               Text(
                 title,
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
                 description,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurface.withOpacity(0.6),
+                ),
               ),
               const SizedBox(height: 16),
               ...children,
@@ -546,88 +627,59 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
     ValueChanged<bool> onChanged,
     String tooltip,
   ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => onChanged(!value),
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: const EdgeInsets.all(12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
+              color: colorScheme.primaryContainer.withOpacity(0.5),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey[200]!),
             ),
-            child: Row(
+            child: Icon(icon, size: 20, color: colorScheme.primary),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: value
-                        ? Theme.of(context).primaryColor.withOpacity(0.1)
-                        : Colors.grey[100],
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 16,
-                    color: value
-                        ? Theme.of(context).primaryColor
-                        : Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              title,
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: value
-                                        ? Theme.of(context).primaryColor
-                                        : null,
-                                  ),
-                            ),
-                          ),
-                          GestureDetector(
-                            onTap: () => _showTooltip(context, title, tooltip),
-                            child: Icon(
-                              Icons.info_outline,
-                              size: 16,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        subtitle,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.grey[600],
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    GestureDetector(
+                      onTap: () => _showTooltip(context, title, tooltip),
+                      child: Icon(
+                        Icons.info_outline,
+                        size: 16,
+                        color: colorScheme.onSurface.withOpacity(0.5),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Switch(
-                  value: value,
-                  onChanged: onChanged,
-                  activeThumbColor: Theme.of(context).primaryColor,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                  ),
                 ),
               ],
             ),
           ),
-        ),
+          const SizedBox(width: 8),
+          Switch(value: value, onChanged: onChanged),
+        ],
       ),
     );
   }
@@ -776,12 +828,9 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
       }
     });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('User $username has been blocked'),
-        backgroundColor: Colors.red,
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('User $username has been blocked')));
   }
 
   void _unblockUser(String username) {
@@ -790,26 +839,21 @@ class _PrivacySettingsScreenState extends ConsumerState<PrivacySettingsScreen>
     });
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('User $username has been unblocked'),
-        backgroundColor: Colors.green,
-      ),
+      SnackBar(content: Text('User $username has been unblocked')),
     );
   }
 
   void _saveSettings() {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
+      const SnackBar(
+        content: Row(
           children: [
             Icon(Icons.check_circle, color: Colors.white),
             SizedBox(width: 8),
             Text('Privacy settings saved!'),
           ],
         ),
-        backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
   }

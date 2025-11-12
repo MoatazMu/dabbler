@@ -47,17 +47,31 @@ class AppFilterChip extends StatelessWidget {
       selected: isSelected,
       onSelected: onTap != null ? (_) => onTap!() : null,
       selectedColor: selectedColor,
+      showCheckmark: false,
       label: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: isSelected ? MainAxisSize.max : MainAxisSize.min,
+        mainAxisAlignment: isSelected
+            ? MainAxisAlignment.center
+            : MainAxisAlignment.start,
         children: [
           // Emoji
           Text(emoji, style: const TextStyle(fontSize: 16)),
           const SizedBox(width: 6),
 
-          // Label with overflow protection
-          Flexible(
-            child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1),
-          ),
+          // Label - expand when selected to show full text
+          if (isSelected)
+            Expanded(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                overflow: TextOverflow.visible,
+                maxLines: 1,
+              ),
+            )
+          else
+            Flexible(
+              child: Text(label, overflow: TextOverflow.ellipsis, maxLines: 1),
+            ),
 
           // Count badge (only shown when selected and count is provided)
           if (isSelected && count != null) ...[
