@@ -49,8 +49,7 @@ class FeatureFlags {
   /// Central MVP feature flags (UI gating only; do not delete code).
   static const bool multiSport = false;
   static const bool organiserProfile = false;
-  static const bool createGamePublic =
-      false; // admin-only create stays; hide public surfaces
+  static const bool createGamePublic = true; // Enable public game creation
   static const bool socialFeed = true; // NOW ENABLED FOR MVP
   static const bool messaging = false;
   static const bool notifications = false;

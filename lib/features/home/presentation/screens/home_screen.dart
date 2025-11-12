@@ -240,21 +240,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildQuickAccessSection() {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          child: AppButtonCard(
-            emoji: '📚',
-            label: 'Community',
-            onTap: () => context.go(RoutePaths.social),
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: AppButtonCard(
+                emoji: '📚',
+                label: 'Community',
+                onTap: () => context.go(RoutePaths.social),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: AppButtonCard(
+                emoji: '🏆',
+                label: 'Sports',
+                onTap: () => context.go(RoutePaths.sports),
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 12),
-        Expanded(
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
           child: AppButtonCard(
-            emoji: '🏆',
-            label: 'Sports',
-            onTap: () => context.go(RoutePaths.sports),
+            emoji: '⚽',
+            label: 'Create Game',
+            onTap: () => context.push(RoutePaths.createGame),
           ),
         ),
       ],
