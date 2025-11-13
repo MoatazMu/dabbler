@@ -159,7 +159,7 @@ final profileCompletionProvider = Provider<double>((ref) {
 
   // Basic profile info (40%)
   if (profile.username?.isNotEmpty == true) completion += 8.0;
-  if (profile.displayName?.isNotEmpty == true) completion += 8.0;
+  if (profile.displayName.isNotEmpty == true) completion += 8.0;
   if (profile.email?.isNotEmpty ?? false) completion += 8.0;
   if (profile.phoneNumber?.isNotEmpty == true) completion += 8.0;
   if (profile.city?.isNotEmpty == true) completion += 8.0;

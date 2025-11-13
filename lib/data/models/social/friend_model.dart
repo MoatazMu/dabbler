@@ -293,7 +293,7 @@ class FriendModel extends Friend {
       mutualFriendIds: mutualFriendIds ?? this.mutualFriendIds,
       gameStats: gameStats ?? this.gameStats,
       favorSports: favorSports ?? this.favorSports,
-      city: city ?? this.city,
+      city: city ?? city,
       joinedDate: joinedDate ?? this.joinedDate,
       isBlocked: isBlocked ?? this.isBlocked,
       hasBlockedMe: hasBlockedMe ?? this.hasBlockedMe,

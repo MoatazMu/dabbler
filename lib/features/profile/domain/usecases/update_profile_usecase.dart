@@ -379,7 +379,7 @@ class UpdateProfileUseCase {
       profile.age != null,
       profile.avatarUrl?.isNotEmpty == true,
       profile.username?.isNotEmpty == true,
-      profile.displayName?.isNotEmpty == true,
+      profile.displayName.isNotEmpty == true,
     ];
 
     final optionalFields = [

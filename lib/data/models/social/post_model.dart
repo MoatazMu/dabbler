@@ -267,7 +267,7 @@ class PostModel extends Post {
       sharesCount: sharesCount ?? this.sharesCount,
       visibility: visibility ?? this.visibility,
       gameId: gameId ?? this.gameId,
-      cityName: cityName ?? this.cityName,
+      cityName: cityName ?? cityName,
       isLiked: isLiked ?? this.isLiked,
       isBookmarked: isBookmarked ?? this.isBookmarked,
       authorBio: authorBio ?? this.authorBio,

@@ -175,7 +175,6 @@ class _MockActivity {
     this.description,
     this.type,
     this.date,
-    this.city,
   });
 }
 
