@@ -1,12 +1,20 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/services/auth_service.dart';
+import 'package:dabbler/core/utils/logger.dart';
+import 'package:dabbler/data/models/sport_profiles/sport_profile.dart'
+    as advanced_profile;
+import 'package:dabbler/data/models/sport_profiles/sport_profile_badge.dart'
+    as advanced_badge;
+import 'package:dabbler/data/models/sport_profiles/sport_profile_tier.dart'
+    as advanced_tier;
+import 'package:dabbler/services/sport_profile_service.dart';
 import '../../domain/usecases/get_profile_usecase.dart';
 import '../../data/datasources/supabase_profile_datasource.dart';
 import '../../data/datasources/profile_data_sources.dart'
     show ProfileLocalDataSource, ProfileLocalDataSourceImpl;
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
-import 'package:dabbler/core/services/auth_service.dart';
 
 // Domain layer imports
 import 'package:dabbler/data/models/profile/user_profile.dart';
@@ -30,6 +38,11 @@ import '../controllers/sports_profile_controller.dart';
 // Infrastructure: Supabase client
 final supabaseProvider = Provider<SupabaseClient>((ref) {
   return Supabase.instance.client;
+});
+
+final sportProfileServiceProvider = Provider<SportProfileService>((ref) {
+  final client = ref.watch(supabaseProvider);
+  return SportProfileService(supabase: client);
 });
 
 // Data sources
@@ -71,6 +84,60 @@ final sportsProfileControllerProvider =
     StateNotifierProvider<SportsProfileController, SportsProfileState>((ref) {
       return SportsProfileController();
     });
+
+class SportProfileHeaderData {
+  const SportProfileHeaderData({
+    required this.profile,
+    this.tier,
+    this.badges = const <advanced_badge.SportProfileBadge>[],
+  });
+
+  final advanced_profile.SportProfile profile;
+  final advanced_tier.SportProfileTier? tier;
+  final List<advanced_badge.SportProfileBadge> badges;
+}
+
+final sportProfileHeaderProvider = FutureProvider.autoDispose
+    .family<SportProfileHeaderData?, String>((ref, userId) async {
+  if (userId.isEmpty) {
+    return null;
+  }
+
+  final service = ref.watch(sportProfileServiceProvider);
+
+  try {
+    final profiles = await service.getSportProfilesForUser(userId);
+    if (profiles.isEmpty) {
+      return null;
+    }
+
+    final selectedProfile = _selectPrimarySportProfile(profiles);
+
+    final badges = await service.getPlayerBadges(
+      selectedProfile.profileId,
+      selectedProfile.sportKey,
+    );
+    final tier = await service.getTierById(selectedProfile.tierId);
+
+    return SportProfileHeaderData(
+      profile: selectedProfile,
+      tier: tier,
+      badges: badges,
+    );
+  } on SportProfileServiceException catch (error) {
+    Logger.warning(
+      'Failed to load sport profile header for userId=$userId',
+      error,
+    );
+    return null;
+  } catch (error) {
+    Logger.error(
+      'Unexpected error loading sport profile header for userId=$userId',
+      error,
+    );
+    return null;
+  }
+});
 
 /// Profile edit controller provider
 final profileEditControllerProvider =
@@ -323,3 +390,49 @@ final profileErrorProvider = Provider<String?>((ref) {
   final sportsState = ref.watch(sportsProfileControllerProvider);
   return profileState.errorMessage ?? sportsState.errorMessage;
 });
+
+advanced_profile.SportProfile _selectPrimarySportProfile(
+  List<advanced_profile.SportProfile> profiles,
+) {
+  if (profiles.length == 1) {
+    return profiles.first;
+  }
+
+  final flagged = profiles.where(_isPrimaryProfile).toList();
+  if (flagged.isNotEmpty) {
+    return flagged.first;
+  }
+
+  return profiles.reduce((current, next) {
+    if (next.overallLevel > current.overallLevel) {
+      return next;
+    }
+    if (next.overallLevel == current.overallLevel &&
+        next.xpTotal > current.xpTotal) {
+      return next;
+    }
+    return current;
+  });
+}
+
+bool _isPrimaryProfile(advanced_profile.SportProfile profile) {
+  final attributes = profile.attributes;
+  final dynamic candidate = attributes['is_primary'] ??
+      attributes['isPrimary'] ??
+      attributes['primary'];
+
+  if (candidate is bool) {
+    return candidate;
+  }
+  if (candidate is num) {
+    return candidate != 0;
+  }
+  if (candidate is String) {
+    final normalized = candidate.toLowerCase();
+    return normalized == 'true' ||
+        normalized == '1' ||
+        normalized == 'yes' ||
+        normalized == 'primary';
+  }
+  return false;
+}

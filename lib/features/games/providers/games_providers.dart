@@ -19,6 +19,8 @@ import '../data/datasources/venues_datasource.dart';
 import '../data/datasources/bookings_datasource.dart';
 import '../data/datasources/bookings_remote_data_source.dart';
 import 'package:dabbler/data/repositories/joinability_repository_impl.dart';
+import '../services/game_completion_rewards_handler.dart';
+import 'package:dabbler/services/sport_profile_service.dart';
 
 // =============================================================================
 // DATA SOURCE PROVIDERS
@@ -27,6 +29,18 @@ import 'package:dabbler/data/repositories/joinability_repository_impl.dart';
 /// Provides the Supabase client instance
 final supabaseClientProvider = Provider<SupabaseClient>((ref) {
   return Supabase.instance.client;
+});
+
+final gamesSportProfileServiceProvider =
+    Provider<SportProfileService>((ref) {
+  return SportProfileService(supabase: ref.watch(supabaseClientProvider));
+});
+
+final gameCompletionRewardsHandlerProvider =
+    Provider<GameCompletionRewardsHandler>((ref) {
+  return GameCompletionRewardsHandler(
+    sportProfileService: ref.watch(gamesSportProfileServiceProvider),
+  );
 });
 
 /// Provides the games remote data source
@@ -149,6 +163,7 @@ final myGamesControllerProvider =
         cancelGameUseCase: null,
         gamesRepository: ref.watch(gamesRepositoryProvider),
         userId: userId,
+        completionHandler: ref.watch(gameCompletionRewardsHandlerProvider),
       );
     });
 
@@ -579,10 +594,18 @@ class MyGamesActions {
         .checkInToGame(gameId);
   }
 
-  Future<void> executeQuickAction(QuickAction action, String gameId) async {
+  Future<void> executeQuickAction(
+    QuickAction action,
+    String gameId, {
+    Map<String, dynamic>? completionStats,
+  }) async {
     await _ref
         .read(myGamesControllerProvider(_userId).notifier)
-        .executeQuickAction(action, gameId);
+        .executeQuickAction(
+          action,
+          gameId,
+          completionStats: completionStats,
+        );
   }
 }
 
