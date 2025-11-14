@@ -40,16 +40,20 @@ class GameModel extends Game {
       // Parse currentPlayers from various sources
       int currentPlayers = 0;
       if (json.containsKey('current_players')) {
-        // Direct count provided
+        // Direct count provided (preferred, already filtered in datasource)
         currentPlayers = json['current_players'] as int? ?? 0;
       } else if (json.containsKey('game_roster')) {
         // Calculate from game_roster array if provided
         final roster = json['game_roster'];
         if (roster is List) {
           currentPlayers = roster
-              .where((p) =>
-                  p is Map &&
-                  (p['status'] == 'confirmed' || p['status'] == null))
+              .where((p) {
+                if (p is! Map) return false;
+                final status = p['status']?.toString().toLowerCase();
+                // Database uses 'active' as the roster status for joined players
+                // Treat null as active for safety if status wasn't set
+                return status == null || status == 'active';
+              })
               .length;
         } else if (roster is Map && roster.containsKey('count')) {
           // Handle count aggregation format

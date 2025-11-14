@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:dabbler/core/design_system/widgets/app_card.dart';
 import 'package:dabbler/core/design_system/widgets/app_filter_chip.dart';
 import 'package:dabbler/core/design_system/widgets/app_search_input.dart';
 import 'package:dabbler/core/design_system/ds.dart';
@@ -13,6 +14,7 @@ import 'package:dabbler/features/games/presentation/controllers/venues_controlle
 import 'package:dabbler/features/explore/presentation/widgets/sport_specific_filters.dart';
 import 'package:dabbler/core/config/sport_filters_config.dart';
 import 'package:dabbler/features/games/presentation/screens/join_game/game_detail_screen.dart';
+import 'package:dabbler/utils/helpers/date_formatter.dart';
 
 class VenueCard extends StatelessWidget {
   final Map<String, dynamic> venue;
@@ -29,7 +31,7 @@ class VenueCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return _buildSkeletonCard();
+      return _buildSkeletonCard(context);
     }
 
     final name = venue['name'] as String? ?? 'Unknown Venue';
@@ -53,209 +55,205 @@ class VenueCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCard(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Venue icon/image
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.location_city,
-                  color: colorScheme.onPrimaryContainer,
-                  size: 28,
-                ),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Venue icon/image
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(width: 16),
+              child: Icon(
+                Icons.location_city,
+                color: colorScheme.onPrimaryContainer,
+                size: 28,
+              ),
+            ),
+            const SizedBox(width: 16),
 
-              // Venue info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Name and status
-                    Row(
-                      children: [
-                        Expanded(
+            // Venue info
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Name and status
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          displayName,
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                      if (isClosed)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.errorContainer,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
                           child: Text(
-                            displayName,
-                            style: textTheme.titleMedium?.copyWith(
+                            'Closed',
+                            style: textTheme.labelSmall?.copyWith(
+                              color: colorScheme.onErrorContainer,
                               fontWeight: FontWeight.w600,
+                              fontSize: 10,
                             ),
                           ),
                         ),
-                        if (isClosed)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorScheme.errorContainer,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              'Closed',
-                              style: textTheme.labelSmall?.copyWith(
-                                color: colorScheme.onErrorContainer,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 10,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
 
-                    // Location
-                    Row(
-                      children: [
+                  // Location
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on,
+                        size: 14,
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          area,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      if (distance.isNotEmpty) ...[
+                        const SizedBox(width: 8),
                         Icon(
-                          Icons.location_on,
-                          size: 14,
-                          color: colorScheme.onSurfaceVariant,
+                          Icons.navigation,
+                          size: 12,
+                          color: colorScheme.primary,
                         ),
                         const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            area,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
+                        Text(
+                          distance,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                        if (distance.isNotEmpty) ...[
-                          const SizedBox(width: 8),
-                          Icon(
-                            Icons.navigation,
-                            size: 12,
-                            color: colorScheme.primary,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            distance,
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
-                    const SizedBox(height: 8),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
 
-                    // Sports and rating
-                    Row(
-                      children: [
-                        // Sports chips
-                        Expanded(
-                          child: Wrap(
-                            spacing: 6,
-                            runSpacing: 4,
-                            children: [
-                              ...visibleSports.map(
-                                (sport) => Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    '${_getSportEmoji(sport)} $sport',
-                                    style: textTheme.labelSmall?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 11,
-                                    ),
+                  // Sports and rating
+                  Row(
+                    children: [
+                      // Sports chips
+                      Expanded(
+                        child: Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: [
+                            ...visibleSports.map(
+                              (sport) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '${_getSportEmoji(sport)} $sport',
+                                  style: textTheme.labelSmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 11,
                                   ),
                                 ),
                               ),
-                              if (overflowCount > 0)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    '+$overflowCount',
-                                    style: textTheme.labelSmall?.copyWith(
-                                      color: colorScheme.onSurfaceVariant,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-
-                        // Rating badge
-                        if (showRating) ...[
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
                             ),
-                            decoration: BoxDecoration(
-                              color: colorScheme.tertiaryContainer,
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  Icons.star,
-                                  size: 12,
-                                  color: colorScheme.onTertiaryContainer,
+                            if (overflowCount > 0)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
                                 ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  rating.toStringAsFixed(1),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '+$overflowCount',
                                   style: textTheme.labelSmall?.copyWith(
-                                    color: colorScheme.onTertiaryContainer,
+                                    color: colorScheme.onSurfaceVariant,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 11,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+                              ),
+                          ],
+                        ),
+                      ),
 
-              // Arrow icon
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right,
-                color: colorScheme.onSurfaceVariant,
-                size: 20,
+                      // Rating badge
+                      if (showRating) ...[
+                        const SizedBox(width: 12),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.tertiaryContainer,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.star,
+                                size: 12,
+                                color: colorScheme.onTertiaryContainer,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                rating.toStringAsFixed(1),
+                                style: textTheme.labelSmall?.copyWith(
+                                  color: colorScheme.onTertiaryContainer,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+
+            // Arrow icon
+            const SizedBox(width: 8),
+            Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
+          ],
         ),
       ),
     );
@@ -280,11 +278,10 @@ class VenueCard extends StatelessWidget {
     }
   }
 
-  Widget _buildSkeletonCard() {
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: Padding(
+  Widget _buildSkeletonCard(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: AppCard(
         padding: const EdgeInsets.all(16),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +291,7 @@ class VenueCard extends StatelessWidget {
               width: 56,
               height: 56,
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
@@ -331,7 +328,7 @@ class VenueCard extends StatelessWidget {
               width: 20,
               height: 20,
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
             ),
@@ -358,6 +355,7 @@ class _ExploreScreenState extends State<ExploreScreen>
   int _selectedSportIndex = 0;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  bool _isSortAscending = true; // default sort by start date ascending
 
   // Filter state
   String? _selectedArea;
@@ -428,6 +426,7 @@ class _ExploreScreenState extends State<ExploreScreen>
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -447,7 +446,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                         height: 4,
                         margin: const EdgeInsets.only(bottom: 16),
                         decoration: BoxDecoration(
-                          color: Colors.grey[300],
+                          color: colorScheme.surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(2),
                         ),
                       ),
@@ -623,7 +622,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                     Row(
                       children: [
                         Expanded(
-                          child: OutlinedButton(
+                          child: TextButton(
                             onPressed: () {
                               setModalState(() {
                                 _selectedArea = null;
@@ -633,29 +632,23 @@ class _ExploreScreenState extends State<ExploreScreen>
                                 _sportSpecificFilters.clear();
                               });
                             },
-                            style: OutlinedButton.styleFrom(
+                            style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
                             ),
                             child: const Text('Clear All'),
                           ),
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: ElevatedButton(
+                          child: FilledButton(
                             onPressed: () {
                               setState(() {
                                 // Apply filters
                               });
                               Navigator.of(context).pop();
                             },
-                            style: ElevatedButton.styleFrom(
+                            style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
                             ),
                             child: const Text('Apply Filters'),
                           ),
@@ -780,11 +773,18 @@ class _ExploreScreenState extends State<ExploreScreen>
 
             return gamesAsync.when(
               data: (allGames) {
-                // Filter by sport
-                final sportFilteredGames = allGames.where((game) {
-                  return game.sport.toLowerCase() ==
-                      _sports[_selectedSportIndex]['name'].toLowerCase();
-                }).toList();
+                // Filter by sport (or show all when 'All' is selected)
+                final selectedSportName =
+                    (_sports[_selectedSportIndex]['name'] as String)
+                        .toLowerCase();
+                final sportFilteredGames = selectedSportName == 'all'
+                    ? allGames
+                    : allGames
+                          .where(
+                            (game) =>
+                                game.sport.toLowerCase() == selectedSportName,
+                          )
+                          .toList();
 
                 // Filter by search query if any
                 final searchFilteredGames = _searchQuery.isEmpty
@@ -797,6 +797,13 @@ class _ExploreScreenState extends State<ExploreScreen>
                               _searchQuery.toLowerCase(),
                             );
                       }).toList();
+
+                // Sort by scheduled start date by default; toggle via sort icon
+                searchFilteredGames.sort(
+                  (a, b) => _isSortAscending
+                      ? a.scheduledDate.compareTo(b.scheduledDate)
+                      : b.scheduledDate.compareTo(a.scheduledDate),
+                );
 
                 if (searchFilteredGames.isEmpty) {
                   return SliverFillRemaining(
@@ -852,10 +859,10 @@ class _ExploreScreenState extends State<ExploreScreen>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.error_outline,
                         size: 48,
-                        color: Colors.red,
+                        color: Theme.of(context).colorScheme.error,
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -869,7 +876,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton(
+                      FilledButton(
                         onPressed: () => ref.refresh(publicGamesAsync),
                         child: const Text('Retry'),
                       ),
@@ -989,7 +996,7 @@ class _ExploreScreenState extends State<ExploreScreen>
                     const Text('🕓', style: TextStyle(fontSize: 14)),
                     const SizedBox(width: 6),
                     Text(
-                      '${game.startTime} - ${game.endTime}',
+                      '${DateFormatter.formatDate(game.scheduledDate)} • ${game.startTime} - ${game.endTime}',
                       style: TextStyle(
                         color: Theme.of(
                           context,
@@ -1260,6 +1267,25 @@ class _ExploreScreenState extends State<ExploreScreen>
             minimumSize: const Size(48, 48),
           ),
         ),
+        if (_mainTabController.index == 0) ...[
+          const SizedBox(width: 8),
+          IconButton.filledTonal(
+            onPressed: () {
+              setState(() {
+                _isSortAscending = !_isSortAscending;
+              });
+            },
+            tooltip: _isSortAscending
+                ? 'Sort: Soonest first'
+                : 'Sort: Latest first',
+            icon: const Icon(Icons.sort_rounded),
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.surfaceContainerHigh,
+              foregroundColor: colorScheme.onSurface,
+              minimumSize: const Size(48, 48),
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -1378,8 +1404,9 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
 
   void _applyFilter() {
     // Update venues controller with sport filter
+    final isAll = widget.selectedSport.toLowerCase() == 'all';
     final filters = vc.VenueFilters(
-      sports: [widget.selectedSport],
+      sports: isAll ? const [] : [widget.selectedSport],
       minRating: widget.rating != null && widget.rating! > 0
           ? widget.rating
           : null,
@@ -1494,15 +1521,20 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                       final venueMap = {
                         'id': venue.id,
                         'name': venue.name,
-                        'location': '${venue.city}, ${venue.country}',
+                        'location': venue.state.isNotEmpty
+                            ? '${venue.state}, ${venue.city}'
+                            : '${venue.city}, ${venue.country}',
                         'sports': venue.supportedSports,
-                        'images': [],
+                        'images':
+                            [], // Photos will be loaded separately if needed
                         'rating': venue.rating,
-                        'isOpen': true,
+                        'isOpen': true, // TODO: Check opening hours
                         'slots': [],
                         'reviews': List.generate(venue.totalRatings, (_) => {}),
                         'distance': venueWithDistance.formattedDistance,
-                        'price': venue.pricePerHour.toString(),
+                        'price': venue.pricePerHour > 0
+                            ? '${venue.currency} ${venue.pricePerHour.toStringAsFixed(0)}/hr'
+                            : 'Free',
                         'amenities': venue.amenities,
                       };
 
@@ -1560,11 +1592,10 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
+            FilledButton.icon(
               onPressed: _refreshVenues,
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
-              style: DS.primaryButton,
             ),
           ],
         ),
@@ -1603,11 +1634,10 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            ElevatedButton.icon(
+            FilledButton.icon(
               onPressed: _refreshVenues,
               icon: const Icon(Icons.filter_list),
               label: const Text('Adjust Filters'),
-              style: DS.primaryButton,
             ),
           ],
         ),

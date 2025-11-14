@@ -289,7 +289,7 @@ class _VenueSlotStepState extends State<VenueSlotStep> {
                           const SizedBox(width: 4),
                           Expanded(
                             child: Text(
-                              venue.city,
+                              venue.location,
                               style: context.textTheme.bodySmall?.copyWith(
                                 color: context.colors.onSurfaceVariant,
                               ),

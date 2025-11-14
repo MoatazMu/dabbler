@@ -77,9 +77,10 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     try {
       final response = await _supabaseClient
           .from('game_roster')
-          .select('id')
+          // Table has no 'id' column; use profile_id just to count rows
+          .select('profile_id')
           .eq('game_id', gameId)
-          .eq('status', 'confirmed');
+          .eq('status', 'active'); // Database uses 'active' not 'confirmed'
 
       return response.length;
     } catch (e) {
@@ -93,7 +94,8 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     try {
       final response = await _supabaseClient
           .from('game_roster')
-          .select('id')
+          // Table has no 'id' column; use game_id just to check existence
+          .select('game_id')
           .eq('game_id', gameId)
           .eq('user_id', userId)
           .maybeSingle();
@@ -106,32 +108,51 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   }
 
   /// Helper method to get waitlist position for a player
+  /// Note: Database doesn't have 'waitlisted' status, so we determine waitlist
+  /// by checking if player joined after maxPlayers was reached
   Future<int?> _getWaitlistPosition(String gameId, String userId) async {
     try {
+      // Get game details to check maxPlayers (capacity in DB)
+      final gameResponse = await _supabaseClient
+          .from('games')
+          .select('capacity')
+          .eq('id', gameId)
+          .single();
+      
+      final maxPlayers = gameResponse['capacity'] as int;
+      
       // Get the player's joined_at timestamp
       final playerResponse = await _supabaseClient
           .from('game_roster')
           .select('joined_at')
           .eq('game_id', gameId)
           .eq('user_id', userId)
-          .eq('status', 'waitlisted')
+          .eq('status', 'active')
           .maybeSingle();
 
       if (playerResponse == null) {
-        return null; // Not on waitlist
+        return null; // Not in game
       }
 
       final playerJoinedAt = playerResponse['joined_at'] as String;
 
-      // Count players who joined before this player
-      final countResponse = await _supabaseClient
+      // Count active players who joined before this player
+      final playersBefore = await _supabaseClient
           .from('game_roster')
-          .select('id')
+          // Table has no 'id' column; use profile_id just to count rows
+          .select('profile_id')
           .eq('game_id', gameId)
-          .eq('status', 'waitlisted')
+          .eq('status', 'active')
           .lt('joined_at', playerJoinedAt);
 
-      return countResponse.length + 1; // 1-indexed position
+      final position = playersBefore.length + 1;
+      
+      // If position is greater than maxPlayers, they're on waitlist
+      if (position > maxPlayers) {
+        return position - maxPlayers; // Waitlist position (1-indexed)
+      }
+      
+      return null; // Not on waitlist, they're a confirmed player
     } catch (e) {
       print('⚠️ [Datasource] _getWaitlistPosition: Error: $e');
       return null;
@@ -158,7 +179,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         'profile_id': gameData['host_profile_id'],
         'user_id': gameData['host_user_id'],
         'role': 'host',
-        'status': 'confirmed',
+        'status': 'active', // Database uses 'active' not 'confirmed'
         'joined_at': DateTime.now().toIso8601String(),
       });
 
@@ -248,6 +269,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
   @override
   Future<bool> joinGame(String gameId, String playerId) async {
+    String? joinPolicy; // Store for error handling
     try {
       print('🔄 [Datasource] joinGame: gameId=$gameId, playerId=$playerId');
 
@@ -268,15 +290,22 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .single();
 
       final game = GameModel.fromJson(gameResponse);
+      joinPolicy = gameResponse['join_policy'] as String?;
+      
+      // Validate join policy before attempting insert
+      if (joinPolicy != null && joinPolicy != 'open') {
+        throw GameServerException(
+          'This game requires "$joinPolicy" join policy. Please use the appropriate method to join.',
+        );
+      }
 
       // Get accurate current player count (only confirmed players)
       final currentPlayerCount = await _getCurrentPlayerCount(gameId);
 
       // Check if game has already started
       final now = DateTime.now();
-      final gameDateTime = DateTime.parse(
-        '${game.scheduledDate} ${game.startTime}',
-      );
+      // Use model helper to avoid string parsing/timezone issues
+      final gameDateTime = game.getScheduledStartDateTime();
       if (gameDateTime.isBefore(now)) {
         print('❌ [Datasource] joinGame: Game already started');
         throw GameAlreadyStartedException(
@@ -288,19 +317,20 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       final profileId = await _getProfileId(playerId);
 
       // Determine player status based on game capacity
-      final String playerStatus;
+      // Note: Database constraint only allows 'active', 'left', 'kicked'
+      // All players are added with 'active' status, waitlist is determined by position
+      final String playerStatus = 'active'; // Database uses 'active' not 'confirmed'
+      
       if (currentPlayerCount >= game.maxPlayers) {
-        if (game.allowsWaitlist) {
-          playerStatus = 'waitlisted';
+        if (!game.allowsWaitlist) {
           print(
-            '⚠️ [Datasource] joinGame: Game is full, adding to waitlist',
+            '❌ [Datasource] joinGame: Game is full and waitlist not allowed',
           );
-        } else {
-          print('❌ [Datasource] joinGame: Game is full and waitlist not allowed');
           throw GameFullException('Game is full');
         }
-      } else {
-        playerStatus = 'confirmed';
+        // Game is full but allows waitlist - player will be added as 'active'
+        // but their position will determine if they're waitlisted
+        print('⚠️ [Datasource] joinGame: Game is full, adding as active (will be waitlisted by position)');
       }
 
       // Add player to game
@@ -333,6 +363,19 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         // Foreign key violation - profile_id doesn't exist
         throw GameServerException(
           'Profile not found. Please ensure your profile is active.',
+        );
+      }
+      // Handle RLS policy violations (permission denied)
+      if (e.message.contains('permission denied') || 
+          e.message.contains('new row violates row-level security policy')) {
+        // Check join_policy - if not 'open', user needs to use different method
+        if (joinPolicy != null && joinPolicy != 'open') {
+          throw GameServerException(
+            'This game requires "$joinPolicy" join policy. Please use the appropriate method to join.',
+          );
+        }
+        throw GameServerException(
+          'Unable to join game. Please ensure the game is public and you meet all requirements.',
         );
       }
       throw GameServerException('Database error: ${e.message}');
@@ -453,7 +496,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       );
 
       // MVP: Simplified query without venue join
-      // MVP Fix: Use 'host_user_id' instead of 'organizer_id'
+      // Use 'host_user_id' instead of legacy organizer_id
       var query = _supabaseClient
           .from('games')
           .select('*')
@@ -469,7 +512,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       }
 
       print('🔍 [DEBUG] Executing query...');
-      // MVP Fix: Use 'start_at' instead of 'scheduled_date'
+      // Use 'start_at' instead of legacy scheduled_date
       final response = await query
           .order('start_at', ascending: true)
           .range((page - 1) * limit, page * limit - 1);
@@ -479,10 +522,22 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         print('🔍 [DEBUG] First game: ${response.first}');
       }
 
-      final games = response
-          .map<GameModel>((json) => GameModel.fromJson(json))
-          .toList();
-      print('🔍 [DEBUG] Parsed ${games.length} games successfully');
+      // For each game, compute current active player count from game_roster
+      // and inject it as current_players so GameModel can map correctly.
+      final List<GameModel> games = [];
+      for (final json in response) {
+        final gameId = json['id'] as String?;
+        if (gameId == null) {
+          continue;
+        }
+
+        final currentPlayerCount = await _getCurrentPlayerCount(gameId);
+        final jsonWithCount = Map<String, dynamic>.from(json);
+        jsonWithCount['current_players'] = currentPlayerCount;
+        games.add(GameModel.fromJson(jsonWithCount));
+      }
+
+      print('🔍 [DEBUG] Parsed ${games.length} games successfully (with player counts)');
 
       return games;
     } on PostgrestException catch (e) {

@@ -29,8 +29,16 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
     if (currentUserId == null) {
       return Scaffold(
         backgroundColor: colorScheme.surface,
-        appBar: AppBar(title: const Text('Game Details')),
-        body: const Center(child: Text('Please log in to view game details')),
+        body: SafeArea(
+          child: Center(
+            child: Text(
+              'Please log in to view game details',
+              style: textTheme.titleMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ),
       );
     }
 
@@ -64,28 +72,37 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
     if (detailState.isLoading || !detailState.hasGame) {
       return Scaffold(
         backgroundColor: colorScheme.surface,
-        appBar: AppBar(title: const Text('Game Details')),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const SafeArea(child: Center(child: CircularProgressIndicator())),
       );
     }
 
     if (detailState.error != null) {
       return Scaffold(
         backgroundColor: colorScheme.surface,
-        appBar: AppBar(title: const Text('Game Details')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: colorScheme.error),
-              const SizedBox(height: 16),
-              Text('Error: ${detailState.error}'),
-              const SizedBox(height: 16),
-              FilledButton.tonal(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Go Back'),
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline, size: 48, color: colorScheme.error),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error: ${detailState.error}',
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.tonal(
+                    onPressed: () => Navigator.of(context).maybePop(),
+                    child: const Text('Go Back'),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       );
@@ -95,46 +112,49 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('Game Details'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined),
-            onPressed: _shareGame,
-          ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: _showMoreOptions,
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildHeroSection(game, detailState, colorScheme, textTheme),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildQuickInfoCards(
-                    game,
-                    detailState,
-                    textTheme,
-                    colorScheme,
-                  ),
-                  const SizedBox(height: 20),
-                  _buildDescriptionSection(game, textTheme, colorScheme),
-                  const SizedBox(height: 20),
-                  _buildPlayersSection(game, textTheme, colorScheme),
-                  const SizedBox(height: 20),
-                  _buildVenueSection(detailState, textTheme, colorScheme),
-                  const SizedBox(height: 20),
-                  _buildOrganizerSection(textTheme, colorScheme),
-                  const SizedBox(height: 100), // Padding for bottom bar
-                ],
+      body: SafeArea(
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              sliver: SliverToBoxAdapter(
+                child: _buildHeaderSection(game, colorScheme, textTheme),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+              sliver: SliverToBoxAdapter(
+                child: _buildHeroSection(
+                  game,
+                  detailState,
+                  colorScheme,
+                  textTheme,
+                ),
+              ),
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+              sliver: SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildQuickInfoCards(
+                      game,
+                      detailState,
+                      textTheme,
+                      colorScheme,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildDescriptionSection(game, textTheme, colorScheme),
+                    const SizedBox(height: 20),
+                    _buildPlayersSection(game, textTheme, colorScheme),
+                    const SizedBox(height: 20),
+                    _buildVenueSection(detailState, textTheme, colorScheme),
+                    const SizedBox(height: 20),
+                    _buildOrganizerSection(textTheme, colorScheme),
+                  ],
+                ),
               ),
             ),
           ],
@@ -146,6 +166,70 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
         colorScheme,
         textTheme,
       ),
+    );
+  }
+
+  Widget _buildHeaderSection(
+    dynamic game,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    final dateLabel = DateFormat('EEE, MMM d').format(game.scheduledDate);
+
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Game details',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '$dateLabel • ${game.startTime}',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        IconButton.filledTonal(
+          onPressed: _shareGame,
+          icon: const Icon(Icons.share_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton.filledTonal(
+          onPressed: _showMoreOptions,
+          icon: const Icon(Icons.more_horiz_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+      ],
     );
   }
 
@@ -165,84 +249,81 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
         : const Color(0xFFE0C7FF);
     final textColor = isDarkMode ? Colors.white : Colors.black87;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: heroColor,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Sport badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                game.sport.toUpperCase(),
-                style: textTheme.labelMedium?.copyWith(
-                  color: colorScheme.onPrimaryContainer,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.5,
-                ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Sport badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              game.sport.toUpperCase(),
+              style: textTheme.labelMedium?.copyWith(
+                color: colorScheme.onPrimaryContainer,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(height: 16),
+          ),
+          const SizedBox(height: 16),
 
-            // Game title
-            Text(
-              game.title,
-              style: textTheme.headlineSmall?.copyWith(
-                color: textColor,
-                fontWeight: FontWeight.w700,
-              ),
+          // Game title
+          Text(
+            game.title,
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w700,
             ),
-            const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 12),
 
-            // Date and time
-            Row(
-              children: [
-                Icon(
-                  Icons.calendar_today,
-                  size: 16,
-                  color: textColor.withOpacity(0.8),
+          // Date and time
+          Row(
+            children: [
+              Icon(
+                Icons.calendar_today,
+                size: 16,
+                color: textColor.withOpacity(0.8),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                formattedDate,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: textColor.withOpacity(0.9),
+                  fontWeight: FontWeight.w500,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  formattedDate,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: textColor.withOpacity(0.9),
-                    fontWeight: FontWeight.w500,
-                  ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(
+                Icons.access_time,
+                size: 16,
+                color: textColor.withOpacity(0.8),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${game.startTime} - ${game.endTime}',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: textColor.withOpacity(0.9),
+                  fontWeight: FontWeight.w500,
                 ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  Icons.access_time,
-                  size: 16,
-                  color: textColor.withOpacity(0.8),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  '${game.startTime} - ${game.endTime}',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: textColor.withOpacity(0.9),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -580,6 +661,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
   ) {
     final venue = detailState.venue;
 
+    if (venue == null) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -600,54 +685,209 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                venue?.name ?? 'Venue Name',
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                venue != null
-                    ? '${venue.addressLine1}\n${venue.city}'
-                    : 'Address not available',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Amenities
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
+              // Venue name and rating
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildAmenityChip(
-                    'Parking',
-                    Icons.local_parking,
-                    colorScheme,
-                    textTheme,
-                  ),
-                  _buildAmenityChip(
-                    'Restrooms',
-                    Icons.wc,
-                    colorScheme,
-                    textTheme,
-                  ),
-                  _buildAmenityChip(
-                    'Water',
-                    Icons.water_drop,
-                    colorScheme,
-                    textTheme,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          venue.name,
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.star,
+                              size: 16,
+                              color: venue.rating > 0
+                                  ? Colors.amber[700]
+                                  : colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              venue.rating > 0 && venue.totalRatings > 0
+                                  ? '${venue.rating.toStringAsFixed(1)} (${venue.totalRatings} reviews)'
+                                  : venue.totalRatings > 0
+                                  ? '${venue.rating.toStringAsFixed(1)} (${venue.totalRatings} reviews)'
+                                  : 'No ratings yet',
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
+              const SizedBox(height: 12),
+
+              // Address
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.location_on,
+                    size: 16,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      venue.fullAddress,
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Operating hours
+              if (venue.openingTime.isNotEmpty &&
+                  venue.closingTime.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.access_time,
+                      size: 16,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${venue.openingTime} - ${venue.closingTime}',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              // Price
+              if (venue.pricePerHour > 0) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.attach_money,
+                      size: 16,
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      venue.priceDisplay,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              // Sports supported
+              if (venue.supportedSports.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: List<Widget>.from(
+                    (venue.supportedSports as List).map(
+                      (sport) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.surfaceContainerHighest,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          sport.toString(),
+                          style: textTheme.labelSmall?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+
+              // Amenities
+              const SizedBox(height: 16),
+              Text(
+                'Amenities',
+                style: textTheme.labelLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (venue.amenities.isNotEmpty)
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: List<Widget>.from(
+                    (venue.amenities as List)
+                        .take(6)
+                        .map(
+                          (amenity) => _buildAmenityChip(
+                            amenity.toString(),
+                            _getAmenityIcon(amenity.toString()),
+                            colorScheme,
+                            textTheme,
+                          ),
+                        ),
+                  ),
+                )
+              else
+                Text(
+                  'No amenities listed',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
             ],
           ),
         ),
       ],
     );
+  }
+
+  IconData _getAmenityIcon(String amenity) {
+    final amenityLower = amenity.toLowerCase();
+    if (amenityLower.contains('parking')) {
+      return Icons.local_parking;
+    } else if (amenityLower.contains('restroom') ||
+        amenityLower.contains('wc')) {
+      return Icons.wc;
+    } else if (amenityLower.contains('water')) {
+      return Icons.water_drop;
+    } else if (amenityLower.contains('wifi') ||
+        amenityLower.contains('internet')) {
+      return Icons.wifi;
+    } else if (amenityLower.contains('shower')) {
+      return Icons.shower;
+    } else if (amenityLower.contains('locker')) {
+      return Icons.lock;
+    } else if (amenityLower.contains('cafe') ||
+        amenityLower.contains('restaurant')) {
+      return Icons.restaurant;
+    } else {
+      return Icons.check_circle;
+    }
   }
 
   Widget _buildAmenityChip(
@@ -764,18 +1004,14 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
     final formattedDate = dateFormat.format(game.scheduledDate);
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: SafeArea(
+        top: false,
         child: Row(
           children: [
             Expanded(
@@ -962,8 +1198,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
         );
       } else if (updatedState.joinMessage != null) {
         // Show success message (includes waitlist info)
-        final isWaitlisted = updatedState.joinStatus == JoinGameStatus.waitlisted;
-        
+        final isWaitlisted =
+            updatedState.joinStatus == JoinGameStatus.waitlisted;
+
         AnalyticsService.trackEvent(
           isWaitlisted ? 'waitlist' : 'join_success',
           {

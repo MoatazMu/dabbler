@@ -33,6 +33,9 @@ void _logFlagsOnce() {
     'notifications': FeatureFlags.notifications,
     'squads': FeatureFlags.squads,
     'venuesBooking': FeatureFlags.venuesBooking,
+    'payments': FeatureFlags.enablePayments,
+    'bookingFlow': FeatureFlags.enableBookingFlow,
+    'rewards': FeatureFlags.enableRewards,
   });
 }
 

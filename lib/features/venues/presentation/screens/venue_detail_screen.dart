@@ -85,64 +85,75 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('Venue Details'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share_outlined),
-            onPressed: _shareVenue,
-          ),
-          IconButton(
-            icon: const Icon(Icons.favorite_border),
-            onPressed: _toggleFavorite,
-          ),
-        ],
-      ),
-      body: venueAsync.when(
-        data: (venue) => SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeroSection(venue, colorScheme, textTheme),
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildQuickInfoCards(venue, textTheme, colorScheme),
-                    const SizedBox(height: 20),
-                    _buildAboutSection(venue, textTheme, colorScheme),
-                    const SizedBox(height: 20),
-                    _buildSportsSection(venue, textTheme, colorScheme),
-                    const SizedBox(height: 20),
-                    _buildAmenitiesSection(venue, textTheme, colorScheme),
-                    const SizedBox(height: 20),
-                    _buildHoursSection(venue, textTheme, colorScheme),
-                    const SizedBox(height: 20),
-                    _buildRulesSection(textTheme, colorScheme),
-                    const SizedBox(height: 100), // Padding for bottom bar
-                  ],
+      body: SafeArea(
+        child: venueAsync.when(
+          data: (venue) => CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                sliver: SliverToBoxAdapter(
+                  child: _buildHeaderSection(
+                    venue,
+                    colorScheme,
+                    textTheme,
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                sliver: SliverToBoxAdapter(
+                  child: _buildHeroSection(venue, colorScheme, textTheme),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildQuickInfoCards(venue, textTheme, colorScheme),
+                      const SizedBox(height: 20),
+                      _buildAboutSection(venue, textTheme, colorScheme),
+                      const SizedBox(height: 20),
+                      _buildSportsSection(venue, textTheme, colorScheme),
+                      const SizedBox(height: 20),
+                      _buildAmenitiesSection(venue, textTheme, colorScheme),
+                      const SizedBox(height: 20),
+                      _buildHoursSection(venue, textTheme, colorScheme),
+                      const SizedBox(height: 20),
+                      _buildRulesSection(textTheme, colorScheme),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.error_outline, size: 48, color: colorScheme.error),
-              const SizedBox(height: 16),
-              Text('Failed to load venue'),
-              const SizedBox(height: 16),
-              FilledButton.tonal(
-                onPressed: () =>
-                    ref.refresh(venueDetailProvider(widget.venueId)),
-                child: const Text('Retry'),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.error_outline, size: 48, color: colorScheme.error),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load venue',
+                    style: textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton.tonal(
+                    onPressed: () =>
+                        ref.refresh(venueDetailProvider(widget.venueId)),
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -153,6 +164,68 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     );
   }
 
+  Widget _buildHeaderSection(
+    dynamic venue,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Icons.arrow_back_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Venue details',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                venue.city ?? 'Community venue',
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+        IconButton.filledTonal(
+          onPressed: _shareVenue,
+          icon: const Icon(Icons.share_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton.filledTonal(
+          onPressed: _toggleFavorite,
+          icon: const Icon(Icons.favorite_border_rounded),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.surfaceContainerHigh,
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+      ],
+    );
+  }
+
   // Hero Section - Material 3 minimal design
   Widget _buildHeroSection(
     dynamic venue,
@@ -160,74 +233,76 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     TextTheme textTheme,
   ) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final heroColor = isDarkMode
-        ? const Color(0xFF4A148C)
-        : const Color(0xFFE0C7FF);
+    final heroColor =
+        isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF);
     final textColor = isDarkMode ? Colors.white : Colors.black87;
     final isOpen = _venueData['isOpen'] as bool;
+    final statusColor = isOpen
+        ? colorScheme.secondaryContainer
+        : colorScheme.errorContainer;
+    final statusTextColor = isOpen
+        ? colorScheme.onSecondaryContainer
+        : colorScheme.onErrorContainer;
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: heroColor,
-          borderRadius: BorderRadius.circular(18),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status badge
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isOpen ? Colors.green : Colors.red,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                isOpen ? 'OPEN' : 'CLOSED',
-                style: textTheme.labelMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.5,
-                ),
-              ),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: heroColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Status badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: statusColor,
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 16),
-
-            // Venue name
-            Text(
-              venue.name,
-              style: textTheme.headlineSmall?.copyWith(
-                color: textColor,
+            child: Text(
+              isOpen ? 'OPEN' : 'CLOSED',
+              style: textTheme.labelMedium?.copyWith(
+                color: statusTextColor,
                 fontWeight: FontWeight.w700,
+                letterSpacing: 0.5,
               ),
             ),
-            const SizedBox(height: 12),
+          ),
+          const SizedBox(height: 16),
 
-            // Location
-            Row(
-              children: [
-                Icon(
-                  Icons.location_on,
-                  size: 16,
-                  color: textColor.withOpacity(0.8),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '${venue.city}, ${venue.country}',
-                    style: textTheme.bodyMedium?.copyWith(
-                      color: textColor.withOpacity(0.9),
-                      fontWeight: FontWeight.w500,
-                    ),
+          // Venue name
+          Text(
+            venue.name,
+            style: textTheme.headlineSmall?.copyWith(
+              color: textColor,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Location
+          Row(
+            children: [
+              Icon(
+                Icons.location_on,
+                size: 16,
+                color: textColor.withOpacity(0.8),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '${venue.city}, ${venue.country}',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: textColor.withOpacity(0.9),
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-              ],
-            ),
-          ],
-        ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -621,18 +696,16 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
         : 'Address not available';
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border(
+          top: BorderSide(color: colorScheme.outlineVariant),
+        ),
       ),
       child: SafeArea(
+        top: false,
         child: Row(
           children: [
             Expanded(

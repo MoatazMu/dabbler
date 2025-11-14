@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/core/services/auth_service.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 
@@ -231,16 +232,17 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Widget _buildGeneralSection(BuildContext context) {
-    return _buildSettingsCard(context, 'General', [
-      _buildSettingItem(
-        context,
-        'Payment Methods',
-        'Manage your payment cards and methods',
-        Icons.credit_card_outlined,
-        () {
-          context.push('/payment_methods');
-        },
-      ),
+    final items = <Widget>[
+      if (FeatureFlags.enablePayments)
+        _buildSettingItem(
+          context,
+          'Payment Methods',
+          'Manage your payment cards and methods',
+          Icons.credit_card_outlined,
+          () {
+            context.push('/payment_methods');
+          },
+        ),
       _buildSettingItem(
         context,
         'Language',
@@ -263,7 +265,9 @@ class SettingsScreen extends ConsumerWidget {
           context.push('/theme_settings');
         },
       ),
-    ]);
+    ];
+
+    return _buildSettingsCard(context, 'General', items);
   }
 
   Widget _buildSupportSection(BuildContext context) {

@@ -36,6 +36,104 @@ class VenueModel extends Venue {
           json['name'] as String? ??
           'Unnamed Venue';
       print('🏟️ [DEBUG] Parsing venue: $name');
+      
+      // Extract sports from venue_spaces join
+      final List<String> sports = [];
+      if (json['venue_spaces'] != null) {
+        final spaces = json['venue_spaces'] as List<dynamic>?;
+        if (spaces != null) {
+          for (final space in spaces) {
+            if (space is Map<String, dynamic>) {
+              final sport = space['sport'] as String?;
+              final isActive = space['is_active'] as bool? ?? true;
+              if (sport != null && sport.isNotEmpty && isActive) {
+                if (!sports.contains(sport)) {
+                  sports.add(sport);
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Extract rating from venue_rating_aggregate join
+      double rating = 0.0;
+      int totalRatings = 0;
+      if (json['venue_rating_aggregate'] != null) {
+        final ratingData = json['venue_rating_aggregate'];
+        if (ratingData is List && ratingData.isNotEmpty) {
+          final aggregate = ratingData[0] as Map<String, dynamic>?;
+          if (aggregate != null) {
+            rating = (aggregate['composite_score'] as num?)?.toDouble() ?? 0.0;
+            totalRatings = aggregate['event_count'] as int? ?? 0;
+          }
+        } else if (ratingData is Map<String, dynamic>) {
+          rating = (ratingData['composite_score'] as num?)?.toDouble() ?? 0.0;
+          totalRatings = ratingData['event_count'] as int? ?? 0;
+        }
+      }
+      // Fallback to direct rating field if aggregate is not available or empty
+      if (rating == 0.0 && json['rating'] != null) {
+        rating = (json['rating'] as num?)?.toDouble() ?? 0.0;
+      }
+      if (totalRatings == 0 && json['total_ratings'] != null) {
+        totalRatings = json['total_ratings'] as int? ?? 0;
+      }
+      
+      print('🏟️ [VENUE_MODEL] Rating: $rating, TotalRatings: $totalRatings');
+      
+      // Extract amenities from venue_amenities join or amenities array
+      List<String> amenitiesList = [];
+      if (json['venue_amenities'] != null) {
+        final venueAmenities = json['venue_amenities'] as List<dynamic>?;
+        if (venueAmenities != null && venueAmenities.isNotEmpty) {
+          amenitiesList = venueAmenities
+              .map((item) {
+                if (item is Map<String, dynamic>) {
+                  // Prefer amenity_key, fallback to value
+                  final amenity = item['amenity_key'] as String? ?? 
+                         item['value'] as String?;
+                  if (amenity != null && amenity.isNotEmpty) {
+                    return amenity;
+                  }
+                }
+                return item.toString();
+              })
+              .where((a) => a.isNotEmpty)
+              .toList();
+        }
+      }
+      // Fallback to amenities array if venue_amenities not available or empty
+      if (amenitiesList.isEmpty && json['amenities'] != null) {
+        final parsed = _parseAmenities(json['amenities']);
+        if (parsed != null && parsed.isNotEmpty) {
+          amenitiesList = parsed;
+        }
+      }
+      
+      print('🏟️ [VENUE_MODEL] Amenities count: ${amenitiesList.length}, Sports count: ${sports.length}');
+      
+      // Extract opening hours from venue_opening_hours join
+      String openingTime = '09:00';
+      String closingTime = '18:00';
+      if (json['venue_opening_hours'] != null) {
+        final hours = json['venue_opening_hours'] as List<dynamic>?;
+        if (hours != null && hours.isNotEmpty) {
+          // Use first day's hours as default, or find today's weekday
+          final today = DateTime.now().weekday % 7; // Convert to 0-6 (Sun-Sat)
+          final todayHours = hours.firstWhere(
+            (h) => h is Map<String, dynamic> && 
+                   (h['weekday'] as int?) == today &&
+                   (h['is_open'] as bool?) == true,
+            orElse: () => hours.first,
+          );
+          if (todayHours is Map<String, dynamic>) {
+            openingTime = _parseTime(todayHours['open_time']) ?? openingTime;
+            closingTime = _parseTime(todayHours['close_time']) ?? closingTime;
+          }
+        }
+      }
+      
       return VenueModel(
         id: json['id'] as String,
         name: name,
@@ -65,17 +163,14 @@ class VenueModel extends Venue {
         phone: json['phone'] as String? ?? json['phone_number'] as String?,
         email: json['email'] as String?,
         website: json['website'] as String?,
-        openingTime: _parseTime(json['opening_time']) ?? '09:00',
-        closingTime: _parseTime(json['closing_time']) ?? '18:00',
-        rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-        totalRatings: json['total_ratings'] as int? ?? 0,
+        openingTime: openingTime,
+        closingTime: closingTime,
+        rating: rating,
+        totalRatings: totalRatings,
         pricePerHour: (json['price_per_hour'] as num?)?.toDouble() ?? 0.0,
-        currency: json['currency'] as String? ?? 'USD',
-        supportedSports:
-            _parseStringList(json['supported_sports']) ??
-            ['Football', 'Padel'], // Default sports
-        amenities:
-            _parseAmenities(json['venue_amenities'] ?? json['amenities']) ?? [],
+        currency: json['currency'] as String? ?? 'AED',
+        supportedSports: sports.isNotEmpty ? sports : ['Football', 'Padel'], // Default sports
+        amenities: amenitiesList,
         createdAt: DateTime.parse(json['created_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
       );

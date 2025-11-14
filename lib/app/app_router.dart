@@ -526,6 +526,12 @@ class AppRouter {
     GoRoute(
       path: RoutePaths.rewards,
       name: RouteNames.rewards,
+      redirect: (context, state) {
+        if (!FeatureFlags.enableRewards) {
+          return RoutePaths.home;
+        }
+        return null;
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const RewardsScreen(),
@@ -601,6 +607,12 @@ class AppRouter {
     // Transactions route
     GoRoute(
       path: '/transactions',
+      redirect: (context, state) {
+        if (!FeatureFlags.enablePayments) {
+          return RoutePaths.home;
+        }
+        return null;
+      },
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const TransactionsScreen(),

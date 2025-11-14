@@ -55,6 +55,7 @@ class FeatureFlags {
   static const bool notifications = false;
   static const bool squads = false;
   static const bool venuesBooking = false; // venues remain read-only
+  static const bool enableRewards = false;
 
   /// Game Management (Admin/Testing Only)
   static const bool enableGameCreation = false; // Hide from users
@@ -321,6 +322,7 @@ class FeatureFlags {
       if (enableDirectMessages) 'messaging',
       if (enablePushNotifications) 'notifications',
       if (enablePayments) 'payments',
+      if (enableRewards) 'rewards',
       if (enableVenueBooking) 'venue_booking',
       if (enableBenchMode) 'bench_mode',
     ];
@@ -353,6 +355,8 @@ class FeatureFlags {
         return enablePayments;
       case 'venue_booking':
         return enableVenueBooking;
+      case 'rewards':
+        return enableRewards;
       case 'bench_mode':
         return enableBenchMode;
       default:

@@ -8,7 +8,7 @@ import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/venue.dart';
 import 'package:dabbler/data/models/venue_space.dart';
 import 'package:dabbler/data/repositories/base_repository.dart';
-import 'package:dabbler/data/repositories/venues_repository.dart' hide Result;
+import 'package:dabbler/data/repositories/venues_repository.dart';
 
 class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
   VenuesRepositoryImpl(super.svc);
@@ -24,7 +24,12 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
     String? q,
   }) async {
     try {
-      var query = svc.from(venuesTable).select();
+      // Select with column aliases to match Venue.fromJson fields
+      var query = svc
+          .from(venuesTable)
+          .select(
+            'id,name:name_en,description:description_en,address:address_line1,city,district,lat,lng,is_active:is_active,created_at:created_at,updated_at:updated_at',
+          );
 
       if (activeOnly) {
         query = query.eq('is_active', true);
@@ -36,10 +41,11 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
         query = query.eq('district', district);
       }
       if (q != null && q.isNotEmpty) {
-        query = query.ilike('name', '%$q%');
+        // Filter on actual DB column
+        query = query.ilike('name_en', '%$q%');
       }
 
-      final response = await query.order('name');
+      final response = await query.order('name_en');
       final data = List<dynamic>.from(response as List);
       final venues = data
           .map((item) => Venue.fromJson(Map<String, dynamic>.from(item as Map)))
@@ -55,7 +61,9 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
     try {
       final response = await svc
           .from(venuesTable)
-          .select()
+          .select(
+            'id,name:name_en,description:description_en,address:address_line1,city,district,lat,lng,is_active:is_active,created_at:created_at,updated_at:updated_at',
+          )
           .eq('id', venueId)
           .maybeSingle();
       if (response == null) {
@@ -99,9 +107,7 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
           .eq('id', spaceId)
           .maybeSingle();
       if (response == null) {
-        return Err(
-          NotFoundFailure(message: 'Venue space $spaceId not found'),
-        );
+        return Err(NotFoundFailure(message: 'Venue space $spaceId not found'));
       }
       return Ok(VenueSpace.fromMap(response));
     } catch (error, stackTrace) {
@@ -125,17 +131,22 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
       final lngDenominator = (111.320 * (cosLat < 1e-6 ? 1e-6 : cosLat));
       final dLng = withinKm / lngDenominator;
 
-      var query = svc.from(venuesTable).select()
-        ..gte('lat', lat - dLat)
-        ..lte('lat', lat + dLat)
-        ..gte('lng', lng - dLng)
-        ..lte('lng', lng + dLng);
+      var query =
+          svc
+              .from(venuesTable)
+              .select(
+                'id,name:name_en,description:description_en,address:address_line1,city,district,lat,lng,is_active:is_active,created_at:created_at,updated_at:updated_at',
+              )
+            ..gte('lat', lat - dLat)
+            ..lte('lat', lat + dLat)
+            ..gte('lng', lng - dLng)
+            ..lte('lng', lng + dLng);
 
       if (activeOnly) {
         query = query.eq('is_active', true);
       }
 
-      final response = await query.order('name');
+      final response = await query.order('name_en');
       final data = List<dynamic>.from(response as List);
       final venues = data
           .map((item) => Venue.fromJson(Map<String, dynamic>.from(item as Map)))
@@ -148,7 +159,8 @@ class VenuesRepositoryImpl extends BaseRepository implements VenuesRepository {
 
   @override
   Stream<Result<List<VenueSpace>, Failure>> watchSpacesByVenue(String venueId) {
-    final controller = StreamController<Result<List<VenueSpace>, Failure>>.broadcast();
+    final controller =
+        StreamController<Result<List<VenueSpace>, Failure>>.broadcast();
     RealtimeChannel? channel;
 
     Future<void> emitCurrent() async {

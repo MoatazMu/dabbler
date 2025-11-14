@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dabbler/features/games/providers/games_providers.dart';
+import 'package:dabbler/features/games/domain/repositories/venues_repository.dart';
 
-class VenueSelectionScreen extends StatefulWidget {
+class VenueSelectionScreen extends ConsumerStatefulWidget {
   final Function(Map<String, dynamic>?) onVenueSelected;
   final Map<String, dynamic>? selectedVenue;
   final String? sport;
@@ -19,82 +22,55 @@ class VenueSelectionScreen extends StatefulWidget {
   });
 
   @override
-  State<VenueSelectionScreen> createState() => _VenueSelectionScreenState();
+  ConsumerState<VenueSelectionScreen> createState() => _VenueSelectionScreenState();
 }
 
-class _VenueSelectionScreenState extends State<VenueSelectionScreen> {
+class _VenueSelectionScreenState extends ConsumerState<VenueSelectionScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   String _selectedOption = 'find_venue'; // 'find_venue' or 'no_venue'
   Map<String, dynamic>? _selectedVenue;
-
-  final List<Map<String, dynamic>> _allVenues = [
-    {
-      'id': '1',
-      'name': 'Central Park Basketball Court',
-      'address': '123 Main St, New York, NY',
-      'distance': 1.2,
-      'price': 0,
-      'priceType': 'Free',
-      'rating': 4.5,
-      'reviewCount': 128,
-      'sports': ['Basketball'],
-      'amenities': ['Parking', 'Restrooms', 'Lighting'],
-      'availability': true,
-      'imageUrl': null,
-      'description': 'Outdoor basketball court with great city views',
-    },
-    {
-      'id': '2',
-      'name': 'Downtown Sports Complex',
-      'address': '456 Oak Ave, New York, NY',
-      'distance': 2.8,
-      'price': 25,
-      'priceType': '\$25/hour',
-      'rating': 4.8,
-      'reviewCount': 95,
-      'sports': ['Basketball', 'Volleyball', 'Tennis'],
-      'amenities': ['Parking', 'Locker Rooms', 'Snack Bar', 'AC'],
-      'availability': true,
-      'imageUrl': null,
-      'description': 'Modern indoor facility with multiple courts',
-    },
-    {
-      'id': '3',
-      'name': 'Riverside Tennis Club',
-      'address': '789 River Rd, New York, NY',
-      'distance': 3.5,
-      'price': 30,
-      'priceType': '\$30/hour',
-      'rating': 4.2,
-      'reviewCount': 67,
-      'sports': ['Tennis'],
-      'amenities': ['Pro Shop', 'Parking', 'Restaurant'],
-      'availability': false,
-      'imageUrl': null,
-      'description': 'Premium tennis facility by the river',
-    },
-  ];
+  List<Map<String, dynamic>> _allVenues = [];
+  bool _isLoadingVenues = true;
+  String? _venuesError;
 
   List<Map<String, dynamic>> get _filteredVenues {
     var venues = _allVenues.where((venue) {
-      // Filter by sport
-      if (widget.sport != null && !venue['sports'].contains(widget.sport)) {
-        return false;
+      // Filter by sport (case-insensitive)
+      if (widget.sport != null) {
+        final sports = venue['sports'] as List<dynamic>?;
+        if (sports == null || sports.isEmpty) {
+          return false; // No sports listed, filter out
+        }
+        // Check if any sport matches (case-insensitive)
+        final sportLower = widget.sport!.toLowerCase();
+        final hasMatchingSport = sports.any((sport) => 
+          sport.toString().toLowerCase() == sportLower
+        );
+        if (!hasMatchingSport) {
+          return false;
+        }
       }
 
       // Filter by search query
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
-        return venue['name'].toString().toLowerCase().contains(query) ||
-            venue['address'].toString().toLowerCase().contains(query);
+        final name = venue['name']?.toString().toLowerCase() ?? '';
+        final address = venue['address']?.toString().toLowerCase() ?? '';
+        if (!name.contains(query) && !address.contains(query)) {
+          return false;
+        }
       }
 
       return true;
     }).toList();
 
-    // Sort by distance
-    venues.sort((a, b) => a['distance'].compareTo(b['distance']));
+    // Sort by name
+    venues.sort((a, b) {
+      final nameA = a['name']?.toString() ?? '';
+      final nameB = b['name']?.toString() ?? '';
+      return nameA.compareTo(nameB);
+    });
 
     return venues;
   }
@@ -105,6 +81,70 @@ class _VenueSelectionScreenState extends State<VenueSelectionScreen> {
     _selectedVenue = widget.selectedVenue;
     if (_selectedVenue != null) {
       _selectedOption = 'find_venue';
+    }
+    _loadVenues();
+  }
+
+  Future<void> _loadVenues() async {
+    setState(() {
+      _isLoadingVenues = true;
+      _venuesError = null;
+    });
+
+    try {
+      final repository = ref.read(venuesRepositoryProvider);
+      
+      // Build filters - pass sport filter to repository
+      final filters = VenueFilters(
+        sports: widget.sport != null ? [widget.sport!] : null,
+      );
+
+      final result = await repository.getVenues(
+        filters: filters,
+        limit: 100, // Get more venues for selection
+      );
+
+      result.fold(
+        (failure) {
+          print('❌ [VENUE_SELECTION] Failed to load venues: ${failure.message}');
+          setState(() {
+            _venuesError = failure.message;
+            _isLoadingVenues = false;
+          });
+        },
+        (venues) {
+          print('✅ [VENUE_SELECTION] Loaded ${venues.length} venues');
+          setState(() {
+            _allVenues = venues.map((venue) {
+              return {
+                'id': venue.id,
+                'name': venue.name,
+                'address': venue.fullAddress,
+                'distance': 0.0, // Distance not available in selection screen
+                'price': venue.pricePerHour,
+                'priceType': venue.pricePerHour > 0
+                    ? '${venue.currency} ${venue.pricePerHour.toStringAsFixed(0)}/hour'
+                    : 'Free',
+                'rating': venue.rating,
+                'reviewCount': venue.totalRatings,
+                'sports': venue.supportedSports,
+                'amenities': venue.amenities,
+                'availability': true, // TODO: Check actual availability
+                'imageUrl': null, // TODO: Load photos
+                'description': venue.description,
+              };
+            }).toList();
+            _isLoadingVenues = false;
+          });
+        },
+      );
+    } catch (e, stackTrace) {
+      print('❌ [VENUE_SELECTION] Exception loading venues: $e');
+      print('Stack trace: $stackTrace');
+      setState(() {
+        _venuesError = 'Failed to load venues: $e';
+        _isLoadingVenues = false;
+      });
     }
   }
 
@@ -398,6 +438,44 @@ class _VenueSelectionScreenState extends State<VenueSelectionScreen> {
   }
 
   Widget _buildVenueList() {
+    if (_isLoadingVenues) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_venuesError != null) {
+      return Card(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              Icon(Icons.error_outline, size: 48, color: Colors.red[400]),
+              const SizedBox(height: 12),
+              Text(
+                'Failed to load venues',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _venuesError!,
+                style: TextStyle(color: Colors.grey[600], fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadVenues,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final venues = _filteredVenues;
 
     if (venues.isEmpty) {

@@ -52,21 +52,23 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
         return _listCache[cacheKey]!;
       }
 
-      var query = _supabaseClient.from('venues').select('*');
+      // Build select query with joins to related tables
+      // Use left joins so venues without spaces/photos still appear
+      var query = _supabaseClient.from('venues').select('''
+        *,
+        venue_spaces(sport, name_en, is_active),
+        venue_rating_aggregate(composite_score, event_count),
+        venue_photos(url, sort_order)
+      ''');
 
       // Apply filters
       if (filters != null) {
-        // Sports filtering - skip for now as we need to verify column name
-        /* 
+        // Sports filtering - filter venues that have spaces with the sport
         final sports = filters['sports'] ?? filters['sport'];
         if (sports != null) {
-          if (sports is List && sports.isNotEmpty) {
-            query = query.contains('supported_sports', sports);
-          } else if (sports is String) {
-            query = query.contains('supported_sports', [sports]);
-          }
+          // For sport filtering, we'll filter client-side after fetching
+          // or use a subquery approach - simplified for now
         }
-        */
 
         if (filters['city'] != null) {
           query = query.eq('city', filters['city']);
@@ -74,18 +76,10 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
         if (filters['amenities'] != null && filters['amenities'] is List) {
           final amenitiesList = filters['amenities'] as List;
           if (amenitiesList.isNotEmpty) {
-            // query = query.overlaps('amenities', amenitiesList);
+            query = query.overlaps('amenities', amenitiesList);
           }
         }
-        if (filters['min_rating'] != null) {
-          query = query.gte('rating', filters['min_rating']);
-        }
-        if (filters['min_price'] != null) {
-          query = query.gte('price_per_hour', filters['min_price']);
-        }
-        if (filters['max_price'] != null) {
-          query = query.lte('price_per_hour', filters['max_price']);
-        }
+        // Rating filtering will be done client-side after parsing
       }
 
       final response = await query
@@ -101,9 +95,28 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
         print('📍 [DEBUG] First venue ID: ${response.first['id']}');
       }
 
-      final venues = response
+      var venues = response
           .map<VenueModel>((json) => VenueModel.fromJson(json))
           .toList();
+
+      // Filter by sport client-side if filter was provided
+      if (filters != null) {
+        final sports = filters['sports'] ?? filters['sport'];
+        if (sports != null) {
+          final sportList = sports is List ? sports : [sports];
+          venues = venues.where((venue) {
+            return venue.supportedSports.any((sport) =>
+                sportList.any((filterSport) =>
+                    sport.toLowerCase() == filterSport.toString().toLowerCase()));
+          }).toList();
+        }
+        
+        // Filter by rating if provided
+        if (filters['min_rating'] != null) {
+          final minRating = filters['min_rating'] as num;
+          venues = venues.where((venue) => venue.rating >= minRating.toDouble()).toList();
+        }
+      }
 
       // Update cache
       _listCache[cacheKey] = venues;
@@ -136,9 +149,17 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
         return _venueCache[venueId]!;
       }
 
+      // Fetch venue with all related data
       final response = await _supabaseClient
           .from('venues')
-          .select('*')
+          .select('''
+        *,
+        venue_spaces(sport, name_en, surface_key, indoor, lighting, capacity, min_players, max_players, is_active),
+        venue_rating_aggregate(composite_score, event_count, dim_sums, dim_counts, last_event_at),
+        venue_photos(url, sort_order),
+        venue_opening_hours(weekday, open_time, close_time, is_open),
+        venue_amenities(amenity_key, value)
+      ''')
           .eq('id', venueId)
           .single();
 
@@ -483,13 +504,13 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
   Future<List<String>> getVenuePhotos(String venueId) async {
     try {
       final response = await _supabaseClient
-          .from('venues')
-          .select('photos')
-          .eq('id', venueId)
-          .single();
+          .from('venue_photos')
+          .select('url')
+          .eq('venue_id', venueId)
+          .order('sort_order')
+          .order('created_at');
 
-      final photos = response['photos'] as List<dynamic>?;
-      return photos?.map((photo) => photo.toString()).toList() ?? [];
+      return response.map((photo) => photo['url'] as String).toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
@@ -501,12 +522,22 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
   Future<Map<String, dynamic>> getVenueOperatingHours(String venueId) async {
     try {
       final response = await _supabaseClient
-          .from('venues')
-          .select('operating_hours')
-          .eq('id', venueId)
-          .single();
+          .from('venue_opening_hours')
+          .select('weekday, open_time, close_time, is_open')
+          .eq('venue_id', venueId)
+          .order('weekday');
 
-      return response['operating_hours'] as Map<String, dynamic>;
+      // Convert to map format: {"0": {"open": "09:00", "close": "18:00", "is_open": true}, ...}
+      final hoursMap = <String, Map<String, dynamic>>{};
+      for (final row in response) {
+        hoursMap[row['weekday'].toString()] = {
+          'open': row['open_time'] as String,
+          'close': row['close_time'] as String,
+          'is_open': row['is_open'] as bool,
+        };
+      }
+
+      return hoursMap;
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {

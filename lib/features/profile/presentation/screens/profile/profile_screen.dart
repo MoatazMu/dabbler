@@ -11,6 +11,7 @@ import 'package:dabbler/data/models/profile/profile_statistics.dart';
 import 'package:dabbler/features/profile/presentation/widgets/profile_rewards_widget.dart';
 import '../../../../../utils/constants/route_constants.dart';
 import 'package:dabbler/themes/app_theme.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -137,7 +138,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                           const SizedBox(height: 24),
                           _buildProfileCompletion(context, profileState),
                           _buildBasicInfo(context, profileState),
-                          _buildRewardsSection(context),
+                          if (FeatureFlags.enableRewards)
+                            _buildRewardsSection(context),
                           _buildSportsProfiles(context, sportsState),
                           _buildStatisticsSummary(context, profileState),
                         ],
@@ -383,28 +385,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildQuickActions(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: [
-        FilledButton.icon(
-          onPressed: () => context.push('/profile/edit'),
-          icon: const Icon(Icons.edit_outlined),
-          label: const Text('Edit profile'),
-        ),
-        OutlinedButton.icon(
-          onPressed: () => context.push('/settings'),
-          icon: const Icon(Icons.settings_outlined),
-          label: const Text('Settings'),
-          style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
-        ),
+    final actions = <Widget>[
+      FilledButton.icon(
+        onPressed: () => context.push('/profile/edit'),
+        icon: const Icon(Icons.edit_outlined),
+        label: const Text('Edit profile'),
+      ),
+      OutlinedButton.icon(
+        onPressed: () => context.push('/settings'),
+        icon: const Icon(Icons.settings_outlined),
+        label: const Text('Settings'),
+        style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
+      ),
+      if (FeatureFlags.enableRewards)
         OutlinedButton.icon(
           onPressed: () => context.push(RoutePaths.rewards),
           icon: const Icon(Icons.emoji_events_outlined),
           label: const Text('Rewards'),
         ),
-      ],
-    );
+    ];
+
+    return Wrap(spacing: 12, runSpacing: 12, children: actions);
   }
 
   Widget _buildProfileCompletion(
@@ -526,7 +527,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 profile!.phoneNumber!,
               ),
             // Location: Combine city and country if available
-            if (profile?.city?.isNotEmpty == true || profile?.country?.isNotEmpty == true)
+            if (profile?.city?.isNotEmpty == true ||
+                profile?.country?.isNotEmpty == true)
               _buildInfoRow(
                 context,
                 Icons.location_city_outlined,
@@ -867,7 +869,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     // Contact info (20%)
     if (profile.phoneNumber?.isNotEmpty == true) completion += 10.0;
     // Location: city or country counts as location info
-    if (profile.city?.isNotEmpty == true || profile.country?.isNotEmpty == true) {
+    if (profile.city?.isNotEmpty == true ||
+        profile.country?.isNotEmpty == true) {
       completion += 10.0;
     }
 
@@ -887,8 +890,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   String _formatLocation(String? city, String? country) {
     final cityStr = city?.trim();
     final countryStr = country?.trim();
-    
-    if (cityStr != null && cityStr.isNotEmpty && countryStr != null && countryStr.isNotEmpty) {
+
+    if (cityStr != null &&
+        cityStr.isNotEmpty &&
+        countryStr != null &&
+        countryStr.isNotEmpty) {
       return '$cityStr, $countryStr';
     } else if (cityStr != null && cityStr.isNotEmpty) {
       return cityStr;

@@ -380,35 +380,59 @@ class GameCreationViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Fetch real venues from database
+      // Fetch venues from database using actual column names in schema
+      // Schema fields: id, name_en, address_line1, city, amenities (text[]), is_active
       final response = await Supabase.instance.client
           .from('venues')
-          .select()
-          .order('name');
+          .select('id,name_en,address_line1,city,amenities,is_active')
+          .eq('is_active', true)
+          .order('name_en');
 
       if (response.isNotEmpty) {
-        _availableVenues = response.map((venueData) {
-          // Create VenueSlot from database data
-          // Note: This needs to be updated to fetch actual time slots from bookings
-          final tomorrow = DateTime.now().add(const Duration(days: 1));
-          return VenueSlot(
-            venueId: venueData['id'].toString(),
-            venueName: venueData['name'] ?? 'Unknown Venue',
-            location: venueData['address'] ?? '',
-            rating: (venueData['rating'] ?? 0.0).toDouble(),
-            timeSlot: TimeSlot(
-              startTime: tomorrow.copyWith(hour: 18, minute: 0),
-              duration: const Duration(hours: 2),
-              price: (venueData['base_price'] ?? 0.0).toDouble(),
-            ),
-            amenities: venueData['amenities'],
-          );
-        }).toList();
+        _availableVenues = response
+            .map((raw) {
+              final venueData = Map<String, dynamic>.from(raw as Map);
+              // Create VenueSlot from database data
+              // Note: Slot and price are placeholders until booking grid is wired
+              final tomorrow = DateTime.now().add(const Duration(days: 1));
+              final startAt = DateTime(
+                tomorrow.year,
+                tomorrow.month,
+                tomorrow.day,
+                18,
+                0,
+              );
+              final address = (venueData['address_line1'] as String?)?.trim();
+              final city = (venueData['city'] as String?)?.trim();
+              final location = [address, city]
+                  .where((e) => e != null && e.isNotEmpty)
+                  .cast<String>()
+                  .join(', ');
+
+              return VenueSlot(
+                venueId: venueData['id'].toString(),
+                venueName:
+                    (venueData['name_en'] as String?)?.trim() ??
+                    'Unknown Venue',
+                location: location,
+                rating: 0.0, // TODO: derive from venue_rating_aggregate
+                timeSlot: TimeSlot(
+                  startTime: startAt,
+                  duration: const Duration(hours: 2),
+                  price: 0.0, // TODO: derive from space_prices/slot grid
+                ),
+                amenities: null,
+              );
+            })
+            .toList(growable: false);
       } else {
-        _availableVenues = [];
+        _availableVenues = const [];
       }
 
       _state = _state.copyWith(isLoading: false, error: null);
+      // Debug: log count to help diagnose empty lists
+      // ignore: avoid_print
+      print('✅ loadAvailableVenues: loaded ${_availableVenues.length} venues');
     } catch (e) {
       print('❌ Error loading venues: $e');
       _state = _state.copyWith(
@@ -619,7 +643,9 @@ class GameCreationViewModel extends ChangeNotifier {
           .maybeSingle();
 
       if (profileResponse == null) {
-        throw Exception('No active profile found. Please create a profile first.');
+        throw Exception(
+          'No active profile found. Please create a profile first.',
+        );
       }
 
       final profileId = profileResponse['id'] as String;
@@ -651,7 +677,8 @@ class GameCreationViewModel extends ChangeNotifier {
         'host_profile_id': profileId,
         'min_skill': _parseSkillLevelToInt(_state.skillLevel!),
         'max_skill': _parseSkillLevelToInt(_state.skillLevel!),
-        'listing_visibility': _state.participationMode == ParticipationMode.public
+        'listing_visibility':
+            _state.participationMode == ParticipationMode.public
             ? 'public'
             : 'private',
         'join_policy': 'open', // Default join policy

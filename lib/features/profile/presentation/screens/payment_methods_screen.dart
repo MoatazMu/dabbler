@@ -6,6 +6,7 @@ import 'package:dabbler/widgets/custom_app_bar.dart';
 import 'package:dabbler/data/models/payments/payment_method.dart' as pm;
 import 'package:dabbler/features/payments/presentation/providers/payment_providers.dart';
 import 'package:dabbler/core/services/auth_service.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
 
 class PaymentMethodsScreen extends ConsumerStatefulWidget {
   const PaymentMethodsScreen({super.key});
@@ -22,11 +23,13 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!FeatureFlags.enablePayments) return;
       _loadPaymentMethods();
     });
   }
 
   Future<void> _loadPaymentMethods() async {
+    if (!FeatureFlags.enablePayments) return;
     final userId = _authService.getCurrentUserId();
     if (userId == null) return;
 
@@ -37,6 +40,13 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (!FeatureFlags.enablePayments) {
+      return Scaffold(
+        appBar: CustomAppBar(actionIcon: Iconsax.card_copy),
+        body: _buildPaymentsDisabledState(context),
+      );
+    }
+
     final userId = _authService.getCurrentUserId();
     if (userId == null) {
       return Scaffold(
@@ -73,6 +83,43 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
     );
   }
 
+  Widget _buildPaymentsDisabledState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.lock_outline,
+              size: 48,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Payments are coming soon',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'We\'re polishing the payments experience for the next release.',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildErrorState(String error) {
     return Center(
       child: Column(
@@ -97,9 +144,11 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
 
   Widget _buildTransactionHistoryCard(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        Navigator.of(context).pushNamed('/transactions');
-      },
+      onTap: FeatureFlags.enablePayments
+          ? () {
+              Navigator.of(context).pushNamed('/transactions');
+            }
+          : null,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -125,11 +174,7 @@ class _PaymentMethodsScreenState extends ConsumerState<PaymentMethodsScreen> {
                 color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(
-                Icons.receipt,
-                color: Colors.white,
-                size: 24,
-              ),
+              child: const Icon(Icons.receipt, color: Colors.white, size: 24),
             ),
             const SizedBox(width: 16),
             Expanded(
