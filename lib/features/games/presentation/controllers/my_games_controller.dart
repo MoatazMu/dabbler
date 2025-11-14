@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
+import 'package:dabbler/core/utils/logger.dart';
 import 'package:dabbler/data/models/games/game.dart';
 import '../../domain/usecases/cancel_game_usecase.dart';
 import '../../domain/repositories/games_repository.dart';
+import '../../services/game_completion_rewards_handler.dart';
 
 enum MyGameType { upcoming, past, organized, joined }
 
@@ -185,17 +187,21 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   final CancelGameUseCase? _cancelGameUseCase;
   final GamesRepository _gamesRepository;
   final String userId;
+  final GameCompletionRewardsHandler _completionHandler;
 
   static const Duration _cacheValidity = Duration(minutes: 5);
   static const Duration _reminderCheckInterval = Duration(minutes: 1);
+  static const String _logTag = 'MyGamesController';
 
   MyGamesController({
     required CancelGameUseCase? cancelGameUseCase,
     required GamesRepository gamesRepository,
     required this.userId,
-  }) : _cancelGameUseCase = cancelGameUseCase,
-       _gamesRepository = gamesRepository,
-       super(const MyGamesState()) {
+    GameCompletionRewardsHandler? completionHandler,
+  })  : _cancelGameUseCase = cancelGameUseCase,
+        _gamesRepository = gamesRepository,
+        _completionHandler = completionHandler ?? GameCompletionRewardsHandler(),
+        super(const MyGamesState()) {
     _initializeMyGames();
     _startReminderTimer();
   }
@@ -472,7 +478,11 @@ class MyGamesController extends StateNotifier<MyGamesState> {
   }
 
   /// Execute quick action
-  Future<void> executeQuickAction(QuickAction action, String gameId) async {
+  Future<void> executeQuickAction(
+    QuickAction action,
+    String gameId, {
+    Map<String, dynamic>? completionStats,
+  }) async {
     switch (action) {
       case QuickAction.share:
         await shareGame(gameId);
@@ -494,10 +504,62 @@ class MyGamesController extends StateNotifier<MyGamesState> {
         // Implementation depends on UI system
         break;
       case QuickAction.rate:
-        // This would show rating UI
-        // Implementation depends on UI system
+        final game = _findGameById(gameId);
+        if (game == null) {
+          state = state.copyWith(error: 'Game not found');
+          return;
+        }
+
+        await _handleMatchCompletion(
+          game,
+          completionStats: completionStats,
+        );
         break;
     }
+  }
+
+  Future<void> _handleMatchCompletion(
+    Game game, {
+    Map<String, dynamic>? completionStats,
+  }) async {
+    final stats = completionStats ?? const <String, dynamic>{};
+
+    final updateResult = await _gamesRepository.updateGameStatus(
+      game.id,
+      GameStatus.completed,
+    );
+
+    await updateResult.fold<Future<void>>(
+      (failure) async {
+        state = state.copyWith(error: failure.message);
+      },
+      (wasUpdated) async {
+        if (!wasUpdated) {
+          Logger.warning(
+            '$_logTag: Game status update returned false for gameId=${game.id}',
+          );
+        }
+
+        try {
+          await _completionHandler.handleGameCompletion(
+            userId: userId,
+            gameId: game.id,
+            sport: game.sport,
+            isWinner: (stats['is_winner'] as bool?) ?? false,
+            gameDuration: Duration(minutes: game.getDurationMinutes()),
+            gameStats: Map<String, dynamic>.from(stats),
+          );
+        } catch (error, stackTrace) {
+          Logger.error(
+            '$_logTag: Failed to apply match outcome for gameId=${game.id}',
+            error,
+            stackTrace: stackTrace,
+          );
+        }
+
+        await refresh();
+      },
+    );
   }
 
   /// Private helper methods

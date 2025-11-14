@@ -9,6 +9,7 @@ import 'package:dabbler/data/models/profile/sports_profile.dart';
 import 'package:dabbler/data/models/profile/profile_statistics.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import '../../../../../utils/constants/route_constants.dart';
+import '../../widgets/profile/player_sport_profile_header.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   final String userId;
@@ -99,6 +100,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
     final profileState = ref.watch(profileControllerProvider);
     final sportsState = ref.watch(sportsProfileControllerProvider);
     final colorScheme = Theme.of(context).colorScheme;
+    final sportProfileHeaderAsync =
+        ref.watch(sportProfileHeaderProvider(widget.userId));
 
     // Show loading state
     if (profileState.isLoading) {
@@ -173,6 +176,15 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                     context,
                     profileState,
                     sportsState,
+                  ),
+                ),
+              ),
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                sliver: SliverToBoxAdapter(
+                  child: _buildSportProfileHeaderSection(
+                    context,
+                    sportProfileHeaderAsync,
                   ),
                 ),
               ),
@@ -806,6 +818,83 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
               color: colorScheme.onSurfaceVariant,
             ),
             textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSportProfileHeaderSection(
+    BuildContext context,
+    AsyncValue<SportProfileHeaderData?> headerData,
+  ) {
+    return headerData.when(
+      data: (data) {
+        if (data == null) {
+          return _buildSportProfileEmptyState(context);
+        }
+        return PlayerSportProfileHeader(
+          profile: data.profile,
+          tier: data.tier,
+          badges: data.badges,
+        );
+      },
+      loading: () => const SizedBox(
+        height: 140,
+        child: Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stackTrace) => _buildSportProfileEmptyState(context),
+    );
+  }
+
+  Widget _buildSportProfileEmptyState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: colorScheme.outline.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(
+              Icons.sports_soccer,
+              color: colorScheme.primary,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'No sport profile yet',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'When this player shares their sport profile, you will see it here.',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
