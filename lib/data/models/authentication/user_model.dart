@@ -18,6 +18,10 @@ class UserModel extends User {
     required super.updatedAt,
   });
 
+  // Compatibility getters for legacy UI code expecting these names.
+  String get displayName => fullName ?? username ?? email ?? id;
+  String? get profileImageUrl => avatarUrl;
+
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'] as String,

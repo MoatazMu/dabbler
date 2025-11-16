@@ -34,10 +34,7 @@ class VibesRepositoryImpl extends BaseRepository implements VibesRepository {
   @override
   Future<Result<Map<String, int>, Failure>> countsForPost(String postId) async {
     return guard<Map<String, int>>(() async {
-      final rows = await _db
-          .from(_table)
-          .select<List<Map<String, dynamic>>>('vibe')
-          .eq('post_id', postId);
+      final rows = await _db.from(_table).select('vibe').eq('post_id', postId);
 
       final Map<String, int> counts = {};
       for (final r in rows) {

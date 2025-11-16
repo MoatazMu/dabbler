@@ -75,7 +75,3 @@ export 'payments/payment_method_model.dart';
 // Notifications models
 export 'notifications/notification.dart';
 export 'notifications/notification_model.dart';
-
-// Activities models
-export 'activities/activity_log.dart';
-export 'activities/activity_log_model.dart';

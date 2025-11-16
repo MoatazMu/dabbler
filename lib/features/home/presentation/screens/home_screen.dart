@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 
@@ -9,9 +11,12 @@ import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/widgets/svg_avatar.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/features/games/presentation/screens/join_game/game_detail_screen.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/features/home/presentation/providers/home_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
+import 'package:dabbler/data/models/games/game.dart';
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {
@@ -52,6 +57,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return 'Good afternoon';
     } else {
       return 'Good evening';
+    }
+  }
+
+  String _formatRelativeTime(DateTime dateTime) {
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inMinutes < 1) {
+      return 'just now';
+    } else if (difference.inHours < 1) {
+      return '${difference.inMinutes}m';
+    } else if (difference.inDays < 1) {
+      return '${difference.inHours}h';
+    } else if (difference.inDays < 7) {
+      return '${difference.inDays}d';
+    } else {
+      return DateFormat('MMM d').format(dateTime);
     }
   }
 
@@ -304,21 +326,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         // Show placeholder avatars even while loading
         final players = snapshot.hasData ? snapshot.data! : [];
 
-        // If no data, show 6 placeholder avatars with different sports
+        // If no data, show 6 placeholder avatars
         final displayPlayers = players.isEmpty
             ? List.generate(
                 6,
                 (index) => {
                   'avatar_url': null,
                   'display_name': null,
-                  'sport_key': [
-                    'football',
-                    'basketball',
-                    'tennis',
-                    'volleyball',
-                    'cricket',
-                    'football',
-                  ][index],
+                  'sport_key': null,
                 },
               )
             : players;
@@ -366,28 +381,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       )
                                     : null,
                               ),
-                              Positioned(
-                                bottom: -2,
-                                right: -2,
-                                child: Container(
-                                  width: 24,
-                                  height: 24,
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.surface,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
+                              if (player['sport_key'] != null)
+                                Positioned(
+                                  bottom: -2,
+                                  right: -2,
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
                                       color: colorScheme.surface,
-                                      width: 2,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: colorScheme.surface,
+                                        width: 2,
+                                      ),
                                     ),
-                                  ),
-                                  child: Center(
-                                    child: Text(
-                                      _getSportEmoji(player['sport_key']),
-                                      style: const TextStyle(fontSize: 12),
+                                    child: Center(
+                                      child: Text(
+                                        _getSportEmoji(player['sport_key']),
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         ],
@@ -406,31 +422,161 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildLatestFeedsSection() {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final postsAsync = ref.watch(latestFeedPostsProvider);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Latest feeds',
-          style: textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: colorScheme.onSurface,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: Column(
+    return postsAsync.when(
+      data: (posts) {
+        if (posts.isEmpty) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Placeholder for 3 recent posts
-              ...List.generate(3, (index) => _buildFeedItem(index)),
+              Text(
+                'Latest feeds',
+                style: textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: Card(
+                  elevation: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'No posts yet',
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Be the first to share something with the community.',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        OutlinedButton(
+                          onPressed: () => context.go(RoutePaths.social),
+                          child: const Text('Open social feed'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
+          );
+        }
+
+        final visiblePosts = posts.take(3).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Latest feeds',
+              style: textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: colorScheme.onSurface,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Column(
+                children: [
+                  ...visiblePosts.map((post) => _buildFeedItem(post)),
+                  if (FeatureFlags.socialFeed)
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: () => context.go(RoutePaths.social),
+                        child: const Text('See all posts'),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+      loading: () => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Latest feeds',
+            style: textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
           ),
-        ),
-      ],
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Column(
+              children: const [
+                _FeedLoadingPlaceholder(),
+                _FeedLoadingPlaceholder(),
+                _FeedLoadingPlaceholder(),
+              ],
+            ),
+          ),
+        ],
+      ),
+      error: (error, stack) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Latest feeds',
+            style: textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Card(
+              elevation: 0,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Unable to load posts',
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Please check your connection and try again.',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      onPressed: () => ref.refresh(latestFeedPostsProvider),
+                      icon: const Icon(Icons.refresh),
+                      label: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildFeedItem(int index) {
+  Widget _buildFeedItem(PostModel post) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -445,11 +591,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             CircleAvatar(
               radius: 20,
               backgroundColor: colorScheme.surfaceContainerHigh,
-              child: Icon(
-                Icons.person,
-                size: 20,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              backgroundImage: post.authorAvatar.isNotEmpty
+                  ? NetworkImage(post.authorAvatar)
+                  : null,
+              child: post.authorAvatar.isEmpty
+                  ? Icon(
+                      Icons.person,
+                      size: 20,
+                      color: colorScheme.onSurfaceVariant,
+                    )
+                  : null,
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -458,35 +609,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   Row(
                     children: [
-                      Text(
-                        'Sarah',
-                        style: textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: colorScheme.onSurface,
+                      Expanded(
+                        child: Text(
+                          post.authorName,
+                          style: textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onSurface,
+                          ),
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8),
-                        child: Text(
-                          '2h',
-                          style: textTheme.bodySmall?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatRelativeTime(post.createdAt),
+                        style: textTheme.bodySmall?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      'Had an amazing time at the community cooking class today! 🍳 Learning new recip...',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                  if (post.content.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        post.content,
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
+                  if (post.mediaUrls.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: AspectRatio(
+                          aspectRatio: 16 / 9,
+                          child: Image.network(
+                            post.mediaUrls.first,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: colorScheme.surfaceContainerHigh,
+                              child: Icon(
+                                Icons.broken_image,
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -563,112 +737,64 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Text(
                     _getSportEmoji(sport),
-                    style: const TextStyle(fontSize: 32),
+                    style: const TextStyle(fontSize: 24),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  sport,
-                                  style: textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  format,
-                                  style: textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Row(
-                              children: [
-                                const Text(
-                                  '👥',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '$currentPlayers/$maxPlayers',
-                                  style: textTheme.bodySmall?.copyWith(
-                                    color: colorScheme.onSurface,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            title,
-                            style: textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      title,
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '$currentPlayers/$maxPlayers',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Row(
-                  children: [
-                    Row(
-                      children: [
-                        const Text('�', style: TextStyle(fontSize: 14)),
-                        const SizedBox(width: 6),
-                        Text(
-                          '$date • $time',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+              const SizedBox(height: 6),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      '$sport • $format • $date at $time',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                    const SizedBox(width: 16),
-                    Row(
-                      children: [
-                        const Text('�', style: TextStyle(fontSize: 14)),
-                        const SizedBox(width: 6),
-                        Text(
-                          location,
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                  ),
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      location,
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.right,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -681,23 +807,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     try {
       final supabase = Supabase.instance.client;
       final response = await supabase
-          .from('sport_profiles')
+          .from('profiles')
           .select(
-            'profile_id, sport_key, skill_level, profiles!inner(display_name, avatar_url)',
+            'user_id, display_name, avatar_url, preferred_sport, created_at',
           )
+          .isFilter('deleted_at', null)
+          .order('created_at', ascending: false)
           .limit(6);
 
       return (response as List).map((item) {
         return {
-          'profile_id': item['profile_id'],
-          'sport_key': item['sport_key'],
-          'skill_level': item['skill_level'],
-          'display_name': item['profiles']['display_name'],
-          'avatar_url': item['profiles']['avatar_url'],
+          'user_id': item['user_id'],
+          'display_name': item['display_name'],
+          'avatar_url': item['avatar_url'],
+          'sport_key': item['preferred_sport'],
+          'created_at': item['created_at'],
         };
       }).toList();
     } catch (e) {
-      print('Error fetching recent players: $e');
+      print('Error fetching newly joined users: $e');
       return [];
     }
   }
@@ -709,14 +837,66 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           .from('games')
           .select()
           .eq('is_cancelled', false)
-          .order('created_at', ascending: false)
-          .limit(2);
+          // Exclude past games (server-side)
+          .gte('start_at', DateTime.now().toUtc().toIso8601String())
+          // Show the next upcoming games first
+          .order('start_at', ascending: true)
+          // Fetch a few extra in case some rows have stale timestamps
+          .limit(10);
 
-      return (response as List).cast<Map<String, dynamic>>();
+      final games = (response as List).cast<Map<String, dynamic>>();
+      final upcomingGames = games.where(_isGameInFuture).take(2).toList();
+      return upcomingGames;
     } catch (e) {
       print('Error fetching recent games: $e');
       return [];
     }
+  }
+
+  bool _isGameInFuture(Map<String, dynamic> game) {
+    final now = DateTime.now();
+
+    DateTime? parseDateTime(dynamic value) {
+      if (value is DateTime) return value;
+      if (value is String) {
+        return DateTime.tryParse(value);
+      }
+      return null;
+    }
+
+    DateTime? upcomingDateTime;
+
+    final serverStart = parseDateTime(game['start_at']);
+    if (serverStart != null) {
+      upcomingDateTime = serverStart;
+    } else {
+      final scheduledDate = parseDateTime(game['scheduled_date']);
+      if (scheduledDate != null) {
+        final startTime = game['start_time'];
+        if (startTime is String) {
+          final parts = startTime.split(':');
+          final hour = parts.isNotEmpty ? int.tryParse(parts[0]) ?? 0 : 0;
+          final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+          upcomingDateTime = DateTime(
+            scheduledDate.year,
+            scheduledDate.month,
+            scheduledDate.day,
+            hour,
+            minute,
+          );
+        } else {
+          upcomingDateTime = scheduledDate;
+        }
+      }
+    }
+
+    if (upcomingDateTime == null) {
+      // If we cannot determine the date, err on the side of showing it so data
+      // issues can be spotted and fixed at the source.
+      return true;
+    }
+
+    return upcomingDateTime.isAfter(now);
   }
 
   String _getSportEmoji(String? sport) {
@@ -742,12 +922,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   /// Builds the upcoming game section with real Supabase data
   Widget _buildUpcomingGameSection() {
-    final nextGameAsync = ref.watch(nextUpcomingGameProvider);
+    final gamesAsync = ref.watch(userUpcomingGamesProvider);
 
-    return nextGameAsync.when(
-      data: (game) {
-        if (game == null) {
-          // Show action cards when no upcoming game
+    return gamesAsync.when(
+      data: (games) {
+        if (games.isEmpty) {
+          // Show action cards when no upcoming games
           return Row(
             children: [
               Expanded(
@@ -771,147 +951,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         }
 
-        // Calculate countdown
-        final now = DateTime.now();
-        final gameDateTime = DateTime(
-          game.scheduledDate.year,
-          game.scheduledDate.month,
-          game.scheduledDate.day,
-          _parseTime(game.startTime).hour,
-          _parseTime(game.startTime).minute,
-        );
-        final difference = gameDateTime.difference(now);
-
-        String countdownLabel;
-        if (difference.inDays > 0) {
-          countdownLabel =
-              '${difference.inHours}h ${difference.inMinutes % 60}m';
-        } else if (difference.inHours > 0) {
-          countdownLabel =
-              '${difference.inHours}h ${difference.inMinutes % 60}m';
-        } else if (difference.inMinutes > 0) {
-          countdownLabel = '${difference.inMinutes}m';
-        } else {
-          countdownLabel = '0h 45m';
-        }
-
-        // Format date
-        final timeFormat = '${game.startTime} - ${game.endTime}';
-
-        final textTheme = Theme.of(context).textTheme;
-        final colorScheme = Theme.of(context).colorScheme;
-
-        return Card(
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: InkWell(
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => GameDetailScreen(gameId: game.id),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(20),
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          const Text('🕐', style: TextStyle(fontSize: 20)),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Upcoming Game',
-                            style: textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: colorScheme.error.withOpacity(0.3),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            const Text('⏰', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 4),
-                            Text(
-                              countdownLabel,
-                              style: textTheme.bodyMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onErrorContainer,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: Text(
-                      game.title,
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: colorScheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Row(
-                      children: [
-                        const Text('🕐', style: TextStyle(fontSize: 16)),
-                        const SizedBox(width: 8),
-                        Text(
-                          timeFormat,
-                          style: textTheme.bodyLarge?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Row(
-                      children: [
-                        const Text('📍', style: TextStyle(fontSize: 16)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            game.venueName ?? 'Location TBD',
-                            style: textTheme.bodyLarge?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
+        // Show collapsible reminder cards (Apple Wallet style)
+        return _buildCollapsibleReminderCards(games);
       },
       loading: () {
         return Card(
@@ -926,13 +967,143 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       },
       error: (error, stack) {
-        print('Error loading upcoming game: $error');
+        print('Error loading upcoming games: $error');
         return const SizedBox.shrink();
       },
     );
   }
 
-  /// Parse time string "HH:mm" to TimeOfDay
+  /// Builds collapsible reminder cards in Apple Wallet style
+  Widget _buildCollapsibleReminderCards(List<Game> games) {
+    return Column(
+      children: List.generate(games.length, (index) {
+        final game = games[index];
+        final isFirst = index == 0;
+        final isLast = index == games.length - 1;
+
+        return Padding(
+          padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+          child: _CollapsibleReminderCard(
+            game: game,
+            isFirst: isFirst,
+            isLast: isLast,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => GameDetailScreen(gameId: game.id),
+                ),
+              );
+            },
+          ),
+        );
+      }),
+    );
+  }
+}
+
+/// Collapsible reminder card widget in Apple Wallet style
+class _CollapsibleReminderCard extends StatefulWidget {
+  final Game game;
+  final bool isFirst;
+  final bool isLast;
+  final VoidCallback onTap;
+
+  const _CollapsibleReminderCard({
+    required this.game,
+    required this.isFirst,
+    required this.isLast,
+    required this.onTap,
+  });
+
+  @override
+  State<_CollapsibleReminderCard> createState() =>
+      _CollapsibleReminderCardState();
+}
+
+class _CollapsibleReminderCardState extends State<_CollapsibleReminderCard>
+    with SingleTickerProviderStateMixin {
+  bool _isExpanded = false;
+  late AnimationController _animationController;
+  late Animation<double> _expandAnimation;
+  Timer? _countdownTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _expandAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    );
+    // First card is expanded by default
+    if (widget.isFirst) {
+      _isExpanded = true;
+      _animationController.value = 1.0;
+    }
+    _startCountdownTimer();
+  }
+
+  @override
+  void dispose() {
+    _countdownTimer?.cancel();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant _CollapsibleReminderCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.game.id != widget.game.id ||
+        oldWidget.game.scheduledDate != widget.game.scheduledDate ||
+        oldWidget.game.startTime != widget.game.startTime) {
+      _startCountdownTimer();
+    }
+  }
+
+  void _toggleExpanded() {
+    setState(() {
+      _isExpanded = !_isExpanded;
+      if (_isExpanded) {
+        _animationController.forward();
+      } else {
+        _animationController.reverse();
+      }
+    });
+  }
+
+  void _startCountdownTimer() {
+    _countdownTimer?.cancel();
+    _countdownTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      if (!mounted) return;
+      setState(() {});
+    });
+  }
+
+  String _getCountdownLabel() {
+    final now = DateTime.now();
+    final gameDateTime = DateTime(
+      widget.game.scheduledDate.year,
+      widget.game.scheduledDate.month,
+      widget.game.scheduledDate.day,
+      _parseTime(widget.game.startTime).hour,
+      _parseTime(widget.game.startTime).minute,
+    );
+    final difference = gameDateTime.difference(now);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}d ${difference.inHours % 24}h';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ${difference.inMinutes % 60}m';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m';
+    } else {
+      return 'Now';
+    }
+  }
+
   TimeOfDay _parseTime(String timeString) {
     try {
       final parts = timeString.split(':');
@@ -940,5 +1111,296 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } catch (e) {
       return const TimeOfDay(hour: 0, minute: 0);
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final countdownLabel = _getCountdownLabel();
+    final timeFormat = '${widget.game.startTime} - ${widget.game.endTime}';
+
+    // Calculate border radius for Apple Wallet style (rounded corners only on first/last)
+    final borderRadius = BorderRadius.only(
+      topLeft: Radius.circular(widget.isFirst ? 20 : 0),
+      topRight: Radius.circular(widget.isFirst ? 20 : 0),
+      bottomLeft: Radius.circular(widget.isLast ? 20 : 0),
+      bottomRight: Radius.circular(widget.isLast ? 20 : 0),
+    );
+
+    return GestureDetector(
+      // Vertical swipe to expand/collapse like a notification stack
+      onVerticalDragEnd: (details) {
+        final velocity = details.primaryVelocity ?? 0;
+        if (velocity > 0 && !_isExpanded) {
+          // Swipe down to expand
+          _toggleExpanded();
+        } else if (velocity < 0 && _isExpanded) {
+          // Swipe up to collapse
+          _toggleExpanded();
+        }
+      },
+      child: Card(
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(borderRadius: borderRadius),
+        clipBehavior: Clip.antiAlias,
+        child: Container(
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: borderRadius,
+            border: Border(
+              top: widget.isFirst
+                  ? BorderSide.none
+                  : BorderSide(
+                      color: colorScheme.outlineVariant.withOpacity(0.3),
+                      width: 0.5,
+                    ),
+            ),
+          ),
+          child: Column(
+            children: [
+              // Collapsed/Header view
+              InkWell(
+                onTap: widget.onTap,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      // Sport emoji
+                      Text(
+                        _getSportEmoji(widget.game.sport),
+                        style: const TextStyle(fontSize: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      // Game title and time
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.game.title,
+                              style: textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: colorScheme.onSurface,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              timeFormat,
+                              style: textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Countdown badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.errorContainer,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          countdownLabel,
+                          style: textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: colorScheme.onErrorContainer,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Expand/collapse icon (tap to toggle)
+                      InkWell(
+                        onTap: _toggleExpanded,
+                        borderRadius: BorderRadius.circular(20),
+                        child: RotationTransition(
+                          turns: _expandAnimation,
+                          child: Icon(
+                            Icons.keyboard_arrow_down,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Expanded details
+              SizeTransition(
+                sizeFactor: _expandAnimation,
+                axisAlignment: -1.0,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Divider(
+                        height: 1,
+                        thickness: 0.5,
+                        color: colorScheme.outlineVariant.withOpacity(0.3),
+                      ),
+                      const SizedBox(height: 12),
+                      // Date
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_today,
+                            size: 16,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            DateFormat(
+                              'EEE, MMM d',
+                            ).format(widget.game.scheduledDate),
+                            style: textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Location
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.location_on,
+                            size: 16,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              widget.game.venueName ?? 'Location TBD',
+                              style: textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // View details button
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: widget.onTap,
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'View Details',
+                            style: textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getSportEmoji(String? sport) {
+    if (sport == null) return '⚽';
+    switch (sport.toLowerCase()) {
+      case 'football':
+      case 'soccer':
+        return '⚽';
+      case 'basketball':
+        return '🏀';
+      case 'tennis':
+        return '🎾';
+      case 'cricket':
+        return '🏏';
+      case 'padel':
+        return '🎾';
+      case 'volleyball':
+        return '🏐';
+      default:
+        return '⚽';
+    }
+  }
+}
+
+class _FeedLoadingPlaceholder extends StatelessWidget {
+  const _FeedLoadingPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 16,
+                    width: 120,
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    height: 12,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Container(
+                    height: 12,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

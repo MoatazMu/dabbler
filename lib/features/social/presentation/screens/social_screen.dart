@@ -153,7 +153,7 @@ class _SocialScreenState extends State<SocialScreen> {
       );
     }
 
-    // Navigate to PostDetailScreen to view and add comments
+    // Navigate to ThreadScreen to view and add comments
     context.push('/social-post-detail/$postId');
   }
 

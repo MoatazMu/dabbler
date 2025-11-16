@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/data/models/profile/sports_profile.dart';
 import '../../domain/usecases/manage_sports_profile_usecase.dart';
@@ -67,37 +68,39 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      // Create sample sports profiles
-      final profiles = [
-        const SportProfile(
-          sportId: 'basketball',
-          sportName: 'Basketball',
-          skillLevel: SkillLevel.intermediate,
-          yearsPlaying: 3,
-          preferredPositions: ['Point Guard', 'Shooting Guard'],
-          certifications: [],
-          achievements: ['Team MVP', 'League Champion'],
-          isPrimarySport: true,
-          gamesPlayed: 45,
-          averageRating: 4.2,
-        ),
-        const SportProfile(
-          sportId: 'soccer',
-          sportName: 'Soccer',
-          skillLevel: SkillLevel.beginner,
-          yearsPlaying: 1,
-          preferredPositions: ['Midfielder'],
-          certifications: [],
-          achievements: [],
-          isPrimarySport: false,
-          gamesPlayed: 12,
-          averageRating: 3.8,
-        ),
-      ];
+      final client = Supabase.instance.client;
+      // Resolve the owning profile.id for this auth user
+      final profileRow = await client
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
 
+      if (profileRow == null) {
+        state = state.copyWith(
+          isLoading: false,
+          profiles: const [],
+          achievements: const {},
+          activeProfileId: null,
+        );
+        return;
+      }
+
+      final String profileId = (profileRow['id'] as String);
+
+      final List<dynamic> rows = await client.from('sport_profiles').select(
+        'sport_key, skill_level, is_primary_sport, years_playing, games_played, average_rating, last_played, profile_id',
+      ).eq('profile_id', profileId);
+
+      final profiles = rows
+          .map((row) => SportProfile.fromJson(
+                Map<String, dynamic>.from(row as Map),
+              ))
+          .toList();
+
+      // Achievements are not modeled in simple schema; keep empty by default
       final achievements = <String, List<String>>{
-        'basketball': ['Team MVP', 'League Champion'],
-        'soccer': [],
+        for (final p in profiles) p.sportId: <String>[],
       };
 
       state = state.copyWith(
@@ -107,7 +110,7 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
         lastSyncTime: DateTime.now(),
         pendingChanges: {},
         hasUnsavedChanges: false,
-        activeProfileId: profiles.first.sportId,
+        activeProfileId: profiles.isNotEmpty ? profiles.first.sportId : null,
       );
     } catch (error) {
       state = state.copyWith(

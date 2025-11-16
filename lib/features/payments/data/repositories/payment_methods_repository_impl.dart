@@ -88,7 +88,7 @@ class PaymentMethodsRepositoryImpl implements PaymentMethodsRepository {
 
   @override
   Future<Result<void, Failure>> deletePaymentMethod(String paymentMethodId) {
-    return guardResult<void, Failure>(() async {
+    return guardResult(() async {
       try {
         await dataSource.deletePaymentMethod(paymentMethodId);
       } on PaymentMethodsException catch (e) {
@@ -106,7 +106,7 @@ class PaymentMethodsRepositoryImpl implements PaymentMethodsRepository {
     String userId,
     String paymentMethodId,
   ) {
-    return guardResult<void, Failure>(() async {
+    return guardResult(() async {
       try {
         await dataSource.setDefaultPaymentMethod(userId, paymentMethodId);
       } on PaymentMethodsException catch (e) {

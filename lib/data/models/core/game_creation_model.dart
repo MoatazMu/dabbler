@@ -285,6 +285,7 @@ class GameCreationModel {
   final String? skillLevel;
   final int? maxPlayers;
   final int? gameDuration; // in minutes
+  final String? gameType; // pickup, training, league
 
   // Venue & Slot Selection
   final VenueSlot? selectedVenueSlot;
@@ -300,6 +301,7 @@ class GameCreationModel {
   final String? gameDescription;
   final bool? allowWaitlist;
   final int? maxWaitlistSize;
+  final bool? allowSpectators;
 
   // Player Invitation
   final List<String>? invitedPlayerIds;
@@ -338,6 +340,7 @@ class GameCreationModel {
     this.skillLevel,
     this.maxPlayers,
     this.gameDuration,
+    this.gameType,
 
     // Venue & Slot Selection
     this.selectedVenueSlot,
@@ -353,6 +356,7 @@ class GameCreationModel {
     this.gameDescription,
     this.allowWaitlist,
     this.maxWaitlistSize,
+    this.allowSpectators,
 
     // Player Invitation
     this.invitedPlayerIds,
@@ -396,6 +400,7 @@ class GameCreationModel {
     String? skillLevel,
     int? maxPlayers,
     int? gameDuration,
+    String? gameType,
 
     // Venue & Slot Selection
     VenueSlot? selectedVenueSlot,
@@ -411,6 +416,7 @@ class GameCreationModel {
     String? gameDescription,
     bool? allowWaitlist,
     int? maxWaitlistSize,
+    bool? allowSpectators,
 
     // Player Invitation
     List<String>? invitedPlayerIds,
@@ -449,6 +455,7 @@ class GameCreationModel {
       skillLevel: skillLevel ?? this.skillLevel,
       maxPlayers: maxPlayers ?? this.maxPlayers,
       gameDuration: gameDuration ?? this.gameDuration,
+      gameType: gameType ?? this.gameType,
 
       // Venue & Slot Selection
       selectedVenueSlot: selectedVenueSlot ?? this.selectedVenueSlot,
@@ -464,6 +471,7 @@ class GameCreationModel {
       gameDescription: gameDescription ?? this.gameDescription,
       allowWaitlist: allowWaitlist ?? this.allowWaitlist,
       maxWaitlistSize: maxWaitlistSize ?? this.maxWaitlistSize,
+      allowSpectators: allowSpectators ?? this.allowSpectators,
 
       // Player Invitation
       invitedPlayerIds: invitedPlayerIds ?? this.invitedPlayerIds,
@@ -565,6 +573,8 @@ class GameCreationModel {
   bool get isStep1Valid =>
       selectedSport != null &&
       selectedFormat != null &&
+      gameType != null &&
+      skillLevel != null &&
       maxPlayers != null &&
       selectedDate != null &&
       selectedTimeSlot != null &&
@@ -590,6 +600,38 @@ class GameCreationModel {
     }
   }
 
+  /// Returns a list of missing required fields for the current step
+  List<String> getMissingRequiredFields() {
+    switch (currentStep) {
+      case GameCreationStep.sportAndFormat:
+        final missing = <String>[];
+        if (selectedSport == null) missing.add('Sport');
+        if (selectedFormat == null) missing.add('Match Format');
+        if (gameType == null) missing.add('Game Type');
+        if (skillLevel == null) missing.add('Skill Level');
+        if (maxPlayers == null) missing.add('Player Count');
+        if (selectedDate == null) missing.add('Date');
+        if (selectedTimeSlot == null) missing.add('Time Slot');
+        if (gameDuration == null) missing.add('Game Duration');
+        return missing;
+      case GameCreationStep.venueAndSlot:
+        if (selectedVenueSlot == null) return ['Venue'];
+        return [];
+      case GameCreationStep.playerInvitation:
+        return []; // Optional step
+      case GameCreationStep.participationAndPayment:
+        final missing = <String>[];
+        if (participationMode == null) missing.add('Participation Mode');
+        if (paymentSplit == null) missing.add('Payment Split');
+        return missing;
+      case GameCreationStep.reviewAndConfirm:
+        final missing = <String>[];
+        if (gameTitle == null || gameTitle!.isEmpty) missing.add('Game Title');
+        if (agreeToTerms != true) missing.add('Terms Agreement');
+        return missing;
+    }
+  }
+
   bool get canSaveAsDraft {
     // Can save as draft if at least sport is selected
     return selectedSport != null;
@@ -603,6 +645,7 @@ class GameCreationModel {
       'skillLevel': skillLevel,
       'maxPlayers': maxPlayers,
       'gameDuration': gameDuration,
+      'gameType': gameType,
       'selectedVenueSlot': selectedVenueSlot?.toJson(),
       'amenityFilters': amenityFilters,
       'participationMode': participationMode?.name,
@@ -610,6 +653,7 @@ class GameCreationModel {
       'gameDescription': gameDescription,
       'allowWaitlist': allowWaitlist,
       'maxWaitlistSize': maxWaitlistSize,
+      'allowSpectators': allowSpectators,
       'invitedPlayerIds': invitedPlayerIds,
       'invitedPlayerEmails': invitedPlayerEmails,
       'allowFriendsToInvite': allowFriendsToInvite,

@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/data/models/rewards/achievement.dart';
 import 'package:dabbler/data/models/rewards/user_progress.dart';
 import 'package:dabbler/data/models/rewards/badge_tier.dart';
-import 'package:dabbler/data/models/rewards/point_transaction.dart';
+import 'package:dabbler/data/models/rewards/point_transaction.dart' as data;
 import '../../domain/repositories/rewards_repository.dart';
 import 'package:dabbler/data/models/rewards/achievement_model.dart';
 import 'package:dabbler/data/models/rewards/user_progress_model.dart';
@@ -223,7 +223,7 @@ class SupabaseRewardsDataSource {
   }
 
   /// Get point transaction history
-  Future<List<PointTransaction>> getPointTransactions(
+  Future<List<data.PointTransaction>> getPointTransactions(
     String userId, {
     TransactionType? type,
     int limit = 50,
@@ -244,15 +244,15 @@ class SupabaseRewardsDataSource {
 
       return (response as List)
           .map(
-            (json) => PointTransaction(
+            (json) => data.PointTransaction(
               id: json['id'],
               userId: json['user_id'],
               basePoints: json['base_points'] ?? json['amount'] ?? 0,
               finalPoints: json['final_points'] ?? json['amount'] ?? 0,
               runningBalance: json['running_balance'] ?? 0,
-              type: TransactionType.values.firstWhere(
+              type: data.TransactionType.values.firstWhere(
                 (e) => e.name == json['type'],
-                orElse: () => TransactionType.achievement,
+                orElse: () => data.TransactionType.achievement,
               ),
               description: json['description'] ?? '',
               createdAt: DateTime.parse(json['created_at']),

@@ -133,10 +133,10 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: DS.surface,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
         ),
       ),
       child: Row(
@@ -145,7 +145,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
             width: 60,
             height: 60,
             decoration: BoxDecoration(
-              color: DS.primary.withOpacity(0.1),
+              color: DS.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(Icons.location_city, color: DS.primary, size: 24),
@@ -157,7 +157,10 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
               children: [
                 Text(
                   name,
-                  style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
+                  style: DS.body.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -185,7 +188,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
       children: [
         Text(
           'Sport & Format',
-          style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
+          style: DS.body.copyWith(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
 
@@ -218,14 +221,16 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? DS.primary : DS.surface,
+                    color: isSelected
+                        ? DS.primary
+                        : Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
                           ? DS.primary
                           : Theme.of(
                               context,
-                            ).colorScheme.outline.withOpacity(0.2),
+                            ).colorScheme.outline.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Text(
@@ -268,14 +273,16 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? DS.primary : DS.surface,
+                    color: isSelected
+                        ? DS.primary
+                        : Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
                           ? DS.primary
                           : Theme.of(
                               context,
-                            ).colorScheme.outline.withOpacity(0.2),
+                            ).colorScheme.outline.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Text(
@@ -306,7 +313,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
       children: [
         Text(
           'Select Date',
-          style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
+          style: DS.body.copyWith(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -333,14 +340,16 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                     right: index < dates.length - 1 ? 12 : 0,
                   ),
                   decoration: BoxDecoration(
-                    color: isSelected ? DS.primary : DS.surface,
+                    color: isSelected
+                        ? DS.primary
+                        : Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
                           ? DS.primary
                           : Theme.of(
                               context,
-                            ).colorScheme.outline.withOpacity(0.2),
+                            ).colorScheme.outline.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Column(
@@ -358,7 +367,8 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                       const SizedBox(height: 4),
                       Text(
                         date.day.toString(),
-                        style: DS.subtitle.copyWith(
+                        style: DS.body.copyWith(
+                          fontSize: 16,
                           color: isSelected ? Colors.white : DS.onSurface,
                           fontWeight: FontWeight.w700,
                         ),
@@ -390,7 +400,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
       children: [
         Text(
           'Select Time',
-          style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
+          style: DS.body.copyWith(fontSize: 16, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
 
@@ -469,7 +479,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                     color: isSelected
                         ? DS.primary
                         : available
-                        ? DS.surface
+                        ? Theme.of(context).colorScheme.surface
                         : Theme.of(context).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
@@ -477,7 +487,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                           ? DS.primary
                           : Theme.of(
                               context,
-                            ).colorScheme.outline.withOpacity(0.2),
+                            ).colorScheme.outline.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Column(
@@ -499,10 +509,10 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                         'AED ${price.toStringAsFixed(0)}',
                         style: DS.caption.copyWith(
                           color: isSelected
-                              ? Colors.white.withOpacity(0.8)
+                              ? Colors.white.withValues(alpha: 0.8)
                               : available
                               ? DS.onSurfaceVariant
-                              : DS.onSurfaceVariant.withOpacity(0.5),
+                              : DS.onSurfaceVariant.withValues(alpha: 0.5),
                           fontSize: 10,
                         ),
                       ),
@@ -533,10 +543,12 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: DS.surface,
+          color: Theme.of(context).colorScheme.surface,
           border: Border(
             top: BorderSide(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              color: Theme.of(
+                context,
+              ).colorScheme.outline.withValues(alpha: 0.1),
             ),
           ),
         ),
@@ -548,7 +560,7 @@ class _BookingFlowScreenState extends ConsumerState<BookingFlowScreen> {
                 padding: const EdgeInsets.all(12),
                 margin: const EdgeInsets.only(bottom: 12),
                 decoration: BoxDecoration(
-                  color: DS.error.withOpacity(0.1),
+                  color: DS.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(

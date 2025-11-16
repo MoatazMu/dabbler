@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../providers/games_providers.dart';
-import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
 import '../../controllers/game_detail_controller.dart';
@@ -17,12 +16,9 @@ class GameDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
-  bool _isJoined = false;
-
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
-    final currentUserId = authService.getCurrentUserId();
+    final currentUserId = ref.watch(currentUserIdProvider);
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
@@ -42,32 +38,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
       );
     }
 
-    final detailState = ref.watch(
-      gameDetailControllerProvider(
-        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
-      ),
+    final detailParams = GameDetailParams(
+      gameId: widget.gameId,
+      currentUserId: currentUserId,
     );
-
-    // Update local joined state based on controller state
-    if (detailState.joinStatus == JoinGameStatus.alreadyJoined ||
-        detailState.players.any((p) => p.playerId == currentUserId)) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_isJoined) {
-          setState(() {
-            _isJoined = true;
-          });
-        }
-      });
-    } else if (detailState.joinStatus == JoinGameStatus.waitlisted) {
-      // Player is waitlisted, not fully joined
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _isJoined) {
-          setState(() {
-            _isJoined = false;
-          });
-        }
-      });
-    }
+    final detailState = ref.watch(gameDetailStateProvider(detailParams));
 
     if (detailState.isLoading || !detailState.hasGame) {
       return Scaffold(
@@ -165,6 +140,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
         detailState,
         colorScheme,
         textTheme,
+        currentUserId,
       ),
     );
   }
@@ -999,7 +975,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
     dynamic detailState,
     ColorScheme colorScheme,
     TextTheme textTheme,
+    String currentUserId,
   ) {
+    final bool isJoined =
+        detailState.joinStatus == JoinGameStatus.alreadyJoined ||
+        detailState.players.any((p) => p.playerId == currentUserId);
     final dateFormat = DateFormat('MMM dd');
     final formattedDate = dateFormat.format(game.scheduledDate);
 
@@ -1041,12 +1021,12 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
             FilledButton.icon(
               onPressed: detailState.isJoining
                   ? null
-                  : (_isJoined ? _leaveGame : _joinGame),
+                  : (isJoined ? _leaveGame : _joinGame),
               style: FilledButton.styleFrom(
-                backgroundColor: _isJoined
+                backgroundColor: isJoined
                     ? colorScheme.error
                     : colorScheme.primary,
-                foregroundColor: _isJoined
+                foregroundColor: isJoined
                     ? colorScheme.onError
                     : colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
@@ -1064,17 +1044,17 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
                         valueColor: AlwaysStoppedAnimation<Color>(
-                          _isJoined
+                          isJoined
                               ? colorScheme.onError
                               : colorScheme.onPrimary,
                         ),
                       ),
                     )
-                  : Icon(_isJoined ? Icons.close : Icons.check),
+                  : Icon(isJoined ? Icons.close : Icons.check),
               label: Text(
                 detailState.isJoining
                     ? 'Joining...'
-                    : (_isJoined ? 'Leave' : 'Join Game'),
+                    : (isJoined ? 'Leave' : 'Join Game'),
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
@@ -1141,8 +1121,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
   }
 
   Future<void> _joinGame() async {
-    final authService = AuthService();
-    final currentUserId = authService.getCurrentUserId();
+    final currentUserId = ref.read(currentUserIdProvider);
 
     if (currentUserId == null) return;
 
@@ -1198,11 +1177,11 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
         );
       } else if (updatedState.joinMessage != null) {
         // Show success message (includes waitlist info)
-        final isWaitlisted =
+        final bool updatedWaitlisted =
             updatedState.joinStatus == JoinGameStatus.waitlisted;
 
         AnalyticsService.trackEvent(
-          isWaitlisted ? 'waitlist' : 'join_success',
+          updatedWaitlisted ? 'waitlist' : 'join_success',
           {
             'gameId': game.id,
             'sport': game.sport,
@@ -1210,14 +1189,10 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
           },
         );
 
-        setState(() {
-          _isJoined = !isWaitlisted; // Only set joined if not waitlisted
-        });
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(updatedState.joinMessage!),
-            backgroundColor: isWaitlisted
+            backgroundColor: updatedWaitlisted
                 ? Theme.of(context).colorScheme.tertiary
                 : Theme.of(context).colorScheme.primary,
             duration: const Duration(seconds: 4),
@@ -1229,10 +1204,6 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
           'gameId': game.id,
           'sport': game.sport,
           'startsAt': game.scheduledDate.toIso8601String(),
-        });
-
-        setState(() {
-          _isJoined = true;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1264,8 +1235,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
 
     if (shouldLeave != true) return;
 
-    final authService = AuthService();
-    final currentUserId = authService.getCurrentUserId();
+    final currentUserId = ref.read(currentUserIdProvider);
 
     if (currentUserId == null) return;
 
@@ -1300,10 +1270,6 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
         'gameId': game.id,
         'sport': game.sport,
         'startsAt': game.scheduledDate.toIso8601String(),
-      });
-
-      setState(() {
-        _isJoined = false;
       });
 
       if (mounted) {

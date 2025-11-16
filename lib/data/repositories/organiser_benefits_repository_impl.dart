@@ -15,13 +15,18 @@ class OrganiserBenefitsRepositoryImpl extends BaseRepository
   const OrganiserBenefitsRepositoryImpl(super.svc);
 
   @override
-  Future<Result<List<Benefit>, Failure>> listAll({
+  Future<Result<List<Benefit>, Failure>> listMine({
     bool onlyActive = true,
     int limit = 50,
     int offset = 0,
   }) {
+    final uid = svc.authUserId();
+    if (uid == null) {
+      return Future.value(Err(const AuthFailure(message: 'Not signed in')));
+    }
+
     return guard<List<Benefit>>(() async {
-      dynamic q = svc.client.from(_table).select();
+      dynamic q = svc.client.from(_table).select().eq('owner_user_id', uid);
 
       if (onlyActive) {
         q = q.eq('is_active', true);

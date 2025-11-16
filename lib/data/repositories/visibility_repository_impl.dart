@@ -72,7 +72,7 @@ class VisibilityRepositoryImpl extends BaseRepository
             'and(user_id.eq.$viewer,peer_user_id.eq.$otherUserId),'
             'and(user_id.eq.$otherUserId,peer_user_id.eq.$viewer)',
           )
-          .in_('status', ['accepted', 'pending'])
+          .inFilter('status', ['accepted', 'pending'])
           .limit(1)
           .maybeSingle();
 

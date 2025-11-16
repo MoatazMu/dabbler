@@ -24,7 +24,7 @@ class SchemaMetaRepositoryImpl extends BaseRepository
     return guard<SchemaMeta?>(() async {
       final row = await svc.client
           .from(_table)
-          .select<Map<String, dynamic>>('*')
+          .select('*')
           .limit(1)
           .maybeSingle();
 

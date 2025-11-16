@@ -99,61 +99,67 @@ final hasPendingRequestsProvider = Provider.autoDispose<bool>((ref) {
 // =============================================================================
 
 /// Send a friend request to a user
-final sendFriendRequestProvider = FutureProvider.family<Result<void, Failure>, String>((
-  ref,
-  peerUserId,
-) async {
-  final repo = ref.watch(friendsRepositoryProvider);
-  return await repo.sendFriendRequest(peerUserId);
-});
+final sendFriendRequestProvider =
+    FutureProvider.family<Result<void, Failure>, String>((
+      ref,
+      peerUserId,
+    ) async {
+      final repo = ref.watch(friendsRepositoryProvider);
+      return await repo.sendFriendRequest(peerUserId);
+    });
 
 /// Accept a friend request
-final acceptFriendRequestProvider = FutureProvider.family<Result<void, Failure>, String>(
-  (ref, peerUserId) async {
-    final repo = ref.watch(friendsRepositoryProvider);
-    final result = await repo.acceptFriendRequest(peerUserId);
+final acceptFriendRequestProvider =
+    FutureProvider.family<Result<void, Failure>, String>((
+      ref,
+      peerUserId,
+    ) async {
+      final repo = ref.watch(friendsRepositoryProvider);
+      final result = await repo.acceptFriendRequest(peerUserId);
 
-    // Refresh friends list after accepting
-    if (result.isRight()) {
-      ref.invalidate(friendshipsProvider);
-      ref.invalidate(incomingFriendRequestsProvider);
-    }
+      // Refresh friends list after accepting
+      if (result.isRight) {
+        ref.invalidate(friendshipsProvider);
+        ref.invalidate(incomingFriendRequestsProvider);
+      }
 
-    return result;
-  },
-);
+      return result;
+    });
 
 /// Reject a friend request
-final rejectFriendRequestProvider = FutureProvider.family<Result<void, Failure>, String>(
-  (ref, peerUserId) async {
-    final repo = ref.watch(friendsRepositoryProvider);
-    final result = await repo.rejectFriendRequest(peerUserId);
+final rejectFriendRequestProvider =
+    FutureProvider.family<Result<void, Failure>, String>((
+      ref,
+      peerUserId,
+    ) async {
+      final repo = ref.watch(friendsRepositoryProvider);
+      final result = await repo.rejectFriendRequest(peerUserId);
 
-    // Refresh inbox after rejecting
-    if (result.isRight()) {
-      ref.invalidate(incomingFriendRequestsProvider);
-    }
+      // Refresh inbox after rejecting
+      if (result.isRight) {
+        ref.invalidate(incomingFriendRequestsProvider);
+      }
 
-    return result;
-  },
-);
+      return result;
+    });
 
 /// Remove a friend
-final removeFriendProvider = FutureProvider.family<Result<void, Failure>, String>((
-  ref,
-  peerUserId,
-) async {
-  final repo = ref.watch(friendsRepositoryProvider);
-  final result = await repo.removeFriend(peerUserId);
+final removeFriendProvider =
+    FutureProvider.family<Result<void, Failure>, String>((
+      ref,
+      peerUserId,
+    ) async {
+      final repo = ref.watch(friendsRepositoryProvider);
+      final result = await repo.removeFriend(peerUserId);
 
-  // Refresh friends list after removal
-  if (result.isRight()) {
-    ref.invalidate(friendshipsProvider);
-    ref.invalidate(friendEdgesProvider);
-  }
+      // Refresh friends list after removal
+      if (result.isRight) {
+        ref.invalidate(friendshipsProvider);
+        ref.invalidate(friendEdgesProvider);
+      }
 
-  return result;
-});
+      return result;
+    });
 
 /// Block a user
 final blockUserProvider = FutureProvider.family<Result<void, Failure>, String>((
@@ -164,7 +170,7 @@ final blockUserProvider = FutureProvider.family<Result<void, Failure>, String>((
   final result = await repo.blockUser(peerUserId);
 
   // Refresh data after blocking
-  if (result.isRight()) {
+  if (result.isRight) {
     ref.invalidate(friendshipsProvider);
     ref.invalidate(friendEdgesProvider);
   }
@@ -173,13 +179,14 @@ final blockUserProvider = FutureProvider.family<Result<void, Failure>, String>((
 });
 
 /// Unblock a user
-final unblockUserProvider = FutureProvider.family<Result<void, Failure>, String>((
-  ref,
-  peerUserId,
-) async {
-  final repo = ref.watch(friendsRepositoryProvider);
-  return await repo.unblockUser(peerUserId);
-});
+final unblockUserProvider =
+    FutureProvider.family<Result<void, Failure>, String>((
+      ref,
+      peerUserId,
+    ) async {
+      final repo = ref.watch(friendsRepositoryProvider);
+      return await repo.unblockUser(peerUserId);
+    });
 
 // =============================================================================
 // SOCIAL FEED & POSTS

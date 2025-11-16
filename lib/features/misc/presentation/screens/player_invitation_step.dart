@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 import 'package:dabbler/core/viewmodels/game_creation_viewmodel.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -38,78 +39,87 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep>
     super.dispose();
   }
 
-  void _loadMockData() {
-    _contacts = [
-      InvitePlayer(
-        id: 'c1',
-        name: 'John Smith',
-        email: 'john@example.com',
-        phone: '+1234567890',
-        source: PlayerSource.contact,
-      ),
-      InvitePlayer(
-        id: 'c2',
-        name: 'Sarah Johnson',
-        email: 'sarah@example.com',
-        phone: '+1234567891',
-        source: PlayerSource.contact,
-      ),
-      InvitePlayer(
-        id: 'c3',
-        name: 'Mike Davis',
-        email: 'mike@example.com',
-        phone: '+1234567892',
-        source: PlayerSource.contact,
-      ),
-      InvitePlayer(
-        id: 'c4',
-        name: 'Emily Brown',
-        email: 'emily@example.com',
-        phone: '+1234567893',
-        source: PlayerSource.contact,
-      ),
-      InvitePlayer(
-        id: 'c5',
-        name: 'David Wilson',
-        email: 'david@example.com',
-        phone: '+1234567894',
-        source: PlayerSource.contact,
-      ),
-    ];
+  Future<void> _loadMockData() async {
+    setState(() {
+      _isLoadingContacts = true;
+    });
 
-    _recentTeammates = [
-      InvitePlayer(
-        id: 't1',
-        name: 'Alex Rodriguez',
-        email: 'alex@example.com',
-        source: PlayerSource.teammate,
-        lastPlayedDate: '2 days ago',
-      ),
-      InvitePlayer(
-        id: 't2',
-        name: 'Lisa Chen',
-        email: 'lisa@example.com',
-        source: PlayerSource.teammate,
-        lastPlayedDate: '1 week ago',
-      ),
-      InvitePlayer(
-        id: 't3',
-        name: 'Ryan Murphy',
-        email: 'ryan@example.com',
-        source: PlayerSource.teammate,
-        lastPlayedDate: '2 weeks ago',
-      ),
-      InvitePlayer(
-        id: 't4',
-        name: 'Jessica Taylor',
-        email: 'jessica@example.com',
-        source: PlayerSource.teammate,
-        lastPlayedDate: '3 weeks ago',
-      ),
-    ];
+    try {
+      final supabase = Supabase.instance.client;
+      final currentUser = supabase.auth.currentUser;
+      if (currentUser == null) {
+        setState(() {
+          _contacts = [];
+          _recentTeammates = [];
+          _isLoadingContacts = false;
+        });
+        return;
+      }
+
+      // Load player-only profiles
+      // Filter by is_player = true and optionally by primary_sport
+      var query = supabase
+          .from('profiles')
+          .select('id,user_id,display_name,avatar_url,primary_sport,is_player')
+          .eq('is_active', true)
+          .eq('is_player', true)
+          .neq('user_id', currentUser.id) // Exclude current user
+          .limit(50);
+
+      // Optionally filter by primary_sport if sport is selected
+      final selectedSport = widget.viewModel.state.selectedSport;
+      if (selectedSport != null) {
+        // Filter by primary_sport matching selected sport, or include profiles without primary_sport
+        // We'll do client-side filtering for the OR condition
+      }
+
+      final response = await query.order('display_name');
+
+      if (response.isNotEmpty) {
+        final selectedSport = widget.viewModel.state.selectedSport;
+        final players = response
+            .where((profile) {
+              // Client-side filter: include if primary_sport matches or is null
+              if (selectedSport != null) {
+                final primarySport = profile['primary_sport'] as String?;
+                return primarySport == null || primarySport.toLowerCase() == selectedSport.toLowerCase();
+              }
+              return true;
+            })
+            .map<InvitePlayer>((profile) {
+              return InvitePlayer(
+                id: profile['user_id'] as String,
+                name: profile['display_name'] as String? ?? 'Unknown Player',
+                email: null, // Email not available from profiles table
+                source: PlayerSource.teammate,
+                avatar: profile['avatar_url'] as String?,
+              );
+            })
+            .toList();
+
+        setState(() {
+          _recentTeammates = players;
+          _contacts = []; // Contacts would come from a contacts/connections table
+          _isLoadingContacts = false;
+        });
+      } else {
+        setState(() {
+          _contacts = [];
+          _recentTeammates = [];
+          _isLoadingContacts = false;
+        });
+      }
+    } catch (e) {
+      print('❌ Error loading players: $e');
+      setState(() {
+        _contacts = [];
+        _recentTeammates = [];
+        _isLoadingContacts = false;
+      });
+    }
   }
 
-  void _performSearch(String query) async {
+  Future<void> _performSearch(String query) async {
     if (query.isEmpty) {
       setState(() {
         _searchResults = [];
@@ -121,40 +131,65 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep>
       _isLoadingContacts = true;
     });
 
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      final supabase = Supabase.instance.client;
+      final currentUser = supabase.auth.currentUser;
+      if (currentUser == null) {
+        setState(() {
+          _searchResults = [];
+          _isLoadingContacts = false;
+        });
+        return;
+      }
 
-    final results =
-        [
-              InvitePlayer(
-                id: 's1',
-                name: 'Tom Anderson',
-                email: 'tom@example.com',
-                source: PlayerSource.search,
-              ),
-              InvitePlayer(
-                id: 's2',
-                name: 'Maria Garcia',
-                email: 'maria@example.com',
-                source: PlayerSource.search,
-              ),
-              InvitePlayer(
-                id: 's3',
-                name: 'James Wilson',
-                email: 'james@example.com',
-                source: PlayerSource.search,
-              ),
-            ]
-            .where(
-              (player) =>
-                  player.name.toLowerCase().contains(query.toLowerCase()),
-            )
-            .toList();
+      // Search player-only profiles by display name
+      var searchQuery = supabase
+          .from('profiles')
+          .select('id,user_id,display_name,avatar_url,primary_sport,is_player')
+          .eq('is_active', true)
+          .eq('is_player', true)
+          .neq('user_id', currentUser.id)
+          .ilike('display_name', '%$query%')
+          .limit(20);
 
-    if (mounted) {
-      setState(() {
-        _searchResults = results;
-        _isLoadingContacts = false;
-      });
+      final response = await searchQuery.order('display_name');
+
+      // Client-side filter by primary_sport if sport is selected
+      final selectedSport = widget.viewModel.state.selectedSport;
+      final results = response
+          .where((profile) {
+            // Include if primary_sport matches or is null
+            if (selectedSport != null) {
+              final primarySport = profile['primary_sport'] as String?;
+              return primarySport == null || primarySport.toLowerCase() == selectedSport.toLowerCase();
+            }
+            return true;
+          })
+          .map<InvitePlayer>((profile) {
+            return InvitePlayer(
+              id: profile['user_id'] as String,
+              name: profile['display_name'] as String? ?? 'Unknown Player',
+              email: null,
+              source: PlayerSource.search,
+              avatar: profile['avatar_url'] as String?,
+            );
+          })
+          .toList();
+
+      if (mounted) {
+        setState(() {
+          _searchResults = results;
+          _isLoadingContacts = false;
+        });
+      }
+    } catch (e) {
+      print('❌ Error searching players: $e');
+      if (mounted) {
+        setState(() {
+          _searchResults = [];
+          _isLoadingContacts = false;
+        });
+      }
     }
   }
 

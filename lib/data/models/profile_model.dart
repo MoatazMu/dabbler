@@ -4,10 +4,10 @@ part 'profile_model.freezed.dart';
 part 'profile_model.g.dart';
 
 @freezed
+@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class ProfileModel with _$ProfileModel {
   const ProfileModel._();
 
-  @JsonSerializable(includeIfNull: false, explicitToJson: true)
   const factory ProfileModel({
     @JsonKey(name: 'user_id') required String userId,
     @JsonKey(name: 'display_name') required String displayName,

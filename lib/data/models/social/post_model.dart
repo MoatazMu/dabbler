@@ -1,7 +1,10 @@
 import 'package:dabbler/data/models/social/post.dart';
 import '../../../../utils/enums/social_enums.dart';
 
-/// Data model for social posts with JSON serialization
+/// Data model for social posts with JSON serialization.
+///
+/// This bridges the canonical `public.posts` schema (plus joined `profiles`)
+/// into the social domain `Post` used by the UI.
 class PostModel extends Post {
   const PostModel({
     required super.id,
@@ -30,6 +33,8 @@ class PostModel extends Post {
     super.shareOriginalId,
     super.activityType,
     super.activityData,
+    super.kind,
+    super.primaryVibeId,
   });
 
   /// Create PostModel from Supabase JSON response
@@ -37,7 +42,7 @@ class PostModel extends Post {
     // Parse author data from nested profiles table
     final authorData = json['profiles'] ?? json['author'] ?? {};
 
-    // Parse media URLs - handle both string and array formats
+    // Parse media URLs - handle both legacy media_urls and DB media jsonb.
     List<String> mediaUrls = [];
     if (json['media_urls'] != null) {
       if (json['media_urls'] is String) {
@@ -52,6 +57,16 @@ class PostModel extends Post {
             .map((url) => url.toString())
             .where((url) => url.isNotEmpty)
             .toList();
+      }
+    } else if (json['media'] != null && json['media'] is List) {
+      // DB schema: media is jsonb[] with objects or strings.
+      for (final item in (json['media'] as List)) {
+        if (item is Map && item['url'] != null) {
+          final url = item['url'].toString();
+          if (url.isNotEmpty) mediaUrls.add(url);
+        } else if (item is String && item.isNotEmpty) {
+          mediaUrls.add(item);
+        }
       }
     }
 
@@ -81,7 +96,7 @@ class PostModel extends Post {
           .toList();
     }
 
-    // Parse visibility enum
+    // Parse visibility enum (maps DB visibility values to domain enum).
     PostVisibility visibility = PostVisibility.public;
     if (json['visibility'] != null) {
       switch (json['visibility'].toString().toLowerCase()) {
@@ -89,18 +104,26 @@ class PostModel extends Post {
           visibility = PostVisibility.public;
           break;
         case 'friends':
+        case 'circle':
           visibility = PostVisibility.friends;
           break;
         case 'private':
           visibility = PostVisibility.private;
           break;
         case 'game_participants':
+        case 'link':
           visibility = PostVisibility.gameParticipants;
           break;
         default:
           visibility = PostVisibility.public;
       }
     }
+
+    // Map DB kind (moment/dab/kickin/...) if present.
+    final String kind = json['kind']?.toString() ?? 'moment';
+
+    // Map primary vibe ID if present.
+    final String? primaryVibeId = json['primary_vibe_id']?.toString();
 
     return PostModel(
       id: json['id'] ?? '',
@@ -143,6 +166,8 @@ class PostModel extends Post {
       activityData: json['activity_data'] != null
           ? Map<String, dynamic>.from(json['activity_data'])
           : null,
+      kind: kind,
+      primaryVibeId: primaryVibeId,
     );
   }
 
@@ -159,6 +184,8 @@ class PostModel extends Post {
       'comments_count': commentsCount,
       'shares_count': sharesCount,
       'visibility': _visibilityToString(visibility),
+      'kind': kind,
+      'primary_vibe_id': primaryVibeId,
     };
 
     // Add optional fields only if they have values
@@ -188,6 +215,7 @@ class PostModel extends Post {
       'author_id': authorId,
       'content': content,
       'visibility': _visibilityToString(visibility),
+      'kind': kind,
     };
 
     // Add optional fields
@@ -213,6 +241,7 @@ class PostModel extends Post {
       'visibility': _visibilityToString(visibility),
       'is_edited': true,
       'edited_at': DateTime.now().toIso8601String(),
+      'kind': kind,
     };
 
     // Add optional fields
@@ -252,6 +281,8 @@ class PostModel extends Post {
     DateTime? editedAt,
     String? replyToPostId,
     String? shareOriginalId,
+    String? kind,
+    String? primaryVibeId,
   }) {
     return PostModel(
       id: id ?? this.id,
@@ -278,6 +309,8 @@ class PostModel extends Post {
       editedAt: editedAt ?? this.editedAt,
       replyToPostId: replyToPostId ?? this.replyToPostId,
       shareOriginalId: shareOriginalId ?? this.shareOriginalId,
+      kind: kind ?? this.kind,
+      primaryVibeId: primaryVibeId ?? this.primaryVibeId,
     );
   }
 
@@ -320,11 +353,11 @@ class PostModel extends Post {
       case PostVisibility.public:
         return 'public';
       case PostVisibility.friends:
-        return 'friends';
+        return 'circle';
       case PostVisibility.private:
         return 'private';
       case PostVisibility.gameParticipants:
-        return 'game_participants';
+        return 'link';
     }
   }
 
@@ -394,12 +427,15 @@ class PostCommentModel {
           'Unknown User',
       authorAvatar:
           authorData['avatar_url'] ?? authorData['profile_picture'] ?? '',
-      content: json['content'] ?? '',
+      // Map `body` (post_comments.body) primarily, with `content` as fallback.
+      content: json['body'] ?? json['content'] ?? '',
       createdAt: PostModel._parseDateTime(json['created_at']),
       updatedAt: PostModel._parseDateTime(json['updated_at']),
       likesCount: PostModel._parseInt(json['likes_count'] ?? 0),
       isLiked: json['is_liked'] == true || json['user_has_liked'] == true,
-      replyToCommentId: json['reply_to_comment_id'],
+      // Support both legacy `reply_to_comment_id` and current `parent_comment_id`.
+      replyToCommentId:
+          json['reply_to_comment_id'] ?? json['parent_comment_id'],
       replies: replies,
     );
   }

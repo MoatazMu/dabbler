@@ -5,6 +5,7 @@ import '../models/squad.dart';
 import '../models/squad_invite.dart';
 import '../models/squad_join_request.dart';
 import '../models/squad_member.dart';
+import '../models/squad_link_token.dart';
 
 /// Repository contract for Squad management.
 ///
@@ -77,9 +78,35 @@ abstract class SquadsRepository {
 
   Future<Result<List<SquadInvite>, Failure>> squadInvites(String squadId);
 
-  Future<Result<List<SquadJoinRequest>, Failure>> squadJoinRequests(String squadId);
+  Future<Result<List<SquadJoinRequest>, Failure>> squadJoinRequests(
+    String squadId,
+  );
 
   Future<Result<List<Squad>, Failure>> mySquads();
 
   Stream<Result<List<Squad>, Failure>> mySquadsStream();
+
+  // ----------------------- Compatibility / Extended API -----------------------
+  // These methods were referenced by providers expecting a richer interface.
+  // Provide adapter/stub implementations in the concrete class.
+
+  Future<Result<List<Squad>, Failure>> listMyOwnedSquads();
+  Future<Result<List<SquadMember>, Failure>> listMembers(String squadId);
+  Future<Result<List<SquadInvite>, Failure>> listMyInvites();
+  Future<Result<List<SquadInvite>, Failure>> listSquadInvites(String squadId);
+  Future<Result<List<SquadJoinRequest>, Failure>> listMyJoinRequests();
+  Future<Result<List<SquadJoinRequest>, Failure>> listJoinRequestsForSquad(
+    String squadId,
+  );
+  Future<Result<List<SquadLinkToken>, Failure>> activeLinkTokensForSquad(
+    String squadId,
+  );
+  Future<Result<List<Map<String, dynamic>>, Failure>> squadCards({
+    String? squadId,
+    int? limit,
+    int? offset,
+  });
+  Future<Result<List<Map<String, dynamic>>, Failure>> squadDetail(
+    String squadId,
+  );
 }

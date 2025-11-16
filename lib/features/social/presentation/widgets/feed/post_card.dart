@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
 import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/features/social/services/social_service.dart';
 
 /// A card widget for displaying social posts in the feed
 class PostCard extends StatelessWidget {
@@ -127,49 +127,41 @@ class PostCard extends StatelessWidget {
           ),
         ),
 
-        // Three Dots Menu
-        Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Stack(
-              children: [
-                Container(
-                  width: 18,
-                  height: 18,
-                  alignment: Alignment.center,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Container(
-                        width: 4,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      Container(
-                        width: 4,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      Container(
-                        width: 4,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+        // Overflow menu (hide/report)
+        PopupMenuButton<String>(
+          icon: Icon(
+            Icons.more_vert_rounded,
+            color: colorScheme.onSurfaceVariant,
+          ),
+          itemBuilder: (context) => [
+            const PopupMenuItem<String>(
+              value: 'hide',
+              child: Row(
+                children: [
+                  Icon(Icons.visibility_off_rounded, size: 20),
+                  SizedBox(width: 12),
+                  Text('Hide Post'),
+                ],
+              ),
+            ),
+            const PopupMenuItem<String>(
+              value: 'report',
+              child: Row(
+                children: [
+                  Icon(Icons.flag_rounded, size: 20),
+                  SizedBox(width: 12),
+                  Text('Report'),
+                ],
+              ),
             ),
           ],
+          onSelected: (value) async {
+            if (value == 'hide') {
+              await _hidePost(context);
+            } else if (value == 'report') {
+              await _reportPost(context);
+            }
+          },
         ),
       ],
     );
@@ -294,9 +286,9 @@ class PostCard extends StatelessWidget {
         children: [
           _buildActionButton(
             context: context,
-            emoji: '🩶',
+            emoji: post.isLiked ? '❤️' : '🩶',
             label: post.likesCount.toString(),
-            isActive: false,
+            isActive: post.isLiked,
             onTap: onLike,
             isDark: isDark,
           ),
@@ -360,6 +352,35 @@ class PostCard extends StatelessWidget {
       return '${difference.inMinutes}m';
     } else {
       return 'now';
+    }
+  }
+}
+
+extension on PostCard {
+  Future<void> _hidePost(BuildContext context) async {
+    try {
+      await SocialService().hidePost(post.id);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Post hidden')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to hide post: $e')),
+      );
+    }
+  }
+
+  Future<void> _reportPost(BuildContext context) async {
+    try {
+      // Simple quick-report flow; use ThreadScreen dialog for detailed flow
+      await SocialService().reportPost(postId: post.id, reason: 'Inappropriate content');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Report submitted')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to report: $e')),
+      );
     }
   }
 }

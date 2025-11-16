@@ -424,7 +424,11 @@ class _FriendTileState extends ConsumerState<FriendTile>
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.all(8),
-            child: Icon(icon, size: 20, color: Theme.of(context).colorScheme.onSurfaceVariant),
+            child: Icon(
+              icon,
+              size: 20,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ),
@@ -551,19 +555,17 @@ class _FriendTileState extends ConsumerState<FriendTile>
     return [
       UserModel(
         id: '1',
-        firstName: 'John',
-        lastName: 'Doe',
+        fullName: 'John Doe',
         email: 'john@example.com',
-        profileImageUrl: 'https://example.com/avatar1.jpg',
+        avatarUrl: 'https://example.com/avatar1.jpg',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),
       UserModel(
         id: '2',
-        firstName: 'Jane',
-        lastName: 'Smith',
+        fullName: 'Jane Smith',
         email: 'jane@example.com',
-        profileImageUrl: 'https://example.com/avatar2.jpg',
+        avatarUrl: 'https://example.com/avatar2.jpg',
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       ),

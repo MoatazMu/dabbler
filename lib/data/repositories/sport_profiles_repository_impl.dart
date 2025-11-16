@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:fpdart/fpdart.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/sport_profile.dart';
@@ -43,7 +42,9 @@ class SportProfilesRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<SportProfile?, Failure>> getMySportByKey(String sportKey) async {
+  Future<Result<SportProfile?, Failure>> getMySportByKey(
+    String sportKey,
+  ) async {
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
@@ -133,7 +134,9 @@ class SportProfilesRepositoryImpl extends BaseRepository
   }
 
   @override
-  Future<Result<void, Failure>> removeMySport({required String sportKey}) async {
+  Future<Result<void, Failure>> removeMySport({
+    required String sportKey,
+  }) async {
     const table = _table;
     final uid = svc.authUserId();
     if (uid == null) {
@@ -155,7 +158,8 @@ class SportProfilesRepositoryImpl extends BaseRepository
   @override
   Stream<Result<List<SportProfile>, Failure>> watchMySports() {
     const table = _table;
-    final controller = StreamController<Result<List<SportProfile>, Failure>>.broadcast();
+    final controller =
+        StreamController<Result<List<SportProfile>, Failure>>.broadcast();
     RealtimeChannel? channel;
 
     Future<void> emitCurrent() async {
@@ -169,7 +173,11 @@ class SportProfilesRepositoryImpl extends BaseRepository
       final uid = svc.authUserId();
       if (uid == null) {
         if (!controller.isClosed) {
-          controller.add(const Left(AuthFailure(message: 'Not signed in')));
+          controller.add(
+            const Err<List<SportProfile>, Failure>(
+              AuthFailure(message: 'Not signed in'),
+            ),
+          );
         }
         return;
       }
@@ -178,7 +186,9 @@ class SportProfilesRepositoryImpl extends BaseRepository
         await emitCurrent();
       } catch (e) {
         if (!controller.isClosed) {
-          controller.add(left(svc.mapPostgrestError(e)));
+          controller.add(
+            Err<List<SportProfile>, Failure>(svc.mapPostgrestError(e)),
+          );
         }
       }
 

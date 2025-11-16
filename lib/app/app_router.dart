@@ -72,7 +72,7 @@ import 'package:dabbler/features/misc/presentation/screens/add_post_screen.dart'
 import 'package:dabbler/features/social/presentation/screens/social_feed_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/social_search_screen.dart';
 import 'package:dabbler/features/profile/presentation/screens/profile/user_profile_screen.dart';
-import 'package:dabbler/features/social/presentation/screens/social_feed/post_detail_screen.dart';
+import 'package:dabbler/features/social/presentation/screens/social_feed/thread_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_welcome_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_friends_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_privacy_screen.dart';
@@ -841,7 +841,7 @@ class AppRouter {
         final postId = state.pathParameters['postId'] ?? '';
         return ScaleTransitionPage(
           key: state.pageKey,
-          child: PostDetailScreen(postId: postId),
+          child: ThreadScreen(postId: postId),
         );
       },
     ),

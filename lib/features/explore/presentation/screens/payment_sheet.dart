@@ -103,9 +103,9 @@ class _PaymentSheetState extends State<PaymentSheet> {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: DS.primary.withOpacity(0.05),
+                color: DS.primary.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: DS.primary.withOpacity(0.1)),
+                border: Border.all(color: DS.primary.withValues(alpha: 0.1)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -143,7 +143,10 @@ class _PaymentSheetState extends State<PaymentSheet> {
               children: [
                 Text(
                   'Payment Method',
-                  style: DS.subtitle.copyWith(fontWeight: FontWeight.w700),
+                  style: DS.body.copyWith(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 ..._paymentMethods.map((method) => _buildPaymentMethod(method)),
@@ -160,7 +163,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
               child: Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: DS.error.withOpacity(0.1),
+                  color: DS.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -245,12 +248,14 @@ class _PaymentSheetState extends State<PaymentSheet> {
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? DS.primary.withOpacity(0.05) : DS.surface,
+          color: isSelected
+              ? DS.primary.withValues(alpha: 0.05)
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected
                 ? DS.primary
-                : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                : Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -259,7 +264,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: color, size: 20),
@@ -271,8 +276,7 @@ class _PaymentSheetState extends State<PaymentSheet> {
                 style: DS.body.copyWith(fontWeight: FontWeight.w600),
               ),
             ),
-            if (isSelected)
-              Icon(Icons.check, color: DS.primary, size: 20),
+            if (isSelected) Icon(Icons.check, color: DS.primary, size: 20),
           ],
         ),
       ),

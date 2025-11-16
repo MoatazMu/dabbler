@@ -8,3 +8,4 @@ export 'features/venues/providers.dart';
 export 'features/misc/data/datasources/supabase_remote_data_source.dart';
 export 'features/social/circles_providers.dart';
 export 'features/social/providers.dart';
+export 'features/home/presentation/providers/home_providers.dart';

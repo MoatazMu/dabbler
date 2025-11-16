@@ -21,6 +21,9 @@ class PointsTransaction extends BaseEntity {
     required this.createdAt,
   });
 
+  /// Compatibility alias used by some services expecting `finalPoints` (see PointTransaction model).
+  int get finalPoints => points;
+
   @override
   List<Object?> get props => [
     id,

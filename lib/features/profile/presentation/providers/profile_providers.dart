@@ -15,6 +15,8 @@ import '../../data/datasources/profile_data_sources.dart'
     show ProfileLocalDataSource, ProfileLocalDataSourceImpl;
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../data/repositories/profile_repository_impl.dart';
+import 'package:dabbler/features/authentication/presentation/providers/auth_profile_providers.dart'
+    show currentUserIdProvider;
 
 // Domain layer imports
 import 'package:dabbler/data/models/profile/user_profile.dart';
@@ -306,16 +308,21 @@ final initializeProfileDataProvider = FutureProvider<bool>((ref) async {
   final privacyController = ref.read(privacyControllerProvider.notifier);
   final sportsController = ref.read(sportsProfileControllerProvider.notifier);
 
-  const userId = 'current-user-id'; // Would come from auth
+  // Resolve current authenticated user id
+  final userId = ref.read(currentUserIdProvider);
 
   try {
-    await Future.wait([
-      profileController.loadProfile(userId),
-      settingsController.loadSettings(userId),
-      preferencesController.loadPreferences(userId),
-      privacyController.loadPrivacySettings(userId),
-      sportsController.loadSportsProfiles(userId),
-    ]);
+    if (userId != null && userId.isNotEmpty) {
+      await Future.wait([
+        profileController.loadProfile(userId),
+        settingsController.loadSettings(userId),
+        preferencesController.loadPreferences(userId),
+        privacyController.loadPrivacySettings(userId),
+        sportsController.loadSportsProfiles(userId),
+      ]);
+    } else {
+      return false;
+    }
     return true;
   } catch (e) {
     return false;

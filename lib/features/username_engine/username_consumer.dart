@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'providers.dart';
+import 'package:dabbler/core/fp/result.dart';
 
 class UsernameConsumer extends ConsumerWidget {
   const UsernameConsumer({super.key, required this.profileType});

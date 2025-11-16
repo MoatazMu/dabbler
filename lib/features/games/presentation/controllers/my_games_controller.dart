@@ -198,10 +198,10 @@ class MyGamesController extends StateNotifier<MyGamesState> {
     required GamesRepository gamesRepository,
     required this.userId,
     GameCompletionRewardsHandler? completionHandler,
-  })  : _cancelGameUseCase = cancelGameUseCase,
-        _gamesRepository = gamesRepository,
-        _completionHandler = completionHandler ?? GameCompletionRewardsHandler(),
-        super(const MyGamesState()) {
+  }) : _cancelGameUseCase = cancelGameUseCase,
+       _gamesRepository = gamesRepository,
+       _completionHandler = completionHandler ?? GameCompletionRewardsHandler(),
+       super(const MyGamesState()) {
     _initializeMyGames();
     _startReminderTimer();
   }
@@ -510,10 +510,7 @@ class MyGamesController extends StateNotifier<MyGamesState> {
           return;
         }
 
-        await _handleMatchCompletion(
-          game,
-          completionStats: completionStats,
-        );
+        await _handleMatchCompletion(game, completionStats: completionStats);
         break;
     }
   }
@@ -551,9 +548,8 @@ class MyGamesController extends StateNotifier<MyGamesState> {
           );
         } catch (error, stackTrace) {
           Logger.error(
-            '$_logTag: Failed to apply match outcome for gameId=${game.id}',
+            '$_logTag: Failed to apply match outcome for gameId=${game.id} (stackTrace: $stackTrace)',
             error,
-            stackTrace: stackTrace,
           );
         }
 

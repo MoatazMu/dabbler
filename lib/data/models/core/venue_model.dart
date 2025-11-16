@@ -17,7 +17,7 @@ class Venue {
   const Venue({
     required this.id,
     required this.name,
-    required this.city,
+    required this.location,
     this.imageUrl,
     this.rating = 0.0,
     this.amenities = const [],
@@ -30,11 +30,14 @@ class Venue {
     this.openingHours,
   });
 
+  /// Backwards-compatible getter until all callsites migrate to `location`.
+  String get city => location;
+
   factory Venue.fromJson(Map<String, dynamic> json) {
     return Venue(
       id: json['id'],
       name: json['name'],
-      location: json['location'],
+      location: json['location'] ?? json['city'] ?? '',
       imageUrl: json['imageUrl'],
       rating: json['rating']?.toDouble() ?? 0.0,
       amenities: List<String>.from(json['amenities'] ?? []),

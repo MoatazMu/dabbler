@@ -6,6 +6,7 @@ import '../../features/games/domain/repositories/games_repository.dart';
 import '../../features/games/data/repositories/games_repository_impl.dart';
 import '../../features/games/data/datasources/supabase_games_datasource.dart';
 import '../../routes/route_arguments.dart';
+import '../utils/game_creation_mapper.dart';
 
 class GameCreationViewModel extends ChangeNotifier {
   GameCreationModel _state = GameCreationModel.initial();
@@ -141,6 +142,7 @@ class GameCreationViewModel extends ChangeNotifier {
           skillLevel: draftData['skillLevel'],
           maxPlayers: draftData['maxPlayers'],
           gameDuration: draftData['gameDuration'],
+          gameType: draftData['gameType'],
 
           // Venue & Slot Selection
           selectedVenueSlot: draftData['selectedVenueSlot'] != null
@@ -162,6 +164,7 @@ class GameCreationViewModel extends ChangeNotifier {
           gameDescription: draftData['gameDescription'],
           allowWaitlist: draftData['allowWaitlist'],
           maxWaitlistSize: draftData['maxWaitlistSize'],
+          allowSpectators: draftData['allowSpectators'],
           totalCost: draftData['totalCost'],
 
           // Player Invitation
@@ -369,6 +372,14 @@ class GameCreationViewModel extends ChangeNotifier {
     autoSaveDraft();
   }
 
+  void selectGameType(String gameType) {
+    _state = _state.copyWith(gameType: gameType);
+    notifyListeners();
+
+    // Auto-save after game type selection
+    autoSaveDraft();
+  }
+
   void updateMaxPlayers(int count) {
     _state = _state.copyWith(maxPlayers: count);
     notifyListeners();
@@ -380,21 +391,52 @@ class GameCreationViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Fetch venues from database using actual column names in schema
-      // Schema fields: id, name_en, address_line1, city, amenities (text[]), is_active
-      final response = await Supabase.instance.client
+      // Build select columns
+      String selectColumns = 'id,name_en,address_line1,city,amenities,is_active,lat,lng,is_indoor,surface_type,min_price_per_hour,max_price_per_hour,rating,rating_count';
+      
+      // Add venue_spaces join if sport filter is needed
+      if (_state.selectedSport != null) {
+        selectColumns += ',venue_spaces(sport,is_active)';
+      }
+
+      // Build query with filters
+      var query = Supabase.instance.client
           .from('venues')
-          .select('id,name_en,address_line1,city,amenities,is_active')
-          .eq('is_active', true)
-          .order('name_en');
+          .select(selectColumns)
+          .eq('is_active', true);
+
+      // Apply amenity filters if set
+      if (_state.amenityFilters != null && _state.amenityFilters!.isNotEmpty) {
+        query = query.overlaps('amenities', _state.amenityFilters!);
+      }
+
+      final response = await query.order('name_en');
 
       if (response.isNotEmpty) {
         _availableVenues = response
             .map((raw) {
               final venueData = Map<String, dynamic>.from(raw as Map);
+              
+              // Filter by sport if selected (client-side filter on venue_spaces)
+              if (_state.selectedSport != null) {
+                final spaces = venueData['venue_spaces'];
+                if (spaces is List) {
+                  final hasSportSpace = spaces.any((space) {
+                    if (space is Map<String, dynamic>) {
+                      return space['sport'] == _state.selectedSport?.toLowerCase() &&
+                          (space['is_active'] ?? true);
+                    }
+                    return false;
+                  });
+                  if (!hasSportSpace) return null;
+                } else if (spaces == null) {
+                  // No spaces data, skip this venue
+                  return null;
+                }
+              }
+
               // Create VenueSlot from database data
-              // Note: Slot and price are placeholders until booking grid is wired
-              final tomorrow = DateTime.now().add(const Duration(days: 1));
+              final tomorrow = _state.selectedDate ?? DateTime.now().add(const Duration(days: 1));
               final startAt = DateTime(
                 tomorrow.year,
                 tomorrow.month,
@@ -409,21 +451,31 @@ class GameCreationViewModel extends ChangeNotifier {
                   .cast<String>()
                   .join(', ');
 
+              // Extract amenities
+              Map<String, dynamic>? amenitiesMap;
+              if (venueData['amenities'] != null) {
+                final amenitiesList = venueData['amenities'];
+                if (amenitiesList is List) {
+                  amenitiesMap = {'list': amenitiesList};
+                }
+              }
+
               return VenueSlot(
                 venueId: venueData['id'].toString(),
                 venueName:
                     (venueData['name_en'] as String?)?.trim() ??
                     'Unknown Venue',
                 location: location,
-                rating: 0.0, // TODO: derive from venue_rating_aggregate
+                rating: (venueData['rating'] as num?)?.toDouble() ?? 0.0,
                 timeSlot: TimeSlot(
                   startTime: startAt,
-                  duration: const Duration(hours: 2),
-                  price: 0.0, // TODO: derive from space_prices/slot grid
+                  duration: Duration(minutes: _state.gameDuration ?? 90),
+                  price: (venueData['min_price_per_hour'] as num?)?.toDouble() ?? 0.0,
                 ),
-                amenities: null,
+                amenities: amenitiesMap,
               );
             })
+            .whereType<VenueSlot>()
             .toList(growable: false);
       } else {
         _availableVenues = const [];
@@ -482,6 +534,11 @@ class GameCreationViewModel extends ChangeNotifier {
 
   void toggleWaitlist(bool allow) {
     _state = _state.copyWith(allowWaitlist: allow);
+    notifyListeners();
+  }
+
+  void toggleAllowSpectators(bool allow) {
+    _state = _state.copyWith(allowSpectators: allow);
     notifyListeners();
   }
 
@@ -607,31 +664,25 @@ class GameCreationViewModel extends ChangeNotifier {
       if (_state.selectedSport == null) {
         throw Exception('Sport selection is required');
       }
-      if (_state.selectedDate == null) {
-        throw Exception('Game date is required');
+      // Validate date and time selection
+      if (_state.selectedDate == null ||
+          _state.selectedVenueSlot?.timeSlot.startTime == null) {
+        throw Exception('Please select a valid date and time');
       }
-      if (_state.selectedVenueSlot?.timeSlot.startTime == null) {
-        throw Exception('Start time is required');
+      // Enforce start time at least 2 hours in the future
+      final selectedDate = _state.selectedDate!;
+      final selectedStart = _state.selectedVenueSlot!.timeSlot.startTime;
+      final startAt = DateTime(
+        selectedDate.year,
+        selectedDate.month,
+        selectedDate.day,
+        selectedStart.hour,
+        selectedStart.minute,
+      );
+      final minStart = DateTime.now().add(const Duration(hours: 2));
+      if (!startAt.isAfter(minStart)) {
+        throw Exception('Start time must be at least 2 hours from now');
       }
-      if (_state.selectedVenueSlot?.timeSlot.endTime == null) {
-        throw Exception('End time is required');
-      }
-      if (_state.maxPlayers == null) {
-        throw Exception('Maximum players is required');
-      }
-      if (_state.totalCost == null) {
-        throw Exception('Price is required');
-      }
-      if (_state.skillLevel == null) {
-        throw Exception('Skill level is required');
-      }
-      if (_state.participationMode == null) {
-        throw Exception('Participation mode is required');
-      }
-      if (_state.allowWaitlist == null) {
-        throw Exception('Waitlist preference is required');
-      }
-
       // Get profile_id from user_id
       final supabase = Supabase.instance.client;
       final profileResponse = await supabase
@@ -650,57 +701,12 @@ class GameCreationViewModel extends ChangeNotifier {
 
       final profileId = profileResponse['id'] as String;
 
-      // Combine date and time into start_at and end_at timestamps
-      final startDateTime = DateTime(
-        _state.selectedDate!.year,
-        _state.selectedDate!.month,
-        _state.selectedDate!.day,
-        _state.selectedVenueSlot!.timeSlot.startTime.hour,
-        _state.selectedVenueSlot!.timeSlot.startTime.minute,
+      // Use mapper to create database payload
+      final gameData = GameCreationMapper.toDatabasePayload(
+        model: _state,
+        hostUserId: user.id,
+        hostProfileId: profileId,
       );
-      final endDateTime = DateTime(
-        _state.selectedDate!.year,
-        _state.selectedDate!.month,
-        _state.selectedDate!.day,
-        _state.selectedVenueSlot!.timeSlot.endTime.hour,
-        _state.selectedVenueSlot!.timeSlot.endTime.minute,
-      );
-
-      // Prepare game data for database - using correct field names
-      final gameData = <String, dynamic>{
-        'title': _state.gameTitle!,
-        'sport': _state.selectedSport!,
-        'start_at': startDateTime.toIso8601String(),
-        'end_at': endDateTime.toIso8601String(),
-        'capacity': _state.maxPlayers!,
-        'host_user_id': user.id,
-        'host_profile_id': profileId,
-        'min_skill': _parseSkillLevelToInt(_state.skillLevel!),
-        'max_skill': _parseSkillLevelToInt(_state.skillLevel!),
-        'listing_visibility':
-            _state.participationMode == ParticipationMode.public
-            ? 'public'
-            : 'private',
-        'join_policy': 'open', // Default join policy
-        'allow_spectators': false, // Default
-        'is_cancelled': false,
-        'allows_waitlist': _state.allowWaitlist!,
-      };
-
-      // Add optional fields only if provided by user
-      if (_state.gameDescription != null &&
-          _state.gameDescription!.isNotEmpty) {
-        gameData['description'] = _state.gameDescription;
-      }
-
-      // Add venue_space_id if selected and is a valid UUID format
-      if (_state.selectedVenueSlot?.venueId != null) {
-        final venueId = _state.selectedVenueSlot!.venueId;
-        // Check if it's a valid UUID (contains hyphens and is proper length)
-        if (venueId.contains('-') && venueId.length >= 36) {
-          gameData['venue_space_id'] = venueId;
-        }
-      }
 
       print('🎮 Creating game with data: $gameData');
 
@@ -842,22 +848,6 @@ class GameCreationViewModel extends ChangeNotifier {
 
     // Auto-save step-specific state
     autoSaveDraft(stepLocalState: _state.stepLocalState);
-  }
-
-  /// Helper method to parse skill level string to integer
-  /// Returns skill level as integer: 1=beginner, 2=intermediate, 3=advanced, 0=mixed
-  int _parseSkillLevelToInt(String skillLevel) {
-    switch (skillLevel.toLowerCase()) {
-      case 'beginner':
-        return 1;
-      case 'intermediate':
-        return 2;
-      case 'advanced':
-        return 3;
-      case 'mixed':
-      default:
-        return 0;
-    }
   }
 
   void updateSelectedDate(DateTime date) {

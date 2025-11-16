@@ -67,7 +67,8 @@ class PlayerSportProfileHeader extends StatelessWidget {
                   children: [
                     Text(
                       'Overall ${profile.overallLevel.toStringAsFixed(1)}',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
                             color: colorScheme.onPrimary,
                             fontWeight: FontWeight.w700,
                           ),
@@ -76,8 +77,8 @@ class PlayerSportProfileHeader extends StatelessWidget {
                     Text(
                       _buildPositionLabel(secondaryPositions),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onPrimary.withOpacity(0.8),
-                          ),
+                        color: colorScheme.onPrimary.withOpacity(0.8),
+                      ),
                     ),
                   ],
                 ),
@@ -135,25 +136,24 @@ class PlayerSportProfileHeader extends StatelessWidget {
           Text(
             profile.sportKey.toUpperCase(),
             style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colorScheme.onPrimary,
-                  letterSpacing: 0.8,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: colorScheme.onPrimary,
+              letterSpacing: 0.8,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           if (isVerified) ...[
             const SizedBox(width: 6),
-            Icon(
-              Icons.verified,
-              size: 18,
-              color: colorScheme.onPrimary,
-            ),
+            Icon(Icons.verified, size: 18, color: colorScheme.onPrimary),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildTierChip(BuildContext context, advanced_tier.SportProfileTier tier) {
+  Widget _buildTierChip(
+    BuildContext context,
+    advanced_tier.SportProfileTier tier,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
@@ -165,10 +165,10 @@ class PlayerSportProfileHeader extends StatelessWidget {
       child: Text(
         tier.key.toUpperCase(),
         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: colorScheme.onPrimary,
-              letterSpacing: 0.6,
-              fontWeight: FontWeight.w600,
-            ),
+          color: colorScheme.onPrimary,
+          letterSpacing: 0.6,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -190,15 +190,15 @@ class PlayerSportProfileHeader extends StatelessWidget {
             Text(
               'XP Level ${profile.xpLevel.toStringAsFixed(0)}',
               style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                    color: colorScheme.onPrimary,
-                    fontWeight: FontWeight.w600,
-                  ),
+                color: colorScheme.onPrimary,
+                fontWeight: FontWeight.w600,
+              ),
             ),
             Text(
               '${xpCurrent.toStringAsFixed(0)} / ${xpTarget.toStringAsFixed(0)}',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                    color: colorScheme.onPrimary.withOpacity(0.75),
-                  ),
+                color: colorScheme.onPrimary.withOpacity(0.75),
+              ),
             ),
           ],
         ),
@@ -234,7 +234,8 @@ class PlayerSportProfileHeader extends StatelessWidget {
         Expanded(
           child: _buildMetricTile(
             context,
-            icon: Icons.shield_person,
+            // Replaced unavailable icon (Icons.shield_person) with a supported Material icon.
+            icon: Icons.security,
             label: 'Reliability',
             value: profile.reliabilityScore.toStringAsFixed(1),
             color: colorScheme.onPrimary,
@@ -269,16 +270,16 @@ class PlayerSportProfileHeader extends StatelessWidget {
               Text(
                 label,
                 style: theme.textTheme.labelMedium?.copyWith(
-                      color: color.withOpacity(0.85),
-                    ),
+                  color: color.withOpacity(0.85),
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
                 style: theme.textTheme.titleMedium?.copyWith(
-                      color: color,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  color: color,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
@@ -299,9 +300,9 @@ class PlayerSportProfileHeader extends StatelessWidget {
         Text(
           'Badges',
           style: theme.textTheme.labelLarge?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w600,
-              ),
+            color: color,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         const SizedBox(height: 8),
         Row(
@@ -314,8 +315,8 @@ class PlayerSportProfileHeader extends StatelessWidget {
               Text(
                 '+$remainingCount more',
                 style: theme.textTheme.labelMedium?.copyWith(
-                      color: color.withOpacity(0.8),
-                    ),
+                  color: color.withOpacity(0.8),
+                ),
               ),
           ],
         ),
@@ -360,10 +361,7 @@ class PlayerSportProfileHeader extends StatelessWidget {
 }
 
 class _BadgeChip extends StatelessWidget {
-  const _BadgeChip({
-    required this.badge,
-    required this.color,
-  });
+  const _BadgeChip({required this.badge, required this.color});
 
   final advanced_badge.SportProfileBadge badge;
   final Color color;
@@ -389,9 +387,9 @@ class _BadgeChip extends StatelessWidget {
       child: Text(
         badge.name.isNotEmpty ? badge.name : badge.key,
         style: theme.textTheme.labelMedium?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w600,
-            ),
+          color: color,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

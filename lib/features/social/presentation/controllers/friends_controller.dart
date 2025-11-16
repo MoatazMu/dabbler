@@ -77,7 +77,7 @@ class FriendsState {
     var filtered = searchQuery.isEmpty
         ? friends
         : friends.where((friend) {
-            final name = friend.fullName.toLowerCase();
+            final name = (friend.fullName ?? '').toLowerCase();
             return name.contains(searchQuery.toLowerCase());
           }).toList();
 
@@ -386,9 +386,9 @@ class FriendsController extends StateNotifier<FriendsState> {
           // Add to blocked users
           final blockedUser = UserModel(
             id: userId,
-            firstName: 'Blocked User',
+            fullName: 'Blocked User',
             email: 'blocked@example.com',
-            profileImageUrl: null,
+            avatarUrl: null,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
           );
@@ -559,9 +559,9 @@ class FriendsController extends StateNotifier<FriendsState> {
       5,
       (index) => UserModel(
         id: '${status.name}_friend_$index',
-        firstName: '${status.name.toUpperCase()} Friend $index',
+        fullName: '${status.name.toUpperCase()} Friend $index',
         email: '${status.name}_friend_$index@example.com',
-        profileImageUrl: 'https://example.com/avatar_$index.jpg',
+        avatarUrl: 'https://example.com/avatar_$index.jpg',
         createdAt: DateTime.now().subtract(Duration(days: index)),
         updatedAt: DateTime.now().subtract(Duration(days: index)),
       ),
@@ -612,9 +612,9 @@ class FriendsController extends StateNotifier<FriendsState> {
 
     return UserModel(
       id: userId,
-      firstName: 'User $userId',
+      fullName: 'User $userId',
       email: 'user_$userId@example.com',
-      profileImageUrl: 'https://example.com/avatar.jpg',
+      avatarUrl: 'https://example.com/avatar.jpg',
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );

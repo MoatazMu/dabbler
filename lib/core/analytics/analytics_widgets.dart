@@ -46,7 +46,7 @@ class _AnalyticsTrackingWidgetState extends State<AnalyticsTrackingWidget> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _analytics.trackScreenView(
         screenName: widget.screenName,
-        additionalData: widget.initialContext,
+        properties: widget.initialContext,
       );
     });
   }
@@ -89,8 +89,9 @@ class _AnalyticsTrackingWidgetState extends State<AnalyticsTrackingWidget> {
       final timeSpent = DateTime.now().difference(_startTime!);
       _analytics.trackGameEngagement(
         gameId: 'screen_${widget.screenName}',
+        sportType: 'screen_time',
         action: 'time_spent',
-        timeSpent: timeSpent,
+        metadata: {'seconds': timeSpent.inSeconds},
       );
     }
 
@@ -256,7 +257,7 @@ class _AnalyticsTextFormFieldState extends State<AnalyticsTextFormField> {
             _analytics.trackError(
               errorType: 'form_validation_error',
               errorMessage: error,
-              screen: 'form_field_${widget.fieldName}',
+              context: {'screen': 'form_field_${widget.fieldName}'},
             );
           }
           return error;
@@ -407,16 +408,14 @@ class _AnalyticsCardState extends State<AnalyticsCard> {
 // Note: VisibilityDetector would need to be implemented or imported
 // For now, we'll use a simpler approach with gesture detection
 class VisibilityDetector extends StatefulWidget {
-  @override
-  final Key key;
   final Widget child;
   final Function(VisibilityInfo) onVisibilityChanged;
 
   const VisibilityDetector({
-    required this.key,
     required this.child,
     required this.onVisibilityChanged,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
   State<VisibilityDetector> createState() => _VisibilityDetectorState();
@@ -475,7 +474,7 @@ class _AnalyticsErrorBoundaryState extends State<AnalyticsErrorBoundary> {
           errorType: 'widget_error',
           errorMessage: error.toString(),
           stackTrace: stackTrace.toString(),
-          screen: widget.context,
+          context: {'screen': widget.context},
         );
       },
       child: widget.child,

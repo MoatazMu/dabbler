@@ -175,6 +175,7 @@ class _MockActivity {
     this.description,
     this.type,
     this.date,
+    this.location,
   });
 }
 
@@ -342,29 +343,50 @@ final postDetailsProvider = FutureProvider.family<dynamic, String>((
   postId,
 ) async {
   try {
-    print('DEBUG: postDetailsProvider called with postId: $postId');
     final socialService = SocialService();
-
-    // Fetch the post from the feed (in a real implementation, you'd have a getPostById method)
-    // For now, we'll get from feed and filter, or you can add a new method to SocialService
-    final posts = await socialService.getFeedPosts(limit: 100);
-    print('DEBUG: Fetched ${posts.length} posts from service');
-    print('DEBUG: Post IDs: ${posts.map((p) => p.id).toList()}');
-
-    final post = posts.firstWhere(
-      (p) => p.id == postId,
-      orElse: () => throw Exception('Post not found with id: $postId'),
-    );
-
-    print('DEBUG: Found post with content: "${post.content}"');
-    return post;
+    return await socialService.getPostById(postId);
   } catch (e) {
-    print('ERROR in postDetailsProvider: $e');
     throw Exception('Failed to load post: $e');
   }
 });
 
-/// Provider for post comments
+/// Provider for available vibes (catalog)
+final vibesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+  final socialService = SocialService();
+  return socialService.getVibes();
+});
+
+/// Provider for vibes assigned to a specific post
+final postVibesProvider =
+    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, postId) async {
+  final socialService = SocialService();
+  return socialService.getPostVibes(postId);
+});
+
+/// Helper function to transform a comment with nested replies
+_CommentData _transformComment(Map<String, dynamic> comment) {
+  final profile = comment['profiles'];
+  final replies = comment['replies'] as List<dynamic>? ?? [];
+  
+  return _CommentData(
+    id: comment['id'],
+    authorId: comment['author_user_id'],
+    content: comment['body'] ?? '',
+    createdAt: DateTime.parse(comment['created_at']),
+    author: _UserViewModel(
+      id: comment['author_user_id'],
+      name: profile?['display_name'] ?? 'Unknown',
+      username: profile?['display_name'] ?? 'unknown',
+      avatar: profile?['avatar_url'],
+      isVerified: profile?['verified'] ?? false,
+    ),
+    likesCount: 0, // Comment likes not implemented yet
+    isLiked: false,
+    replies: replies.map((reply) => _transformComment(reply as Map<String, dynamic>)).toList(),
+  );
+}
+
+/// Provider for post comments with nested replies
 final postCommentsProvider = FutureProvider.family<List<dynamic>, String>((
   ref,
   postId,
@@ -373,36 +395,27 @@ final postCommentsProvider = FutureProvider.family<List<dynamic>, String>((
     final socialService = SocialService();
     final rawComments = await socialService.getComments(postId);
 
-    // Transform database comments to UI-expected format
-    return rawComments.map((comment) {
-      final profile = comment['profiles'];
-      return _CommentData(
-        id: comment['id'],
-        authorId: comment['author_user_id'],
-        content: comment['body'] ?? '',
-        createdAt: DateTime.parse(comment['created_at']),
-        author: _UserViewModel(
-          id: comment['author_user_id'],
-          name: profile?['display_name'] ?? 'Unknown',
-          username: profile?['display_name'] ?? 'unknown',
-          avatar: profile?['avatar_url'],
-          isVerified: profile?['verified'] ?? false,
-        ),
-        likesCount: 0, // Comment likes not implemented yet
-        isLiked: false,
-        replies: const [], // Nested replies not implemented yet
-      );
-    }).toList();
+    // Transform database comments to UI-expected format with nested replies
+    return rawComments.map((comment) => _transformComment(comment)).toList();
   } catch (e) {
     throw Exception('Failed to load comments: $e');
   }
 });
 
-/// Provider for post comments count
+/// Helper function to count all comments including replies recursively
+int _countAllComments(List<_CommentData> comments) {
+  int count = comments.length;
+  for (final comment in comments) {
+    count += _countAllComments(comment.replies);
+  }
+  return count;
+}
+
+/// Provider for post comments count (including nested replies)
 final postCommentsCountProvider = Provider.family<int, String>((ref, postId) {
   final commentsAsync = ref.watch(postCommentsProvider(postId));
   return commentsAsync.when(
-    data: (comments) => comments.length,
+    data: (comments) => _countAllComments(comments.cast<_CommentData>()),
     loading: () => 0,
     error: (_, __) => 0,
   );

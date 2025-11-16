@@ -21,6 +21,8 @@ class BookingSummaryModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -61,10 +63,10 @@ class BookingSummaryModal extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: DS.surface,
+                color: colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+                  color: colorScheme.outline.withValues(alpha: 0.1),
                 ),
               ),
               child: Row(
@@ -73,7 +75,7 @@ class BookingSummaryModal extends StatelessWidget {
                     width: 50,
                     height: 50,
                     decoration: BoxDecoration(
-                      color: DS.primary.withOpacity(0.1),
+                      color: DS.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
@@ -89,7 +91,8 @@ class BookingSummaryModal extends StatelessWidget {
                       children: [
                         Text(
                           venue['name'] as String,
-                          style: DS.subtitle.copyWith(
+                          style: DS.body.copyWith(
+                            fontSize: 16,
                             fontWeight: FontWeight.w700,
                           ),
                           maxLines: 1,
@@ -136,9 +139,9 @@ class BookingSummaryModal extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: DS.primary.withOpacity(0.05),
+                color: DS.primary.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: DS.primary.withOpacity(0.1)),
+                border: Border.all(color: DS.primary.withValues(alpha: 0.1)),
               ),
               child: Row(
                 children: [

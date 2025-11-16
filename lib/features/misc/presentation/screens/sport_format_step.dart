@@ -111,6 +111,9 @@ class _SportFormatStepState extends State<SportFormatStep> {
         return;
       } else if (state.selectedFormat == null) {
         _scrollToNextSection(_formatSectionKey);
+      } else if (state.gameType == null) {
+        // Game type selection is after format
+        return; // Will scroll when game type section is visible
       } else if (_selectedDate == null) {
         _scrollToNextSection(_dateSelectionKey);
       } else if (_selectedTimeSlot == null) {
@@ -211,6 +214,12 @@ class _SportFormatStepState extends State<SportFormatStep> {
                     selectedFormat,
                   ),
                 ),
+                const SizedBox(height: 32),
+              ],
+
+              // Game Type Selection
+              if (selectedSport != null && selectedFormat != null) ...[
+                _buildGameTypeSelection(context, state.gameType),
                 const SizedBox(height: 32),
               ],
 
@@ -1089,6 +1098,94 @@ class _SportFormatStepState extends State<SportFormatStep> {
                               ? context.colors.primary
                               : context.colors.onSurface,
                         ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGameTypeSelection(BuildContext context, String? gameType) {
+    final gameTypes = [
+      {'value': 'pickup', 'label': 'Pickup', 'icon': Icons.sports_soccer},
+      {'value': 'training', 'label': 'Training', 'icon': Icons.fitness_center},
+      {'value': 'league', 'label': 'League', 'icon': Icons.emoji_events},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Game Type',
+          style: context.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: context.colors.onSurface,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Select the type of game you want to create',
+          style: context.textTheme.bodySmall?.copyWith(
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: gameTypes.map((type) {
+                final isSelected = gameType == type['value'];
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: GestureDetector(
+                    onTap: () {
+                      widget.viewModel.selectGameType(type['value'] as String);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? context.colors.primary.withValues(alpha: 0.1)
+                            : context.violetWidgetBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected
+                              ? context.colors.primary
+                              : context.colors.outline.withValues(alpha: 0.1),
+                          width: isSelected ? 2 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            type['icon'] as IconData,
+                            size: 20,
+                            color: isSelected
+                                ? context.colors.primary
+                                : context.colors.onSurface,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            type['label'] as String,
+                            style: context.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: isSelected
+                                  ? context.colors.primary
+                                  : context.colors.onSurface,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

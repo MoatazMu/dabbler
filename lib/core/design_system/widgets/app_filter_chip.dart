@@ -5,8 +5,17 @@ import 'package:flutter/material.dart';
 /// Rest state: Shows emoji + label
 /// Active state: Shows emoji + label + optional count badge
 class AppFilterChip extends StatelessWidget {
-  /// The emoji to display (e.g., '⚽️', '🎮')
-  final String emoji;
+  /// Optional emoji to display (e.g., '⚽️'). Provide either [emoji] or [icon].
+  final String? emoji;
+
+  /// Optional icon to display instead of emoji.
+  final IconData? icon;
+
+  /// Optional icon color override (defaults to onSurfaceVariant).
+  final Color? iconColor;
+
+  /// Icon size when using [icon]. Defaults to 18.
+  final double iconSize;
 
   /// The label text (e.g., 'Football', 'All')
   final String label;
@@ -31,7 +40,10 @@ class AppFilterChip extends StatelessWidget {
 
   const AppFilterChip({
     super.key,
-    required this.emoji,
+    this.emoji,
+    this.icon,
+    this.iconColor,
+    this.iconSize = 18,
     required this.label,
     required this.isSelected,
     this.onTap,
@@ -43,6 +55,20 @@ class AppFilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    assert(
+      (emoji != null && emoji!.isNotEmpty) || icon != null,
+      'Provide either an emoji or an icon to AppFilterChip',
+    );
+
+    final colorScheme = Theme.of(context).colorScheme;
+    final leadingWidget = icon != null
+        ? Icon(
+            icon,
+            size: iconSize,
+            color: iconColor ?? colorScheme.onSurfaceVariant,
+          )
+        : Text(emoji!, style: const TextStyle(fontSize: 16));
+
     return FilterChip(
       selected: isSelected,
       onSelected: onTap != null ? (_) => onTap!() : null,
@@ -54,8 +80,8 @@ class AppFilterChip extends StatelessWidget {
             ? MainAxisAlignment.center
             : MainAxisAlignment.start,
         children: [
-          // Emoji
-          Text(emoji, style: const TextStyle(fontSize: 16)),
+          // Leading visual (icon or emoji)
+          leadingWidget,
           const SizedBox(width: 6),
 
           // Label - expand when selected to show full text

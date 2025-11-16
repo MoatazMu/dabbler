@@ -215,8 +215,7 @@ class __$$ProfileModelImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
-@JsonSerializable(includeIfNull: false, explicitToJson: true)
+@JsonSerializable()
 class _$ProfileModelImpl extends _ProfileModel {
   const _$ProfileModelImpl({
     @JsonKey(name: 'user_id') required this.userId,

@@ -251,6 +251,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
           const SizedBox(height: 24),
           _buildHeroStats(context, profileState, sportsState),
+          const SizedBox(height: 16),
+          _buildHeroDataPoints(context, profileState),
         ],
       ),
     );
@@ -266,8 +268,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         shape: BoxShape.circle,
         border: Border.all(
           color: isDarkMode
-              ? Colors.white.withOpacity(0.3)
-              : Colors.black.withOpacity(0.2),
+              ? Colors.white.withValues(alpha: 0.3)
+              : Colors.black.withValues(alpha: 0.2),
           width: 3,
         ),
       ),
@@ -276,8 +278,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ? Image.network(profile.avatarUrl!, fit: BoxFit.cover)
           : Container(
               color: isDarkMode
-                  ? Colors.white.withOpacity(0.2)
-                  : Colors.black.withOpacity(0.1),
+                  ? Colors.white.withValues(alpha: 0.2)
+                  : Colors.black.withValues(alpha: 0.1),
               child: Icon(
                 Icons.person_outline,
                 size: 42,
@@ -316,8 +318,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           subtitle,
           style: textTheme.bodyMedium?.copyWith(
             color: isDarkMode
-                ? Colors.white.withOpacity(0.85)
-                : Colors.black.withOpacity(0.7),
+                ? Colors.white.withValues(alpha: 0.85)
+                : Colors.black.withValues(alpha: 0.7),
           ),
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
@@ -358,8 +360,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: isDarkMode
-            ? Colors.white.withOpacity(0.15)
-            : Colors.black.withOpacity(0.1),
+            ? Colors.white.withValues(alpha: 0.15)
+            : Colors.black.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -386,13 +388,93 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 stat.label,
                 style: textTheme.bodySmall?.copyWith(
                   color: isDarkMode
-                      ? Colors.white.withOpacity(0.7)
-                      : Colors.black.withOpacity(0.6),
+                      ? Colors.white.withValues(alpha: 0.7)
+                      : Colors.black.withValues(alpha: 0.6),
                 ),
               ),
             ],
           );
         }).toList(),
+      ),
+    );
+  }
+
+  Widget _buildHeroDataPoints(BuildContext context, ProfileState profileState) {
+    final profile = profileState.profile;
+    if (profile == null) {
+      return const SizedBox.shrink();
+    }
+
+    final stats = profile.statistics;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    final dataPoints = [
+      _ProfileDataPoint(
+        icon: Icons.verified_user_outlined,
+        label: 'Reliability',
+        value: '${stats.getReliabilityScore().round()}%',
+      ),
+      _ProfileDataPoint(
+        icon: Icons.flash_on_outlined,
+        label: 'Activity',
+        value: stats.getActivityLevel(),
+      ),
+      _ProfileDataPoint(
+        icon: Icons.schedule_outlined,
+        label: 'Last play',
+        value: stats.lastActiveFormatted,
+      ),
+    ];
+
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      children: dataPoints
+          .map((point) => _buildDataPointChip(point, colorScheme, textTheme))
+          .toList(),
+    );
+  }
+
+  Widget _buildDataPointChip(
+    _ProfileDataPoint point,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.onSurface.withValues(alpha: 0.08),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(point.icon, size: 18, color: colorScheme.primary),
+          const SizedBox(width: 8),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                point.value,
+                style: textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                point.label,
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -429,9 +511,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: colorScheme.outline.withOpacity(0.2),
-        ),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -439,13 +519,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.12),
+              color: colorScheme.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Icons.sports_soccer,
-              color: colorScheme.primary,
-            ),
+            child: Icon(Icons.sports_soccer, color: colorScheme.primary),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -736,7 +813,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: colorScheme.outlineVariant.withOpacity(0.3),
+          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -750,7 +827,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withOpacity(0.5),
+                  color: colorScheme.primaryContainer.withValues(alpha: 0.5),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -888,7 +965,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.5)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -924,7 +1003,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.4)),
+        border: Border.all(
+          color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+        ),
       ),
       child: Column(
         children: [
@@ -1093,5 +1174,17 @@ class _HeroStat {
     required this.label,
     required this.value,
     required this.icon,
+  });
+}
+
+class _ProfileDataPoint {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _ProfileDataPoint({
+    required this.icon,
+    required this.label,
+    required this.value,
   });
 }

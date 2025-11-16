@@ -5,6 +5,7 @@ import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
 import 'package:dabbler/utils/enums/social_enums.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
+import 'package:dabbler/features/social/providers/social_providers.dart';
 
 class AddPostScreen extends ConsumerStatefulWidget {
   const AddPostScreen({super.key});
@@ -16,6 +17,7 @@ class AddPostScreen extends ConsumerStatefulWidget {
 class _AddPostScreenState extends ConsumerState<AddPostScreen> {
   final _textController = TextEditingController();
   bool _isPosting = false;
+  String? _selectedVibeId;
 
   @override
   void dispose() {
@@ -201,6 +203,52 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                     ),
                     onChanged: (_) => setState(() {}),
                   ),
+                  const SizedBox(height: 16),
+                  // Vibes selector (primary)
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final vibesAsync = ref.watch(vibesProvider);
+                      return vibesAsync.when(
+                        data: (vibes) {
+                          if (vibes.isEmpty) return const SizedBox.shrink();
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Vibe',
+                                style: context.textTheme.labelLarge?.copyWith(
+                                  color: context.colors.onSurface,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: vibes.map((v) {
+                                  final id = v['id']?.toString() ?? '';
+                                  final label = v['label']?.toString() ?? v['key']?.toString() ?? 'Vibe';
+                                  final emoji = v['emoji']?.toString() ?? '';
+                                  final selected = _selectedVibeId == id;
+                                  return ChoiceChip(
+                                    label: Text('${emoji.isNotEmpty ? '$emoji ' : ''}$label'),
+                                    selected: selected,
+                                    onSelected: (sel) {
+                                      setState(() {
+                                        _selectedVibeId = sel ? id : null;
+                                      });
+                                    },
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          );
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (_, __) => const SizedBox.shrink(),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -223,12 +271,20 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
       final socialService = SocialService();
 
       // Create the post (text only for MVP)
-      await socialService.createPost(
+      final post = await socialService.createPost(
         content: _textController.text.trim(),
         mediaUrls: [], // No media in MVP
         locationName: null, // No location in MVP
         visibility: PostVisibility.public,
       );
+
+      // Set primary vibe if selected
+      if (_selectedVibeId != null) {
+        await socialService.setPrimaryVibe(
+          postId: post.id,
+          vibeId: _selectedVibeId!,
+        );
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

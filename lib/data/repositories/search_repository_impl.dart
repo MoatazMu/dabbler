@@ -43,11 +43,11 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
           // choose the columns your Profile.fromMap expects
           .select()
           .or(_orIlike(const ['username', 'display_name'], query))
-          .order('display_name', ascending: true, nullsLast: true)
+          .order('display_name', ascending: true)
           .limit(limit)
           .range(offset, offset + limit - 1);
 
-      return rows.map((m) => Profile.fromMap(asMap(m))).toList();
+      return rows.map((m) => Profile.fromJson(asMap(m))).toList();
     });
   }
 
@@ -66,11 +66,11 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
           .from('venues')
           .select()
           .or(_orIlike(const ['name'], query))
-          .order('name', ascending: true, nullsLast: true)
+          .order('name', ascending: true)
           .limit(limit)
           .range(offset, offset + limit - 1);
 
-      return rows.map((m) => Venue.fromMap(asMap(m))).toList();
+      return rows.map((m) => Venue.fromJson(asMap(m))).toList();
     });
   }
 
@@ -92,7 +92,7 @@ class SearchRepositoryImpl extends BaseRepository implements SearchRepository {
           .or(_orIlike(const ['caption'], query))
           // RLS should ensure can_view_post; if you have a dedicated view for
           // visible posts, point to it instead for safety/perf.
-          .order('created_at', ascending: false, nullsLast: true)
+          .order('created_at', ascending: false)
           .limit(limit)
           .range(offset, offset + limit - 1);
 

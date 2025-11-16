@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'providers.dart';
+import 'package:dabbler/core/fp/result.dart';
 
 class SquadMembersConsumer extends ConsumerWidget {
   const SquadMembersConsumer({super.key, required this.squadId});

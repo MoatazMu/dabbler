@@ -31,17 +31,16 @@ final supabaseClientProvider = Provider<SupabaseClient>((ref) {
   return Supabase.instance.client;
 });
 
-final gamesSportProfileServiceProvider =
-    Provider<SportProfileService>((ref) {
+final gamesSportProfileServiceProvider = Provider<SportProfileService>((ref) {
   return SportProfileService(supabase: ref.watch(supabaseClientProvider));
 });
 
 final gameCompletionRewardsHandlerProvider =
     Provider<GameCompletionRewardsHandler>((ref) {
-  return GameCompletionRewardsHandler(
-    sportProfileService: ref.watch(gamesSportProfileServiceProvider),
-  );
-});
+      return GameCompletionRewardsHandler(
+        sportProfileService: ref.watch(gamesSportProfileServiceProvider),
+      );
+    });
 
 /// Provides the games remote data source
 final gamesDataSourceProvider = Provider<SupabaseGamesDataSource>((ref) {
@@ -193,6 +192,12 @@ final gameDetailControllerProvider =
       );
     });
 
+/// Convenience state-only provider to simplify overriding in tests/widgets
+final gameDetailStateProvider =
+    Provider.family<GameDetailState, GameDetailParams>((ref, params) {
+      return ref.watch(gameDetailControllerProvider(params));
+    });
+
 // =============================================================================
 // CONVENIENCE PROVIDERS
 // =============================================================================
@@ -262,9 +267,20 @@ final userUpcomingGamesProvider = FutureProvider.autoDispose<List<Game>>((
       return [];
     },
     (games) {
+      final now = DateTime.now();
+      final upcomingGames = games.where((game) {
+        try {
+          return game.getScheduledStartDateTime().isAfter(now);
+        } catch (_) {
+          // If we can't parse the date, default to keeping the game so it can be
+          // inspected in logs and fixed at the data source level.
+          return true;
+        }
+      }).toList();
+
       // Sort by date (earliest first)
-      games.sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
-      return games;
+      upcomingGames.sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
+      return upcomingGames;
     },
   );
 });
@@ -601,11 +617,7 @@ class MyGamesActions {
   }) async {
     await _ref
         .read(myGamesControllerProvider(_userId).notifier)
-        .executeQuickAction(
-          action,
-          gameId,
-          completionStats: completionStats,
-        );
+        .executeQuickAction(action, gameId, completionStats: completionStats);
   }
 }
 

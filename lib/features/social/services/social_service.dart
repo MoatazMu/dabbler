@@ -34,13 +34,32 @@ class SocialService {
       // Check for duplicate posts to prevent spam/reposting
       await _checkForDuplicatePost(user.id, content, mediaUrls);
 
+      // Map domain visibility enum to DB `posts.visibility` values.
+      // DB allowed values: 'public', 'circle', 'link', 'private'.
+      String dbVisibility;
+      switch (visibility) {
+        case PostVisibility.public:
+          dbVisibility = 'public';
+          break;
+        case PostVisibility.friends:
+          dbVisibility = 'circle';
+          break;
+        case PostVisibility.private:
+          dbVisibility = 'private';
+          break;
+        case PostVisibility.gameParticipants:
+          // For now, map to 'link' (shareable-by-link style posts).
+          dbVisibility = 'link';
+          break;
+      }
+
       // Map to actual database schema
       final postData = {
         // Required fields - must be set explicitly
         'author_user_id': user.id, // REQUIRED: Set the user ID
         'author_profile_id': userProfile['id'], // REQUIRED: Set the profile ID
         'kind': 'moment', // Default post type
-        'visibility': visibility.name,
+        'visibility': dbVisibility,
         'body': content, // Map content -> body
         'media': mediaUrls
             .map((url) => {'url': url})
@@ -144,6 +163,9 @@ class SocialService {
           'content': post['body'] ?? '', // Map body -> content
           'media_urls': mediaUrls, // Extract URLs from media array
           'visibility': post['visibility'],
+           // Pass through kind and primary_vibe_id so PostModel can surface them.
+          'kind': post['kind'],
+          'primary_vibe_id': post['primary_vibe_id'],
           'created_at': post['created_at'],
           'updated_at': post['updated_at'],
           'likes_count':
@@ -218,6 +240,8 @@ class SocialService {
           'content': post['body'] ?? '', // Map body -> content
           'media_urls': mediaUrls, // Extract URLs from media array
           'visibility': post['visibility'],
+          'kind': post['kind'],
+          'primary_vibe_id': post['primary_vibe_id'],
           'created_at': post['created_at'],
           'updated_at': post['updated_at'],
           'likes_count':
@@ -243,6 +267,75 @@ class SocialService {
           .toList();
     } catch (e) {
       throw Exception('Failed to load user posts: $e');
+    }
+  }
+
+  /// Get a single post by ID with joined profile data.
+  Future<PostModel> getPostById(String postId) async {
+    try {
+      // Fetch the post row
+      final post = await _supabase
+          .from('posts')
+          .select('*')
+          .eq('id', postId)
+          .eq('is_deleted', false)
+          .eq('is_hidden_admin', false)
+          .maybeSingle();
+
+      if (post == null) {
+        throw Exception('Post not found');
+      }
+
+      final authorId = post['author_user_id'] as String;
+
+      // Fetch author profile
+      final profileResponse = await _supabase
+          .from('profiles')
+          .select('user_id, display_name, avatar_url, verified')
+          .eq('user_id', authorId)
+          .maybeSingle();
+
+      // Extract media URLs from media array
+      List<String> mediaUrls = [];
+      final mediaArray = post['media'];
+      if (mediaArray is List) {
+        for (var mediaItem in mediaArray) {
+          if (mediaItem is Map && mediaItem['url'] != null) {
+            mediaUrls.add(mediaItem['url'].toString());
+          } else if (mediaItem is String) {
+            mediaUrls.add(mediaItem);
+          }
+        }
+      }
+
+      final enriched = {
+        'id': post['id'],
+        'author_id': post['author_user_id'],
+        'content': post['body'] ?? '',
+        'media_urls': mediaUrls,
+        'visibility': post['visibility'],
+        'kind': post['kind'],
+        'primary_vibe_id': post['primary_vibe_id'],
+        'created_at': post['created_at'],
+        'updated_at': post['updated_at'],
+        'likes_count': post['like_count'] ?? 0,
+        'comments_count': post['comment_count'] ?? 0,
+        'shares_count': 0,
+        'location_name': post['venue_id'],
+        'tags': [],
+        'profiles': profileResponse != null
+            ? {
+                'id': profileResponse['user_id'],
+                'display_name': profileResponse['display_name'],
+                'avatar_url': profileResponse['avatar_url'],
+                'verified': profileResponse['verified'],
+              }
+            : null,
+      };
+
+      return PostModel.fromJson(enriched);
+    } catch (e) {
+      throw Exception('Failed to load post: $e');
     }
   }
 
@@ -279,6 +372,63 @@ class SocialService {
       }
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
+    }
+  }
+
+  /// Hide a post for the current user (post_hides).
+  Future<void> hidePost(String postId) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      await _supabase.from('post_hides').upsert({
+        'post_id': postId,
+        'owner_user_id': user.id,
+      });
+    } catch (e) {
+      throw Exception('Failed to hide post: $e');
+    }
+  }
+
+  /// Unhide a post for the current user.
+  Future<void> unhidePost(String postId) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      await _supabase
+          .from('post_hides')
+          .delete()
+          .eq('post_id', postId)
+          .eq('owner_user_id', user.id);
+    } catch (e) {
+      throw Exception('Failed to unhide post: $e');
+    }
+  }
+
+  /// Get IDs of posts hidden by the current user.
+  Future<Set<String>> getHiddenPostIdsForCurrentUser() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        return <String>{};
+      }
+
+      final rows = await _supabase
+          .from('post_hides')
+          .select('post_id')
+          .eq('owner_user_id', user.id);
+
+      return rows
+          .map((row) => row['post_id']?.toString())
+          .whereType<String>()
+          .toSet();
+    } catch (e) {
+      throw Exception('Failed to load hidden posts: $e');
     }
   }
 
@@ -320,10 +470,11 @@ class SocialService {
     }
   }
 
-  /// Get comments for a post
+  /// Get comments for a post with nested replies
   Future<List<Map<String, dynamic>>> getComments(String postId) async {
     try {
-      final comments = await _supabase
+      // Fetch all comments for the post (including replies)
+      final allComments = await _supabase
           .from('post_comments')
           .select(
             '*, profiles:author_profile_id(user_id, display_name, avatar_url, verified)',
@@ -333,7 +484,35 @@ class SocialService {
           .eq('is_hidden_admin', false)
           .order('created_at', ascending: true);
 
-      return List<Map<String, dynamic>>.from(comments);
+      final commentsList = List<Map<String, dynamic>>.from(allComments);
+      
+      // Build nested structure: separate top-level comments from replies
+      final topLevelComments = <Map<String, dynamic>>[];
+      final repliesMap = <String, List<Map<String, dynamic>>>{};
+      
+      for (final comment in commentsList) {
+        final parentId = comment['parent_comment_id'] as String?;
+        
+        if (parentId == null) {
+          // Top-level comment
+          topLevelComments.add(comment);
+        } else {
+          // Reply - add to replies map
+          repliesMap.putIfAbsent(parentId, () => []).add(comment);
+        }
+      }
+      
+      // Attach replies to their parent comments
+      for (final comment in topLevelComments) {
+        final commentId = comment['id'] as String;
+        if (repliesMap.containsKey(commentId)) {
+          comment['replies'] = repliesMap[commentId]!;
+        } else {
+          comment['replies'] = <Map<String, dynamic>>[];
+        }
+      }
+      
+      return topLevelComments;
     } catch (e) {
       throw Exception('Failed to load comments: $e');
     }
@@ -355,6 +534,36 @@ class SocialService {
           .eq('author_user_id', user.id);
     } catch (e) {
       throw Exception('Failed to delete comment: $e');
+    }
+  }
+
+  /// Report a post (post_reports).
+  Future<void> reportPost({
+    required String postId,
+    required String reason,
+    String? details,
+  }) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final trimmedReason = reason.trim();
+      if (trimmedReason.length < 3 || trimmedReason.length > 140) {
+        throw Exception('Reason must be between 3 and 140 characters');
+      }
+
+      await _supabase.from('post_reports').insert({
+        'post_id': postId,
+        'reporter_user_id': user.id,
+        'reason': trimmedReason,
+        if (details != null && details.trim().isNotEmpty)
+          'details': details.trim(),
+        'status': 'open',
+      });
+    } catch (e) {
+      throw Exception('Failed to report post: $e');
     }
   }
 
@@ -389,6 +598,91 @@ class SocialService {
     }
   }
 
+  // -----------------------------------------------------------------------------
+  // VIBES
+  // -----------------------------------------------------------------------------
+
+  /// Get all active vibes (basic catalog).
+  Future<List<Map<String, dynamic>>> getVibes() async {
+    try {
+      final rows = await _supabase
+          .from('vibes')
+          .select('id, key, label, emoji, color, is_active')
+          .eq('is_active', true)
+          .order('label');
+      return List<Map<String, dynamic>>.from(rows);
+    } catch (e) {
+      throw Exception('Failed to load vibes: $e');
+    }
+  }
+
+  /// Get vibes assigned to a post (via post_vibes).
+  Future<List<Map<String, dynamic>>> getPostVibes(String postId) async {
+    try {
+      final rows = await _supabase
+          .from('post_vibes')
+          .select('vibe_id, assigned_at, vibes:vibe_id(id, key, label, emoji, color)')
+          .eq('post_id', postId)
+          .order('assigned_at', ascending: false);
+      return List<Map<String, dynamic>>.from(rows);
+    } catch (e) {
+      throw Exception('Failed to load post vibes: $e');
+    }
+  }
+
+  /// Set primary vibe on posts.primary_vibe_id.
+  Future<void> setPrimaryVibe({
+    required String postId,
+    required String vibeId,
+  }) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+      await _supabase
+          .from('posts')
+          .update({'primary_vibe_id': vibeId})
+          .eq('id', postId)
+          .eq('author_user_id', user.id);
+    } catch (e) {
+      throw Exception('Failed to set primary vibe: $e');
+    }
+  }
+
+  /// Toggle a vibe membership in post_vibes (add/remove).
+  Future<void> togglePostVibe({
+    required String postId,
+    required String vibeId,
+  }) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+      // Check if exists
+      final existing = await _supabase
+          .from('post_vibes')
+          .select('post_id, vibe_id')
+          .eq('post_id', postId)
+          .eq('vibe_id', vibeId)
+          .maybeSingle();
+      if (existing != null) {
+        await _supabase
+            .from('post_vibes')
+            .delete()
+            .eq('post_id', postId)
+            .eq('vibe_id', vibeId);
+      } else {
+        await _supabase.from('post_vibes').insert({
+          'post_id': postId,
+          'vibe_id': vibeId,
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to toggle post vibe: $e');
+    }
+  }
   /// Check for duplicate posts to prevent spam/reposting
   Future<void> _checkForDuplicatePost(
     String userId,

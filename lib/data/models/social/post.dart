@@ -1,34 +1,52 @@
 import '../../../../utils/enums/social_enums.dart';
 
-/// Domain entity for social posts
+/// Domain entity for social posts.
+/// 
+/// This is the UI/domain representation built on top of the canonical
+/// `public.posts` schema and joined profile data.
 class Post {
   final String id;
   final String authorId;
   final String authorName;
   final String authorAvatar;
+  // Core content
   final String content;
   final List<String> mediaUrls;
   final DateTime createdAt;
   final DateTime updatedAt;
+  // Aggregated stats
   final int likesCount;
   final int commentsCount;
   final int sharesCount;
+  // Visibility & routing
   final PostVisibility visibility;
+  // Game / location context (optional)
   final String? gameId;
   final String? cityName;
+  // Per-user state
   final bool isLiked;
   final bool isBookmarked;
+  // Author profile details
   final String? authorBio;
   final bool authorVerified;
+  // Content metadata
   final List<String> tags;
   final List<String> mentionedUsers;
+  // Editing state
   final bool isEdited;
   final DateTime? editedAt;
+  // Conversation / sharing
   final String? replyToPostId;
   final String? shareOriginalId;
   // Activity-specific fields for unified activity feed
   final String? activityType;
   final Map<String, dynamic>? activityData;
+
+  /// Post kind maps directly to `public.posts.kind` (e.g. 'moment', 'dab', 'kickin').
+  final String kind;
+
+  /// Primary vibe ID maps to `public.posts.primary_vibe_id` (nullable).
+  final String? primaryVibeId;
 
   const Post({
     required this.id,
@@ -57,6 +75,8 @@ class Post {
     this.shareOriginalId,
     this.activityType,
     this.activityData,
+    this.kind = 'moment',
+    this.primaryVibeId,
   });
 
   @override

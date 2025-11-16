@@ -22,25 +22,16 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
     bool includeSports = true,
   }) async {
     try {
-      // Query the profiles table using user_id (foreign key to auth.users)
-      final response = await _client
-          .from(_usersTable)
-          .select(
-            includeSports
-                ? '*, sport_profiles(*)'
-                : '*',
-          )
-          .eq('user_id', userId)
-          .maybeSingle();
+      final response = await _preferPlayerProfile(
+        userId,
+        includeSports: includeSports,
+      );
 
       if (response == null) {
         throw const DataNotFoundException(message: 'Profile not found');
       }
 
-      final Map<String, dynamic> profileMap = Map<String, dynamic>.from(
-        response,
-      );
-      return UserProfile.fromJson(profileMap);
+      return UserProfile.fromJson(response);
     } on PostgrestException catch (e) {
       if (e.code == 'PGRST116') {
         throw const DataNotFoundException(message: 'Profile not found');
@@ -53,6 +44,65 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
       if (e is ProfileRemoteDataSourceException) rethrow;
       throw NetworkException(message: 'Failed to fetch profile: $e');
     }
+  }
+
+  Future<Map<String, dynamic>?> _preferPlayerProfile(
+    String userId, {
+    required bool includeSports,
+  }) async {
+    // Try to load the player's profile first; fall back to organiser/any profile.
+    final playerProfile = await _fetchProfileRow(
+      userId,
+      includeSports: includeSports,
+      profileType: 'player',
+    );
+
+    if (playerProfile != null) {
+      return playerProfile;
+    }
+
+    final organiserProfile = await _fetchProfileRow(
+      userId,
+      includeSports: includeSports,
+      profileType: 'organiser',
+    );
+
+    if (organiserProfile != null) {
+      return organiserProfile;
+    }
+
+    return _fetchProfileRow(userId, includeSports: includeSports);
+  }
+
+  Future<Map<String, dynamic>?> _fetchProfileRow(
+    String userId, {
+    required bool includeSports,
+    String? profileType,
+  }) async {
+    var query = _client
+        .from(_usersTable)
+        .select(includeSports ? '*, sport_profiles(*)' : '*')
+        .eq('user_id', userId);
+
+    if (profileType != null) {
+      query = query.eq('profile_type', profileType);
+      final response = await query.maybeSingle();
+      if (response == null) {
+        return null;
+      }
+      return Map<String, dynamic>.from(response);
+    }
+
+    final response = await query
+        .order('updated_at', ascending: false)
+        .limit(1)
+        .maybeSingle();
+
+    if (response == null) {
+      return null;
+    }
+
+    return Map<String, dynamic>.from(response);
   }
 
   @override
@@ -149,17 +199,20 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
       // Delete in order: sport_profiles, then profile
       // Note: Statistics feature disabled for MVP1
       // await _client.from(_statisticsTable).delete().eq('user_id', userId);
-      
+
       // Get profile ID first
       final profileResponse = await _client
           .from(_usersTable)
           .select('id')
           .eq('user_id', userId)
           .maybeSingle();
-      
+
       if (profileResponse != null) {
         final profileId = profileResponse['id'] as String;
-        await _client.from(_sportProfilesTable).delete().eq('profile_id', profileId);
+        await _client
+            .from(_sportProfilesTable)
+            .delete()
+            .eq('profile_id', profileId);
       }
 
       final response = await _client
@@ -337,13 +390,13 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
           .select('id')
           .eq('user_id', userId)
           .maybeSingle();
-      
+
       if (profileResponse == null) {
         return [];
       }
-      
+
       final profileId = profileResponse['id'] as String;
-      
+
       // Query sport_profiles using profile_id (simple schema)
       final response = await _client
           .from(_sportProfilesTable)
@@ -375,13 +428,13 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
           .select('id')
           .eq('user_id', userId)
           .maybeSingle();
-      
+
       if (profileResponse == null) {
         throw const DataNotFoundException(message: 'Profile not found');
       }
-      
+
       final profileId = profileResponse['id'] as String;
-      
+
       // Use simple schema: profile_id, sport_key, skill_level
       final profileData = sportProfile.toInsertJson();
       profileData['profile_id'] = profileId; // Override with actual profile_id
@@ -421,16 +474,17 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
           .select('id')
           .eq('user_id', userId)
           .maybeSingle();
-      
+
       if (profileResponse == null) {
         throw const DataNotFoundException(message: 'Profile not found');
       }
-      
+
       final profileId = profileResponse['id'] as String;
-      
+
       // Simple schema only supports updating skill_level
       final updateData = <String, dynamic>{};
-      if (updates.containsKey('skill_level') || updates.containsKey('skillLevel')) {
+      if (updates.containsKey('skill_level') ||
+          updates.containsKey('skillLevel')) {
         final skillLevel = updates['skill_level'] ?? updates['skillLevel'];
         if (skillLevel is int) {
           updateData['skill_level'] = skillLevel;
@@ -471,13 +525,13 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
           .select('id')
           .eq('user_id', userId)
           .maybeSingle();
-      
+
       if (profileResponse == null) {
         throw const DataNotFoundException(message: 'Profile not found');
       }
-      
+
       final profileId = profileResponse['id'] as String;
-      
+
       // Delete using profile_id and sport_key (simple schema)
       await _client
           .from(_sportProfilesTable)
@@ -505,9 +559,9 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
 
       for (final update in updates) {
         // Support both sport_id and sport_key for backward compatibility
-        final sportId = update['sport_key'] as String? ?? 
-                       update['sport_id'] as String?;
-        
+        final sportId =
+            update['sport_key'] as String? ?? update['sport_id'] as String?;
+
         if (sportId == null) {
           throw const ValidationException(
             message: 'sport_key is required for bulk updates',
@@ -1074,9 +1128,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
     bool includeSports = true,
   }) async {
     try {
-      final query = includeSports
-          ? '*, sport_profiles(*)'
-          : '*';
+      final query = includeSports ? '*, sport_profiles(*)' : '*';
 
       final response = await _client
           .from(_usersTable)

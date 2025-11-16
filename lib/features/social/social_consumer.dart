@@ -1,5 +1,6 @@
 import 'package:dabbler/data/models/squad.dart';
 import 'package:dabbler/features/social/providers.dart';
+import 'package:dabbler/core/fp/result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

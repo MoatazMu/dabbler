@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:dabbler/core/fp/failure.dart';
 import 'package:dabbler/core/fp/result.dart';
-import 'package:fpdart/fpdart.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:dabbler/features/misc/data/datasources/supabase_remote_data_source.dart';
@@ -11,6 +10,7 @@ import '../models/squad.dart';
 import '../models/squad_invite.dart';
 import '../models/squad_join_request.dart';
 import '../models/squad_member.dart';
+import '../models/squad_link_token.dart';
 import 'squads_repository.dart';
 
 class SquadsRepositoryImpl implements SquadsRepository {
@@ -175,12 +175,13 @@ class SquadsRepositoryImpl implements SquadsRepository {
   /// Relies on RLS policy `squad_members_read`.
   @override
   Stream<Result<List<SquadMember>, Failure>> membersStream(String squadId) {
-    final controller = StreamController<Result<List<SquadMember>, Failure>>.broadcast();
+    final controller =
+        StreamController<Result<List<SquadMember>, Failure>>.broadcast();
     StreamSubscription<List<dynamic>>? subscription;
 
     void emitError(Object error) {
       if (!controller.isClosed) {
-        controller.add(left(svc.mapPostgrestError(error)));
+        controller.add(Err(svc.mapPostgrestError(error)));
       }
     }
 
@@ -199,7 +200,7 @@ class SquadsRepositoryImpl implements SquadsRepository {
                   )
                   .toList(growable: false);
               if (!controller.isClosed) {
-                controller.add(right(members));
+                controller.add(Ok(members));
               }
             }, onError: emitError);
       } catch (error) {
@@ -442,7 +443,9 @@ class SquadsRepositoryImpl implements SquadsRepository {
 
   /// Relies on RLS policy `squad_invites_read`.
   @override
-  Future<Result<List<SquadInvite>, Failure>> squadInvites(String squadId) async {
+  Future<Result<List<SquadInvite>, Failure>> squadInvites(
+    String squadId,
+  ) async {
     try {
       final rows = await _db
           .from('squad_invites')
@@ -524,7 +527,7 @@ class SquadsRepositoryImpl implements SquadsRepository {
         final rows = await _db
             .from('squads')
             .select()
-            .in_('id', memberIds.toList());
+            .filter('id', 'in', '(${memberIds.join(',')})');
         memberSquads = rows
             .map((dynamic row) => Map<String, dynamic>.from(row as Map))
             .toList(growable: false);
@@ -555,7 +558,8 @@ class SquadsRepositoryImpl implements SquadsRepository {
   /// Relies on RLS policies `squads_read` and `squad_members_read` for realtime updates.
   @override
   Stream<Result<List<Squad>, Failure>> mySquadsStream() {
-    final controller = StreamController<Result<List<Squad>, Failure>>.broadcast();
+    final controller =
+        StreamController<Result<List<Squad>, Failure>>.broadcast();
     StreamSubscription<List<dynamic>>? ownerSubscription;
     StreamSubscription<List<dynamic>>? memberSubscription;
 
@@ -568,14 +572,14 @@ class SquadsRepositoryImpl implements SquadsRepository {
 
     void emitError(Object error) {
       if (!controller.isClosed) {
-        controller.add(left(svc.mapPostgrestError(error)));
+        controller.add(Err(svc.mapPostgrestError(error)));
       }
     }
 
     controller.onListen = () {
       final uid = svc.authUserId();
       if (uid == null) {
-        controller.add(left(const AuthFailure(message: 'Not authenticated')));
+        controller.add(Err(const AuthFailure(message: 'Not authenticated')));
         return;
       }
       unawaited(emitCurrent());
@@ -601,5 +605,157 @@ class SquadsRepositoryImpl implements SquadsRepository {
     };
 
     return controller.stream;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Extended / compatibility methods expected by higher-level providers
+  // ---------------------------------------------------------------------------
+
+  @override
+  Future<Result<List<Squad>, Failure>> listMyOwnedSquads() async {
+    final uid = svc.authUserId();
+    if (uid == null) {
+      return Err(const AuthFailure(message: 'Not authenticated'));
+    }
+    try {
+      final rows = await _db.from('squads').select().eq('owner_user_id', uid);
+      final squads = rows
+          .map(
+            (dynamic row) =>
+                Squad.fromJson(Map<String, dynamic>.from(row as Map)),
+          )
+          .toList(growable: false);
+      return Ok(squads);
+    } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
+  }
+
+  @override
+  Future<Result<List<SquadMember>, Failure>> listMembers(String squadId) async {
+    try {
+      final rows = await _db
+          .from('squad_members')
+          .select()
+          .eq('squad_id', squadId)
+          .eq('status', 'active');
+      final members = rows
+          .map(
+            (dynamic row) =>
+                SquadMember.fromJson(Map<String, dynamic>.from(row as Map)),
+          )
+          .toList(growable: false);
+      return Ok(members);
+    } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
+  }
+
+  @override
+  Future<Result<List<SquadInvite>, Failure>> listMyInvites() =>
+      mySquadInvites();
+
+  @override
+  Future<Result<List<SquadInvite>, Failure>> listSquadInvites(String squadId) =>
+      squadInvites(squadId);
+
+  @override
+  Future<Result<List<SquadJoinRequest>, Failure>> listMyJoinRequests() async {
+    final uid = svc.authUserId();
+    if (uid == null) {
+      return Err(const AuthFailure(message: 'Not authenticated'));
+    }
+    try {
+      final rows = await _db
+          .from('squad_join_requests')
+          .select()
+          .eq('user_id', uid)
+          .order('created_at', ascending: false);
+      final requests = rows
+          .map(
+            (dynamic row) => SquadJoinRequest.fromJson(
+              Map<String, dynamic>.from(row as Map),
+            ),
+          )
+          .toList(growable: false);
+      return Ok(requests);
+    } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
+  }
+
+  @override
+  Future<Result<List<SquadJoinRequest>, Failure>> listJoinRequestsForSquad(
+    String squadId,
+  ) => squadJoinRequests(squadId);
+
+  @override
+  Future<Result<List<SquadLinkToken>, Failure>> activeLinkTokensForSquad(
+    String squadId,
+  ) async {
+    try {
+      final rows = await _db
+          .from('squad_link_tokens')
+          .select()
+          .eq('squad_id', squadId)
+          .eq('is_active', true)
+          .order('created_at', ascending: false);
+      final tokens = rows
+          .map(
+            (dynamic row) =>
+                SquadLinkToken.fromJson(Map<String, dynamic>.from(row as Map)),
+          )
+          .toList(growable: false);
+      return Ok(tokens);
+    } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
+  }
+
+  @override
+  Future<Result<List<Map<String, dynamic>>, Failure>> squadCards({
+    String? squadId,
+    int? limit,
+    int? offset,
+  }) async {
+    // Placeholder implementation – return minimal mapped squad data.
+    try {
+      PostgrestFilterBuilder query = _db
+          .from('squads')
+          .select('id,name,sport,city,logo_url');
+      if (squadId != null) {
+        query = query.eq('id', squadId);
+      }
+      final ordered = query.order('created_at', ascending: false);
+      final rows = (limit != null && offset != null)
+          ? await ordered.range(offset, offset + limit - 1)
+          : await ordered;
+      final cards = rows
+          .map((dynamic row) => Map<String, dynamic>.from(row as Map))
+          .toList(growable: false);
+      return Ok(cards);
+    } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
+  }
+
+  @override
+  Future<Result<List<Map<String, dynamic>>, Failure>> squadDetail(
+    String squadId,
+  ) async {
+    try {
+      final row = await _db
+          .from('squads')
+          .select()
+          .eq('id', squadId)
+          .maybeSingle();
+      if (row == null) {
+        return Err(const NotFoundFailure(message: 'Squad not found'));
+      }
+      final map = Map<String, dynamic>.from(row as Map);
+      return Ok([map]);
+    } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
   }
 }

@@ -107,6 +107,26 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     }
   }
 
+  /// Helper method to get parent venue_id from venue_space_id
+  /// Returns null if venue_space_id is null or space not found
+  Future<String?> _getVenueIdFromSpaceId(String? venueSpaceId) async {
+    if (venueSpaceId == null) return null;
+    
+    try {
+      final response = await _supabaseClient
+          .from('venue_spaces')
+          .select('venue_id')
+          .eq('id', venueSpaceId)
+          .maybeSingle();
+      
+      if (response == null) return null;
+      return response['venue_id'] as String?;
+    } catch (e) {
+      print('⚠️ [Datasource] _getVenueIdFromSpaceId: Error: $e');
+      return null;
+    }
+  }
+
   /// Helper method to get waitlist position for a player
   /// Note: Database doesn't have 'waitlisted' status, so we determine waitlist
   /// by checking if player joined after maxPlayers was reached
@@ -468,9 +488,16 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       // Get current player count (only confirmed players)
       final currentPlayerCount = await _getCurrentPlayerCount(gameId);
 
-      // Add currentPlayers to response for GameModel parsing
+      // Resolve venue_space_id to parent venue_id
+      final venueSpaceId = response['venue_space_id'] as String?;
+      final venueId = await _getVenueIdFromSpaceId(venueSpaceId);
+
+      // Add currentPlayers and venue_id to response for GameModel parsing
       final responseWithCount = Map<String, dynamic>.from(response);
       responseWithCount['current_players'] = currentPlayerCount;
+      if (venueId != null) {
+        responseWithCount['venue_id'] = venueId;
+      }
 
       return GameModel.fromJson(responseWithCount);
     } on PostgrestException catch (e) {

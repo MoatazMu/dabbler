@@ -309,7 +309,7 @@ extension CheckInMethodExtension on CheckInMethod {
         return 'Manual Check-in';
       case CheckInMethod.qrCode:
         return 'QR Code';
-      case CheckInMethod.city:
+      case CheckInMethod.location:
         return 'Location-based';
       case CheckInMethod.code:
         return 'Check-in Code';
@@ -325,7 +325,7 @@ extension CheckInMethodExtension on CheckInMethod {
   /// Whether this method requires proximity to venue
   bool get requiresProximity {
     return [
-      CheckInMethod.city,
+      CheckInMethod.location,
       CheckInMethod.qrCode,
       CheckInMethod.nfc,
       CheckInMethod.bluetooth,

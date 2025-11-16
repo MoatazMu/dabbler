@@ -53,7 +53,7 @@ class ActivityPostService {
         content: activityContent,
         mediaUrls: mediaUrls,
         visibility: privacy.toPostVisibility(),
-        locationName: venueName,
+        cityName: venueName,
         tags: [venueName],
       );
 
@@ -80,7 +80,7 @@ class ActivityPostService {
         content: activityContent,
         visibility: privacy.toPostVisibility(),
         gameId: gameId,
-        locationName: venueName,
+        cityName: venueName,
         tags: [gameType, venueName],
       );
 
@@ -108,7 +108,7 @@ class ActivityPostService {
         content: activityContent,
         mediaUrls: mediaUrls,
         visibility: privacy.toPostVisibility(),
-        locationName: venueName,
+        cityName: venueName,
         tags: [venueName],
         mentionedUsers: taggedFriends,
       );
@@ -136,7 +136,7 @@ class ActivityPostService {
       final result = await _postRepository.createPost(
         content: activityContent,
         visibility: privacy.toPostVisibility(),
-        locationName: venueName,
+        cityName: venueName,
         tags: [venueName],
       );
 
@@ -163,7 +163,7 @@ class ActivityPostService {
         content: activityContent,
         visibility: privacy.toPostVisibility(),
         gameId: gameId,
-        locationName: venueName,
+        cityName: venueName,
         tags: [gameType, venueName],
       );
 

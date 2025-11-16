@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'providers.dart';
+import 'package:dabbler/core/fp/result.dart';
 
 class VenuesConsumer extends StatelessWidget {
   const VenuesConsumer({super.key});
@@ -71,9 +72,8 @@ class VenuesConsumer extends StatelessWidget {
                               final space = spaces[index];
                               return ListTile(
                                 title: Text(space.name),
-                                subtitle: space.sportKey != null
-                                    ? Text(space.sportKey!)
-                                    : null,
+                                // sportKey removed from VenueSpace; omit subtitle if not available
+                                subtitle: null,
                               );
                             },
                           );

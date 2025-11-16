@@ -16,10 +16,7 @@ class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
   Future<Result<Wallet?, Failure>> getWallet() {
     return guard<Wallet?>(() async {
       // RLS should scope to the caller's row; we fetch one.
-      final row = await svc.client
-          .from('wallets')
-          .select<Map<String, dynamic>>()
-          .maybeSingle();
+      final row = await svc.client.from('wallets').select().maybeSingle();
 
       if (row == null) return null;
       return Wallet.fromMap(asMap(row));
@@ -43,7 +40,10 @@ class WalletRepositoryImpl extends BaseRepository implements WalletRepository {
   }
 
   @override
-  Future<Result<List<Payout>, Failure>> getPayouts({int limit = 50, int offset = 0}) {
+  Future<Result<List<Payout>, Failure>> getPayouts({
+    int limit = 50,
+    int offset = 0,
+  }) {
     return guard<List<Payout>>(() async {
       final rows = await svc.client
           .from('payouts')

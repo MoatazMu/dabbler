@@ -140,7 +140,7 @@ enum PrivacyLevel {
         return PrivacyLevel.private;
       case ContentType.achievements:
         return PrivacyLevel.friends;
-      case ContentType.city:
+      case ContentType.location:
         return PrivacyLevel.friends;
       case ContentType.contactInfo:
         return PrivacyLevel.private;
@@ -182,7 +182,7 @@ enum ContentType {
         return 'Age, gender, and other personal details';
       case ContentType.achievements:
         return 'Awards, badges, and accomplishments';
-      case ContentType.city:
+      case ContentType.location:
         return 'Your location and location history';
       case ContentType.contactInfo:
         return 'Email, phone number, and social media';
@@ -200,7 +200,7 @@ enum ContentType {
         return PrivacySensitivity.high;
       case ContentType.achievements:
         return PrivacySensitivity.low;
-      case ContentType.city:
+      case ContentType.location:
         return PrivacySensitivity.high;
       case ContentType.contactInfo:
         return PrivacySensitivity.high;

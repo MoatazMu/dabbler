@@ -67,6 +67,10 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
 
           // Waitlist Settings
           _buildWaitlistSettings(context),
+          const SizedBox(height: 32),
+
+          // Spectator Settings
+          _buildSpectatorSettings(context),
         ],
       ),
     );
@@ -429,5 +433,82 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
       case PaymentSplit.custom:
         return null; // Custom split varies
     }
+  }
+
+  Widget _buildSpectatorSettings(BuildContext context) {
+    final allowSpectators = widget.viewModel.state.allowSpectators ?? false;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Spectator settings',
+          style: context.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: context.colors.onSurface,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: context.violetWidgetBg,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: context.colors.outline.withValues(alpha: 0.1),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: allowSpectators
+                      ? context.colors.primary.withValues(alpha: 0.1)
+                      : context.colors.outline.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(
+                  Icons.visibility,
+                  size: 20,
+                  color: allowSpectators
+                      ? context.colors.primary
+                      : context.colors.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Allow spectators',
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: context.colors.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Allow non-players to watch the game',
+                      style: context.textTheme.bodySmall?.copyWith(
+                        color: context.colors.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Switch(
+                value: allowSpectators,
+                onChanged: (value) =>
+                    widget.viewModel.toggleAllowSpectators(value),
+                activeThumbColor: context.colors.primary,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }

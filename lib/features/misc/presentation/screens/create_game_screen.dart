@@ -517,6 +517,42 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
   Future<void> _handleNextPressed() async {
     final state = _viewModel.state;
+    
+    // Check if we can proceed - if not, show helpful message
+    if (!state.canProceedToNextStep) {
+      final missingFields = state.getMissingRequiredFields();
+      if (missingFields.isNotEmpty && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  LucideIcons.alertCircle,
+                  color: context.colors.onPrimary,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Please complete: ${missingFields.join(', ')}',
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: context.colors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+    
     if (state.currentStep == GameCreationStep.reviewAndConfirm) {
       final success = await _viewModel.createGame();
       if (success && mounted) {

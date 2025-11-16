@@ -50,6 +50,7 @@ class SearchUsersUseCase {
       final mockUsers = [
         UserProfile(
           id: 'user1',
+          userId: 'user1',
           email: 'john@example.com',
           displayName: 'John Doe',
           avatarUrl: null,
@@ -59,6 +60,7 @@ class SearchUsersUseCase {
         ),
         UserProfile(
           id: 'user2',
+          userId: 'user2',
           email: 'jane@example.com',
           displayName: 'Jane Smith',
           avatarUrl: null,

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/core/widgets/custom_avatar.dart';
+import '../../providers/social_providers.dart';
 
-class CommentsThread extends StatelessWidget {
+class CommentsThread extends ConsumerWidget {
   final dynamic comment;
   final Function(String)? onReply;
   final Function(String)? onLike;
   final Function(String)? onReport;
   final Function(String)? onDelete;
   final String postAuthorId;
+  final int nestingLevel;
 
   const CommentsThread({
     super.key,
@@ -17,169 +20,195 @@ class CommentsThread extends StatelessWidget {
     this.onReport,
     this.onDelete,
     required this.postAuthorId,
+    this.nestingLevel = 0,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isOwnComment =
-        comment.authorId ==
-        'current_user_id'; // Replace with actual current user ID
+    final currentUserId = ref.watch(currentUserIdProvider);
+    final isOwnComment = comment.authorId == currentUserId;
     final isPostAuthor = comment.authorId == postAuthorId;
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Comment author avatar
-          CustomAvatar(
-            imageUrl: comment.author.avatar,
-            radius: 16,
-            fallbackIcon: Icons.person,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: EdgeInsets.only(
+            left: nestingLevel > 0 ? 48 : 0,
+            right: 16,
+            top: 12,
+            bottom: 12,
           ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Comment author avatar
+              CustomAvatar(
+                imageUrl: comment.author.avatar,
+                radius: nestingLevel > 0 ? 14 : 16,
+                fallbackIcon: Icons.person,
+              ),
 
-          const SizedBox(width: 12),
+              const SizedBox(width: 12),
 
-          // Comment content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Comment header
-                Row(
+              // Comment content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      comment.author.name,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-
-                    if (isPostAuthor)
-                      Container(
-                        margin: const EdgeInsets.only(left: 8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          'Author',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.onPrimaryContainer,
-                            fontSize: 10,
+                    // Comment header
+                    Row(
+                      children: [
+                        Text(
+                          comment.author.name,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: nestingLevel > 0 ? 13 : 14,
                           ),
                         ),
-                      ),
 
-                    const Spacer(),
-
-                    Text(
-                      _formatTime(comment.createdAt),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 4),
-
-                // Comment text
-                Text(
-                  comment.content,
-                  style: theme.textTheme.bodyMedium?.copyWith(height: 1.3),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Comment actions
-                Row(
-                  children: [
-                    _buildActionButton(
-                      theme,
-                      icon: comment.isLiked
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      label: '${comment.likesCount}',
-                      isActive: comment.isLiked,
-                      onTap: () => onLike?.call(comment.id),
-                      color: comment.isLiked ? Colors.red : null,
-                    ),
-
-                    const SizedBox(width: 16),
-
-                    _buildActionButton(
-                      theme,
-                      icon: Icons.reply,
-                      label: 'Reply',
-                      onTap: () => onReply?.call(comment.id),
-                    ),
-
-                    const Spacer(),
-
-                    // More options menu
-                    PopupMenuButton<String>(
-                      icon: Icon(
-                        Icons.more_horiz,
-                        size: 16,
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                      itemBuilder: (context) => [
-                        if (isOwnComment)
-                          PopupMenuItem<String>(
-                            value: 'delete',
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.delete_outline,
-                                color: theme.colorScheme.error,
+                        if (isPostAuthor)
+                          Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'Author',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onPrimaryContainer,
+                                fontSize: 10,
                               ),
-                              title: Text(
-                                'Delete',
-                                style: TextStyle(
-                                  color: theme.colorScheme.error,
+                            ),
+                          ),
+
+                        const Spacer(),
+
+                        Text(
+                          _formatTime(comment.createdAt),
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                            fontSize: nestingLevel > 0 ? 11 : 12,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // Comment text
+                    Text(
+                      comment.content,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        height: 1.3,
+                        fontSize: nestingLevel > 0 ? 13 : 14,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Comment actions - Like and Reply only
+                    Row(
+                      children: [
+                        _buildActionButton(
+                          theme,
+                          icon: comment.isLiked
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_border_rounded,
+                          label: comment.likesCount > 0
+                              ? '${comment.likesCount}'
+                              : 'Like',
+                          isActive: comment.isLiked,
+                          onTap: () => onLike?.call(comment.id),
+                          color: comment.isLiked ? Colors.red : null,
+                          size: nestingLevel > 0 ? 14 : 16,
+                        ),
+
+                        const SizedBox(width: 16),
+
+                        _buildActionButton(
+                          theme,
+                          icon: Icons.reply_rounded,
+                          label: 'Reply',
+                          onTap: () => onReply?.call(comment.id),
+                          size: nestingLevel > 0 ? 14 : 16,
+                        ),
+
+                        const Spacer(),
+
+                        // More options menu
+                        PopupMenuButton<String>(
+                          icon: Icon(
+                            Icons.more_horiz,
+                            size: nestingLevel > 0 ? 14 : 16,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          itemBuilder: (context) => [
+                            if (isOwnComment)
+                              PopupMenuItem<String>(
+                                value: 'delete',
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.delete_outline,
+                                    color: theme.colorScheme.error,
+                                  ),
+                                  title: Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                      color: theme.colorScheme.error,
+                                    ),
+                                  ),
+                                  contentPadding: EdgeInsets.zero,
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    onDelete?.call(comment.id);
+                                  },
+                                ),
+                              )
+                            else
+                              PopupMenuItem<String>(
+                                value: 'report',
+                                child: ListTile(
+                                  leading: Icon(Icons.flag_outlined),
+                                  title: const Text('Report'),
+                                  contentPadding: EdgeInsets.zero,
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    onReport?.call(comment.id);
+                                  },
                                 ),
                               ),
-                              contentPadding: EdgeInsets.zero,
-                              onTap: () {
-                                Navigator.pop(context);
-                                onDelete?.call(comment.id);
-                              },
-                            ),
-                          )
-                        else
-                          PopupMenuItem<String>(
-                            value: 'report',
-                            child: ListTile(
-                              leading: Icon(Icons.flag_outlined),
-                              title: const Text('Report'),
-                              contentPadding: EdgeInsets.zero,
-                              onTap: () {
-                                Navigator.pop(context);
-                                onReport?.call(comment.id);
-                              },
-                            ),
-                          ),
+                          ],
+                        ),
                       ],
                     ),
                   ],
                 ),
-
-                // Replies
-                if (comment.replies != null && comment.replies!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: _buildReplies(theme),
-                  ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+
+        // Nested replies - recursive rendering
+        if (comment.replies != null && comment.replies!.isNotEmpty)
+          ...comment.replies!.map<Widget>((reply) {
+            return CommentsThread(
+              comment: reply,
+              onReply: onReply,
+              onLike: onLike,
+              onReport: onReport,
+              onDelete: onDelete,
+              postAuthorId: postAuthorId,
+              nestingLevel: nestingLevel + 1,
+            );
+          }).toList(),
+      ],
     );
   }
 
@@ -190,6 +219,7 @@ class CommentsThread extends StatelessWidget {
     bool isActive = false,
     VoidCallback? onTap,
     Color? color,
+    double size = 16,
   }) {
     return InkWell(
       onTap: onTap,
@@ -201,7 +231,7 @@ class CommentsThread extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 16,
+              size: size,
               color:
                   color ??
                   (isActive
@@ -216,140 +246,11 @@ class CommentsThread extends StatelessWidget {
                     ? theme.colorScheme.primary
                     : theme.colorScheme.onSurfaceVariant,
                 fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+                fontSize: size - 2,
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildReplies(ThemeData theme) {
-    return Container(
-      margin: const EdgeInsets.only(left: 16),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: comment.replies!
-            .map<Widget>((reply) => _buildReply(theme, reply))
-            .toList(),
-      ),
-    );
-  }
-
-  Widget _buildReply(ThemeData theme, dynamic reply) {
-    final isOwnReply =
-        reply.authorId ==
-        'current_user_id'; // Replace with actual current user ID
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CustomAvatar(
-            imageUrl: reply.author.avatar,
-            radius: 12,
-            fallbackIcon: Icons.person,
-          ),
-
-          const SizedBox(width: 8),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      reply.author.name,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      _formatTime(reply.createdAt),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 2),
-
-                Text(
-                  reply.content,
-                  style: theme.textTheme.bodySmall?.copyWith(height: 1.3),
-                ),
-
-                const SizedBox(height: 4),
-
-                Row(
-                  children: [
-                    _buildActionButton(
-                      theme,
-                      icon: reply.isLiked
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      label: '${reply.likesCount}',
-                      isActive: reply.isLiked,
-                      onTap: () => onLike?.call(reply.id),
-                      color: reply.isLiked ? Colors.red : null,
-                    ),
-
-                    const SizedBox(width: 12),
-
-                    _buildActionButton(
-                      theme,
-                      icon: Icons.reply,
-                      label: 'Reply',
-                      onTap: () => onReply?.call(reply.id),
-                    ),
-
-                    const Spacer(),
-
-                    if (isOwnReply)
-                      PopupMenuButton<String>(
-                        icon: Icon(
-                          Icons.more_horiz,
-                          size: 14,
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                        itemBuilder: (context) => [
-                          PopupMenuItem<String>(
-                            value: 'delete',
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.delete_outline,
-                                color: theme.colorScheme.error,
-                              ),
-                              title: Text(
-                                'Delete',
-                                style: TextStyle(
-                                  color: theme.colorScheme.error,
-                                ),
-                              ),
-                              contentPadding: EdgeInsets.zero,
-                              onTap: () {
-                                Navigator.pop(context);
-                                onDelete?.call(reply.id);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }

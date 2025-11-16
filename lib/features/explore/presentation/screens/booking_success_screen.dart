@@ -66,7 +66,7 @@ class BookingSuccessScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: DS.surface,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
                     color: Theme.of(
@@ -99,7 +99,8 @@ class BookingSuccessScreen extends StatelessWidget {
                             children: [
                               Text(
                                 venue['name'] as String,
-                                style: DS.subtitle.copyWith(
+                                style: DS.body.copyWith(
+                                  fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),
                                 maxLines: 1,
@@ -193,8 +194,12 @@ class BookingSuccessScreen extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: () => _goHome(context),
                   style: DS.primaryButton.copyWith(
-                    backgroundColor: WidgetStateProperty.all(DS.surface),
-                    foregroundColor: WidgetStateProperty.all(DS.onSurface),
+                    backgroundColor: WidgetStateProperty.all(
+                      Theme.of(context).colorScheme.surface,
+                    ),
+                    foregroundColor: WidgetStateProperty.all(
+                      Theme.of(context).colorScheme.onSurface,
+                    ),
                     minimumSize: const WidgetStatePropertyAll(
                       Size.fromHeight(48),
                     ),

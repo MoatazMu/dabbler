@@ -24,12 +24,24 @@ class UserProfile {
     this.bio,
     this.phoneNumber,
     this.email,
-    this.age,
+    this.dateOfBirth,
     this.gender,
     this.username,
     this.sportsProfiles = const [],
     this.hasPreferences = false,
   });
+
+  /// Derived age in years from dateOfBirth if present.
+  int? get age {
+    if (dateOfBirth == null) return null;
+    final now = DateTime.now();
+    int years = now.year - dateOfBirth!.year;
+    if (now.month < dateOfBirth!.month ||
+        (now.month == dateOfBirth!.month && now.day < dateOfBirth!.day)) {
+      years -= 1;
+    }
+    return years;
+  }
 }
 
 class SportProfile {
