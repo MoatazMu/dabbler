@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/config/supabase_config.dart';
 import 'dart:convert';
 import 'dart:async';
 
@@ -89,12 +90,15 @@ class OnboardingController extends ChangeNotifier {
 
         // Update user onboarding status
         await _supabase
-            .from('users')
+            .from(SupabaseConfig.usersTable) // 'profiles' table
             .update({
               'onboarding_step': 'step_${_progress!.currentStep}',
               'onboarding_completed': _progress!.isCompleted,
             })
-            .eq('id', _supabase.auth.currentUser!.id);
+            .eq(
+              'user_id',
+              _supabase.auth.currentUser!.id,
+            ); // Match by user_id FK
       }
 
       notifyListeners();
@@ -223,9 +227,9 @@ class OnboardingController extends ChangeNotifier {
       if (userId == null) return;
 
       final response = await _supabase
-          .from('users')
+          .from(SupabaseConfig.usersTable) // 'profiles' table
           .select('onboarding_completed, onboarding_step')
-          .eq('id', userId)
+          .eq('user_id', userId) // Match by user_id FK
           .maybeSingle();
 
       if (response != null) {
@@ -397,7 +401,7 @@ class OnboardingController extends ChangeNotifier {
       // Get count of users who completed onboarding today
       final today = DateTime.now().toIso8601String().split('T')[0];
       final response = await _supabase
-          .from('users')
+          .from(SupabaseConfig.usersTable) // 'profiles' table
           .select('id')
           .eq('onboarding_completed', true)
           .gte('updated_at', '${today}T00:00:00Z')

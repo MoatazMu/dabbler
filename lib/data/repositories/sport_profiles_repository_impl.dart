@@ -24,10 +24,23 @@ class SportProfilesRepositoryImpl extends BaseRepository
     }
 
     try {
+      // First get profile_id from user_id
+      final profileResponse = await svc.client
+          .from('profiles')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        return Ok([]);
+      }
+
+      final profileId = profileResponse['id'] as String;
+
       final response = await svc.client
           .from(table)
           .select()
-          .eq('user_id', uid)
+          .eq('profile_id', profileId)
           .order('sport_key');
 
       final rows = (response as List<dynamic>)
@@ -52,10 +65,23 @@ class SportProfilesRepositoryImpl extends BaseRepository
     }
 
     try {
+      // First get profile_id from user_id
+      final profileResponse = await svc.client
+          .from('profiles')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        return Ok(null);
+      }
+
+      final profileId = profileResponse['id'] as String;
+
       final response = await svc.client
           .from(table)
           .select()
-          .eq('user_id', uid)
+          .eq('profile_id', profileId)
           .eq('sport_key', sportKey)
           .maybeSingle();
 
@@ -88,8 +114,21 @@ class SportProfilesRepositoryImpl extends BaseRepository
     }
 
     try {
+      // First get profile_id from user_id
+      final profileResponse = await svc.client
+          .from('profiles')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        return Err(NotFoundFailure(message: 'Profile not found'));
+      }
+
+      final profileId = profileResponse['id'] as String;
+
       await svc.client.from(table).insert({
-        'user_id': uid,
+        'profile_id': profileId,
         'sport_key': sportKey,
         'skill_level': skillLevel,
       });
@@ -122,10 +161,23 @@ class SportProfilesRepositoryImpl extends BaseRepository
     }
 
     try {
+      // First get profile_id from user_id
+      final profileResponse = await svc.client
+          .from('profiles')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        return Err(NotFoundFailure(message: 'Profile not found'));
+      }
+
+      final profileId = profileResponse['id'] as String;
+
       await svc.client
           .from(table)
           .update({'skill_level': skillLevel})
-          .eq('user_id', uid)
+          .eq('profile_id', profileId)
           .eq('sport_key', sportKey);
       return Ok(null);
     } catch (e) {
@@ -144,10 +196,23 @@ class SportProfilesRepositoryImpl extends BaseRepository
     }
 
     try {
+      // First get profile_id from user_id
+      final profileResponse = await svc.client
+          .from('profiles')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        return Err(NotFoundFailure(message: 'Profile not found'));
+      }
+
+      final profileId = profileResponse['id'] as String;
+
       await svc.client
           .from(table)
           .delete()
-          .eq('user_id', uid)
+          .eq('profile_id', profileId)
           .eq('sport_key', sportKey);
       return Ok(null);
     } catch (e) {
@@ -192,6 +257,26 @@ class SportProfilesRepositoryImpl extends BaseRepository
         }
       }
 
+      // Get profile_id for realtime filters
+      final profileResponse = await svc.client
+          .from('profiles')
+          .select('id')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        if (!controller.isClosed) {
+          controller.add(
+            const Err<List<SportProfile>, Failure>(
+              AuthFailure(message: 'Profile not found'),
+            ),
+          );
+        }
+        return;
+      }
+
+      final profileId = profileResponse['id'] as String;
+
       channel = svc.client
           .channel('public:$table')
           .onPostgresChanges(
@@ -200,8 +285,8 @@ class SportProfilesRepositoryImpl extends BaseRepository
             table: table,
             filter: PostgresChangeFilter(
               type: PostgresChangeFilterType.eq,
-              column: 'user_id',
-              value: uid,
+              column: 'profile_id',
+              value: profileId,
             ),
             callback: (_) => unawaited(emitCurrent()),
           )
@@ -211,8 +296,8 @@ class SportProfilesRepositoryImpl extends BaseRepository
             table: table,
             filter: PostgresChangeFilter(
               type: PostgresChangeFilterType.eq,
-              column: 'user_id',
-              value: uid,
+              column: 'profile_id',
+              value: profileId,
             ),
             callback: (_) => unawaited(emitCurrent()),
           )
@@ -222,8 +307,8 @@ class SportProfilesRepositoryImpl extends BaseRepository
             table: table,
             filter: PostgresChangeFilter(
               type: PostgresChangeFilterType.eq,
-              column: 'user_id',
-              value: uid,
+              column: 'profile_id',
+              value: profileId,
             ),
             callback: (_) => unawaited(emitCurrent()),
           )

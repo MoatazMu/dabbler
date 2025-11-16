@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/config/supabase_config.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 // import '../domain/entities/user_profile.dart';
@@ -427,9 +428,9 @@ class DataExportService {
   Future<Map<String, dynamic>?> _getEnhancedProfileData(String userId) async {
     try {
       final response = await _supabase
-          .from('users')
+          .from(SupabaseConfig.usersTable) // 'profiles' table
           .select('*')
-          .eq('id', userId)
+          .eq('user_id', userId) // Match by user_id FK
           .single();
 
       return {
@@ -477,16 +478,29 @@ class DataExportService {
     String userId,
   ) async {
     try {
+      // First get profile_id from user_id
+      final profileResponse = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        return [];
+      }
+
+      final profileId = profileResponse['id'] as String;
+
       final response = await _supabase
-          .from('sports_profiles')
-          .select('*, sport_statistics(*)')
-          .eq('user_id', userId);
+          .from('sport_profiles')
+          .select('*')
+          .eq('profile_id', profileId);
 
       return response
           .map<Map<String, dynamic>>(
             (item) => {
               ...item,
-              'data_source': 'sports_profiles table',
+              'data_source': 'sport_profiles table',
               'purpose': 'Sports skill assessment and matching',
               'legal_basis': 'User consent and contract performance',
             },
@@ -1703,9 +1717,9 @@ Last Updated: ${DateTime.now().toIso8601String()}
     try {
       // Profile data
       final profileResponse = await _supabase
-          .from('users')
+          .from(SupabaseConfig.usersTable) // 'profiles' table
           .select()
-          .eq('id', userId)
+          .eq('user_id', userId) // Match by user_id FK
           .single();
       userData['profile'] = profileResponse;
 

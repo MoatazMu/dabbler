@@ -319,11 +319,13 @@ class UserProfile {
           .toList();
     }
 
+    final displayName = (json['display_name'] as String?) ?? '';
+
     return UserProfile(
       id: json['id'] as String,
       userId: json['user_id'] as String,
       username: json['username'] as String?,
-      displayName: (json['display_name'] as String?) ?? '',
+      displayName: displayName,
       avatarUrl: json['avatar_url'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),

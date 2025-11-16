@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/config/supabase_config.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 
 /// Screen for editing user profile information
@@ -55,9 +56,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       if (user?.id == null) return;
 
       final response = await Supabase.instance.client
-          .from('users')
+          .from(SupabaseConfig.usersTable) // 'profiles' table
           .select()
-          .eq('id', user!.id)
+          .eq('user_id', user!.id) // Match by user_id FK
           .maybeSingle();
 
       if (!mounted) return;

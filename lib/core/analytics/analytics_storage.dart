@@ -145,7 +145,7 @@ class AnalyticsStorage {
       final prefs = await SharedPreferences.getInstance();
       String? deviceId = prefs.getString(_deviceIdKey);
 
-      if (deviceId == null) {
+      if (deviceId == null || deviceId.isEmpty) {
         deviceId = const Uuid().v4();
         await prefs.setString(_deviceIdKey, deviceId);
       }

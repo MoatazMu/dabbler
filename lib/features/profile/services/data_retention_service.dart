@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/config/supabase_config.dart';
 import 'package:dabbler/core/utils/logger.dart';
 
 /// Service for managing GDPR-compliant data retention policies
@@ -238,12 +239,14 @@ class DataRetentionService {
     try {
       // Get user email
       final userResponse = await _supabase
-          .from('users')
-          .select('email, display_name')
-          .eq('id', userId)
+          .from(SupabaseConfig.usersTable) // 'profiles' table
+          .select('display_name') // Note: email is in auth.users, not profiles
+          .eq('user_id', userId) // Match by user_id FK
           .single();
 
-      final userEmail = userResponse['email'];
+      // Note: Email would need to be fetched from auth.users or current session
+      final userName = userResponse['display_name'];
+      final userEmail = 'user@email.com'; // TODO: Fetch from auth.users
 
       // This would integrate with your email service (e.g., SendGrid, AWS SES, etc.)
       Logger.info(
@@ -253,6 +256,7 @@ class DataRetentionService {
       // Placeholder for actual email sending
       debugPrint('Cleanup Notification Email:');
       debugPrint('To: $userEmail');
+      debugPrint('Name: $userName');
       debugPrint('Subject: Data Cleanup Notification');
       debugPrint('Data Type: $dataType');
       debugPrint('Scheduled Date: ${task['scheduled_cleanup_date']}');
@@ -305,9 +309,9 @@ class DataRetentionService {
     try {
       // Delete optional profile fields
       await _supabase
-          .from('users')
+          .from(SupabaseConfig.usersTable) // 'profiles' table
           .update({'bio': null, 'avatar_url': null})
-          .eq('id', userId);
+          .eq('user_id', userId); // Match by user_id FK
 
       deleted = 1; // One profile record updated
     } catch (e) {

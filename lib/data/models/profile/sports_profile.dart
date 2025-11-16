@@ -97,77 +97,111 @@ class SportProfile {
   /// Creates a SportProfile from JSON
   /// Supports both simple schema (sport_key, skill_level) and full schema
   factory SportProfile.fromJson(Map<String, dynamic> json) {
-    // Handle simple schema from database: sport_key, skill_level
+    // Handle simple schema from database: sport_key, skill_level, plus optional fields
     if (json.containsKey('sport_key')) {
       final sportKey = json['sport_key'] as String;
       final skillLevelInt = json['skill_level'] as int? ?? 0;
-      
+
+      // Calculate average rating from rating_total and rating_count if available
+      final ratingTotal = (json['rating_total'] as num?)?.toInt() ?? 0;
+      final ratingCount = (json['rating_count'] as int?) ?? 0;
+      final averageRating = ratingCount > 0 ? ratingTotal / ratingCount : 0.0;
+
+      // Map primary_position to preferredPositions array
+      final primaryPosition = json['primary_position'] as String?;
+      final preferredPositions = primaryPosition != null ? [primaryPosition] : <String>[];
+
       return SportProfile(
         sportId: sportKey,
         sportName: _getSportNameFromKey(sportKey),
         skillLevel: _parseSkillLevelFromInt(skillLevelInt),
-        yearsPlaying: 0, // Not in simple schema
-        preferredPositions: const [], // Not in simple schema
+        yearsPlaying: 0, // Not stored in database
+        preferredPositions: preferredPositions,
         certifications: const [], // Not in simple schema
         achievements: const [], // Not in simple schema
-        isPrimarySport: false, // Not in simple schema
-        lastPlayed: null, // Not in simple schema
-        gamesPlayed: 0, // Not in simple schema
-        averageRating: 0.0, // Not in simple schema
+        isPrimarySport: false, // Not stored in database - would need to determine from preferred_sport in profiles table
+        lastPlayed: null, // Not stored in database
+        gamesPlayed: (json['matches_played'] as int?) ?? 0, // Database uses matches_played
+        averageRating: averageRating,
       );
     }
-    
+
     // Handle full schema (backward compatibility)
     return SportProfile(
       sportId: json['sportId'] as String? ?? json['sport_id'] as String? ?? '',
-      sportName: json['sportName'] as String? ?? json['sport_name'] as String? ?? '',
+      sportName:
+          json['sportName'] as String? ?? json['sport_name'] as String? ?? '',
       skillLevel: _parseSkillLevel(json['skillLevel'] ?? json['skill_level']),
-      yearsPlaying: json['yearsPlaying'] as int? ?? json['years_playing'] as int? ?? 0,
+      yearsPlaying:
+          json['yearsPlaying'] as int? ?? json['years_playing'] as int? ?? 0,
       preferredPositions: List<String>.from(
         json['preferredPositions'] as List? ?? json['positions'] as List? ?? [],
       ),
-      certifications: List<String>.from(
-        json['certifications'] as List? ?? [],
-      ),
-      achievements: List<String>.from(
-        json['achievements'] as List? ?? [],
-      ),
-      isPrimarySport: json['isPrimarySport'] as bool? ?? json['is_primary_sport'] as bool? ?? false,
+      certifications: List<String>.from(json['certifications'] as List? ?? []),
+      achievements: List<String>.from(json['achievements'] as List? ?? []),
+      isPrimarySport:
+          json['isPrimarySport'] as bool? ??
+          json['is_primary_sport'] as bool? ??
+          false,
       lastPlayed: json['lastPlayed'] != null
           ? DateTime.parse(json['lastPlayed'] as String)
           : json['last_played'] != null
-              ? DateTime.parse(json['last_played'] as String)
-              : null,
-      gamesPlayed: json['gamesPlayed'] as int? ?? json['games_played'] as int? ?? 0,
-      averageRating: (json['averageRating'] as num?)?.toDouble() ?? 
-          (json['average_rating'] as num?)?.toDouble() ?? 0.0,
+          ? DateTime.parse(json['last_played'] as String)
+          : null,
+      gamesPlayed:
+          json['gamesPlayed'] as int? ?? json['games_played'] as int? ?? 0,
+      averageRating:
+          (json['averageRating'] as num?)?.toDouble() ??
+          (json['average_rating'] as num?)?.toDouble() ??
+          0.0,
     );
   }
-  
-  /// Parse skill level from integer (0=beginner, 1=intermediate, 2=advanced, 3=expert)
+
+  /// Parse skill level from integer
+  /// Database stores 1-10 scale, maps to enum: 1-3=beginner, 4-5=intermediate, 6-7=advanced, 8-10=expert
+  /// Also supports legacy 0-3 scale for backward compatibility
   static SkillLevel _parseSkillLevelFromInt(int value) {
-    switch (value) {
-      case 0:
-        return SkillLevel.beginner;
-      case 1:
-        return SkillLevel.intermediate;
-      case 2:
-        return SkillLevel.advanced;
-      case 3:
-        return SkillLevel.expert;
-      default:
-        return SkillLevel.beginner;
+    // Handle legacy 0-3 scale
+    if (value >= 0 && value <= 3) {
+      switch (value) {
+        case 0:
+          return SkillLevel.beginner;
+        case 1:
+          return SkillLevel.intermediate;
+        case 2:
+          return SkillLevel.advanced;
+        case 3:
+          return SkillLevel.expert;
+        default:
+          return SkillLevel.beginner;
+      }
     }
+    
+    // Handle 1-10 scale (database standard)
+    if (value >= 1 && value <= 10) {
+      if (value <= 3) {
+        return SkillLevel.beginner;
+      } else if (value <= 5) {
+        return SkillLevel.intermediate;
+      } else if (value <= 7) {
+        return SkillLevel.advanced;
+      } else {
+        return SkillLevel.expert;
+      }
+    }
+    
+    // Default to beginner for invalid values
+    return SkillLevel.beginner;
   }
-  
+
   /// Parse skill level from various formats
   static SkillLevel _parseSkillLevel(dynamic value) {
     if (value == null) return SkillLevel.beginner;
-    
+
     if (value is int) {
       return _parseSkillLevelFromInt(value);
     }
-    
+
     if (value is String) {
       switch (value.toLowerCase()) {
         case 'beginner':
@@ -182,10 +216,10 @@ class SportProfile {
           return SkillLevel.beginner;
       }
     }
-    
+
     return SkillLevel.beginner;
   }
-  
+
   /// Get sport display name from sport_key
   static String _getSportNameFromKey(String sportKey) {
     // Map common sport keys to display names
@@ -223,7 +257,7 @@ class SportProfile {
         return 'Padel';
       default:
         // Capitalize first letter as fallback
-        return sportKey.isEmpty 
+        return sportKey.isEmpty
             ? 'Unknown Sport'
             : '${sportKey[0].toUpperCase()}${sportKey.substring(1)}';
     }

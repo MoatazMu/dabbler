@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/config/supabase_config.dart';
 import 'package:dabbler/core/services/auth_service.dart';
-import 'package:dabbler/widgets/custom_app_bar.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
   const EditProfileScreen({super.key});
@@ -79,9 +80,9 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
       // Fetch from database
       final response = await Supabase.instance.client
-          .from('users')
+          .from(SupabaseConfig.usersTable) // 'profiles' table
           .select()
-          .eq('id', user!.id)
+          .eq('user_id', user!.id) // Match by user_id FK
           .maybeSingle();
 
       if (!mounted) return;
@@ -163,52 +164,130 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      appBar: CustomAppBar(actionIcon: Iconsax.user_edit_copy),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Form(
-              key: _formKey,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(16, 116, 16, 16),
-                children: [
-                  _buildPersonalDetailsSection(),
-                  _buildSportsPreferencesSection(),
-                  _buildContactSection(),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: _updateProfile,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text('Update Profile'),
-                  ),
-                ],
-              ),
-            ),
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    if (_isLoading) {
+      return Scaffold(
+        backgroundColor: colorScheme.surface,
+        body: Center(
+          child: CircularProgressIndicator(color: colorScheme.primary),
+        ),
+      );
+    }
+
+    return TwoSectionLayout(
+      category: 'profile', // Orange category color
+      topSection: _buildTopSection(context, textTheme, colorScheme),
+      bottomSection: _buildBottomSection(context, textTheme, colorScheme),
     );
   }
 
-  Widget _buildPersonalDetailsSection() {
+  Widget _buildTopSection(
+    BuildContext context,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Back button
+        Row(
+          children: [
+            IconButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: Icon(Icons.arrow_back, color: colorScheme.onPrimary),
+            ),
+            const Spacer(),
+          ],
+        ),
+        const SizedBox(height: 8),
+
+        // Title
+        Text(
+          'Edit Profile',
+          style: textTheme.headlineMedium?.copyWith(
+            color: colorScheme.onPrimary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // Subtitle
+        Text(
+          'Update your personal information',
+          style: textTheme.bodyLarge?.copyWith(
+            color: colorScheme.onPrimary.withOpacity(0.9),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBottomSection(
+    BuildContext context,
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildPersonalDetailsSection(textTheme, colorScheme),
+          const SizedBox(height: 24),
+          _buildSportsPreferencesSection(textTheme, colorScheme),
+          const SizedBox(height: 24),
+          _buildContactSection(textTheme, colorScheme),
+          const SizedBox(height: 32),
+          _buildSaveButton(colorScheme),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPersonalDetailsSection(
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Personal Details',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Icon(
+                  Iconsax.user_edit_copy,
+                  color: colorScheme.primary,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Personal Details',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             TextFormField(
               controller: _displayNameController,
-              decoration: const InputDecoration(
-                labelText: 'Display Name',
-                prefixIcon: Icon(Icons.person),
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
               ),
+              decoration: InputDecoration(
+                labelText: 'Display Name',
+                hintText: 'Enter your display name',
+                prefixIcon: Icon(
+                  Iconsax.user_copy,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ).applyDefaults(Theme.of(context).inputDecorationTheme),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {
                   return 'Display name is required and cannot be empty';
@@ -224,14 +303,38 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              initialValue: _selectedGender,
-              decoration: const InputDecoration(
-                labelText: 'Gender',
-                prefixIcon: Icon(Icons.person),
+              value: _selectedGender,
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
               ),
-              items: const [
-                DropdownMenuItem(value: 'male', child: Text('Male')),
-                DropdownMenuItem(value: 'female', child: Text('Female')),
+              dropdownColor: colorScheme.surfaceContainer,
+              decoration: InputDecoration(
+                labelText: 'Gender',
+                hintText: 'Select your gender',
+                prefixIcon: Icon(
+                  Iconsax.profile_2user_copy,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ).applyDefaults(Theme.of(context).inputDecorationTheme),
+              items: [
+                DropdownMenuItem(
+                  value: 'male',
+                  child: Text(
+                    'Male',
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ),
+                DropdownMenuItem(
+                  value: 'female',
+                  child: Text(
+                    'Female',
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ),
               ],
               onChanged: (value) {
                 setState(() {
@@ -245,24 +348,37 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildSportsPreferencesSection() {
+  Widget _buildSportsPreferencesSection(
+    TextTheme textTheme,
+    ColorScheme colorScheme,
+  ) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Sports Preferences',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Icon(Iconsax.cup_copy, color: colorScheme.primary, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Sports Preferences',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Sports You Play',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            Text(
+              'Select the sports you play',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 16),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -280,6 +396,14 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
                       }
                     });
                   },
+                  selectedColor: colorScheme.primaryContainer,
+                  checkmarkColor: colorScheme.onPrimaryContainer,
+                  backgroundColor: colorScheme.surfaceContainerHighest,
+                  labelStyle: textTheme.labelLarge?.copyWith(
+                    color: isSelected
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onSurface,
+                  ),
                 );
               }).toList(),
             ),
@@ -289,41 +413,88 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
     );
   }
 
-  Widget _buildContactSection() {
+  Widget _buildContactSection(TextTheme textTheme, ColorScheme colorScheme) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Contact Information',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Icon(Iconsax.direct_copy, color: colorScheme.primary, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  'Contact Information',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             TextFormField(
               controller: _emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-                prefixIcon: Icon(Icons.email),
-                suffixText: 'Read-only',
-              ),
               enabled: false,
-              style: TextStyle(color: Colors.grey[600]),
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              decoration: InputDecoration(
+                labelText: 'Email',
+                hintText: 'Email address',
+                prefixIcon: Icon(
+                  Iconsax.sms_copy,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                suffixIcon: Container(
+                  margin: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    'Read-only',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ),
+              ).applyDefaults(Theme.of(context).inputDecorationTheme),
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Phone Number',
-                prefixIcon: Icon(Icons.phone),
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
               ),
+              decoration: InputDecoration(
+                labelText: 'Phone Number',
+                hintText: 'Enter your phone number',
+                prefixIcon: Icon(
+                  Iconsax.call_copy,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ).applyDefaults(Theme.of(context).inputDecorationTheme),
               keyboardType: TextInputType.phone,
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildSaveButton(ColorScheme colorScheme) {
+    return FilledButton(
+      onPressed: _updateProfile,
+      style: FilledButton.styleFrom(
+        minimumSize: const Size(double.infinity, 56),
+      ),
+      child: const Text('Save Changes'),
     );
   }
 }

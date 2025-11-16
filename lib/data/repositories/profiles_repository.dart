@@ -2,6 +2,15 @@ import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import '../models/profile.dart';
 
+/// NOTE: This is the legacy Result-based profiles repository used by
+/// auth/profile flows today. New code should prefer the clean-architecture
+/// `ProfileRepository` in `lib/features/profile/domain/repositories/`
+/// and its `ProfileRepositoryImpl` in `features/profile/data/repositories/`.
+///
+/// Over time, this interface can be turned into a thin adapter that
+/// delegates to the domain repository, and eventually removed once all
+/// callers have migrated.
+
 abstract class ProfilesRepository {
   /// Owner read: relies on policy `profiles_select_owner` (auth.uid() = user_id)
   Future<Result<Profile, Failure>> getMyProfile();

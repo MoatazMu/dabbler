@@ -1,38 +1,60 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:json_annotation/json_annotation.dart';
 
-part 'profile.freezed.dart';
 part 'profile.g.dart';
 
-@freezed
-class Profile with _$Profile {
-  const Profile._();
+@JsonSerializable(fieldRename: FieldRename.snake)
+class Profile {
+  final String id;
+  final String userId;
+  final String profileType;
+  final String username;
+  final String displayName;
+  final String? bio;
+  final String? avatarUrl;
+  final String? city;
+  final String? country;
+  final String? language;
+  final bool? verified;
+  final bool? isActive;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? displayNameNorm;
+  final double? geoLat;
+  final double? geoLng;
+  // New onboarding fields
+  final String? intention;
+  final String? gender;
+  final int? age;
+  final String? preferredSport;
+  final String? interests; // comma-separated
 
-  const factory Profile({
-    required String id,
-    @JsonKey(name: 'user_id') required String userId,
-    @JsonKey(name: 'profile_type') required String profileType,
-    @JsonKey(name: 'username') required String username,
-    @JsonKey(name: 'display_name') required String displayName,
-    @JsonKey(name: 'bio') String? bio,
-    @JsonKey(name: 'avatar_url') String? avatarUrl,
-    @JsonKey(name: 'city') String? city,
-    @JsonKey(name: 'country') String? country,
-    @JsonKey(name: 'language') String? language,
-    @JsonKey(name: 'verified') bool? verified,
-    @JsonKey(name: 'is_active') bool? isActive,
-    @JsonKey(name: 'created_at') DateTime? createdAt,
-    @JsonKey(name: 'updated_at') DateTime? updatedAt,
-    @JsonKey(name: 'display_name_norm') String? displayNameNorm,
-    @JsonKey(name: 'geo_lat') double? geoLat,
-    @JsonKey(name: 'geo_lng') double? geoLng,
-    // New onboarding fields
-    @JsonKey(name: 'intention') String? intention,
-    @JsonKey(name: 'gender') String? gender,
-    @JsonKey(name: 'age') int? age,
-    @JsonKey(name: 'preferred_sport') String? preferredSport,
-    @JsonKey(name: 'interests') String? interests, // comma-separated
-  }) = _Profile;
+  const Profile({
+    required this.id,
+    required this.userId,
+    required this.profileType,
+    required this.username,
+    required this.displayName,
+    this.bio,
+    this.avatarUrl,
+    this.city,
+    this.country,
+    this.language,
+    this.verified,
+    this.isActive,
+    this.createdAt,
+    this.updatedAt,
+    this.displayNameNorm,
+    this.geoLat,
+    this.geoLng,
+    this.intention,
+    this.gender,
+    this.age,
+    this.preferredSport,
+    this.interests,
+  });
 
   factory Profile.fromJson(Map<String, dynamic> json) =>
       _$ProfileFromJson(json);
+
+  Map<String, dynamic> toJson() => _$ProfileToJson(this);
 }

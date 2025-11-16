@@ -65,10 +65,33 @@ class SportProfileService {
 
   Future<List<SportProfile>> getSportProfilesForUser(String userId) async {
     try {
+      // First, get the profile_id(s) for this user_id
+      final profilesResponse = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId);
+
+      if (profilesResponse.isEmpty) {
+        Logger.debug(
+          '$_logTag: No profiles found for userId=$userId',
+        );
+        return [];
+      }
+
+      // Extract profile IDs
+      final profileIds = (profilesResponse as List)
+          .map((p) => (p as Map<String, dynamic>)['id'] as String)
+          .toList();
+
+      if (profileIds.isEmpty) {
+        return [];
+      }
+
+      // Now fetch sport_profiles using profile_id
       final response = await _supabase
           .from('sport_profiles')
-          .select('*, profiles!inner(user_id)')
-          .eq('profiles.user_id', userId);
+          .select('*')
+          .inFilter('profile_id', profileIds);
 
       final data = (response as List)
           .map(

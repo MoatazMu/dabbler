@@ -7,6 +7,9 @@ import 'package:dabbler/data/models/models.dart';
 class SupabaseProfileDataSource implements ProfileRemoteDataSource {
   final SupabaseClient _client;
   final String _usersTable = 'profiles'; // Changed from 'users' to 'profiles'
+  // Profile columns from public.profiles (no email/phone - those are in auth.users)
+  static const String _baseProfileColumns =
+      'id, user_id, username, display_name, avatar_url, created_at, updated_at, bio, age, city, country, gender, profile_type, intention, preferred_sport, interests, language, verified, is_active, geo_lat, geo_lng';
   final String _sportProfilesTable = 'sport_profiles';
   // Note: user_statistics table does not exist - feature disabled for MVP1
   final String _avatarBucket = 'avatars';
@@ -79,9 +82,10 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
     required bool includeSports,
     String? profileType,
   }) async {
+    // Build select query - fetch profile first
     var query = _client
         .from(_usersTable)
-        .select(includeSports ? '*, sport_profiles(*)' : '*')
+        .select('*')
         .eq('user_id', userId);
 
     if (profileType != null) {
@@ -90,7 +94,17 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
       if (response == null) {
         return null;
       }
-      return Map<String, dynamic>.from(response);
+      final result = Map<String, dynamic>.from(response);
+
+      // Fetch email and phone from auth.users separately
+      await _enrichWithAuthData(result, userId);
+
+      // Fetch sport_profiles separately if requested
+      if (includeSports) {
+        await _enrichWithSportProfiles(result, result['id'] as String);
+      }
+
+      return result;
     }
 
     final response = await query
@@ -102,7 +116,61 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
       return null;
     }
 
-    return Map<String, dynamic>.from(response);
+    final result = Map<String, dynamic>.from(response);
+
+    // Fetch email and phone from auth.users separately
+    await _enrichWithAuthData(result, userId);
+
+    // Fetch sport_profiles separately if requested
+    if (includeSports) {
+      await _enrichWithSportProfiles(result, result['id'] as String);
+    }
+
+    return result;
+  }
+
+  /// Enriches profile data with sport_profiles from sport_profiles table
+  Future<void> _enrichWithSportProfiles(
+    Map<String, dynamic> profile,
+    String profileId,
+  ) async {
+    try {
+      final sportProfilesResponse = await _client
+          .from(_sportProfilesTable)
+          .select('*')
+          .eq('profile_id', profileId);
+
+      // Supabase select always returns a List
+      profile['sport_profiles'] = sportProfilesResponse as List;
+    } on PostgrestException catch (e) {
+      // Log the error for debugging but don't fail the profile fetch
+      print('⚠️ [SupabaseProfileDataSource] Failed to fetch sport_profiles for profile_id=$profileId: ${e.message}');
+      profile['sport_profiles'] = [];
+    } catch (e) {
+      // If we can't get sport profiles, set empty list
+      // This is not critical as UserProfile handles empty sport_profiles
+      print('⚠️ [SupabaseProfileDataSource] Unexpected error fetching sport_profiles for profile_id=$profileId: $e');
+      profile['sport_profiles'] = [];
+    }
+  }
+
+  /// Enriches profile data with email and phone from auth.users
+  Future<void> _enrichWithAuthData(
+    Map<String, dynamic> profile,
+    String userId,
+  ) async {
+    try {
+      // Query auth.users through RPC or admin API if available
+      // For now, we'll try to get it from the current session
+      final user = _client.auth.currentUser;
+      if (user != null && user.id == userId) {
+        profile['email'] = user.email;
+        profile['phone_number'] = user.phone;
+      }
+    } catch (e) {
+      // If we can't get auth data, leave it null
+      // This is not critical as UserProfile handles null email/phone
+    }
   }
 
   @override
@@ -122,7 +190,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
       final response = await _client
           .from(_usersTable)
           .insert(profileData)
-          .select()
+          .select(_baseProfileColumns)
           .single();
 
       // Note: Statistics feature disabled for MVP1 - user_statistics table does not exist
@@ -175,7 +243,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
           .from(_usersTable)
           .update(updateData)
           .eq('user_id', userId)
-          .select()
+          .select(_baseProfileColumns)
           .single();
 
       return UserProfile.fromJson(response);
@@ -219,7 +287,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
           .from(_usersTable)
           .delete()
           .eq('user_id', userId)
-          .select();
+          .select('id');
 
       if (response.isEmpty) {
         throw const DataNotFoundException(message: 'Profile not found');
@@ -703,7 +771,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
     try {
       dynamic searchQuery = _client
           .from(_usersTable)
-          .select('*, sport_profiles(*)');
+          .select('*');
 
       // Apply filters
       if (query != null && query.isNotEmpty) {
@@ -749,7 +817,18 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
 
       final response = await searchQuery;
 
-      final profiles = response
+      // Enrich each profile with sport_profiles
+      final profilesList = <Map<String, dynamic>>[];
+      for (final json in response) {
+        final profileJson = Map<String, dynamic>.from(json);
+        await _enrichWithSportProfiles(
+          profileJson,
+          profileJson['id'] as String,
+        );
+        profilesList.add(profileJson);
+      }
+
+      final profiles = profilesList
           .map<UserProfile>((json) => UserProfile.fromJson(json))
           .toList();
 
@@ -797,7 +876,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
 
       dynamic query = _client
           .from(_usersTable)
-          .select('*, sport_profiles(*)')
+          .select('*')
           .neq('id', userId);
 
       if (userProfile.city != null || userProfile.country != null) {
@@ -817,7 +896,19 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
       query = query.limit(limit * 2); // Get more to filter and rank
 
       final response = await query;
-      final profiles = response
+      
+      // Enrich each profile with sport_profiles
+      final profilesList = <Map<String, dynamic>>[];
+      for (final json in response) {
+        final profileJson = Map<String, dynamic>.from(json);
+        await _enrichWithSportProfiles(
+          profileJson,
+          profileJson['id'] as String,
+        );
+        profilesList.add(profileJson);
+      }
+      
+      final profiles = profilesList
           .map<UserProfile>((json) => UserProfile.fromJson(json))
           .toList();
 
@@ -902,9 +993,8 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
       errors.add('Display name is required');
     }
 
-    if (data['email'] != null && !_isValidEmail(data['email'])) {
-      errors.add('Invalid email format');
-    }
+    // Note: email and phone_number are in auth.users, not profiles table
+    // Don't validate them here as they shouldn't be in profile updates
 
     if (errors.isNotEmpty) {
       throw ValidationException(
@@ -917,11 +1007,10 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
   void _validateProfileUpdates(Map<String, dynamic> updates) {
     final errors = <String>[];
 
-    if (updates.containsKey('email') &&
-        updates['email'] != null &&
-        !_isValidEmail(updates['email'])) {
-      errors.add('Invalid email format');
-    }
+    // Note: email and phone_number are in auth.users, not profiles table
+    // Remove them from updates if present
+    updates.remove('email');
+    updates.remove('phone_number');
 
     if (updates.containsKey('birth_year')) {
       final birthYear = updates['birth_year'];
@@ -960,10 +1049,6 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
         errors: ['Only JPG, JPEG, PNG, and WebP images are supported'],
       );
     }
-  }
-
-  bool _isValidEmail(String email) {
-    return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}\$').hasMatch(email);
   }
 
   @override
@@ -1128,16 +1213,24 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
     bool includeSports = true,
   }) async {
     try {
-      final query = includeSports ? '*, sport_profiles(*)' : '*';
-
       final response = await _client
           .from(_usersTable)
-          .select(query)
+          .select('*')
           .inFilter('user_id', userIds);
 
       final profiles = <String, UserProfile>{};
       for (final json in response) {
-        final profile = UserProfile.fromJson(json);
+        final profileJson = Map<String, dynamic>.from(json);
+        
+        // Enrich with sport_profiles if requested
+        if (includeSports) {
+          await _enrichWithSportProfiles(
+            profileJson,
+            profileJson['id'] as String,
+          );
+        }
+        
+        final profile = UserProfile.fromJson(profileJson);
         profiles[profile.id] = profile;
       }
 

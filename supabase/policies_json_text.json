@@ -1,5 +1,0 @@
-[
-  {
-    "policies_json": "[\n    {\n        \"cmd\": \"INSERT\",\n        \"qual\": null,\n        \"roles\": [\n            \"public\"\n        ],\n        \"policy\": \"profiles_insert_self\",\n        \"with_check\": \"(auth.uid() = user_id)\"\n    },\n    {\n        \"cmd\": \"SELECT\",\n        \"qual\": \"(auth.uid() = user_id)\",\n        \"roles\": [\n            \"public\"\n        ],\n        \"policy\": \"profiles_select_owner\",\n        \"with_check\": null\n    },\n    {\n        \"cmd\": \"SELECT\",\n        \"qual\": \"(is_active = true)\",\n        \"roles\": [\n            \"public\"\n        ],\n        \"policy\": \"profiles_select_public\",\n        \"with_check\": null\n    },\n    {\n        \"cmd\": \"UPDATE\",\n        \"qual\": \"(auth.uid() = user_id)\",\n        \"roles\": [\n            \"public\"\n        ],\n        \"policy\": \"profiles_update_owner\",\n        \"with_check\": \"(auth.uid() = user_id)\"\n    }\n]"
-  }
-]

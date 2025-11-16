@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:dabbler/core/services/theme_service.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-
+// LEGACY/EXPERIMENTAL: This .bak theme settings screen is retained
+// for reference only and is not wired into the current navigation.
+// Safe to delete once any useful pieces have been migrated.
 class ThemeSettingsScreen extends StatefulWidget {
   const ThemeSettingsScreen({super.key});
 

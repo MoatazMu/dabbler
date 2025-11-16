@@ -584,7 +584,7 @@ class AuthService {
           final current = await _supabase
               .from(SupabaseConfig.usersTable)
               .select()
-              .eq('id', user.id)
+              .eq('user_id', user.id) // Match by user_id FK
               .single();
           return current;
         }
@@ -593,7 +593,7 @@ class AuthService {
           final updated = await _supabase
               .from(SupabaseConfig.usersTable)
               .update(updates)
-              .eq('id', user.id)
+              .eq('user_id', user.id) // Match by user_id FK
               .select()
               .single();
 

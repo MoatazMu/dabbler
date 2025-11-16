@@ -4,7 +4,6 @@ part 'profile_model.freezed.dart';
 part 'profile_model.g.dart';
 
 @freezed
-@JsonSerializable(includeIfNull: false, explicitToJson: true)
 class ProfileModel with _$ProfileModel {
   const ProfileModel._();
 

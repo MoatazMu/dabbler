@@ -7,6 +7,10 @@ import 'package:dabbler/data/models/profile/user_profile.dart';
 
 /// Profile repository interface
 class ProfileRepository {
+  static const String _profilesTable = 'profiles';
+  static const String _baseProfileColumns =
+      'id, user_id, username, display_name, avatar_url, created_at, updated_at, bio, age, city, country, phone_number, email, gender, profile_type, intention, preferred_sport, interests, language, verified, is_active, geo_lat, geo_lng';
+
   /// Get user profile by ID
   Future<UserProfile?> getUserProfile(String userId) async {
     throw UnimplementedError(
@@ -19,14 +23,17 @@ class ProfileRepository {
     // Connectivity check
     final connectivity = Connectivity();
     final status = await connectivity.checkConnectivity();
+    // ConnectivityResult.none vs other values is the canonical way to check online/offline
+    // Ignore the unrelated_type_equality_checks lint here; ConnectivityResult is not a list.
+    // ignore: unrelated_type_equality_checks
     final online = status != ConnectivityResult.none;
     if (online) {
       try {
         // Fetch from Supabase profiles table
         final supabase = Supabase.instance.client;
         final response = await supabase
-            .from('profiles')
-            .select()
+            .from(_profilesTable)
+            .select(_baseProfileColumns)
             .eq('user_id', userId)
             .maybeSingle();
         if (response != null) {

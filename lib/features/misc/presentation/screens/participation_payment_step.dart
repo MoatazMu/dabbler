@@ -433,6 +433,7 @@ class _ParticipationPaymentStepState extends State<ParticipationPaymentStep> {
       case PaymentSplit.custom:
         return null; // Custom split varies
     }
+    return null;
   }
 
   Widget _buildSpectatorSettings(BuildContext context) {

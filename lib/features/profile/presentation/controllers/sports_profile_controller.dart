@@ -88,8 +88,11 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
 
       final String profileId = (profileRow['id'] as String);
 
+      // Select columns that actually exist in the sport_profiles table
+      // Note: Database uses matches_played (not games_played), primary_position (not preferred_positions)
+      // average_rating can be calculated from rating_total/rating_count if needed
       final List<dynamic> rows = await client.from('sport_profiles').select(
-        'sport_key, skill_level, is_primary_sport, years_playing, games_played, average_rating, last_played, profile_id',
+        'sport_key, skill_level, matches_played, primary_position, rating_total, rating_count, profile_id',
       ).eq('profile_id', profileId);
 
       final profiles = rows

@@ -13,6 +13,8 @@ import '../../widgets/profile/player_sport_profile_header.dart';
 import '../../../../../utils/constants/route_constants.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
+// Extracted widgets for hero and basics live alongside this screen for now.
+// If you re-enable them, ensure the import paths match actual file locations.
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -223,13 +225,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final profile = profileState.profile;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF),
+        color: colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
@@ -259,7 +260,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildAvatar(BuildContext context, UserProfile? profile) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       width: 96,
@@ -267,9 +268,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: isDarkMode
-              ? Colors.white.withValues(alpha: 0.3)
-              : Colors.black.withValues(alpha: 0.2),
+          color: colorScheme.primary.withValues(alpha: 0.35),
           width: 3,
         ),
       ),
@@ -277,13 +276,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       child: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
           ? Image.network(profile.avatarUrl!, fit: BoxFit.cover)
           : Container(
-              color: isDarkMode
-                  ? Colors.white.withValues(alpha: 0.2)
-                  : Colors.black.withValues(alpha: 0.1),
+              color: colorScheme.primaryContainer.withValues(alpha: 0.6),
               child: Icon(
                 Icons.person_outline,
                 size: 42,
-                color: isDarkMode ? Colors.white : Colors.black87,
+                color: colorScheme.onPrimaryContainer,
               ),
             ),
     );
@@ -296,10 +293,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     ColorScheme colorScheme,
   ) {
     final profile = profileState.profile;
+
     final subtitle = profile?.bio?.isNotEmpty == true
         ? profile!.bio!
         : 'Add a short bio so teammates know what to expect.';
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,16 +307,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               : 'Complete your profile',
           style: textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w700,
-            color: isDarkMode ? Colors.white : Colors.black87,
+            color: colorScheme.onPrimaryContainer,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           subtitle,
           style: textTheme.bodyMedium?.copyWith(
-            color: isDarkMode
-                ? Colors.white.withValues(alpha: 0.85)
-                : Colors.black.withValues(alpha: 0.7),
+            color: colorScheme.onPrimaryContainer.withValues(alpha: 0.85),
           ),
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
@@ -336,7 +331,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final profile = profileState.profile;
     final statistics = profile?.statistics ?? const ProfileStatistics();
     final textTheme = Theme.of(context).textTheme;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final statTiles = [
       _HeroStat(
@@ -359,9 +354,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isDarkMode
-            ? Colors.white.withValues(alpha: 0.15)
-            : Colors.black.withValues(alpha: 0.1),
+        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(
@@ -370,26 +363,20 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           return Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                stat.icon,
-                size: 18,
-                color: isDarkMode ? Colors.white : Colors.black87,
-              ),
+              Icon(stat.icon, size: 18, color: colorScheme.primary),
               const SizedBox(width: 6),
               Text(
                 stat.value,
                 style: textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: isDarkMode ? Colors.white : Colors.black87,
+                  color: colorScheme.onSurface,
                 ),
               ),
               const SizedBox(width: 4),
               Text(
                 stat.label,
                 style: textTheme.bodySmall?.copyWith(
-                  color: isDarkMode
-                      ? Colors.white.withValues(alpha: 0.7)
-                      : Colors.black.withValues(alpha: 0.6),
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -581,7 +568,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     BuildContext context,
     ProfileState profileState,
   ) {
-    final completion = _calculateCompletion(profileState.profile);
+    final completion =
+        profileState.profile?.calculateProfileCompletion() ?? 0.0;
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -709,12 +697,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 Icons.cake_outlined,
                 '${profile!.age!} years old',
               ),
+            if (profile?.gender?.isNotEmpty == true)
+              _buildInfoRow(context, Icons.person_outline, profile!.gender!),
+            if (profile?.language?.isNotEmpty == true)
+              _buildInfoRow(
+                context,
+                Icons.language_outlined,
+                profile!.language!,
+              ),
+            if (profile?.preferredSport?.isNotEmpty == true)
+              _buildInfoRow(
+                context,
+                Icons.sports_soccer,
+                profile!.preferredSport!,
+              ),
+            if (profile?.intention?.isNotEmpty == true)
+              _buildInfoRow(context, Icons.flag_outlined, profile!.intention!),
             if (profile == null ||
                 ((profile.email?.isEmpty ?? true) &&
                     profile.phoneNumber == null &&
                     (profile.city == null || profile.city!.isEmpty) &&
                     (profile.country == null || profile.country!.isEmpty) &&
-                    profile.age == null))
+                    profile.age == null &&
+                    (profile.gender == null || profile.gender!.isEmpty) &&
+                    (profile.language == null || profile.language!.isEmpty) &&
+                    (profile.preferredSport == null ||
+                        profile.preferredSport!.isEmpty) &&
+                    (profile.intention == null || profile.intention!.isEmpty)))
               _buildEmptyState(context, 'Add your basic information'),
           ],
         ),
@@ -864,6 +873,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           const SizedBox(height: 12),
           Text(
             '${sport.yearsPlaying} ${sport.yearsPlaying == 1 ? 'year' : 'years'}',
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${sport.gamesPlayed} games • '
+            '${sport.averageRating.toStringAsFixed(1)} ★',
             style: textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
@@ -1025,38 +1044,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ],
       ),
     );
-  }
-
-  double _calculateCompletion(UserProfile? profile) {
-    if (profile == null) return 0.0;
-
-    double completion = 0.0;
-    const double maxScore = 100.0;
-
-    // Basic info (40%)
-    if (profile.username?.isNotEmpty == true) completion += 10.0;
-    if (profile.displayName.isNotEmpty) completion += 10.0;
-    if (profile.email?.isNotEmpty ?? false) completion += 10.0;
-    if (profile.bio?.isNotEmpty == true) completion += 10.0;
-
-    // Contact info (20%)
-    if (profile.phoneNumber?.isNotEmpty == true) completion += 10.0;
-    // Location: city or country counts as location info
-    if (profile.city?.isNotEmpty == true ||
-        profile.country?.isNotEmpty == true) {
-      completion += 10.0;
-    }
-
-    // Personal info (20%)
-    if (profile.age != null) completion += 10.0;
-    if (profile.avatarUrl?.isNotEmpty == true) completion += 10.0;
-
-    // Additional info (20%)
-    if (profile.gender?.isNotEmpty == true) completion += 10.0;
-    // Note: interests field doesn't exist in entity, using bio instead
-    if (profile.bio?.isNotEmpty == true) completion += 10.0;
-
-    return completion.clamp(0.0, maxScore);
   }
 
   /// Format location string combining city and country

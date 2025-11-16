@@ -66,22 +66,38 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       }
 
       // Fetch user's sports profiles from database
+      // First get profile_id from user_id
+      final profileResponse = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        throw Exception('Profile not found');
+      }
+
+      final profileId = profileResponse['id'] as String;
+
       final response = await supabase
-          .from('sports_profiles')
+          .from('sport_profiles')
           .select('*')
-          .eq('user_id', userId);
+          .eq('profile_id', profileId);
 
       // Convert database records to SportPreference objects
       final Map<String, SportPreference> preferences = {};
 
       for (final sportData in response as List) {
-        final sportKey = (sportData['sport_type'] as String).toLowerCase();
+        // sport_profiles table uses 'sport_key', not 'sport_type'
+        final sportKey = (sportData['sport_key'] as String? ?? '').toLowerCase();
+        if (sportKey.isEmpty) continue;
+        
         preferences[sportKey] = SportPreference(
-          name: _formatSportName(sportData['sport_type']),
+          name: _formatSportName(sportData['sport_key'] as String),
           icon: _getSportIcon(sportKey),
-          isEnabled: sportData['is_active'] == true,
+          isEnabled: true, // If it exists in sport_profiles, it's enabled
           skillLevel: _parseSkillLevel(sportData['skill_level']),
-          preferredPosition: sportData['preferred_position'],
+          preferredPosition: sportData['primary_position'] as String?,
         );
       }
 
@@ -545,8 +561,21 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
         throw Exception('User not authenticated');
       }
 
+      // Get profile_id from user_id
+      final profileResponse = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (profileResponse == null) {
+        throw Exception('Profile not found');
+      }
+
+      final profileId = profileResponse['id'] as String;
+
       // Delete all existing sports profiles for this user
-      await supabase.from('sports_profiles').delete().eq('user_id', userId);
+      await supabase.from('sport_profiles').delete().eq('profile_id', profileId);
 
       // Insert new/updated sports profiles for enabled sports
       final enabledSports = _sportPreferences.entries
@@ -556,18 +585,15 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       if (enabledSports.isNotEmpty) {
         final sportsData = enabledSports.map((entry) {
           return {
-            'user_id': userId,
-            'sport_type': entry.key.toUpperCase(),
+            'profile_id': profileId,
+            'sport_key': entry.key.toLowerCase(),
             'skill_level': _skillLevelToInt(entry.value.skillLevel),
-            'is_active': true,
-            'preferred_position': entry.value.preferredPosition,
-            'years_of_experience': 0,
-            'achievements': null,
-            'certifications': null,
+            // Note: sport_profiles table uses sport_key, not sport_type
+            // Other fields like preferred_position, years_of_experience may need to be in attributes JSONB
           };
         }).toList();
 
-        await supabase.from('sports_profiles').insert(sportsData);
+        await supabase.from('sport_profiles').insert(sportsData);
       }
 
       // Also update the user's preferred sport in the profiles table
