@@ -630,6 +630,30 @@ class GamesRepositoryImpl implements GamesRepository {
     }
   }
 
+  @override
+  Future<Either<Failure, bool>> hasPendingJoinRequest(String gameId, String userId) async {
+    try {
+      final hasRequest = await remoteDataSource.hasPendingJoinRequest(gameId, userId);
+      return Right(hasRequest);
+    } catch (e) {
+      return Left(
+        UnknownFailure('Failed to check join request: ${e.toString()}'),
+      );
+    }
+  }
+
+  @override
+  Future<Either<Failure, bool>> cancelJoinRequest(String gameId, String userId) async {
+    try {
+      final cancelled = await remoteDataSource.cancelJoinRequest(gameId, userId);
+      return Right(cancelled);
+    } catch (e) {
+      return Left(
+        UnknownFailure('Failed to cancel join request: ${e.toString()}'),
+      );
+    }
+  }
+
   // Helper method to generate cache keys
   String _generateCacheKey(
     String prefix,

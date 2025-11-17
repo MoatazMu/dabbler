@@ -312,8 +312,14 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       final game = GameModel.fromJson(gameResponse);
       joinPolicy = gameResponse['join_policy'] as String?;
       
-      // Validate join policy before attempting insert
-      if (joinPolicy != null && joinPolicy != 'open') {
+      // Handle different join policies
+      if (joinPolicy != null && joinPolicy == 'request') {
+        // For "request" policy, create a join request instead of directly joining
+        print('🔄 [Datasource] joinGame: Game requires request policy, creating join request');
+        final requestId = await requestToJoinGame(gameId, playerId);
+        print('✅ [Datasource] joinGame: Join request created with ID: $requestId');
+        return true; // Return success - request was created
+      } else if (joinPolicy != null && joinPolicy != 'open') {
         throw GameServerException(
           'This game requires "$joinPolicy" join policy. Please use the appropriate method to join.',
         );
@@ -522,23 +528,60 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         '🔍 [DEBUG] getMyGames called with userId: $userId, status: $status',
       );
 
-      // MVP: Simplified query without venue join
-      // Use 'host_user_id' instead of legacy organizer_id
+      // Get game IDs where user is either host OR joined as player
+      // First, get games where user is host
+      final hostedGamesQuery = _supabaseClient
+          .from('games')
+          .select('id')
+          .eq('host_user_id', userId);
+
+      // Also get games where user is in game_roster
+      final joinedGamesResponse = await _supabaseClient
+          .from('game_roster')
+          .select('game_id')
+          .eq('user_id', userId)
+          .eq('status', 'active');
+
+      final joinedGameIds = (joinedGamesResponse as List)
+          .map((r) => r['game_id'] as String)
+          .toSet();
+
+      // Get hosted game IDs
+      final hostedGamesResponse = await hostedGamesQuery;
+      final hostedGameIds = (hostedGamesResponse as List)
+          .map((r) => r['id'] as String)
+          .toSet();
+
+      // Combine both sets
+      final allGameIds = {...hostedGameIds, ...joinedGameIds};
+
+      if (allGameIds.isEmpty) {
+        print('🔍 [DEBUG] No games found for user');
+        return [];
+      }
+
+      // Query games by IDs
       var query = _supabaseClient
           .from('games')
           .select('*')
-          .eq('host_user_id', userId);
+          .inFilter('id', allGameIds.toList());
 
-      // MVP Fix: Map status to is_cancelled
+      // MVP Fix: Map status to is_cancelled and filter by date
       if (status != null) {
         if (status == 'upcoming' || status == 'active') {
-          query = query.eq('is_cancelled', false);
+          query = query
+              .eq('is_cancelled', false)
+              .gte('start_at', DateTime.now().toUtc().toIso8601String());
+        } else if (status == 'completed' || status == 'past') {
+          query = query
+              .eq('is_cancelled', false)
+              .lt('start_at', DateTime.now().toUtc().toIso8601String());
         } else if (status == 'cancelled') {
           query = query.eq('is_cancelled', true);
         }
       }
 
-      print('🔍 [DEBUG] Executing query...');
+      print('🔍 [DEBUG] Executing query for ${allGameIds.length} game IDs...');
       // Use 'start_at' instead of legacy scheduled_date
       final response = await query
           .order('start_at', ascending: true)
@@ -927,15 +970,86 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   @override
   Future<List<PlayerModel>> getGamePlayers(String gameId) async {
     try {
+      // First get game capacity to determine waitlist
+      final gameResponse = await _supabaseClient
+          .from('games')
+          .select('capacity')
+          .eq('id', gameId)
+          .maybeSingle();
+
+      final capacity = gameResponse?['capacity'] as int? ?? 0;
+
+      // Get roster with profile data joined
       final response = await _supabaseClient
           .from('game_roster')
-          .select('*')
+          .select('''
+            *,
+            profile:profiles(
+              id,
+              user_id,
+              display_name,
+              avatar_url
+            )
+          ''')
           .eq('game_id', gameId)
+          .eq('status', 'active')
           .order('joined_at', ascending: true);
 
-      return response
-          .map<PlayerModel>((json) => PlayerModel.fromJson(json))
-          .toList();
+      // Process players and determine waitlist status
+      final List<PlayerModel> players = [];
+      for (int i = 0; i < response.length; i++) {
+        final rosterData = Map<String, dynamic>.from(response[i]);
+        final profileData = rosterData['profile'] as Map<String, dynamic>?;
+
+        // Determine if player is waitlisted based on position
+        final isWaitlisted = i >= capacity;
+        final playerStatus = isWaitlisted
+            ? 'waitlisted'
+            : 'confirmed';
+
+        // Handle profile data - it might be a list or single object
+        Map<String, dynamic>? profile;
+        if (profileData != null) {
+          if (profileData is List && profileData.isNotEmpty) {
+            profile = Map<String, dynamic>.from(profileData[0]);
+          } else {
+            profile = Map<String, dynamic>.from(profileData);
+          }
+        }
+
+        // Build player data with profile info
+        final playerData = {
+          'id': rosterData['profile_id'] as String,
+          'player_id': rosterData['user_id'] as String,
+          'game_id': gameId,
+          'status': playerStatus,
+          'team_assignment': 'unassigned',
+          'position': null,
+          'player_name': profile?['display_name'] as String? ?? 'Unknown Player',
+          'player_avatar': profile?['avatar_url'] as String?,
+          'player_phone': null,
+          'player_email': null,
+          'joined_at': (rosterData['joined_at'] as String),
+          'checked_in_at': null,
+          'cancelled_at': rosterData['left_at'] != null
+              ? (rosterData['left_at'] as String)
+              : null,
+          'check_in_code': null,
+          'is_organizer': (rosterData['role'] as String?) == 'host',
+          'player_rating': null,
+          'rated_at': null,
+          'rating_comment': null,
+          'has_paid': false,
+          'amount_paid': null,
+          'paid_at': null,
+          'created_at': (rosterData['joined_at'] as String),
+          'updated_at': (rosterData['joined_at'] as String),
+        };
+
+        players.add(PlayerModel.fromJson(playerData));
+      }
+
+      return players;
     } on PostgrestException catch (e) {
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
@@ -975,6 +1089,133 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   @override
   Future<int?> getWaitlistPosition(String gameId, String userId) async {
     return await _getWaitlistPosition(gameId, userId);
+  }
+
+  @override
+  Future<String> requestToJoinGame(String gameId, String playerId, {String? message}) async {
+    try {
+      print('🔄 [Datasource] requestToJoinGame: gameId=$gameId, playerId=$playerId');
+
+      // Get profile_id from user_id
+      final profileId = await _getProfileId(playerId);
+
+      // Check if request already exists
+      final existingRequest = await _supabaseClient
+          .from('game_join_requests')
+          .select('id, status')
+          .eq('game_id', gameId)
+          .eq('from_user_id', playerId)
+          .eq('status', 'pending')
+          .maybeSingle();
+
+      if (existingRequest != null) {
+        print('⚠️ [Datasource] requestToJoinGame: Pending request already exists');
+        return existingRequest['id'] as String;
+      }
+
+      // Create new join request
+      final response = await _supabaseClient
+          .from('game_join_requests')
+          .insert({
+            'game_id': gameId,
+            'from_profile_id': profileId,
+            'from_user_id': playerId,
+            'status': 'pending',
+          })
+          .select('id')
+          .single();
+
+      final requestId = response['id'] as String;
+      print('✅ [Datasource] requestToJoinGame: Join request created with ID: $requestId');
+      return requestId;
+    } on PostgrestException catch (e) {
+      if (e.code == '23505') {
+        // Unique violation - request already exists (race condition)
+        print('✅ [Datasource] requestToJoinGame: Request already exists (race condition)');
+        final existingRequest = await _supabaseClient
+            .from('game_join_requests')
+            .select('id')
+            .eq('game_id', gameId)
+            .eq('from_user_id', playerId)
+            .eq('status', 'pending')
+            .maybeSingle();
+        if (existingRequest != null) {
+          return existingRequest['id'] as String;
+        }
+      }
+      throw GameServerException('Database error: ${e.message}');
+    } catch (e) {
+      throw GameServerException('Failed to create join request: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<bool> hasPendingJoinRequest(String gameId, String userId) async {
+    try {
+      final response = await _supabaseClient
+          .from('game_join_requests')
+          .select('id')
+          .eq('game_id', gameId)
+          .eq('from_user_id', userId)
+          .eq('status', 'pending')
+          .maybeSingle();
+
+      return response != null;
+    } catch (e) {
+      print('⚠️ [Datasource] hasPendingJoinRequest: Error: $e');
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> cancelJoinRequest(String gameId, String userId) async {
+    try {
+      print('🔄 [Datasource] cancelJoinRequest: gameId=$gameId, userId=$userId');
+
+      // First check if a pending request exists
+      final existingRequest = await _supabaseClient
+          .from('game_join_requests')
+          .select('id, status')
+          .eq('game_id', gameId)
+          .eq('from_user_id', userId)
+          .eq('status', 'pending')
+          .maybeSingle();
+
+      if (existingRequest == null) {
+        print('⚠️ [Datasource] cancelJoinRequest: No pending request found (might have been processed already)');
+        return false; // No request to cancel - idempotent success
+      }
+
+      // Update the request status to 'cancelled' instead of deleting
+      // RLS policy allows requester to update their own request to 'cancelled'
+      final response = await _supabaseClient
+          .from('game_join_requests')
+          .update({
+            'status': 'cancelled',
+            'decided_at': DateTime.now().toUtc().toIso8601String(),
+          })
+          .eq('game_id', gameId)
+          .eq('from_user_id', userId)
+          .eq('status', 'pending')
+          .select();
+
+      // Check if any rows were updated
+      final updated = (response as List).isNotEmpty;
+      
+      if (updated) {
+        print('✅ [Datasource] cancelJoinRequest: Successfully cancelled join request');
+      } else {
+        print('⚠️ [Datasource] cancelJoinRequest: Request was not updated (might have been processed already)');
+      }
+
+      return updated;
+    } on PostgrestException catch (e) {
+      print('❌ [Datasource] cancelJoinRequest: PostgrestException: ${e.message}, code: ${e.code}');
+      throw GameServerException('Database error: ${e.message}');
+    } catch (e) {
+      print('❌ [Datasource] cancelJoinRequest: Error: $e');
+      throw GameServerException('Failed to cancel join request: ${e.toString()}');
+    }
   }
 
   void dispose() {

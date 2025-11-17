@@ -11,26 +11,11 @@ class AppBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    // Approximate 137° using a diagonal gradient direction.
-    // Fine-grained angle control isn’t required; visual parity is the goal.
-    final begin = const Alignment(-0.8, -1.0); // near top-left
-    final end = const Alignment(1.0, 0.8); // near bottom-right
-
-    final colors = isDark
-        ? const [Color(0xFF1E0E33), Color(0xFF5B2B99)]
-        : const [Color(0xFFF5EDFF), Color(0xFFEADAFF)];
+    final color = isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
 
     return IgnorePointer(
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: begin,
-            end: end,
-            colors: colors,
-            stops: const [0.1052, 0.8932],
-          ),
-        ),
+        color: color,
       ),
     );
   }

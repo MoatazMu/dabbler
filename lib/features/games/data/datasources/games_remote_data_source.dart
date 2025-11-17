@@ -187,4 +187,14 @@ abstract class GamesRemoteDataSource {
   /// Gets the waitlist position for a player in a game
   /// Returns null if player is not on waitlist
   Future<int?> getWaitlistPosition(String gameId, String userId);
+
+  /// Requests to join a game (for games with "request" join policy)
+  /// Returns the join request ID on success
+  Future<String> requestToJoinGame(String gameId, String playerId, {String? message});
+
+  /// Checks if a user has a pending join request for a game
+  Future<bool> hasPendingJoinRequest(String gameId, String userId);
+
+  /// Cancels a pending join request for a game
+  Future<bool> cancelJoinRequest(String gameId, String userId);
 }

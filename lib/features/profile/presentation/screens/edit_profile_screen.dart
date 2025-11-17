@@ -303,7 +303,7 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _selectedGender,
+              initialValue: _selectedGender,
               style: textTheme.bodyLarge?.copyWith(
                 color: colorScheme.onSurface,
               ),

@@ -1,6 +1,8 @@
 import 'package:dabbler/data/models/games/game.dart';
 
 class GameModel extends Game {
+  final String joinPolicy;
+
   const GameModel({
     required super.id,
     required super.title,
@@ -25,6 +27,7 @@ class GameModel extends Game {
     super.cancellationDeadline,
     required super.createdAt,
     required super.updatedAt,
+    this.joinPolicy = 'open',
   });
 
   factory GameModel.fromJson(Map<String, dynamic> json) {
@@ -94,6 +97,7 @@ class GameModel extends Game {
         updatedAt: _parseDate(
           json['updated_at'] ?? DateTime.now().toIso8601String(),
         ),
+        joinPolicy: json['join_policy'] as String? ?? 'open',
       );
     } catch (e, stackTrace) {
       print('❌ [GameModel] fromJson: Failed to parse game data. Error: $e');

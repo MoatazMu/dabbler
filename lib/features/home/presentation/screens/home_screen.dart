@@ -812,7 +812,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             'user_id, display_name, avatar_url, preferred_sport, created_at',
           )
           .isFilter('deleted_at', null)
-          .order('created_at', ascending: false)
+          .order('created_at', ascending: false, nullsFirst: false)
           .limit(6);
 
       return (response as List).map((item) {

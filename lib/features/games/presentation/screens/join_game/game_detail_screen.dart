@@ -980,6 +980,9 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
     final bool isJoined =
         detailState.joinStatus == JoinGameStatus.alreadyJoined ||
         detailState.players.any((p) => p.playerId == currentUserId);
+    final bool isRequested = detailState.joinStatus == JoinGameStatus.requested;
+    // Check if game requires request based on joinability decision
+    final bool needsRequest = detailState.joinabilityDecision?.canRequest == true;
     final dateFormat = DateFormat('MMM dd');
     final formattedDate = dateFormat.format(game.scheduledDate);
 
@@ -1021,14 +1024,22 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
             FilledButton.icon(
               onPressed: detailState.isJoining
                   ? null
-                  : (isJoined ? _leaveGame : _joinGame),
+                  : (isJoined
+                      ? _leaveGame
+                      : isRequested
+                          ? _cancelRequest
+                          : _joinGame),
               style: FilledButton.styleFrom(
                 backgroundColor: isJoined
                     ? colorScheme.error
-                    : colorScheme.primary,
+                    : isRequested
+                        ? colorScheme.errorContainer
+                        : colorScheme.primary,
                 foregroundColor: isJoined
                     ? colorScheme.onError
-                    : colorScheme.onPrimary,
+                    : isRequested
+                        ? colorScheme.onErrorContainer
+                        : colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 16,
@@ -1046,15 +1057,31 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
                         valueColor: AlwaysStoppedAnimation<Color>(
                           isJoined
                               ? colorScheme.onError
-                              : colorScheme.onPrimary,
+                              : isRequested
+                                  ? colorScheme.onErrorContainer
+                                  : colorScheme.onPrimary,
                         ),
                       ),
                     )
-                  : Icon(isJoined ? Icons.close : Icons.check),
+                  : Icon(
+                      isJoined
+                          ? Icons.close
+                          : isRequested
+                              ? Icons.cancel
+                              : needsRequest
+                                  ? Icons.send
+                                  : Icons.check,
+                    ),
               label: Text(
                 detailState.isJoining
-                    ? 'Joining...'
-                    : (isJoined ? 'Leave' : 'Join Game'),
+                    ? (needsRequest ? 'Requesting...' : 'Joining...')
+                    : isJoined
+                        ? 'Leave'
+                        : isRequested
+                            ? 'Cancel Request'
+                            : needsRequest
+                                ? 'Request to Join'
+                                : 'Join Game',
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
@@ -1208,6 +1235,46 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Successfully joined the game!')),
+        );
+      }
+    }
+  }
+
+  Future<void> _cancelRequest() async {
+    final currentUserId = ref.read(currentUserIdProvider);
+
+    if (currentUserId == null) return;
+
+    final controller = ref.read(
+      gameDetailControllerProvider(
+        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
+      ).notifier,
+    );
+
+    await controller.cancelJoinRequest();
+
+    // Get updated state after cancel
+    final updatedState = ref.read(
+      gameDetailControllerProvider(
+        GameDetailParams(gameId: widget.gameId, currentUserId: currentUserId),
+      ),
+    );
+
+    if (mounted) {
+      if (updatedState.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(updatedState.error!),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      } else if (updatedState.joinMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(updatedState.joinMessage!),
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            duration: const Duration(seconds: 2),
+          ),
         );
       }
     }

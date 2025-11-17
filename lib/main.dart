@@ -9,7 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'app/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'widgets/app_background.dart';
+import 'widgets/responsive_app_shell.dart';
 
 // Feature flags for future functionality
 class AppFeatures {
@@ -111,9 +111,10 @@ class MyApp extends StatelessWidget {
           themeMode: _themeService.effectiveThemeMode,
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
-            // Mount a single global background behind all app content
-            return Stack(
-              children: [const AppBackground(), if (child != null) child],
+            if (child == null) return const SizedBox.shrink();
+            return ResponsiveAppShell(
+              maxContentWidth: 500,
+              child: child,
             );
           },
         );

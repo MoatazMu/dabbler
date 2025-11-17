@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:dabbler/data/models/games/game.dart';
+import 'package:dabbler/data/models/games/game_model.dart';
 import 'package:dabbler/data/models/games/venue.dart';
 import 'package:dabbler/data/models/games/player.dart';
 import '../../domain/usecases/join_game_usecase.dart';
@@ -17,6 +18,7 @@ enum JoinGameStatus {
   gameStarted,
   gameEnded,
   notEligible,
+  requested, // Join request has been sent and is pending approval
 }
 
 class WeatherInfo {
@@ -209,7 +211,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
       }
 
       // Determine join status
-      _updateJoinStatus();
+      await _updateJoinStatus();
 
       // Start real-time updates
       _startRealtimeUpdates();
@@ -369,17 +371,30 @@ class GameDetailController extends StateNotifier<GameDetailState> {
           // Refresh game data to get updated player list and counts
           await _loadGameDetails();
           await _loadGamePlayers();
-          _updateJoinStatus();
+          await _updateJoinStatus();
 
-          // Set success message based on waitlist status
+          // Set success message based on waitlist status or request status
           String? successMessage;
-          if (joinResult.isOnWaitlist) {
+          
+          // Check if a request was created (for request join policy)
+          final updatedStatus = state.joinStatus;
+          if (updatedStatus == JoinGameStatus.requested) {
+            successMessage = 'Join request sent! The organizer will review your request.';
+          } else if (joinResult.isOnWaitlist) {
             final positionText = joinResult.position != null
                 ? ' (Position #${joinResult.position})'
                 : '';
             successMessage = 'Added to waitlist$positionText. You will be notified if a spot becomes available.';
           } else {
-            successMessage = joinResult.message;
+            // For request policy, check if we just sent a request
+            final game = state.game;
+            if (game is GameModel && game.joinPolicy == 'request') {
+              successMessage = 'Join request sent! The organizer will review your request.';
+            } else {
+              successMessage = joinResult.message.isNotEmpty 
+                  ? joinResult.message 
+                  : 'Successfully joined the game!';
+            }
           }
 
           state = state.copyWith(
@@ -413,7 +428,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
 
       // Mock success - refresh data
       await _loadGamePlayers();
-      _updateJoinStatus();
+      await _updateJoinStatus();
 
       state = state.copyWith(isJoining: false);
     } catch (e) {
@@ -424,8 +439,54 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     }
   }
 
+  /// Cancel a pending join request
+  Future<void> cancelJoinRequest() async {
+    if (currentUserId == null) return;
+
+    state = state.copyWith(isJoining: true, error: null);
+
+    try {
+      final result = await _gamesRepository.cancelJoinRequest(gameId, currentUserId!);
+
+      result.fold(
+        (failure) {
+          state = state.copyWith(
+            isJoining: false,
+            error: failure.message,
+          );
+        },
+        (cancelled) async {
+          // Always refresh status to update UI, even if request wasn't found
+          // (it might have been approved/denied already, or never existed)
+          await _updateJoinStatus();
+
+          if (cancelled) {
+            state = state.copyWith(
+              isJoining: false,
+              error: null,
+              joinMessage: 'Join request cancelled',
+            );
+          } else {
+            // No request found - might have been already processed or doesn't exist
+            // Treat as success (idempotent) and just refresh the UI
+            state = state.copyWith(
+              isJoining: false,
+              error: null,
+              joinMessage: null,
+            );
+          }
+        },
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isJoining: false,
+        error: 'Failed to cancel join request: $e',
+      );
+    }
+  }
+
   /// Update join status based on current state
-  void _updateJoinStatus() {
+  Future<void> _updateJoinStatus() async {
     if (currentUserId == null || state.game == null) {
       state = state.copyWith(
         joinStatus: JoinGameStatus.notEligible,
@@ -436,9 +497,23 @@ class GameDetailController extends StateNotifier<GameDetailState> {
 
     final game = state.game!;
     final alreadyJoined = state.players.any((p) => p.playerId == currentUserId);
-    final alreadyRequested = state.waitlistedPlayers.any(
-      (p) => p.playerId == currentUserId,
-    );
+    
+    // Check for pending join request
+    bool alreadyRequested = false;
+    try {
+      final hasRequest = await _gamesRepository.hasPendingJoinRequest(gameId, currentUserId!);
+      alreadyRequested = hasRequest.fold((_) => false, (has) => has);
+    } catch (e) {
+      print('⚠️ [Controller] Error checking join request: $e');
+    }
+
+    // Determine if approval is required based on join_policy
+    // GameModel has joinPolicy, but Game doesn't - check if it's GameModel
+    String? joinPolicy;
+    if (game is GameModel) {
+      joinPolicy = game.joinPolicy;
+    }
+    final requiresApproval = joinPolicy == 'request';
 
     final inputs = JoinabilityInputs(
       ownerId: game.organizerId,
@@ -449,7 +524,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
       joinWindowOpen: game.status == GameStatus.upcoming && state.canStillJoin,
       requiresInvite: false,
       viewerInvited: true,
-      requiresApproval: false,
+      requiresApproval: requiresApproval,
       alreadyJoined: alreadyJoined,
       alreadyRequested: alreadyRequested,
       rosterCount: state.players.length,
@@ -483,12 +558,19 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     if (decision.canLeave) {
       return JoinGameStatus.alreadyJoined;
     }
+    // Check if already requested (this is handled by alreadyRequested flag)
+    if (decision.reason == JoinabilityReason.alreadyRequested) {
+      return JoinGameStatus.requested;
+    }
+    // If can request, return canJoin but UI will check canRequest to show "Request to Join"
+    if (decision.canRequest) {
+      return JoinGameStatus.canJoin; // UI will check canRequest to show "Request to Join"
+    }
     if (decision.canJoin) {
       return JoinGameStatus.canJoin;
     }
-    if (decision.canRequest ||
-        decision.reason == JoinabilityReason.approvalRequired) {
-      return JoinGameStatus.waitlisted;
+    if (decision.reason == JoinabilityReason.approvalRequired) {
+      return JoinGameStatus.canJoin; // UI will check canRequest to show "Request to Join"
     }
     if (decision.canWaitlist ||
         decision.reason == JoinabilityReason.rosterFullWaitlistAvailable) {
@@ -529,7 +611,7 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     final timer = Timer.periodic(const Duration(seconds: 30), (timer) {
       if (mounted) {
         _loadGamePlayers();
-        _updateJoinStatus();
+        _updateJoinStatus(); // Fire and forget - async call
       } else {
         timer.cancel();
       }
