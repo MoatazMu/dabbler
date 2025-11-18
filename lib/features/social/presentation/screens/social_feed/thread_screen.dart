@@ -785,8 +785,20 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
     }
   }
 
-  void _likeComment(String commentId) {
-    // Implement comment like
+  void _likeComment(String commentId) async {
+    try {
+      final socialService = SocialService();
+      await socialService.toggleCommentLike(commentId);
+
+      // Refresh comments to get updated like count and status
+      ref.invalidate(postCommentsProvider(widget.postId));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to toggle comment like: $e')),
+        );
+      }
+    }
   }
 
   void _deleteComment(String commentId) {

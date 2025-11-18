@@ -380,8 +380,8 @@ _CommentData _transformComment(Map<String, dynamic> comment) {
       avatar: profile?['avatar_url'],
       isVerified: profile?['verified'] ?? false,
     ),
-    likesCount: 0, // Comment likes not implemented yet
-    isLiked: false,
+    likesCount: comment['likes_count'] ?? comment['like_count'] ?? 0,
+    isLiked: comment['is_liked'] == true || comment['user_has_liked'] == true,
     replies: replies.map((reply) => _transformComment(reply as Map<String, dynamic>)).toList(),
   );
 }

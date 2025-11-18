@@ -137,10 +137,28 @@ class SocialService {
         profilesMap[profile['user_id']] = profile;
       }
 
+      // Fetch current user's liked post IDs
+      final user = _supabase.auth.currentUser;
+      final Set<String> likedPostIds = {};
+      if (user != null) {
+        final postIds = postsResponse.map((post) => post['id'].toString()).toList();
+        if (postIds.isNotEmpty) {
+          final likedPosts = await _supabase
+              .from('post_likes')
+              .select('post_id')
+              .eq('user_id', user.id)
+              .inFilter('post_id', postIds);
+          likedPostIds.addAll(
+            likedPosts.map((like) => like['post_id'].toString()),
+          );
+        }
+      }
+
       // Transform database posts to match PostModel expectations
       final enrichedPosts = postsResponse.map((post) {
         final authorId = post['author_user_id'] as String;
         final profile = profilesMap[authorId];
+        final postId = post['id'].toString();
 
         // Extract media URLs from media array
         List<String> mediaUrls = [];
@@ -157,7 +175,7 @@ class SocialService {
 
         // Transform database schema to PostModel schema
         return {
-          'id': post['id'],
+          'id': postId,
           'author_id':
               post['author_user_id'], // Map author_user_id -> author_id
           'content': post['body'] ?? '', // Map body -> content
@@ -175,6 +193,7 @@ class SocialService {
           'shares_count': 0, // Not in database, default to 0
           'location_name': post['venue_id'], // Could be mapped differently
           'tags': [], // Not directly in schema
+          'is_liked': likedPostIds.contains(postId), // Set is_liked based on user's likes
           'profiles': profile != null
               ? {
                   'id': profile['user_id'],
@@ -218,8 +237,27 @@ class SocialService {
           .eq('user_id', userId)
           .maybeSingle();
 
+      // Fetch current user's liked post IDs
+      final user = _supabase.auth.currentUser;
+      final Set<String> likedPostIds = {};
+      if (user != null) {
+        final postIds = postsResponse.map((post) => post['id'].toString()).toList();
+        if (postIds.isNotEmpty) {
+          final likedPosts = await _supabase
+              .from('post_likes')
+              .select('post_id')
+              .eq('user_id', user.id)
+              .inFilter('post_id', postIds);
+          likedPostIds.addAll(
+            likedPosts.map((like) => like['post_id'].toString()),
+          );
+        }
+      }
+
       // Transform database posts to match PostModel expectations
       final enrichedPosts = postsResponse.map((post) {
+        final postId = post['id'].toString();
+        
         // Extract media URLs from media array
         List<String> mediaUrls = [];
         final mediaArray = post['media'];
@@ -234,7 +272,7 @@ class SocialService {
         }
 
         return {
-          'id': post['id'],
+          'id': postId,
           'author_id':
               post['author_user_id'], // Map author_user_id -> author_id
           'content': post['body'] ?? '', // Map body -> content
@@ -251,6 +289,7 @@ class SocialService {
           'shares_count': 0, // Not in database, default to 0
           'location_name': post['venue_id'], // Could be mapped differently
           'tags': [], // Not directly in schema
+          'is_liked': likedPostIds.contains(postId), // Set is_liked based on user's likes
           'profiles': profileResponse != null
               ? {
                   'id': profileResponse['user_id'],
@@ -295,6 +334,19 @@ class SocialService {
           .eq('user_id', authorId)
           .maybeSingle();
 
+      // Check if current user has liked this post
+      final user = _supabase.auth.currentUser;
+      bool isLiked = false;
+      if (user != null) {
+        final existingLike = await _supabase
+            .from('post_likes')
+            .select('post_id')
+            .eq('post_id', postId)
+            .eq('user_id', user.id)
+            .maybeSingle();
+        isLiked = existingLike != null;
+      }
+
       // Extract media URLs from media array
       List<String> mediaUrls = [];
       final mediaArray = post['media'];
@@ -323,6 +375,7 @@ class SocialService {
         'shares_count': 0,
         'location_name': post['venue_id'],
         'tags': [],
+        'is_liked': isLiked, // Set is_liked based on user's like status
         'profiles': profileResponse != null
             ? {
                 'id': profileResponse['user_id'],
@@ -372,6 +425,42 @@ class SocialService {
       }
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
+    }
+  }
+
+  /// Like/unlike a comment
+  Future<void> toggleCommentLike(String commentId) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Check if already liked
+      final existingLike = await _supabase
+          .from('comment_likes')
+          .select('comment_id')
+          .eq('comment_id', commentId)
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (existingLike != null) {
+        // Unlike: Remove the like (trigger will decrement like_count automatically)
+        await _supabase
+            .from('comment_likes')
+            .delete()
+            .eq('comment_id', commentId)
+            .eq('user_id', user.id);
+      } else {
+        // Like: Add the like (trigger will increment like_count automatically)
+        await _supabase.from('comment_likes').insert({
+          'comment_id': commentId,
+          'user_id': user.id,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      }
+    } catch (e) {
+      throw Exception('Failed to toggle comment like: $e');
     }
   }
 
@@ -485,6 +574,28 @@ class SocialService {
           .order('created_at', ascending: true);
 
       final commentsList = List<Map<String, dynamic>>.from(allComments);
+      
+      // Fetch current user's liked comment IDs
+      final user = _supabase.auth.currentUser;
+      final Set<String> likedCommentIds = {};
+      if (user != null && commentsList.isNotEmpty) {
+        final commentIds = commentsList.map((comment) => comment['id'].toString()).toList();
+        final likedComments = await _supabase
+            .from('comment_likes')
+            .select('comment_id')
+            .eq('user_id', user.id)
+            .inFilter('comment_id', commentIds);
+        likedCommentIds.addAll(
+          likedComments.map((like) => like['comment_id'].toString()),
+        );
+      }
+      
+      // Add like information to each comment
+      for (final comment in commentsList) {
+        final commentId = comment['id'].toString();
+        comment['is_liked'] = likedCommentIds.contains(commentId);
+        comment['likes_count'] = comment['like_count'] ?? 0;
+      }
       
       // Build nested structure: separate top-level comments from replies
       final topLevelComments = <Map<String, dynamic>>[];

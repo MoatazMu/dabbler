@@ -114,6 +114,7 @@ class CommentsThread extends ConsumerWidget {
                     const SizedBox(height: 8),
 
                     // Comment actions - Like and Reply only
+                    // Hide Reply button for replies (nestingLevel > 0) since DB only supports 2 levels
                     Row(
                       children: [
                         _buildActionButton(
@@ -130,15 +131,17 @@ class CommentsThread extends ConsumerWidget {
                           size: nestingLevel > 0 ? 14 : 16,
                         ),
 
-                        const SizedBox(width: 16),
-
-                        _buildActionButton(
-                          theme,
-                          icon: Icons.reply_rounded,
-                          label: 'Reply',
-                          onTap: () => onReply?.call(comment.id),
-                          size: nestingLevel > 0 ? 14 : 16,
-                        ),
+                        // Only show Reply button for top-level comments (nestingLevel == 0)
+                        if (nestingLevel == 0) ...[
+                          const SizedBox(width: 16),
+                          _buildActionButton(
+                            theme,
+                            icon: Icons.reply_rounded,
+                            label: 'Reply',
+                            onTap: () => onReply?.call(comment.id),
+                            size: 16,
+                          ),
+                        ],
 
                         const Spacer(),
 
