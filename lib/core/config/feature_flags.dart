@@ -49,7 +49,6 @@ class FeatureFlags {
   /// Central MVP feature flags (UI gating only; do not delete code).
   static const bool multiSport = false;
   static const bool organiserProfile = false;
-  static const bool createGamePublic = true; // Enable public game creation
   static const bool socialFeed = true; // NOW ENABLED FOR MVP
   static const bool messaging = false;
   static const bool notifications = false;
@@ -57,8 +56,19 @@ class FeatureFlags {
   static const bool venuesBooking = false; // venues remain read-only
   static const bool enableRewards = false;
 
-  /// Game Management (Admin/Testing Only)
-  static const bool enableGameCreation = false; // Hide from users
+  /// Game Creation Features (Split by profile type)
+  static const bool enablePlayerGameCreation =
+      false; // Players CANNOT create games in MVP
+  static const bool enableOrganiserGameCreation =
+      true; // Organisers can create organized games in MVP
+
+  /// Game Joining Features (Split by profile type)
+  static const bool enablePlayerGameJoining =
+      true; // Players CAN join games in MVP
+  static const bool enableOrganiserGameJoining =
+      false; // Organisers CANNOT join games in MVP (they create/organize)
+
+  /// Game Management
   static const bool enableGameEditing = false;
   static const bool enableGameDeletion = false;
   static const bool enableRecurringGames = false;
@@ -68,7 +78,7 @@ class FeatureFlags {
   static const bool enableGameChat = false;
 
   /// Profile Types
-  static const bool enableOrganiserProfile = false; // Player only for MVP
+  static const bool enableOrganiserProfile = true; // NOW ENABLED FOR MVP
   static const bool enableMultiProfile = false;
   static const bool enableVerificationBadge = false;
   static const bool enableProfileCompletionPercent = false;
@@ -159,24 +169,37 @@ class FeatureFlags {
   // ============================================================================
 
   /// Sports available in MVP
-  /// Only football enabled, others hidden
-  static const List<String> enabledSports = ['football'];
+  /// Three main sports: football, cricket, paddle
+  static const List<String> enabledSports = ['football', 'cricket', 'paddle'];
 
   /// All sports (for future enablement)
   static const List<String> allSports = [
     'football',
+    'cricket',
+    'paddle',
     'basketball',
     'tennis',
     'volleyball',
     'badminton',
-    'cricket',
     'table_tennis',
     'squash',
+    'baseball',
+    'rugby',
+    'hockey',
   ];
 
   /// Check if a sport is enabled
   static bool isSportEnabled(String sport) {
     return enabledSports.contains(sport.toLowerCase());
+  }
+
+  /// Check if all sports should be available in interests
+  /// For MVP, all sports are available as interests even if not main sports
+  static bool isAllSportsInInterests = true;
+
+  /// Get sports available for interests selection
+  static List<String> getSportsForInterests() {
+    return isAllSportsInInterests ? allSports : enabledSports;
   }
 
   // ============================================================================
@@ -251,7 +274,7 @@ class FeatureFlags {
   // ============================================================================
 
   /// Available profile types in MVP
-  static const List<String> enabledProfileTypes = ['player'];
+  static const List<String> enabledProfileTypes = ['player', 'organiser'];
 
   /// All profile types
   static const List<String> allProfileTypes = ['player', 'organiser'];
@@ -314,6 +337,8 @@ class FeatureFlags {
       if (enablePhoneAuth) 'phone_auth',
       if (enableEmailAuth) 'email_auth',
       if (enableGameBrowsing) 'game_browsing',
+      if (enablePlayerGameCreation) 'player_game_creation',
+      if (enableOrganiserGameCreation) 'organiser_game_creation',
       if (enableJoinGames) 'join_games',
       if (enablePlayerRatings) 'player_ratings',
       if (enableBasicStats) 'basic_stats',
@@ -337,8 +362,10 @@ class FeatureFlags {
         return enableEmailAuth;
       case 'game_browsing':
         return enableGameBrowsing;
-      case 'game_creation':
-        return enableGameCreation;
+      case 'player_game_creation':
+        return enablePlayerGameCreation;
+      case 'organiser_game_creation':
+        return enableOrganiserGameCreation;
       case 'join_games':
         return enableJoinGames;
       case 'player_ratings':

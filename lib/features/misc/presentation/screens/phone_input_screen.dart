@@ -17,7 +17,9 @@ class PhoneInputScreen extends ConsumerStatefulWidget {
 class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _phoneController = TextEditingController();
-  final String _countryCode = '+971'; // Default to UAE
+  String _countryCode = '+971'; // Default to UAE
+  String _countryFlag = '🇦🇪';
+  String _countryName = 'UAE';
   bool _isLoading = false;
   String? _errorMessage;
   String? _successMessage;
@@ -44,12 +46,98 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
 
   String? _validatePhone(String? value) {
     final phone = value?.trim() ?? '';
-    // Simple validation: must be 9 digits (UAE format: 5XXXXXXXX)
     if (phone.isEmpty) return 'Phone number is required';
-    if (!RegExp(r'^5\d{8}').hasMatch(phone)) {
-      return 'Enter a valid UAE phone number';
+
+    // Country-specific validation
+    if (_countryCode == '+971') {
+      // UAE: must be 9 digits starting with 5
+      if (!RegExp(r'^5\d{8}').hasMatch(phone)) {
+        return 'Enter a valid UAE number (5XXXXXXXX)';
+      }
+    } else {
+      // Generic validation for other countries: 7-15 digits
+      if (!RegExp(r'^\d{7,15}').hasMatch(phone)) {
+        return 'Enter a valid phone number';
+      }
     }
     return null;
+  }
+
+  void _showCountryPicker() {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        final colorScheme = Theme.of(context).colorScheme;
+        final textTheme = Theme.of(context).textTheme;
+
+        final countries = [
+          {'code': '+971', 'flag': '🇦🇪', 'name': 'UAE'},
+          {'code': '+966', 'flag': '🇸🇦', 'name': 'Saudi Arabia'},
+          {'code': '+965', 'flag': '🇰🇼', 'name': 'Kuwait'},
+          {'code': '+974', 'flag': '🇶🇦', 'name': 'Qatar'},
+          {'code': '+973', 'flag': '🇧🇭', 'name': 'Bahrain'},
+          {'code': '+968', 'flag': '🇴🇲', 'name': 'Oman'},
+          {'code': '+962', 'flag': '🇯🇴', 'name': 'Jordan'},
+          {'code': '+961', 'flag': '🇱🇧', 'name': 'Lebanon'},
+          {'code': '+20', 'flag': '🇪🇬', 'name': 'Egypt'},
+          {'code': '+1', 'flag': '🇺🇸', 'name': 'USA'},
+          {'code': '+44', 'flag': '🇬🇧', 'name': 'UK'},
+          {'code': '+91', 'flag': '🇮🇳', 'name': 'India'},
+          {'code': '+92', 'flag': '🇵🇰', 'name': 'Pakistan'},
+        ];
+
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Select Country',
+                  style: textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const Divider(height: 1),
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: countries.length,
+                  itemBuilder: (context, index) {
+                    final country = countries[index];
+                    return ListTile(
+                      leading: Text(
+                        country['flag']!,
+                        style: const TextStyle(fontSize: 28),
+                      ),
+                      title: Text(country['name']!),
+                      trailing: Text(
+                        country['code']!,
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.primary,
+                        ),
+                      ),
+                      onTap: () {
+                        setState(() {
+                          _countryCode = country['code']!;
+                          _countryFlag = country['flag']!;
+                          _countryName = country['name']!;
+                          _phoneController.clear();
+                          _isPhoneValid = false;
+                        });
+                        Navigator.pop(context);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _onPhoneChanged(String value) {
@@ -356,27 +444,37 @@ class _PhoneInputScreenState extends ConsumerState<PhoneInputScreen> {
         validator: _validatePhone,
         style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
         decoration: InputDecoration(
-          hintText: '505050500',
-          prefixIcon: Padding(
-            padding: const EdgeInsets.only(left: 16, right: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🇦🇪', style: TextStyle(fontSize: 20)),
-                const SizedBox(width: 8),
-                Text(
-                  _countryCode,
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurface,
+          hintText: _countryCode == '+971' ? '505050500' : 'Phone number',
+          prefixIcon: InkWell(
+            onTap: _showCountryPicker,
+            borderRadius: BorderRadius.circular(12),
+            child: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_countryFlag, style: const TextStyle(fontSize: 20)),
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_drop_down,
+                    color: colorScheme.onSurfaceVariant,
+                    size: 20,
                   ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  width: 1,
-                  height: 20,
-                  color: colorScheme.outlineVariant,
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Text(
+                    _countryCode,
+                    style: textTheme.bodyLarge?.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 1,
+                    height: 20,
+                    color: colorScheme.outlineVariant,
+                  ),
+                ],
+              ),
             ),
           ),
           // Material 3 uses InputDecorationTheme from theme

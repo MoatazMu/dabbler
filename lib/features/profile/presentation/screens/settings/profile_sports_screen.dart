@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
 
 import '../../../../../utils/constants/route_constants.dart';
 
@@ -89,9 +91,10 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
 
       for (final sportData in response as List) {
         // sport_profiles table uses 'sport_key', not 'sport_type'
-        final sportKey = (sportData['sport_key'] as String? ?? '').toLowerCase();
+        final sportKey = (sportData['sport_key'] as String? ?? '')
+            .toLowerCase();
         if (sportKey.isEmpty) continue;
-        
+
         preferences[sportKey] = SportPreference(
           name: _formatSportName(sportData['sport_key'] as String),
           icon: _getSportIcon(sportKey),
@@ -216,6 +219,18 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
     super.dispose();
   }
 
+  bool _shouldShowCreateGame() {
+    final profileState = ref.read(profileControllerProvider);
+    final profileType = profileState.profile?.profileType;
+
+    if (profileType == 'player') {
+      return FeatureFlags.enablePlayerGameCreation;
+    } else if (profileType == 'organiser') {
+      return FeatureFlags.enableOrganiserGameCreation;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -264,11 +279,13 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
               ),
             ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push(RoutePaths.createGame),
-        icon: const Icon(Icons.add_circle_outline),
-        label: const Text('Create game'),
-      ),
+      floatingActionButton: _shouldShowCreateGame()
+          ? FloatingActionButton.extended(
+              onPressed: () => context.push(RoutePaths.createGame),
+              icon: const Icon(Icons.add_circle_outline),
+              label: const Text('Create game'),
+            )
+          : null,
     );
   }
 
@@ -296,17 +313,18 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
                   ),
                 ),
                 const SizedBox(width: 12),
-                FilledButton.icon(
-                  onPressed: () => context.push(RoutePaths.createGame),
-                  icon: const Icon(Icons.add_circle_outline),
-                  label: const Text('Create game'),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
+                if (_shouldShowCreateGame())
+                  FilledButton.icon(
+                    onPressed: () => context.push(RoutePaths.createGame),
+                    icon: const Icon(Icons.add_circle_outline),
+                    label: const Text('Create game'),
+                    style: FilledButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -575,7 +593,10 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       final profileId = profileResponse['id'] as String;
 
       // Delete all existing sports profiles for this user
-      await supabase.from('sport_profiles').delete().eq('profile_id', profileId);
+      await supabase
+          .from('sport_profiles')
+          .delete()
+          .eq('profile_id', profileId);
 
       // Insert new/updated sports profiles for enabled sports
       final enabledSports = _sportPreferences.entries

@@ -5,6 +5,8 @@ import '../../../providers/games_providers.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
 import '../../controllers/game_detail_controller.dart';
+import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
 
 class GameDetailScreen extends ConsumerStatefulWidget {
   final String gameId;
@@ -16,6 +18,18 @@ class GameDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
+  bool _shouldShowJoinButton() {
+    final profileState = ref.read(profileControllerProvider);
+    final profileType = profileState.profile?.profileType;
+
+    if (profileType == 'player') {
+      return FeatureFlags.enablePlayerGameJoining;
+    } else if (profileType == 'organiser') {
+      return FeatureFlags.enableOrganiserGameJoining;
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final currentUserId = ref.watch(currentUserIdProvider);
@@ -982,7 +996,8 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
         detailState.players.any((p) => p.playerId == currentUserId);
     final bool isRequested = detailState.joinStatus == JoinGameStatus.requested;
     // Check if game requires request based on joinability decision
-    final bool needsRequest = detailState.joinabilityDecision?.canRequest == true;
+    final bool needsRequest =
+        detailState.joinabilityDecision?.canRequest == true;
     final dateFormat = DateFormat('MMM dd');
     final formattedDate = dateFormat.format(game.scheduledDate);
 
@@ -1021,73 +1036,74 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
             ),
             const SizedBox(width: 16),
 
-            FilledButton.icon(
-              onPressed: detailState.isJoining
-                  ? null
-                  : (isJoined
-                      ? _leaveGame
-                      : isRequested
+            if (_shouldShowJoinButton())
+              FilledButton.icon(
+                onPressed: detailState.isJoining
+                    ? null
+                    : (isJoined
+                          ? _leaveGame
+                          : isRequested
                           ? _cancelRequest
                           : _joinGame),
-              style: FilledButton.styleFrom(
-                backgroundColor: isJoined
-                    ? colorScheme.error
-                    : isRequested
-                        ? colorScheme.errorContainer
-                        : colorScheme.primary,
-                foregroundColor: isJoined
-                    ? colorScheme.onError
-                    : isRequested
-                        ? colorScheme.onErrorContainer
-                        : colorScheme.onPrimary,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
+                style: FilledButton.styleFrom(
+                  backgroundColor: isJoined
+                      ? colorScheme.error
+                      : isRequested
+                      ? colorScheme.errorContainer
+                      : colorScheme.primary,
+                  foregroundColor: isJoined
+                      ? colorScheme.onError
+                      : isRequested
+                      ? colorScheme.onErrorContainer
+                      : colorScheme.onPrimary,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              icon: detailState.isJoining
-                  ? SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          isJoined
-                              ? colorScheme.onError
-                              : isRequested
-                                  ? colorScheme.onErrorContainer
-                                  : colorScheme.onPrimary,
+                icon: detailState.isJoining
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            isJoined
+                                ? colorScheme.onError
+                                : isRequested
+                                ? colorScheme.onErrorContainer
+                                : colorScheme.onPrimary,
+                          ),
                         ),
-                      ),
-                    )
-                  : Icon(
-                      isJoined
-                          ? Icons.close
-                          : isRequested
-                              ? Icons.cancel
-                              : needsRequest
-                                  ? Icons.send
-                                  : Icons.check,
-                    ),
-              label: Text(
-                detailState.isJoining
-                    ? (needsRequest ? 'Requesting...' : 'Joining...')
-                    : isJoined
-                        ? 'Leave'
-                        : isRequested
-                            ? 'Cancel Request'
+                      )
+                    : Icon(
+                        isJoined
+                            ? Icons.close
+                            : isRequested
+                            ? Icons.cancel
                             : needsRequest
-                                ? 'Request to Join'
-                                : 'Join Game',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
+                            ? Icons.send
+                            : Icons.check,
+                      ),
+                label: Text(
+                  detailState.isJoining
+                      ? (needsRequest ? 'Requesting...' : 'Joining...')
+                      : isJoined
+                      ? 'Leave'
+                      : isRequested
+                      ? 'Cancel Request'
+                      : needsRequest
+                      ? 'Request to Join'
+                      : 'Join Game',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),

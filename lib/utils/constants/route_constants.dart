@@ -17,6 +17,7 @@ class RoutePaths {
   static const String setPassword = '/set-password';
   static const String setUsername = '/set-username';
   static const String welcome = '/welcome';
+  static const String emailVerification = '/email-verification';
 
   // Onboarding Routes
   static const String onboardingWelcome = '/onboarding-welcome';

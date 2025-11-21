@@ -68,12 +68,13 @@ class AppConstants {
   // Sports
   static const List<String> availableSports = [
     'football',
+    'cricket',
+    'paddle',
     'basketball',
     'tennis',
     'volleyball',
     'badminton',
     'table_tennis',
-    'cricket',
     'baseball',
     'rugby',
     'hockey',

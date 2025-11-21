@@ -218,6 +218,7 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
         }
 
         bool createdAccount = false;
+        bool requiresEmailConfirmation = false;
         try {
           debugPrint(
             '📋 [DEBUG] SetPasswordScreen: Creating account with all onboarding data',
@@ -236,14 +237,36 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
           );
 
           // Create auth account (NO metadata - we use public.profiles)
-          await authService.signUpWithEmailAndPassword(
+          final signUpResponse = await authService.signUpWithEmailAndPassword(
             email: normalizedEmail,
             password: password,
           );
 
-          createdAccount = true;
+          createdAccount = signUpResponse.user != null;
+          requiresEmailConfirmation = signUpResponse.session == null;
 
-          // Create profile in public.profiles
+          // If email confirmation is required, defer profile creation until after confirmation
+          if (requiresEmailConfirmation) {
+            if (!mounted) return;
+
+            // Navigate to email verification screen with onboarding data
+            context.go(
+              RoutePaths.emailVerification,
+              extra: {
+                'email': normalizedEmail,
+                'displayName': onboardingData.displayName,
+                'age': onboardingData.age,
+                'gender': onboardingData.gender,
+                'intention': onboardingData.intention,
+                'preferredSport': onboardingData.preferredSport,
+                'interests': onboardingData.interests,
+                'username': username,
+              },
+            );
+            return;
+          }
+
+          // If no email confirmation required, create profile immediately
           final currentUser = authService.getCurrentUser();
           if (currentUser != null) {
             await authService.createProfile(
@@ -301,8 +324,10 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
           rethrow;
         }
 
-        // Ensure authenticated if necessary
-        if (!authService.isAuthenticated() && createdAccount) {
+        // Ensure authenticated if necessary (only when email confirmation is not required)
+        if (!requiresEmailConfirmation &&
+            !authService.isAuthenticated() &&
+            createdAccount) {
           try {
             await authService.signInWithEmail(
               email: normalizedEmail,

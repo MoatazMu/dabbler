@@ -9,6 +9,7 @@ import 'package:intl/intl.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/widgets/svg_avatar.dart';
+import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/features/games/presentation/screens/join_game/game_detail_screen.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
@@ -47,6 +48,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } catch (e) {
       print('Error loading user profile: $e');
     }
+  }
+
+  bool _shouldShowCreateGame() {
+    final profileState = ref.read(profileControllerProvider);
+    final profileType = profileState.profile?.profileType;
+
+    if (profileType == 'player') {
+      return FeatureFlags.enablePlayerGameCreation;
+    } else if (profileType == 'organiser') {
+      return FeatureFlags.enableOrganiserGameCreation;
+    }
+    return false;
+  }
+
+  bool _shouldShowJoinGame() {
+    final profileState = ref.read(profileControllerProvider);
+    final profileType = profileState.profile?.profileType;
+
+    if (profileType == 'player') {
+      return FeatureFlags.enablePlayerGameJoining;
+    } else if (profileType == 'organiser') {
+      return FeatureFlags.enableOrganiserGameJoining;
+    }
+    return false;
   }
 
   String _getGreeting() {
@@ -284,14 +309,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        SizedBox(
-          width: double.infinity,
-          child: AppButtonCard(
-            emoji: '⚽',
-            label: 'Create Game',
-            onTap: () => context.push(RoutePaths.createGame),
+        // Only show Create Game button for organisers with permission
+        if (_shouldShowCreateGame())
+          SizedBox(
+            width: double.infinity,
+            child: AppButtonCard(
+              emoji: '⚽',
+              label: 'Create Game',
+              onTap: () => context.push(RoutePaths.createGame),
+            ),
           ),
-        ),
       ],
     );
   }
@@ -811,7 +838,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           .select(
             'user_id, display_name, avatar_url, preferred_sport, created_at',
           )
-          .isFilter('deleted_at', null)
+          .eq('is_active', true)
           .order('created_at', ascending: false, nullsFirst: false)
           .limit(6);
 
@@ -928,25 +955,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       data: (games) {
         if (games.isEmpty) {
           // Show action cards when no upcoming games
+          final showCreateGame = _shouldShowCreateGame();
+          final showJoinGame = _shouldShowJoinGame();
+
+          if (!showCreateGame && !showJoinGame) {
+            return const SizedBox.shrink();
+          }
+
           return Row(
             children: [
-              Expanded(
-                child: AppActionCard(
-                  emoji: '➕',
-                  title: 'Create Game',
-                  subtitle: 'Start a new match',
-                  onTap: () => context.go(RoutePaths.createGame),
+              if (showCreateGame)
+                Expanded(
+                  child: AppActionCard(
+                    emoji: '➕',
+                    title: 'Create Game',
+                    subtitle: 'Start a new match',
+                    onTap: () => context.go(RoutePaths.createGame),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: AppActionCard(
-                  emoji: '🔍',
-                  title: 'Join Game',
-                  subtitle: 'Find nearby games',
-                  onTap: () => context.go(RoutePaths.sports),
+              if (showCreateGame && showJoinGame) const SizedBox(width: 12),
+              if (showJoinGame)
+                Expanded(
+                  child: AppActionCard(
+                    emoji: '🔍',
+                    title: 'Join Game',
+                    subtitle: 'Find nearby games',
+                    onTap: () => context.go(RoutePaths.sports),
+                  ),
                 ),
-              ),
             ],
           );
         }

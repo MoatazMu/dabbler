@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
+import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 
 // Onboarding screens
 import 'package:dabbler/features/misc/presentation/screens/phone_input_screen.dart';
@@ -15,6 +17,7 @@ import 'package:dabbler/features/misc/presentation/screens/intent_selection_scre
 import 'package:dabbler/features/misc/presentation/screens/set_password_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/set_username_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/welcome_screen.dart';
+import 'package:dabbler/features/misc/presentation/screens/email_verification_screen.dart';
 
 // Profile Onboarding screens
 import 'package:dabbler/features/profile/presentation/screens/onboarding/onboarding_welcome_screen.dart';
@@ -155,6 +158,7 @@ class AppRouter {
         RoutePaths.sportsSelection,
         RoutePaths.setPassword,
         RoutePaths.setUsername,
+        RoutePaths.emailVerification,
       };
 
       // Onboarding paths that both authenticated and unauthenticated users can access
@@ -203,12 +207,56 @@ class AppRouter {
         return null;
       }
 
-      // If authenticated and on an auth page (except welcome and onboarding), go home
+      // If authenticated but email is not confirmed yet, force user to email verification screen
+      final currentUser = Supabase.instance.client.auth.currentUser;
+      final needsEmailVerification = currentUser != null &&
+          currentUser.email != null &&
+          currentUser.email!.isNotEmpty &&
+          currentUser.emailConfirmedAt == null;
+      final isOnEmailVerificationPage = loc == RoutePaths.emailVerification;
+
+      if (needsEmailVerification && !isOnEmailVerificationPage) {
+        if (kDebugMode && _routeLogging) {
+          debugPrint(
+            '🔁 [ROUTER] Unverified email, redirect -> ${RoutePaths.emailVerification}',
+          );
+        }
+        return RoutePaths.emailVerification;
+      }
+
+      // If authenticated and on an auth page (except welcome, email verification, and onboarding), go home
       // Allow authenticated users to access onboarding (for phone users completing profile)
+      // Allow authenticated users to access email verification (to complete profile creation)
       if (isAuthenticated &&
           isOnAuthPage &&
           loc != '/welcome' &&
+          loc != RoutePaths.emailVerification &&
           !isOnboardingPage) {
+        // Check if user has a profile - if not, they might need to complete email verification flow
+        try {
+          final supabase = Supabase.instance.client;
+          final currentUser = supabase.auth.currentUser;
+          if (currentUser != null && currentUser.email != null) {
+            final profileResponse = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('user_id', currentUser.id)
+                .maybeSingle();
+            
+            // If no profile exists and email is confirmed, redirect to email verification to complete setup
+            if (profileResponse == null && currentUser.emailConfirmedAt != null) {
+              if (kDebugMode && _routeLogging) {
+                debugPrint(
+                  '🔁 [ROUTER] Authenticated user without profile, redirect -> email verification',
+                );
+              }
+              return RoutePaths.emailVerification;
+            }
+          }
+        } catch (_) {
+          // If check fails, proceed with normal redirect
+        }
+        
         if (kDebugMode && _routeLogging) {
           debugPrint(
             '🔁 [ROUTER] ✅ Authenticated user on auth page, redirect -> home',
@@ -401,6 +449,22 @@ class AppRouter {
         return ScaleTransitionPage(
           key: state.pageKey,
           child: WelcomeScreen(displayName: displayName ?? 'Player'),
+        );
+      },
+    ),
+
+    // Email verification pending route
+    GoRoute(
+      path: RoutePaths.emailVerification,
+      pageBuilder: (context, state) {
+        final extra = state.extra;
+        final onboardingData =
+            extra is Map<String, dynamic> ? extra : null;
+        return FadeTransitionPage(
+          key: state.pageKey,
+          child: EmailVerificationScreen(
+            onboardingData: onboardingData,
+          ),
         );
       },
     ),
@@ -619,21 +683,30 @@ class AppRouter {
       ),
     ),
 
-    // Game Creation Routes (admin-only for MVP)
-    // Public UI surfaces hidden but route kept for admin/deep link access
+    // Game Creation Routes - Differentiated by profile type
+    // Organisers can create, players cannot (MVP)
     GoRoute(
       path: RoutePaths.createGame,
       name: RouteNames.createGame,
-      redirect: (context, state) {
-        // Hide public create game access for MVP
-        // Admin access could be enabled by checking user role here
-        // For now, redirect to home if feature is disabled
-        if (!FeatureFlags.createGamePublic) {
-          // TODO: Add admin role check here when auth supports it
-          // if (isAdmin) return null; // Allow admin access
+      redirect: (context, state) async {
+        // Check user's profile type and apply feature flags
+        final container = ProviderScope.containerOf(context, listen: false);
+        final profileState = container.read(profileControllerProvider);
+        final profileType = profileState.profile?.profileType;
+
+        // Block players from creating games if feature disabled
+        if (profileType == 'player' && !FeatureFlags.enablePlayerGameCreation) {
           return RoutePaths.home;
         }
-        return null; // Allow access if feature enabled
+
+        // Block organisers from creating games if feature disabled
+        if (profileType == 'organiser' &&
+            !FeatureFlags.enableOrganiserGameCreation) {
+          return RoutePaths.home;
+        }
+
+        // Allow access if profile type has permission
+        return null;
       },
       pageBuilder: (context, state) => BottomSheetTransitionPage(
         key: state.pageKey,
@@ -648,12 +721,24 @@ class AppRouter {
     GoRoute(
       path: RoutePaths.createGameBasicInfo,
       name: RouteNames.createGameBasicInfo,
-      redirect: (context, state) {
-        // Hide public create game access for MVP
-        if (!FeatureFlags.createGamePublic) {
+      redirect: (context, state) async {
+        // Check user's profile type and apply feature flags
+        final container = ProviderScope.containerOf(context, listen: false);
+        final profileState = container.read(profileControllerProvider);
+        final profileType = profileState.profile?.profileType;
+
+        // Block players from creating games if feature disabled
+        if (profileType == 'player' && !FeatureFlags.enablePlayerGameCreation) {
           return RoutePaths.home;
         }
-        return null; // Allow access if feature enabled
+
+        // Block organisers from creating games if feature disabled
+        if (profileType == 'organiser' &&
+            !FeatureFlags.enableOrganiserGameCreation) {
+          return RoutePaths.home;
+        }
+
+        return null; // Allow access if profile type has permission
       },
       pageBuilder: (context, state) => BottomSheetTransitionPage(
         key: state.pageKey,

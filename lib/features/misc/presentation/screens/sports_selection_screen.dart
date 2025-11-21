@@ -393,19 +393,9 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                   mainAxisSpacing: 12,
                                   childAspectRatio: 1.0,
                                 ),
-                            itemCount: AppConstants.availableSports
-                                .where(
-                                  (sport) => FeatureFlags.isSportEnabled(sport),
-                                )
-                                .length,
+                            itemCount: AppConstants.availableSports.length,
                             itemBuilder: (context, index) {
-                              final enabledSports = AppConstants.availableSports
-                                  .where(
-                                    (sport) =>
-                                        FeatureFlags.isSportEnabled(sport),
-                                  )
-                                  .toList();
-                              final sport = enabledSports[index];
+                              final sport = AppConstants.availableSports[index];
                               final isSelected = _interests.contains(sport);
                               final isPreferred = _preferredSport == sport;
                               final isDisabled =

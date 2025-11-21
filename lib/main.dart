@@ -27,7 +27,10 @@ void _logFlagsOnce() {
   AnalyticsService.trackEvent('flags_snapshot', {
     'multiSport': FeatureFlags.multiSport,
     'organiserProfile': FeatureFlags.organiserProfile,
-    'createGamePublic': FeatureFlags.createGamePublic,
+    'playerGameCreation': FeatureFlags.enablePlayerGameCreation,
+    'organiserGameCreation': FeatureFlags.enableOrganiserGameCreation,
+    'playerGameJoining': FeatureFlags.enablePlayerGameJoining,
+    'organiserGameJoining': FeatureFlags.enableOrganiserGameJoining,
     'socialFeed': FeatureFlags.socialFeed,
     'messaging': FeatureFlags.messaging,
     'notifications': FeatureFlags.notifications,
@@ -112,10 +115,7 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
             if (child == null) return const SizedBox.shrink();
-            return ResponsiveAppShell(
-              maxContentWidth: 500,
-              child: child,
-            );
+            return ResponsiveAppShell(maxContentWidth: 500, child: child);
           },
         );
       },

@@ -135,9 +135,102 @@ class AuthService {
       print('   preferred_sport: ${preferredSport.toLowerCase()}');
       print('   interests: $interests');
 
-      await _supabase.from(SupabaseConfig.usersTable).insert(profileData);
+      // Insert profile and get the created row with id, profile_type, and preferred_sport
+      final insertedProfile = await _supabase
+          .from(SupabaseConfig.usersTable)
+          .insert(profileData)
+          .select('id, profile_type, preferred_sport')
+          .single();
 
       print('✅ [DEBUG] AuthService: Profile created successfully');
+      print('📋 [DEBUG] AuthService: Created profile id: ${insertedProfile['id']}');
+
+      // Extract values from inserted profile
+      final profileId = insertedProfile['id'] as String;
+      final insertedProfileType = insertedProfile['profile_type'] as String;
+      final primarySport = (insertedProfile['preferred_sport'] ?? preferredSport.toLowerCase()) as String;
+
+      print('📋 [DEBUG] AuthService: Extracted values from inserted profile:');
+      print('   profile_id: $profileId');
+      print('   profile_type: "$insertedProfileType"');
+      print('   primary_sport: "$primarySport"');
+      print('   profile_type == "player": ${insertedProfileType == 'player'}');
+      print('   profile_type == "organiser": ${insertedProfileType == 'organiser'}');
+
+      // Create child profile based on profile_type
+      if (insertedProfileType == 'player') {
+        // Create sport_profile for player
+        print('🏃 [DEBUG] AuthService: Creating sport_profile for player');
+        print('📋 [DEBUG] AuthService: Sport profile data:');
+        print('   profile_id: $profileId');
+        print('   sport: ${primarySport.toLowerCase()}');
+        print('   skill_level: 1');
+        try {
+          // Use 'sport' column (actual database column name)
+          // Primary key is (profile_id, sport)
+          final sportProfileData = {
+            'profile_id': profileId,
+            'sport': primarySport.toLowerCase(),
+            'skill_level': 1, // Beginner level
+          };
+          final sportProfileResult = await _supabase
+              .from('sport_profiles')
+              .insert(sportProfileData)
+              .select()
+              .single();
+          print('✅ [DEBUG] AuthService: Sport profile created successfully');
+          print('📋 [DEBUG] AuthService: Created sport profile: $sportProfileResult');
+        } catch (e) {
+          print('❌ [DEBUG] AuthService: Failed to create sport profile');
+          print('❌ [DEBUG] AuthService: Error type: ${e.runtimeType}');
+          print('❌ [DEBUG] AuthService: Error details: $e');
+          if (e is PostgrestException) {
+            print('❌ [DEBUG] AuthService: Postgrest error code: ${e.code}');
+            print('❌ [DEBUG] AuthService: Postgrest error message: ${e.message}');
+            print('❌ [DEBUG] AuthService: Postgrest error details: ${e.details}');
+            print('❌ [DEBUG] AuthService: Postgrest error hint: ${e.hint}');
+          }
+          // Don't rethrow - profile creation succeeded, sport profile is secondary
+          // But log extensively so we can debug
+          print('⚠️ [DEBUG] AuthService: Continuing without sport profile - this should be investigated');
+        }
+      } else if (insertedProfileType == 'organiser') {
+        // Create organiser_profile for organiser
+        print('🏢 [DEBUG] AuthService: Creating organiser_profile for organiser');
+        print('📋 [DEBUG] AuthService: Organiser profile data:');
+        print('   profile_id: $profileId');
+        print('   sport: ${primarySport.toLowerCase()}');
+        try {
+          final organiserProfileData = {
+            'profile_id': profileId,
+            'sport': primarySport.toLowerCase(),
+            // Use DB defaults for: organiser_level (1), commission_type ('percent'), 
+            // commission_value (0), is_verified (false), is_active (true)
+          };
+          final organiserProfileResult = await _supabase
+              .from('organiser_profiles')
+              .insert(organiserProfileData)
+              .select()
+              .single();
+          print('✅ [DEBUG] AuthService: Organiser profile created successfully');
+          print('📋 [DEBUG] AuthService: Created organiser profile: $organiserProfileResult');
+        } catch (e) {
+          print('❌ [DEBUG] AuthService: Failed to create organiser profile');
+          print('❌ [DEBUG] AuthService: Error type: ${e.runtimeType}');
+          print('❌ [DEBUG] AuthService: Error details: $e');
+          if (e is PostgrestException) {
+            print('❌ [DEBUG] AuthService: Postgrest error code: ${e.code}');
+            print('❌ [DEBUG] AuthService: Postgrest error message: ${e.message}');
+            print('❌ [DEBUG] AuthService: Postgrest error details: ${e.details}');
+            print('❌ [DEBUG] AuthService: Postgrest error hint: ${e.hint}');
+          }
+          // Don't rethrow - profile creation succeeded, organiser profile is secondary
+          // But log extensively so we can debug
+          print('⚠️ [DEBUG] AuthService: Continuing without organiser profile - this should be investigated');
+        }
+      } else {
+        print('⚠️ [DEBUG] AuthService: Unknown profile_type: $insertedProfileType, skipping child profile creation');
+      }
     } catch (e) {
       print('❌ [DEBUG] AuthService: Profile creation failed: $e');
       throw Exception('Failed to create user profile: ${e.toString()}');
