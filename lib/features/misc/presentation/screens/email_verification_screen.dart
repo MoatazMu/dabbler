@@ -196,8 +196,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         final authService = AuthService();
 
         // Check if profile already exists
-        final existingProfile =
-            await authService.getUserProfile(fields: ['id']);
+        final existingProfile = await authService.getUserProfile(
+          fields: ['id'],
+        );
 
         if (existingProfile == null) {
           final data = _onboardingData ?? const <String, dynamic>{};
@@ -206,11 +207,11 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             '📋 [DEBUG] EmailVerificationScreen: Creating profile with data: $data',
           );
 
-          final displayName = (data['displayName'] as String?) ??
-              (user.email != null
-                  ? user.email!.split('@').first
-                  : 'Player');
-          final username = (data['username'] as String?) ??
+          final displayName =
+              (data['displayName'] as String?) ??
+              (user.email != null ? user.email!.split('@').first : 'Player');
+          final username =
+              (data['username'] as String?) ??
               displayName.toLowerCase().replaceAll(' ', '');
           final age = (data['age'] as int?) ?? 18;
           final gender = (data['gender'] as String?) ?? 'unspecified';
@@ -218,11 +219,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               (data['intention'] as String?) ?? 'compete'; // default player
           final preferredSport =
               (data['preferredSport'] as String?) ?? 'football';
-          final interestsList =
-              data['interests'] is List ? data['interests'] as List : null;
-          final interestsString = interestsList == null
-              ? null
-              : interestsList.whereType<String>().join(',');
+          final interestsList = data['interests'] is List
+              ? data['interests'] as List
+              : null;
+          final interestsString = interestsList?.whereType<String>().join(',');
 
           debugPrint(
             '📋 [DEBUG] EmailVerificationScreen: Profile creation params:',
@@ -372,8 +372,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               if (_errorMessage != null)
                 Text(
                   _errorMessage!,
-                  style: theme.textTheme.bodySmall
-                      ?.copyWith(color: theme.colorScheme.error),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.error,
+                  ),
                 ),
               if (_successMessage != null)
                 Text(
@@ -394,5 +395,3 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     );
   }
 }
-
-

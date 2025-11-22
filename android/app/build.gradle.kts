@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.dabbler.app"
+    namespace = "com.dabbler.dabblerapp"
     compileSdk = 36
     ndkVersion = "28.2.13676358"
 
@@ -20,21 +20,27 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.dabbler.app"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
+        applicationId = "com.dabbler.dabblerapp"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 35  // or 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+    }
+    
+    signingConfigs {
+        create("release") {
+            storeFile = file("upload-keystore.jks")
+            storePassword = "mo3taz51024."
+            keyAlias = "upload"
+            keyPassword = "mo3taz51024."
+        }
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
