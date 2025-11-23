@@ -8,9 +8,10 @@ import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 
 // Onboarding screens
-import 'package:dabbler/features/misc/presentation/screens/phone_input_screen.dart';
+import 'package:dabbler/features/misc/presentation/screens/identity_verification_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/email_input_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/otp_verification_screen.dart';
+import 'package:dabbler/core/utils/identifier_detector.dart';
 import 'package:dabbler/features/misc/presentation/screens/create_user_information.dart';
 import 'package:dabbler/features/misc/presentation/screens/sports_selection_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/intent_selection_screen.dart';
@@ -191,6 +192,59 @@ class AppRouter {
         return null;
       }
 
+      // PRIORITY CHECK: Check Supabase auth state directly (may be updated before provider)
+      // This catches OAuth callbacks where auth state might not be reflected in provider yet
+      try {
+        final supabase = Supabase.instance.client;
+        final currentUser = supabase.auth.currentUser;
+        if (currentUser != null) {
+          // Check if this is a Google user
+          final identities = currentUser.identities;
+          final isGoogleUser = currentUser.emailConfirmedAt != null &&
+              ((identities != null &&
+                  identities.isNotEmpty &&
+                  identities.any(
+                    (identity) => identity.provider == 'google',
+                  )) ||
+                  (currentUser.appMetadata['provider'] == 'google'));
+          
+          if (isGoogleUser) {
+            // Check if profile exists and onboarding is complete
+            final profileResponse = await supabase
+                .from('profiles')
+                .select('id, onboard')
+                .eq('user_id', currentUser.id)
+                .maybeSingle();
+            
+            final isOnboarded = profileResponse != null && 
+                (profileResponse['onboard'] == true || profileResponse['onboard'] == 'true');
+            
+            if (profileResponse == null || !isOnboarded) {
+              // Google user without profile or not onboarded - redirect to onboarding start
+              // Allow them to stay on any onboarding screen (CreateUserInfo, SportsSelection, IntentSelection, SetUsername)
+              if (!isOnboardingPage) {
+                if (kDebugMode && _routeLogging) {
+                  debugPrint(
+                    '🔁 [ROUTER] Google user ${profileResponse == null ? "without profile" : "not onboarded"} detected on $loc, redirect -> createUserInfo',
+                  );
+                }
+                return RoutePaths.createUserInfo;
+              }
+              // Already on onboarding, allow it
+              if (kDebugMode && _routeLogging) {
+                debugPrint('🔍 [ROUTER] Google user ${profileResponse == null ? "without profile" : "not onboarded"} already on onboarding: $loc');
+              }
+              return null;
+            }
+          }
+        }
+      } catch (e) {
+        if (kDebugMode && _routeLogging) {
+          debugPrint('⚠️ [ROUTER] Error checking Google user profile: $e');
+        }
+        // Continue with normal flow if check fails
+      }
+
       // If not authenticated, always stay on onboarding/auth screens
       if (!isAuthenticated) {
         // If not on an auth page, redirect to phone input
@@ -207,24 +261,37 @@ class AppRouter {
         return null;
       }
 
-      // If authenticated but email is not confirmed yet, force user to email verification screen
+      // Check if user has completed onboarding
       final currentUser = Supabase.instance.client.auth.currentUser;
-      final needsEmailVerification = currentUser != null &&
-          currentUser.email != null &&
-          currentUser.email!.isNotEmpty &&
-          currentUser.emailConfirmedAt == null;
-      final isOnEmailVerificationPage = loc == RoutePaths.emailVerification;
-
-      if (needsEmailVerification && !isOnEmailVerificationPage) {
-        if (kDebugMode && _routeLogging) {
-          debugPrint(
-            '🔁 [ROUTER] Unverified email, redirect -> ${RoutePaths.emailVerification}',
-          );
+      if (currentUser != null && !isOnboardingPage && loc != '/welcome') {
+        try {
+          final profileResponse = await Supabase.instance.client
+              .from('profiles')
+              .select('id, onboard')
+              .eq('user_id', currentUser.id)
+              .maybeSingle();
+          
+          final isOnboarded = profileResponse != null && 
+              (profileResponse['onboard'] == true || profileResponse['onboard'] == 'true');
+          
+          if (profileResponse == null || !isOnboarded) {
+            // User not onboarded - redirect to onboarding
+            if (kDebugMode && _routeLogging) {
+              debugPrint(
+                '🔁 [ROUTER] User ${profileResponse == null ? "without profile" : "not onboarded"}, redirect -> createUserInfo',
+              );
+            }
+            return RoutePaths.createUserInfo;
+          }
+        } catch (e) {
+          if (kDebugMode && _routeLogging) {
+            debugPrint('⚠️ [ROUTER] Error checking onboard status: $e');
+          }
+          // Continue with normal flow if check fails
         }
-        return RoutePaths.emailVerification;
       }
 
-      // If authenticated and on an auth page (except welcome, email verification, and onboarding), go home
+      // If authenticated and on an auth page (except welcome, email verification, and onboarding), check profile
       // Allow authenticated users to access onboarding (for phone users completing profile)
       // Allow authenticated users to access email verification (to complete profile creation)
       if (isAuthenticated &&
@@ -232,37 +299,79 @@ class AppRouter {
           loc != '/welcome' &&
           loc != RoutePaths.emailVerification &&
           !isOnboardingPage) {
-        // Check if user has a profile - if not, they might need to complete email verification flow
+        // Check if user has completed onboarding
         try {
           final supabase = Supabase.instance.client;
           final currentUser = supabase.auth.currentUser;
-          if (currentUser != null && currentUser.email != null) {
+          if (currentUser != null) {
             final profileResponse = await supabase
                 .from('profiles')
-                .select('id')
+                .select('id, onboard')
                 .eq('user_id', currentUser.id)
                 .maybeSingle();
             
-            // If no profile exists and email is confirmed, redirect to email verification to complete setup
-            if (profileResponse == null && currentUser.emailConfirmedAt != null) {
+            final isOnboarded = profileResponse != null && 
+                (profileResponse['onboard'] == true || profileResponse['onboard'] == 'true');
+            
+            // If no profile exists or not onboarded, user needs to complete onboarding
+            if (profileResponse == null || !isOnboarded) {
+              // Redirect to onboarding start
               if (kDebugMode && _routeLogging) {
                 debugPrint(
-                  '🔁 [ROUTER] Authenticated user without profile, redirect -> email verification',
+                  '🔁 [ROUTER] Authenticated user ${profileResponse == null ? "without profile" : "not onboarded"} on auth page, redirect -> createUserInfo',
                 );
               }
-              return RoutePaths.emailVerification;
+              return RoutePaths.createUserInfo;
             }
           }
-        } catch (_) {
+        } catch (e) {
+          if (kDebugMode && _routeLogging) {
+            debugPrint('⚠️ [ROUTER] Error checking profile: $e');
+          }
           // If check fails, proceed with normal redirect
         }
         
+        // User has completed onboarding - redirect to home
         if (kDebugMode && _routeLogging) {
           debugPrint(
-            '🔁 [ROUTER] ✅ Authenticated user on auth page, redirect -> home',
+            '🔁 [ROUTER] ✅ Authenticated user onboarded, redirect -> home',
           );
         }
         return RoutePaths.home;
+      }
+
+      // Check if authenticated user without completed onboarding is trying to access protected routes
+      // This handles cases where users land on home or other routes after OAuth/OTP
+      if (isAuthenticated && !isOnAuthPage && !isOnboardingPage && loc != '/welcome') {
+        try {
+          final supabase = Supabase.instance.client;
+          final currentUser = supabase.auth.currentUser;
+          if (currentUser != null) {
+            final profileResponse = await supabase
+                .from('profiles')
+                .select('id, onboard')
+                .eq('user_id', currentUser.id)
+                .maybeSingle();
+            
+            final isOnboarded = profileResponse != null && 
+                (profileResponse['onboard'] == true || profileResponse['onboard'] == 'true');
+            
+            // If no profile exists or not onboarded, redirect to onboarding
+            if (profileResponse == null || !isOnboarded) {
+              if (kDebugMode && _routeLogging) {
+                debugPrint(
+                  '🔁 [ROUTER] Authenticated user ${profileResponse == null ? "without profile" : "not onboarded"} on protected route, redirect -> createUserInfo',
+                );
+              }
+              return RoutePaths.createUserInfo;
+            }
+          }
+        } catch (e) {
+          if (kDebugMode && _routeLogging) {
+            debugPrint('⚠️ [ROUTER] Error checking profile on protected route: $e');
+          }
+          // If check fails, allow access (better UX than blocking)
+        }
       }
 
       if (kDebugMode && _routeLogging) {
@@ -283,7 +392,7 @@ class AppRouter {
       path: RoutePaths.phoneInput,
       pageBuilder: (context, state) => FadeTransitionPage(
         key: state.pageKey,
-        child: const PhoneInputScreen(),
+        child: const IdentityVerificationScreen(),
       ),
     ),
 
@@ -301,17 +410,34 @@ class AppRouter {
       path: RoutePaths.otpVerification,
       pageBuilder: (context, state) {
         final extra = state.extra;
-        final phone = extra is Map
-            ? extra['phone'] as String?
-            : extra as String?;
+        final identifier = extra is Map
+            ? extra['identifier'] as String?
+            : extra is Map
+                ? extra['phone'] as String? // Legacy support
+                : extra as String?;
+        final identifierTypeStr = extra is Map
+            ? extra['identifierType'] as String?
+            : null;
         final userExistsBeforeOtp = extra is Map
             ? extra['userExistsBeforeOtp'] as bool?
             : null;
+        
+        // Parse identifier type
+        IdentifierType? identifierType;
+        if (identifierTypeStr == 'email') {
+          identifierType = IdentifierType.email;
+        } else if (identifierTypeStr == 'phone') {
+          identifierType = IdentifierType.phone;
+        }
+        // If null, OtpVerificationScreen will auto-detect
+        
         return FadeTransitionPage(
           key: state.pageKey,
           child: OtpVerificationScreen(
-            phoneNumber: phone,
+            identifier: identifier,
+            identifierType: identifierType,
             userExistsBeforeOtp: userExistsBeforeOtp,
+            phoneNumber: identifier, // Legacy support
           ),
         );
       },

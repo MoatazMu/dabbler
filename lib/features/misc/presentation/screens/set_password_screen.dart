@@ -199,78 +199,47 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
         );
         final password = _passwordController.text;
 
-        // Check if user already exists
-        final userExists = await authService.checkUserExistsByEmail(
-          normalizedEmail,
-        );
-        if (userExists) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Account already exists. Please sign in with your password.',
-              ),
-              backgroundColor: Colors.orange,
-            ),
-          );
-          context.go('/enter-password', extra: normalizedEmail);
-          return;
-        }
-
-        bool createdAccount = false;
-        bool requiresEmailConfirmation = false;
         try {
-          debugPrint(
-            '📋 [DEBUG] SetPasswordScreen: Creating account with all onboarding data',
+          // Check if user already exists
+          final userExists = await authService.checkUserExistsByEmail(
+            normalizedEmail,
           );
-          debugPrint(
-            '📊 [DEBUG] email=$normalizedEmail, name=${onboardingData.displayName}, age=${onboardingData.age}',
-          );
-          debugPrint(
-            '📊 [DEBUG] gender=${onboardingData.gender}, intention=${onboardingData.intention}',
-          );
-          debugPrint(
-            '📊 [DEBUG] preferred_sport=${onboardingData.preferredSport}, interests=${onboardingData.interestsString}',
-          );
-          debugPrint(
-            '📊 [DEBUG] username=$username, profile_type=${onboardingData.profileType}',
-          );
-
-          // Create auth account (NO metadata - we use public.profiles)
-          final signUpResponse = await authService.signUpWithEmailAndPassword(
-            email: normalizedEmail,
-            password: password,
-          );
-
-          createdAccount = signUpResponse.user != null;
-          requiresEmailConfirmation = signUpResponse.session == null;
-
-          // If email confirmation is required, defer profile creation until after confirmation
-          if (requiresEmailConfirmation) {
+          if (userExists) {
             if (!mounted) return;
-
-            // Navigate to email verification screen with onboarding data
-            context.go(
-              RoutePaths.emailVerification,
-              extra: {
-                'email': normalizedEmail,
-                'displayName': onboardingData.displayName,
-                'age': onboardingData.age,
-                'gender': onboardingData.gender,
-                'intention': onboardingData.intention,
-                'preferredSport': onboardingData.preferredSport,
-                'interests': onboardingData.interests,
-                'username': username,
-              },
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Account already exists. Please sign in with your password.',
+                ),
+                backgroundColor: Colors.orange,
+              ),
             );
+            context.go('/enter-password', extra: normalizedEmail);
             return;
           }
 
-          // If no email confirmation required, create profile immediately
+          // Check if user is already authenticated (from OTP verification)
           final currentUser = authService.getCurrentUser();
-          if (currentUser != null) {
-            await authService.createProfile(
-              userId: currentUser.id,
+          if (currentUser != null && currentUser.email == normalizedEmail) {
+            // User is already authenticated via OTP - just set password and complete onboarding
+            debugPrint(
+              '📋 [DEBUG] SetPasswordScreen: User already authenticated via OTP, completing onboarding',
+            );
+            debugPrint(
+              '📊 [DEBUG] email=$normalizedEmail, name=${onboardingData.displayName}, age=${onboardingData.age}',
+            );
+            debugPrint(
+              '📊 [DEBUG] gender=${onboardingData.gender}, intention=${onboardingData.intention}',
+            );
+            debugPrint(
+              '📊 [DEBUG] preferred_sport=${onboardingData.preferredSport}, interests=${onboardingData.interestsString}',
+            );
+            debugPrint(
+              '📊 [DEBUG] username=$username, profile_type=${onboardingData.profileType}',
+            );
+
+            // Complete onboarding with password
+            await authService.completeOnboarding(
               displayName: onboardingData.displayName!,
               username: username,
               age: onboardingData.age!,
@@ -278,6 +247,35 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
               intention: onboardingData.intention!,
               preferredSport: onboardingData.preferredSport!,
               interests: onboardingData.interestsString,
+              password: password, // Email users set password
+            );
+          } else {
+            // User not authenticated - create account with password
+            // This should not happen in the unified flow, but keep as fallback
+            debugPrint(
+              '⚠️ [DEBUG] SetPasswordScreen: User not authenticated, creating account',
+            );
+
+            final signUpResponse = await authService.signUpWithEmailAndPassword(
+              email: normalizedEmail,
+              password: password,
+            );
+
+            if (signUpResponse.user == null) {
+              throw Exception('Failed to create account');
+            }
+
+            // Complete onboarding after account creation
+            await authService.completeOnboarding(
+              displayName: onboardingData.displayName!,
+              username: username,
+              age: onboardingData.age!,
+              gender: onboardingData.gender!,
+              intention: onboardingData.intention!,
+              preferredSport: onboardingData.preferredSport!,
+              interests: onboardingData.interestsString,
+              password:
+                  null, // Password already set via signUpWithEmailAndPassword
             );
           }
         } catch (e) {
@@ -322,20 +320,6 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
             return;
           }
           rethrow;
-        }
-
-        // Ensure authenticated if necessary (only when email confirmation is not required)
-        if (!requiresEmailConfirmation &&
-            !authService.isAuthenticated() &&
-            createdAccount) {
-          try {
-            await authService.signInWithEmail(
-              email: normalizedEmail,
-              password: password,
-            );
-          } catch (_) {
-            /* ignore */
-          }
         }
       } else {
         // This screen is only for email users

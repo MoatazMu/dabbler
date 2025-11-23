@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "836345375454",
+    "project_id": "dabblersportapp",
+    "storage_bucket": "dabblersportapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836345375454:android:9839f39188a3f662bf304f",
+        "android_client_info": {
+          "package_name": "com.dabbler.dabblerapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANuXa9tsj6aIo7SXA0a4G_crkRqrFACoE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

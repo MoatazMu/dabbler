@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/utils/validators.dart';
+import 'package:dabbler/core/utils/identifier_detector.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
@@ -11,14 +12,24 @@ import 'package:dabbler/core/design_system/design_system.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
-  final String? phoneNumber;
+  final String? identifier; // Can be email or phone
+  final IdentifierType? identifierType; // If null, will be auto-detected
   final bool? userExistsBeforeOtp;
 
+  // Legacy support for phoneNumber parameter
   const OtpVerificationScreen({
     super.key,
-    this.phoneNumber,
+    this.identifier,
+    this.identifierType,
     this.userExistsBeforeOtp,
-  });
+    @Deprecated('Use identifier instead') String? phoneNumber,
+  }) : assert(
+          identifier != null || phoneNumber != null,
+          'Either identifier or phoneNumber must be provided',
+        );
+
+  // Getter for backward compatibility
+  String? get phoneNumber => identifier;
 
   @override
   ConsumerState<OtpVerificationScreen> createState() =>
@@ -35,12 +46,27 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   bool _isLoading = false;
   bool _isResending = false;
   int _resendCountdown = 0;
+  
+  late String _identifier;
+  late IdentifierType _identifierType;
 
   @override
   void initState() {
     super.initState();
+    
+    // Determine identifier and type
+    _identifier = widget.identifier ?? widget.phoneNumber ?? '';
+    if (widget.identifierType != null) {
+      _identifierType = widget.identifierType!;
+    } else {
+      // Auto-detect if not provided
+      final detection = IdentifierDetector.detect(_identifier);
+      _identifierType = detection.type;
+      _identifier = detection.normalizedValue;
+    }
+    
     print(
-      '🔍 [DEBUG] OtpVerificationScreen: Initialized with userExistsBeforeOtp=${widget.userExistsBeforeOtp}',
+      '🔍 [DEBUG] OtpVerificationScreen: Initialized with identifier=${_identifierType.name}: $_identifier, userExistsBeforeOtp=${widget.userExistsBeforeOtp}',
     );
     _startResendCountdown();
   }
@@ -114,12 +140,13 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
     try {
       print(
-        '🔐 [DEBUG] OtpVerificationScreen: Verifying OTP for phone: ${widget.phoneNumber}',
+        '🔐 [DEBUG] OtpVerificationScreen: Verifying OTP for ${_identifierType.name}: $_identifier',
       );
 
       final authService = AuthService();
       final response = await authService.verifyOtp(
-        phone: widget.phoneNumber!,
+        identifier: _identifier,
+        type: _identifierType,
         token: otpCode,
       );
 
@@ -162,71 +189,63 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   /// Check if user has completed profile and navigate accordingly
   Future<void> _checkUserProfileAndNavigate() async {
     try {
-      // Use the flag passed from phone input screen to determine if user existed BEFORE OTP
-      // This is important because Supabase's signInWithOtp creates the user if they don't exist
-      final userExisted = widget.userExistsBeforeOtp ?? false;
+      final authService = AuthService();
+      final userProfile = await authService.getUserProfile(fields: ['id', 'onboard']);
+
+      // Check if user has completed onboarding
+      final isOnboarded = userProfile != null && 
+          (userProfile['onboard'] == true || userProfile['onboard'] == 'true');
 
       print(
-        '🔍 [DEBUG] OtpVerificationScreen: User existed before OTP: $userExisted',
+        '🔍 [DEBUG] OtpVerificationScreen: Profile check - onboard=$isOnboarded',
       );
 
-      if (userExisted) {
+      if (isOnboarded) {
         print(
-          '✅ [DEBUG] OtpVerificationScreen: Existing user verified, redirecting to home',
+          '✅ [DEBUG] OtpVerificationScreen: User onboarded, redirecting to home',
         );
-        // Existing user - already verified by OTP, go to home
+        // User has completed onboarding - go to home
         if (mounted) {
-          context.go('/home');
+          context.go(RoutePaths.home);
         }
       } else {
         print(
-          '🆕 [DEBUG] OtpVerificationScreen: New user, redirecting to onboarding',
+          '🆕 [DEBUG] OtpVerificationScreen: User not onboarded, redirecting to onboarding',
         );
-        // New user - initialize onboarding data and go to user info screen
-        ref
-            .read(onboardingDataProvider.notifier)
-            .initWithPhone(widget.phoneNumber!);
-        if (mounted) {
-          context.go(
-            RoutePaths.createUserInfo,
-            extra: {'phone': widget.phoneNumber},
-          );
+        // User needs to complete onboarding - initialize onboarding data
+        if (_identifierType == IdentifierType.email) {
+          ref.read(onboardingDataProvider.notifier).initWithEmail(_identifier);
+          if (mounted) {
+            context.go(
+              RoutePaths.createUserInfo,
+              extra: {'email': _identifier},
+            );
+          }
+        } else {
+          ref.read(onboardingDataProvider.notifier).initWithPhone(_identifier);
+          if (mounted) {
+            context.go(
+              RoutePaths.createUserInfo,
+              extra: {'phone': _identifier},
+            );
+          }
         }
       }
     } catch (e) {
       print('❌ [DEBUG] OtpVerificationScreen: Error during navigation: $e');
-      // On error, check profile as fallback
-      try {
-        final authService = AuthService();
-        final userProfile = await authService.getUserProfile();
-
-        if (userProfile == null) {
-          print(
-            '🆕 [DEBUG] OtpVerificationScreen: No profile found, redirecting to onboarding',
-          );
-          if (mounted) {
-            context.go(
-              RoutePaths.createUserInfo,
-              extra: {'phone': widget.phoneNumber},
-            );
-          }
-        } else {
-          print(
-            '✅ [DEBUG] OtpVerificationScreen: Profile found, redirecting to home',
-          );
-          if (mounted) {
-            context.go('/home');
-          }
-        }
-      } catch (profileError) {
-        print(
-          '❌ [DEBUG] OtpVerificationScreen: Error checking profile: $profileError',
-        );
-        // Final fallback - go to onboarding
-        if (mounted) {
+      // Final fallback - go to onboarding
+      if (mounted) {
+        if (_identifierType == IdentifierType.email) {
+          ref.read(onboardingDataProvider.notifier).initWithEmail(_identifier);
           context.go(
             RoutePaths.createUserInfo,
-            extra: {'phone': widget.phoneNumber},
+            extra: {'email': _identifier},
+          );
+        } else {
+          ref.read(onboardingDataProvider.notifier).initWithPhone(_identifier);
+          context.go(
+            RoutePaths.createUserInfo,
+            extra: {'phone': _identifier},
           );
         }
       }
@@ -240,12 +259,15 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
     try {
       final authService = AuthService();
-      await authService.signInWithPhone(phone: widget.phoneNumber!);
+      await authService.sendOtp(
+        identifier: _identifier,
+        type: _identifierType,
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('OTP sent successfully'),
+          SnackBar(
+            content: Text('OTP sent successfully to your ${_identifierType == IdentifierType.email ? 'email' : 'phone'}'),
             backgroundColor: Colors.green,
           ),
         );
@@ -321,7 +343,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           const SizedBox(height: 24),
           // Header
           Text(
-            'Verify Your Phone',
+            _identifierType == IdentifierType.email
+                ? 'Verify Your Email'
+                : 'Verify Your Phone',
             style: textTheme.headlineSmall?.copyWith(
               color: textColor,
               fontWeight: FontWeight.w800,
@@ -330,13 +354,15 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'We\'ve sent a 6-digit code to',
+            _identifierType == IdentifierType.email
+                ? 'We\'ve sent a 6-digit code to your email'
+                : 'We\'ve sent a 6-digit code to',
             style: textTheme.bodyLarge?.copyWith(color: subtextColor),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
-            widget.phoneNumber ?? '',
+            _identifier,
             style: textTheme.bodyLarge?.copyWith(
               color: textColor,
               fontWeight: FontWeight.w600,
@@ -487,13 +513,15 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         ),
         SizedBox(height: AppSpacing.xxl),
 
-        // Change Phone Number
+        // Change identifier
         TextButton(
           onPressed: () {
-            context.go('/');
+            context.go(RoutePaths.phoneInput);
           },
           child: Text(
-            'Change Phone Number',
+            _identifierType == IdentifierType.email
+                ? 'Change Email'
+                : 'Change Phone Number',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,

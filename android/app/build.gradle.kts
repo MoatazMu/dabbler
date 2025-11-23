@@ -1,5 +1,8 @@
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
@@ -13,6 +16,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        // Required for some libraries (e.g. flutter_local_notifications) that
+        // use newer Java APIs on older Android versions.
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -47,4 +53,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // Core library desugaring to support newer Java language APIs
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 }

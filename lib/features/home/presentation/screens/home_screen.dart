@@ -327,19 +327,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return FilledButton.tonalIcon(
-      onPressed: () => context.go(RoutePaths.activities),
-      style: FilledButton.styleFrom(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: colorScheme.secondaryContainer,
-        foregroundColor: colorScheme.onSecondaryContainer,
-      ),
-      icon: const Text('⚡', style: TextStyle(fontSize: 18)),
-      label: Text(
-        'Activities',
-        style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-      ),
+    return Row(
+      children: [
+        Expanded(
+          child: FilledButton.tonalIcon(
+            onPressed: () => context.go(RoutePaths.activities),
+            style: FilledButton.styleFrom(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              backgroundColor: colorScheme.secondaryContainer,
+              foregroundColor: colorScheme.onSecondaryContainer,
+            ),
+            icon: const Text('⚡', style: TextStyle(fontSize: 18)),
+            label: Text(
+              'Activities',
+              style: textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+          ),
+        ),
+        if (FeatureFlags.enableNotificationCenter) ...[
+          const SizedBox(width: 12),
+          Expanded(
+            child: FilledButton.tonalIcon(
+              onPressed: () => context.go(RoutePaths.notifications),
+              style: FilledButton.styleFrom(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                backgroundColor: colorScheme.secondaryContainer,
+                foregroundColor: colorScheme.onSecondaryContainer,
+              ),
+              icon: const Text('🔔', style: TextStyle(fontSize: 18)),
+              label: Text(
+                'Notifications',
+                style: textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 

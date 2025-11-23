@@ -143,10 +143,10 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
       }
 
       debugPrint(
-        '📋 [DEBUG] SetUsernameScreen: Creating profile for phone user',
+        '📋 [DEBUG] SetUsernameScreen: Completing onboarding for user',
       );
       debugPrint(
-        '📊 [DEBUG] phone=${onboardingData.phone}, name=${onboardingData.displayName}',
+        '📊 [DEBUG] identifier=${onboardingData.phone ?? onboardingData.email}, name=${onboardingData.displayName}',
       );
       debugPrint(
         '📊 [DEBUG] username="$username" (length: ${username.length}), age=${onboardingData.age}, gender=${onboardingData.gender}',
@@ -155,9 +155,8 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
         '📊 [DEBUG] username isEmpty: ${username.isEmpty}, isNotEmpty: ${username.isNotEmpty}',
       );
 
-      // Create profile in public.profiles
-      await authService.createProfile(
-        userId: currentUser.id,
+      // Complete onboarding - updates profile, creates sport/organiser profile, syncs to auth.users
+      await authService.completeOnboarding(
         displayName: onboardingData.displayName!,
         username: username,
         age: onboardingData.age!,
@@ -165,9 +164,10 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
         intention: onboardingData.intention!,
         preferredSport: onboardingData.preferredSport!,
         interests: onboardingData.interestsString,
+        password: null, // Phone/Google users don't set password here
       );
 
-      debugPrint('✅ [DEBUG] SetUsernameScreen: Profile created successfully');
+      debugPrint('✅ [DEBUG] SetUsernameScreen: Onboarding completed successfully');
 
       // Clear onboarding data
       ref.read(onboardingDataProvider.notifier).clear();

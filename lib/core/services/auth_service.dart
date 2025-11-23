@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../config/supabase_config.dart';
 import '../../utils/constants/route_constants.dart';
+import '../models/google_sign_in_result.dart';
+import '../utils/identifier_detector.dart';
 
 class AuthService {
   static final AuthService _instance = AuthService._internal();
@@ -272,7 +275,7 @@ class AuthService {
     }
   }
 
-  /// Sign in with phone (OTP)
+  /// Sign in with phone (OTP) - Legacy method, use sendOtp instead
   Future<void> signInWithPhone({required String phone}) async {
     try {
       print('📱 [DEBUG] AuthService: Sending OTP to phone: $phone');
@@ -286,47 +289,79 @@ class AuthService {
     }
   }
 
-  /// Verify OTP
+  /// Unified OTP sending method - works for both email and phone
+  Future<void> sendOtp({
+    required String identifier,
+    required IdentifierType type,
+  }) async {
+    try {
+      print('📧📱 [DEBUG] AuthService: Sending OTP to ${type.name}: $identifier');
+
+      if (type == IdentifierType.email) {
+        final normalizedEmail = _normalizeEmail(identifier);
+        await _supabase.auth.signInWithOtp(email: normalizedEmail);
+        print('✅ [DEBUG] AuthService: Email OTP sent successfully to: $normalizedEmail');
+      } else {
+        await _supabase.auth.signInWithOtp(phone: identifier);
+        print('✅ [DEBUG] AuthService: Phone OTP sent successfully to: $identifier');
+      }
+    } catch (e) {
+      print('❌ [DEBUG] AuthService: OTP send failed for ${type.name} $identifier: $e');
+      throw Exception('Failed to send OTP: $e');
+    }
+  }
+
+  /// Unified OTP verification method - works for both email and phone
+  /// After successful verification, ensures stub profile exists
   Future<AuthResponse> verifyOtp({
-    required String phone,
+    required String identifier,
+    required IdentifierType type,
     required String token,
   }) async {
     try {
-      print('🔐 [DEBUG] AuthService: Verifying OTP for phone: $phone');
+      print('🔐 [DEBUG] AuthService: Verifying OTP for ${type.name}: $identifier');
 
-      final response = await _supabase.auth.verifyOTP(
-        phone: phone,
-        token: token,
-        type: OtpType.sms,
-      );
-
-      // After successful OTP verification, mark phone as confirmed in public.users
-      if (response.user != null) {
-        await _markPhoneAsConfirmed(response.user!.id, phone);
+      AuthResponse response;
+      if (type == IdentifierType.email) {
+        final normalizedEmail = _normalizeEmail(identifier);
+        response = await _supabase.auth.verifyOTP(
+          email: normalizedEmail,
+          token: token,
+          type: OtpType.email,
+        );
+      } else {
+        response = await _supabase.auth.verifyOTP(
+          phone: identifier,
+          token: token,
+          type: OtpType.sms,
+        );
       }
 
-      print('✅ [DEBUG] AuthService: OTP verification successful for: $phone');
+      // After successful OTP verification, ensure stub profile exists
+      if (response.user != null) {
+        await ensureStubProfileForCurrentUser();
+      }
+
+      print('✅ [DEBUG] AuthService: OTP verification successful for ${type.name}: $identifier');
       return response;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: OTP verification failed for $phone: $e');
+      print('❌ [DEBUG] AuthService: OTP verification failed for ${type.name} $identifier: $e');
       throw Exception('OTP verification failed: $e');
     }
   }
 
-  /// Mark phone as confirmed in public.users table
-  /// Note: Phone data is stored in auth.users, not the profiles table
-  Future<void> _markPhoneAsConfirmed(String userId, String phone) async {
-    try {
-      print(
-        '📱 [DEBUG] AuthService: Phone confirmation handled by Supabase auth',
-      );
-      // Phone confirmation is managed by Supabase auth system
-      // The profiles table doesn't store phone/email data
-    } catch (e) {
-      print('⚠️ [DEBUG] AuthService: Failed to mark phone as confirmed: $e');
-      // Don't throw error as this is not critical for auth flow
-    }
+  /// Legacy verifyOtp method for phone - use unified verifyOtp instead
+  Future<AuthResponse> verifyOtpLegacy({
+    required String phone,
+    required String token,
+  }) async {
+    return verifyOtp(
+      identifier: phone,
+      type: IdentifierType.phone,
+      token: token,
+    );
   }
+
 
   /// Sign out user
   Future<void> signOut() async {
@@ -371,6 +406,152 @@ class AuthService {
         '❌ [DEBUG] AuthService: Password reset email failed for $email: $e',
       );
       throw Exception('Password reset email failed: $e');
+    }
+  }
+
+  /// Sign in with Google OAuth
+  Future<bool> signInWithGoogle() async {
+    try {
+      print('🔐 [DEBUG] AuthService: Initiating Google sign-in');
+
+      // Use a deep link that will be handled by the router
+      // The router will check if user has profile and redirect accordingly
+      // For new Google users, router will redirect to createUserInfo if no profile exists
+      final redirectUrl = kIsWeb
+          ? Uri.base.origin
+          : '${RoutePaths.deepLinkPrefix}${RoutePaths.createUserInfo}';
+
+      final launched = await _supabase.auth.signInWithOAuth(
+        OAuthProvider.google,
+        redirectTo: redirectUrl,
+        authScreenLaunchMode: LaunchMode.externalApplication,
+      );
+
+      print('✅ [DEBUG] AuthService: Google OAuth initiated: $launched');
+      print('📋 [DEBUG] AuthService: Redirect URL: $redirectUrl');
+      return launched;
+    } catch (e) {
+      print('❌ [DEBUG] AuthService: Google sign-in failed: $e');
+      throw Exception('Google sign-in failed: $e');
+    }
+  }
+
+  /// Handle Google sign-in flow and determine the correct path for the user
+  /// This should be called AFTER OAuth completes (e.g., from auth state listener)
+  Future<GoogleSignInResult> handleGoogleSignInFlow() async {
+    try {
+      print('🔍 [DEBUG] AuthService: Starting Google sign-in flow orchestration');
+
+      // Get the authenticated user (should be set after OAuth completes)
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        print('⚠️ [DEBUG] AuthService: No user found - OAuth may not have completed yet');
+        return const GoogleSignInResultError(
+          message: 'Please complete Google sign-in and try again.',
+        );
+      }
+
+      print('👤 [DEBUG] AuthService: Google user authenticated: ${user.email}');
+      print('📋 [DEBUG] AuthService: User ID: ${user.id}');
+      print('📋 [DEBUG] AuthService: User email: ${user.email}');
+      print('📋 [DEBUG] AuthService: User phone: ${user.phone}');
+      print('📋 [DEBUG] AuthService: User identities: ${user.identities}');
+      print('📋 [DEBUG] AuthService: User appMetadata: ${user.appMetadata}');
+
+      // Step 3: Derive provider flags
+      final email = user.email;
+      if (email == null || email.isEmpty) {
+        return const GoogleSignInResultError(
+          message: 'Google account does not have an email address.',
+        );
+      }
+
+      final phone = user.phone;
+      final hasPhone = phone != null && phone.isNotEmpty;
+      final phoneValue = phone ?? ''; // Extract non-null value for use in branches
+
+      // Check if user has Google as provider
+      final identities = user.identities;
+      final hasGoogleProvider = (identities != null &&
+              identities.isNotEmpty &&
+              identities.any(
+                (identity) => identity.provider == 'google',
+              )) ||
+          (user.appMetadata['provider'] == 'google');
+
+      print('📋 [DEBUG] AuthService: Provider flags:');
+      print('   hasGoogleProvider: $hasGoogleProvider');
+      print('   hasPhone: $hasPhone');
+      print('   email: $email');
+
+      // Step 4: Query profile store by user_id (since profiles don't store email)
+      final profile = await getUserProfile(fields: ['id', 'user_id']);
+      final hasProfile = profile != null;
+
+      print('📋 [DEBUG] AuthService: Profile check:');
+      print('   hasProfile: $hasProfile');
+      if (hasProfile) {
+        print('   profile_id: ${profile['id']}');
+      }
+
+      // Step 5: Apply branching logic
+      if (!hasProfile && !hasPhone) {
+        // User A: New email, no phone - needs full onboarding flow
+        print('✅ [DEBUG] AuthService: Branch A - New Google user (email only) - routing to onboarding');
+        return GoogleSignInResultGoToOnboarding(
+          email: email,
+        );
+      } else if (!hasProfile && hasPhone) {
+        // User B: New email, has phone
+        print('✅ [DEBUG] AuthService: Branch B - New Google user (email + phone)');
+        return GoogleSignInResultGoToPhoneOtp(
+          phone: phoneValue,
+          email: email,
+        );
+      } else if (hasProfile && hasGoogleProvider) {
+        // User C: Existing profile, already used Google
+        print('✅ [DEBUG] AuthService: Branch C - Existing Google user');
+        return const GoogleSignInResultGoToHome();
+      } else if (hasProfile && !hasGoogleProvider) {
+        // User D: Existing profile, but not created via Google
+        print('✅ [DEBUG] AuthService: Branch D - Existing user (non-Google)');
+        return GoogleSignInResultRequirePassword(email: email);
+      } else {
+        // Fallback: Should not reach here, but handle gracefully
+        print('⚠️ [DEBUG] AuthService: Unexpected branch - defaulting to error');
+        return const GoogleSignInResultError(
+          message: 'Unable to determine sign-in path. Please contact support.',
+        );
+      }
+    } catch (e) {
+      print('❌ [DEBUG] AuthService: Error in handleGoogleSignInFlow: $e');
+      print('❌ [DEBUG] AuthService: Error type: ${e.runtimeType}');
+      return GoogleSignInResultError(
+        message: 'Google sign-in failed: ${e.toString()}',
+      );
+    }
+  }
+
+  /// Get profile by email (helper for Google flow)
+  /// Note: Profiles don't store email, so we need to check auth.users first
+  Future<Map<String, dynamic>?> getProfileByEmail(String email) async {
+    try {
+      // Since profiles don't store email, we need to:
+      // 1. Check if a user exists with this email in auth.users
+      // 2. If yes, get their user_id and query profiles by user_id
+      
+      // For now, we'll use the current user if their email matches
+      final user = _supabase.auth.currentUser;
+      if (user != null && user.email?.toLowerCase() == email.toLowerCase()) {
+        return await getUserProfile();
+      }
+      
+      // If we need to query by email, we'd need an RPC function
+      // For now, return null if not the current user
+      return null;
+    } catch (e) {
+      print('❌ [DEBUG] AuthService: Error getting profile by email: $e');
+      return null;
     }
   }
 
@@ -492,6 +673,250 @@ class AuthService {
     } catch (e) {
       print('❌ [DEBUG] AuthService: Error fetching user profile: $e');
       return null;
+    }
+  }
+
+  /// Ensure a stub profile exists for the current authenticated user
+  /// Creates a minimal profile with onboard=FALSE if none exists
+  Future<void> ensureStubProfileForCurrentUser() async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        print('⚠️ [DEBUG] AuthService: No authenticated user for stub profile creation');
+        return;
+      }
+
+      // Check if profile already exists
+      final existingProfile = await _supabase
+          .from(SupabaseConfig.usersTable)
+          .select('id, onboard')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (existingProfile != null) {
+        print('✅ [DEBUG] AuthService: Profile already exists, skipping stub creation');
+        return;
+      }
+
+      // Create stub profile with minimal data and onboard=FALSE
+      final emailPart = user.email?.split('@').first;
+      final displayName = user.userMetadata?['display_name'] as String? ??
+          emailPart ??
+          'Player';
+      
+      // Ensure display name meets minimum length requirement (2 chars)
+      final safeDisplayName = displayName.length >= 2 
+          ? displayName.substring(0, displayName.length > 50 ? 50 : displayName.length)
+          : 'Player';
+
+      print('📝 [DEBUG] AuthService: Creating stub profile for user: ${user.id}');
+      print('📋 [DEBUG] AuthService: Display name: "$safeDisplayName"');
+
+      final stubProfileData = {
+        'user_id': user.id,
+        'display_name': safeDisplayName,
+        'profile_type': 'player', // Default, will be updated during onboarding
+        'onboard': false, // Explicitly set to FALSE
+        'is_active': true,
+        'is_player': true,
+      };
+
+      await _supabase
+          .from(SupabaseConfig.usersTable)
+          .insert(stubProfileData);
+
+      print('✅ [DEBUG] AuthService: Stub profile created successfully with onboard=false');
+    } catch (e) {
+      print('❌ [DEBUG] AuthService: Error creating stub profile: $e');
+      // Don't throw - this is called after auth, we don't want to break the flow
+      // The profile will be created during onboarding completion if needed
+    }
+  }
+
+  /// Complete onboarding by updating profile with all user data and setting onboard=TRUE
+  /// Also creates sport_profiles or organiser_profiles row and syncs to auth.users metadata
+  Future<void> completeOnboarding({
+    required String displayName,
+    required String username,
+    required int age,
+    required String gender,
+    required String intention,
+    required String preferredSport,
+    String? interests,
+    String? password, // Required for email users, null for phone/Google users
+  }) async {
+    try {
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      print('🎯 [DEBUG] AuthService: Completing onboarding for user: ${user.id}');
+      print('📋 [DEBUG] AuthService: Onboarding data:');
+      print('   display_name: "$displayName"');
+      print('   username: "$username"');
+      print('   age: $age');
+      print('   gender: $gender');
+      print('   intention: $intention');
+      print('   preferred_sport: $preferredSport');
+      print('   interests: $interests');
+
+      // Map intention to profile_type
+      final profileType = intention == 'organise' ? 'organiser' : 'player';
+
+      // Update password if provided (for email users)
+      if (password != null && password.isNotEmpty) {
+        print('🔐 [DEBUG] AuthService: Setting password for email user');
+        await _supabase.auth.updateUser(
+          UserAttributes(password: password),
+        );
+        print('✅ [DEBUG] AuthService: Password set successfully');
+      }
+
+      // Update auth.users metadata with key profile fields
+      final userMetadata = {
+        'display_name': displayName,
+        'preferred_sport': preferredSport,
+        'primary_sport': preferredSport,
+        if (username.isNotEmpty) 'username': username,
+      };
+
+      await _supabase.auth.updateUser(
+        UserAttributes(data: userMetadata),
+      );
+      print('✅ [DEBUG] AuthService: Updated auth.users metadata');
+
+      // Check if profile exists (should exist as stub from ensureStubProfileForCurrentUser)
+      final existingProfile = await _supabase
+          .from(SupabaseConfig.usersTable)
+          .select('id, profile_type')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      String profileId;
+      if (existingProfile != null) {
+        // Update existing profile
+        profileId = existingProfile['id'] as String;
+        print('📝 [DEBUG] AuthService: Updating existing profile: $profileId');
+
+        final updateData = {
+          'display_name': displayName,
+          'username': username,
+          'age': age,
+          'gender': gender.toLowerCase(),
+          'intention': intention.toLowerCase(),
+          'profile_type': profileType,
+          'preferred_sport': preferredSport.toLowerCase(),
+          'primary_sport': preferredSport.toLowerCase(),
+          'interests': interests,
+          'onboard': true, // Mark onboarding as complete
+          'is_player': profileType == 'player',
+        };
+
+        await _supabase
+            .from(SupabaseConfig.usersTable)
+            .update(updateData)
+            .eq('user_id', user.id);
+
+        print('✅ [DEBUG] AuthService: Profile updated successfully');
+      } else {
+        // Create new profile (fallback if stub wasn't created)
+        print('📝 [DEBUG] AuthService: Creating new profile (stub was missing)');
+
+        final profileData = {
+          'user_id': user.id,
+          'display_name': displayName,
+          'username': username,
+          'age': age,
+          'gender': gender.toLowerCase(),
+          'intention': intention.toLowerCase(),
+          'profile_type': profileType,
+          'preferred_sport': preferredSport.toLowerCase(),
+          'primary_sport': preferredSport.toLowerCase(),
+          'interests': interests,
+          'onboard': true,
+          'is_active': true,
+          'is_player': profileType == 'player',
+        };
+
+        final insertedProfile = await _supabase
+            .from(SupabaseConfig.usersTable)
+            .insert(profileData)
+            .select('id')
+            .single();
+
+        profileId = insertedProfile['id'] as String;
+        print('✅ [DEBUG] AuthService: Profile created successfully: $profileId');
+      }
+
+      // Create child profile based on profile_type
+      if (profileType == 'player') {
+        // Create sport_profile for player
+        print('🏃 [DEBUG] AuthService: Creating sport_profile for player');
+        try {
+          final sportProfileData = {
+            'profile_id': profileId,
+            'sport': preferredSport.toLowerCase(),
+            'skill_level': 1, // Beginner level
+          };
+          
+          // Check if sport_profile already exists
+          final existingSportProfile = await _supabase
+              .from('sport_profiles')
+              .select('profile_id')
+              .eq('profile_id', profileId)
+              .eq('sport', preferredSport.toLowerCase())
+              .maybeSingle();
+
+          if (existingSportProfile == null) {
+            await _supabase
+                .from('sport_profiles')
+                .insert(sportProfileData);
+            print('✅ [DEBUG] AuthService: Sport profile created successfully');
+          } else {
+            print('✅ [DEBUG] AuthService: Sport profile already exists, skipping');
+          }
+        } catch (e) {
+          print('❌ [DEBUG] AuthService: Failed to create sport profile: $e');
+          // Don't rethrow - profile update succeeded, sport profile is secondary
+        }
+      } else if (profileType == 'organiser') {
+        // Create organiser_profile for organiser
+        print('🏢 [DEBUG] AuthService: Creating organiser_profile for organiser');
+        try {
+          final organiserProfileData = {
+            'profile_id': profileId,
+            'sport': preferredSport.toLowerCase(),
+            // Use DB defaults for: organiser_level (1), commission_type ('percent'), 
+            // commission_value (0), is_verified (false), is_active (true)
+          };
+          
+          // Check if organiser_profile already exists
+          final existingOrganiserProfile = await _supabase
+              .from('organiser_profiles')
+              .select('id')
+              .eq('profile_id', profileId)
+              .eq('sport', preferredSport.toLowerCase())
+              .maybeSingle();
+
+          if (existingOrganiserProfile == null) {
+            await _supabase
+                .from('organiser_profiles')
+                .insert(organiserProfileData);
+            print('✅ [DEBUG] AuthService: Organiser profile created successfully');
+          } else {
+            print('✅ [DEBUG] AuthService: Organiser profile already exists, skipping');
+          }
+        } catch (e) {
+          print('❌ [DEBUG] AuthService: Failed to create organiser profile: $e');
+          // Don't rethrow - profile update succeeded, organiser profile is secondary
+        }
+      }
+
+      print('✅ [DEBUG] AuthService: Onboarding completed successfully');
+    } catch (e) {
+      print('❌ [DEBUG] AuthService: Onboarding completion failed: $e');
+      throw Exception('Failed to complete onboarding: ${e.toString()}');
     }
   }
 

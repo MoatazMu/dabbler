@@ -85,7 +85,10 @@ class CreateUserInformation extends ConsumerStatefulWidget {
     this.phone,
     this.forceNew = false,
   }) : assert(
-         email != null || phone != null,
+         // For standard email/phone onboarding we expect one of them,
+         // but for OAuth flows (Google) we may rely on the authenticated user,
+         // so allow both null when forceNew is false.
+         email != null || phone != null || forceNew == false,
          'Either email or phone must be provided',
        );
 
@@ -130,9 +133,25 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
     await _userService.clearUserForNewRegistration();
 
     try {
-      // 2. Check for a valid email OR phone from the previous screen.
-      if ((widget.email == null || widget.email!.isEmpty) &&
-          (widget.phone == null || widget.phone!.isEmpty) &&
+      // 2. Check for a valid email OR phone from the previous screen or authenticated user.
+      String? email = widget.email;
+      String? phone = widget.phone;
+      
+      // If email/phone not provided but user is authenticated (e.g., Google OAuth),
+      // get it from the authenticated user
+      if ((email == null || email.isEmpty) && 
+          (phone == null || phone.isEmpty) &&
+          _authService.isAuthenticated()) {
+        final currentUser = _authService.getCurrentUser();
+        email = currentUser?.email;
+        phone = currentUser?.phone;
+        debugPrint(
+          '📧 [DEBUG] CreateUserInformation: No email/phone in route, getting from authenticated user: email=$email, phone=$phone',
+        );
+      }
+      
+      if ((email == null || email.isEmpty) &&
+          (phone == null || phone.isEmpty) &&
           mounted) {
         debugPrint(
           '❌ [DEBUG] CreateUserInformation: No email or phone provided, redirecting to phone input.',
@@ -141,35 +160,44 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         return;
       }
 
-      final identifier = widget.email ?? widget.phone ?? '';
+      final identifier = email ?? phone ?? '';
       debugPrint(
         '📧 [DEBUG] CreateUserInformation: Initializing form for: $identifier',
       );
+      
+      // Update widget.email/phone for use in the rest of the method
+      // We'll use local variables email/phone instead of widget.email/phone
 
       // 3. Check if user is already authenticated (e.g., editing their profile).
       if (!widget.forceNew && _authService.isAuthenticated()) {
         final currentEmail = _authService.getCurrentUserEmail();
         final currentPhone = _authService.getCurrentUser()?.phone;
 
+        // Use resolved email/phone (from widget or authenticated user)
+        final resolvedEmail = email ?? currentEmail;
+        final resolvedPhone = phone ?? currentPhone;
+        
         debugPrint('🔍 [DEBUG] CreateUserInformation: Session check:');
         debugPrint('  widget.email: ${widget.email}');
         debugPrint('  widget.phone: ${widget.phone}');
         debugPrint('  currentEmail: $currentEmail');
         debugPrint('  currentPhone: $currentPhone');
+        debugPrint('  resolvedEmail: $resolvedEmail');
+        debugPrint('  resolvedPhone: $resolvedPhone');
 
         // Check if current session matches either email or phone
         bool matchesSession = false;
-        if (widget.email != null && currentEmail != null) {
+        if (resolvedEmail != null && currentEmail != null) {
           final normalizedCurrent = currentEmail.trim().toLowerCase();
-          final normalizedTarget = widget.email!.trim().toLowerCase();
+          final normalizedTarget = resolvedEmail.trim().toLowerCase();
           matchesSession = normalizedCurrent == normalizedTarget;
           debugPrint('  Email match check: $matchesSession');
-        } else if (widget.phone != null) {
+        } else if (resolvedPhone != null) {
           // For phone users during onboarding after OTP verification,
           // normalize phone numbers by removing '+' prefix for comparison
           if (currentPhone != null) {
             final normalizedCurrent = currentPhone.replaceAll('+', '');
-            final normalizedTarget = widget.phone!.replaceAll('+', '');
+            final normalizedTarget = resolvedPhone.replaceAll('+', '');
             matchesSession = normalizedCurrent == normalizedTarget;
             debugPrint(
               '  Phone match check: $matchesSession ($normalizedCurrent == $normalizedTarget)',
@@ -187,11 +215,29 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         }
 
         if (matchesSession) {
-          // Same user -> treat as profile edit
-          print(
-            '✅ [DEBUG] CreateUserInformation: Authenticated user matches; loading existing data.',
-          );
-          await _loadExistingUserData();
+          // Same user -> check if they have a profile
+          // If no profile exists, treat as new registration (not profile edit)
+          final existingProfile = await _authService.getUserProfile(fields: ['id']);
+          if (existingProfile != null) {
+            // User has profile -> treat as profile edit
+            print(
+              '✅ [DEBUG] CreateUserInformation: Authenticated user matches and has profile; loading existing data.',
+            );
+            await _loadExistingUserData();
+          } else {
+            // User authenticated but no profile -> treat as new registration
+            print(
+              '🆕 [DEBUG] CreateUserInformation: Authenticated user but no profile; proceeding with new registration.',
+            );
+            if (mounted) {
+              setState(() {
+                _nameController.text = '';
+                _selectedGender = '';
+                _selectedBirthDate = null;
+                _isLoadingData = false;
+              });
+            }
+          }
         } else {
           // Different authenticated account than the email/phone we want to register.
           print(
@@ -366,12 +412,16 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       // Initialize or update onboarding data provider
       final onboardingNotifier = ref.read(onboardingDataProvider.notifier);
 
+      // Get email/phone from widget or authenticated user
+      final resolvedEmail = widget.email ?? _authService.getCurrentUserEmail();
+      final resolvedPhone = widget.phone ?? _authService.getCurrentUser()?.phone;
+
       // Initialize with email or phone if not already done
       if (ref.read(onboardingDataProvider) == null) {
-        if (widget.email != null) {
-          onboardingNotifier.initWithEmail(widget.email!);
-        } else if (widget.phone != null) {
-          onboardingNotifier.initWithPhone(widget.phone!);
+        if (resolvedEmail != null && resolvedEmail.isNotEmpty) {
+          onboardingNotifier.initWithEmail(resolvedEmail);
+        } else if (resolvedPhone != null && resolvedPhone.isNotEmpty) {
+          onboardingNotifier.initWithPhone(resolvedPhone);
         }
       }
 

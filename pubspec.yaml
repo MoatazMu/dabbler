@@ -102,6 +102,14 @@ dependencies:
   # Equatable for value comparison
   equatable: ^2.0.5
 
+  # Firebase core & messaging for push notifications (mobile only)
+  # Note: Web support is disabled due to compatibility issues
+  firebase_core: ^4.2.1
+  firebase_messaging: ^16.0.4
+
+  # Local notifications for foreground & scheduled notifications
+  flutter_local_notifications: ^17.2.1
+
   # Shimmer effects for loading states
   shimmer: ^3.0.0
   

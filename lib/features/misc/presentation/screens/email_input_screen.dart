@@ -6,6 +6,9 @@ import 'package:dabbler/features/authentication/presentation/providers/auth_prov
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:dabbler/core/models/google_sign_in_result.dart';
+import 'package:dabbler/core/services/auth_service.dart';
+import 'package:dabbler/core/utils/identifier_detector.dart';
 
 class EmailInputScreen extends ConsumerStatefulWidget {
   const EmailInputScreen({super.key});
@@ -90,15 +93,26 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
           );
           context.push(RoutePaths.enterPassword, extra: {'email': email});
         } else {
-          // User doesn't exist - go directly to onboarding
+          // User doesn't exist - send OTP and go to verification
           debugPrint(
-            '🆕 [DEBUG] EmailInputScreen: New user, redirecting to onboarding',
+            '🆕 [DEBUG] EmailInputScreen: New user, sending OTP',
           );
 
-          // Initialize onboarding with email
-          ref.read(onboardingDataProvider.notifier).initWithEmail(email);
+          // Send OTP using unified method
+          await authService.sendOtp(
+            identifier: email,
+            type: IdentifierType.email,
+          );
 
-          context.go(RoutePaths.createUserInfo, extra: {'email': email});
+          // Navigate to OTP verification screen
+          context.push(
+            RoutePaths.otpVerification,
+            extra: {
+              'identifier': email,
+              'identifierType': IdentifierType.email.name,
+              'userExistsBeforeOtp': false,
+            },
+          );
         }
       }
     } catch (e) {
@@ -380,12 +394,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
       width: double.infinity,
       height: 56,
       child: ElevatedButton(
-        onPressed: () {
-          // TODO: Implement Google sign in
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('Google sign-in coming soon')));
-        },
+        onPressed: _isLoading ? null : _handleGoogleSignIn,
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: AppColors.categoryBgMain(context),
@@ -394,22 +403,130 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
             borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'G',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-            SizedBox(width: AppSpacing.sm),
-            Text(
-              'Continue with Google',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
+        child: _isLoading
+            ? SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'G',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
+                  SizedBox(width: AppSpacing.sm),
+                  Text(
+                    'Continue with Google',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                  ),
+                ],
+              ),
       ),
     );
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+      _successMessage = null;
+    });
+
+    try {
+      final authService = AuthService();
+      
+      // Launch Google OAuth (this opens browser/app)
+      await authService.signInWithGoogle();
+      
+      // Note: OAuth is asynchronous - the user will complete sign-in in browser/app
+      // The auth state listener will detect when they return and handle routing
+      // For now, we'll wait a bit and then check, but ideally this should be handled
+      // by the auth state listener in the router
+      
+      // Wait for OAuth to complete (user will be redirected back)
+      await Future.delayed(const Duration(seconds: 3));
+      
+      // Now check the result after OAuth completes
+      final result = await authService.handleGoogleSignInFlow();
+
+      if (!mounted) return;
+
+      // Navigate based on result
+      switch (result) {
+        case GoogleSignInResultGoToOnboarding():
+          // New Google user (email only) - go to full onboarding flow
+          ref.read(onboardingDataProvider.notifier).initWithEmail(result.email);
+          context.go(
+            RoutePaths.createUserInfo,
+            extra: {'email': result.email},
+          );
+          break;
+
+        case GoogleSignInResultGoToSetUsername():
+          // Legacy case - should not be used for new Google users
+          ref.read(onboardingDataProvider.notifier).initWithEmail(result.email);
+          context.go(
+            RoutePaths.setUsername,
+            extra: {
+              'email': result.email,
+              'suggestedUsername': result.suggestedUsername,
+            },
+          );
+          break;
+
+        case GoogleSignInResultGoToPhoneOtp():
+          // New Google user (email + phone) - go to OTP verification
+          context.push(
+            RoutePaths.otpVerification,
+            extra: {
+              'phone': result.phone,
+              'email': result.email,
+              'userExistsBeforeOtp': false,
+            },
+          );
+          break;
+
+        case GoogleSignInResultGoToHome():
+          // Existing Google user - let router handle navigation
+          context.go(RoutePaths.home);
+          break;
+
+        case GoogleSignInResultRequirePassword():
+          // Existing user (non-Google) - require password
+          context.push(
+            RoutePaths.enterPassword,
+            extra: {'email': result.email},
+          );
+          break;
+
+        case GoogleSignInResultError():
+          // Error occurred
+          setState(() {
+            _errorMessage = result.message;
+          });
+          break;
+      }
+    } catch (e) {
+      debugPrint('❌ [DEBUG] EmailInputScreen: Google sign-in error: $e');
+      if (mounted) {
+        setState(() {
+          _errorMessage = 'Google sign-in failed. Please try again.';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Widget _buildPhoneButton() {

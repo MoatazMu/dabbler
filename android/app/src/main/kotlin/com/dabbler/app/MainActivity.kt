@@ -1,4 +1,4 @@
-package com.dabbler.app
+package com.dabbler.dabblerapp
 
 import io.flutter.embedding.android.FlutterActivity
 

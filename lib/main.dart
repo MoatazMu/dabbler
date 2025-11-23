@@ -4,12 +4,14 @@ import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/services/theme_service.dart';
+import 'package:dabbler/core/services/location_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'app/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/responsive_app_shell.dart';
+import 'services/notifications/push_notification_service.dart';
 
 // Feature flags for future functionality
 class AppFeatures {
@@ -53,21 +55,32 @@ Future<void> main() async {
   try {
     await Environment.load();
 
+    // Initialize theme and location services before running the app
     await ThemeService().init();
+    await LocationService().init();
 
     final anonKey = Environment.supabaseAnonKey;
 
-    // Initialize Supabase with conditional deep link detection
+    // Initialize Supabase with deep-link detection enabled for auth flows
+    // This is required so that OAuth providers (e.g. Google) can return
+    // to the app and have the session detected from the redirect URL.
     await Supabase.initialize(
       url: Environment.supabaseUrl,
       anonKey: anonKey,
       authOptions: FlutterAuthClientOptions(
         authFlowType: AuthFlowType.pkce,
-        detectSessionInUri: AppFeatures
-            .enableDeepLinks, // ✅ Disabled for now, ready for referrals
+        // Must be true for Google sign-in to work correctly (PKCE flow).
+        // Referral deep links can still be controlled separately via feature flags.
+        detectSessionInUri: true,
         autoRefreshToken: true,
       ),
     );
+
+    // Initialize push notifications & request OS permissions if enabled
+    // On web, this will be a no-op to avoid Firebase Messaging web compatibility issues
+    if (FeatureFlags.enablePushNotifications) {
+      await PushNotificationService.instance.init();
+    }
 
     // Log the Supabase authorization token (JWT) after initialization and sign-in
     final authService = Supabase.instance.client.auth;

@@ -51,7 +51,7 @@ class FeatureFlags {
   static const bool organiserProfile = false;
   static const bool socialFeed = true; // NOW ENABLED FOR MVP
   static const bool messaging = false;
-  static const bool notifications = false;
+  static const bool notifications = true;
   static const bool squads = false;
   static const bool venuesBooking = false; // venues remain read-only
   static const bool enableRewards = false;
@@ -113,10 +113,10 @@ class FeatureFlags {
   static const bool enableReadReceipts = false;
 
   /// Notifications
-  static const bool enablePushNotifications = false;
-  static const bool enableInAppNotifications = false;
-  static const bool enableNotificationCenter = false;
-  static const bool enableNotificationPreferences = false;
+  static const bool enablePushNotifications = true;
+  static const bool enableInAppNotifications = true;
+  static const bool enableNotificationCenter = true;
+  static const bool enableNotificationPreferences = true;
 
   /// Venues
   static const bool enableVenueSearch = false;
@@ -265,7 +265,7 @@ class FeatureFlags {
   static const bool showSettingsTab = true; // Or within profile
 
   /// Top bar features
-  static const bool showNotificationBell = false;
+  static const bool showNotificationBell = true;
   static const bool showMessagesIcon = false;
   static const bool showSearchIcon = false;
 
