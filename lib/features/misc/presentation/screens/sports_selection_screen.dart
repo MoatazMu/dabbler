@@ -133,22 +133,12 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
         '✅ [DEBUG] SportsSelectionScreen: Sports preferences saved successfully',
       );
 
-      // Navigate based on auth method (email vs phone)
-      final onboardingData = ref.read(onboardingDataProvider);
+      // Navigate to SetUsername for all users (passwordless flow)
       if (mounted) {
-        if (onboardingData?.phone != null) {
-          // Phone user → Set Username only
-          debugPrint(
-            '📱 [DEBUG] SportsSelectionScreen: Phone user, navigating to SetUsernameScreen',
-          );
-          context.push(RoutePaths.setUsername);
-        } else {
-          // Email user → Set Username + Password
-          debugPrint(
-            '📧 [DEBUG] SportsSelectionScreen: Email user, navigating to SetPasswordScreen',
-          );
-          context.push(RoutePaths.setPassword);
-        }
+        debugPrint(
+          '✅ [DEBUG] SportsSelectionScreen: Navigating to SetUsernameScreen (passwordless flow for all users)',
+        );
+        context.push(RoutePaths.setUsername);
       }
     } catch (e) {
       debugPrint(

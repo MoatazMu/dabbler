@@ -134,8 +134,6 @@ class _IdentityVerificationScreenState
       finalIdentifier = normalizedEmail;
     }
 
-    bool userExistsBeforeOtp = false;
-
     try {
       // Check if user exists BEFORE sending OTP
       try {
@@ -144,12 +142,15 @@ class _IdentityVerificationScreenState
         print(
           '🔍 [DEBUG] IdentityVerificationScreen: Checking if user exists: $finalIdentifier',
         );
+        bool userExistsBeforeOtp = false;
         if (identifierType == IdentifierType.email) {
-          userExistsBeforeOtp =
-              await authService.checkUserExistsByEmail(finalIdentifier);
+          userExistsBeforeOtp = await authService.checkUserExistsByEmail(
+            finalIdentifier,
+          );
         } else {
-          userExistsBeforeOtp =
-              await authService.checkUserExistsByPhone(finalIdentifier);
+          userExistsBeforeOtp = await authService.checkUserExistsByPhone(
+            finalIdentifier,
+          );
         }
         print(
           '🔍 [DEBUG] IdentityVerificationScreen: User exists: $userExistsBeforeOtp',
@@ -213,7 +214,9 @@ class _IdentityVerificationScreenState
           extra: {
             'identifier': finalIdentifier,
             'identifierType': identifierType.name,
-            'userExistsBeforeOtp': userExistsBeforeOtp,
+            // We always use OTP for both new and existing users; keep flag
+            // only for analytics/routing decisions in the OTP screen.
+            'userExistsBeforeOtp': true,
           },
         );
       } catch (navError) {
@@ -257,11 +260,13 @@ class _IdentityVerificationScreenState
     final textTheme = Theme.of(context).textTheme;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    final heroColor =
-        isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF);
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
     final textColor = isDarkMode ? Colors.white : Colors.black87;
-    final subtextColor =
-        isDarkMode ? Colors.white.withOpacity(0.85) : Colors.black.withOpacity(0.7);
+    final subtextColor = isDarkMode
+        ? Colors.white.withOpacity(0.85)
+        : Colors.black.withOpacity(0.7);
 
     return Container(
       width: double.infinity,
@@ -358,8 +363,8 @@ class _IdentityVerificationScreenState
                   child: Text(
                     _errorMessage!,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onErrorContainer,
-                        ),
+                      color: Theme.of(context).colorScheme.onErrorContainer,
+                    ),
                   ),
                 ),
               ],
@@ -373,8 +378,10 @@ class _IdentityVerificationScreenState
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color:
-                  Theme.of(context).extension<AppThemeExtension>()?.success.withOpacity(0.1) ??
-                      Theme.of(context).colorScheme.primaryContainer,
+                  Theme.of(
+                    context,
+                  ).extension<AppThemeExtension>()?.success.withOpacity(0.1) ??
+                  Theme.of(context).colorScheme.primaryContainer,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
@@ -382,8 +389,10 @@ class _IdentityVerificationScreenState
                 Icon(
                   Icons.check_circle_outline,
                   color:
-                      Theme.of(context).extension<AppThemeExtension>()?.success ??
-                          Theme.of(context).colorScheme.primary,
+                      Theme.of(
+                        context,
+                      ).extension<AppThemeExtension>()?.success ??
+                      Theme.of(context).colorScheme.primary,
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -391,10 +400,12 @@ class _IdentityVerificationScreenState
                   child: Text(
                     _successMessage!,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color:
-                              Theme.of(context).extension<AppThemeExtension>()?.success ??
-                                  Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
+                      color:
+                          Theme.of(
+                            context,
+                          ).extension<AppThemeExtension>()?.success ??
+                          Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
                   ),
                 ),
               ],
@@ -448,33 +459,33 @@ class _IdentityVerificationScreenState
           prefixIcon: !_hasText
               ? null
               : _currentIdentifierType == IdentifierType.phone
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 8),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.phone_outlined,
-                            color: colorScheme.onSurfaceVariant,
-                            size: 18,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            _countryCode,
-                            style: textTheme.bodyLarge?.copyWith(
-                              color: colorScheme.onSurface,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            width: 1,
-                            height: 20,
-                            color: colorScheme.outlineVariant,
-                          ),
-                        ],
+              ? Padding(
+                  padding: const EdgeInsets.only(left: 16, right: 8),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.phone_outlined,
+                        color: colorScheme.onSurfaceVariant,
+                        size: 18,
                       ),
-                    )
-                  : null,
+                      const SizedBox(width: 4),
+                      Text(
+                        _countryCode,
+                        style: textTheme.bodyLarge?.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 1,
+                        height: 20,
+                        color: colorScheme.outlineVariant,
+                      ),
+                    ],
+                  ),
+                )
+              : null,
           // Material 3 uses InputDecorationTheme from theme
         ).applyDefaults(Theme.of(context).inputDecorationTheme),
       ),
@@ -623,10 +634,7 @@ class _IdentityVerificationScreenState
         case GoogleSignInResultGoToOnboarding():
           // New Google user (email only) - go to full onboarding flow
           ref.read(onboardingDataProvider.notifier).initWithEmail(result.email);
-          context.go(
-            RoutePaths.createUserInfo,
-            extra: {'email': result.email},
-          );
+          context.go(RoutePaths.createUserInfo, extra: {'email': result.email});
           break;
 
         case GoogleSignInResultGoToSetUsername():
@@ -750,5 +758,3 @@ class _IdentityVerificationScreenState
     );
   }
 }
-
-

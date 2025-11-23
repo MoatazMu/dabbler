@@ -86,34 +86,27 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
       debugPrint('📧 [DEBUG] EmailInputScreen: User exists: $userExists');
 
       if (mounted) {
-        if (userExists) {
-          // User exists - go to password screen
-          debugPrint(
-            '✅ [DEBUG] EmailInputScreen: User exists, redirecting to password entry',
-          );
-          context.push(RoutePaths.enterPassword, extra: {'email': email});
-        } else {
-          // User doesn't exist - send OTP and go to verification
-          debugPrint(
-            '🆕 [DEBUG] EmailInputScreen: New user, sending OTP',
-          );
+        // Always use OTP for email, regardless of whether the user exists.
+        // Password-based login remains available elsewhere but is not used here.
+        debugPrint(
+          '📧 [DEBUG] EmailInputScreen: Using OTP flow for email. userExists=$userExists',
+        );
 
-          // Send OTP using unified method
-          await authService.sendOtp(
-            identifier: email,
-            type: IdentifierType.email,
-          );
+        // Send OTP using unified method
+        await authService.sendOtp(
+          identifier: email,
+          type: IdentifierType.email,
+        );
 
-          // Navigate to OTP verification screen
-          context.push(
-            RoutePaths.otpVerification,
-            extra: {
-              'identifier': email,
-              'identifierType': IdentifierType.email.name,
-              'userExistsBeforeOtp': false,
-            },
-          );
-        }
+        // Navigate to OTP verification screen
+        context.push(
+          RoutePaths.otpVerification,
+          extra: {
+            'identifier': email,
+            'identifierType': IdentifierType.email.name,
+            'userExistsBeforeOtp': userExists,
+          },
+        );
       }
     } catch (e) {
       debugPrint('❌ [DEBUG] EmailInputScreen: Error in _handleSubmit: $e');
@@ -441,18 +434,18 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
 
     try {
       final authService = AuthService();
-      
+
       // Launch Google OAuth (this opens browser/app)
       await authService.signInWithGoogle();
-      
+
       // Note: OAuth is asynchronous - the user will complete sign-in in browser/app
       // The auth state listener will detect when they return and handle routing
       // For now, we'll wait a bit and then check, but ideally this should be handled
       // by the auth state listener in the router
-      
+
       // Wait for OAuth to complete (user will be redirected back)
       await Future.delayed(const Duration(seconds: 3));
-      
+
       // Now check the result after OAuth completes
       final result = await authService.handleGoogleSignInFlow();
 
@@ -463,10 +456,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
         case GoogleSignInResultGoToOnboarding():
           // New Google user (email only) - go to full onboarding flow
           ref.read(onboardingDataProvider.notifier).initWithEmail(result.email);
-          context.go(
-            RoutePaths.createUserInfo,
-            extra: {'email': result.email},
-          );
+          context.go(RoutePaths.createUserInfo, extra: {'email': result.email});
           break;
 
         case GoogleSignInResultGoToSetUsername():
