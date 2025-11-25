@@ -146,19 +146,25 @@ class AuthService {
           .single();
 
       print('✅ [DEBUG] AuthService: Profile created successfully');
-      print('📋 [DEBUG] AuthService: Created profile id: ${insertedProfile['id']}');
+      print(
+        '📋 [DEBUG] AuthService: Created profile id: ${insertedProfile['id']}',
+      );
 
       // Extract values from inserted profile
       final profileId = insertedProfile['id'] as String;
       final insertedProfileType = insertedProfile['profile_type'] as String;
-      final primarySport = (insertedProfile['preferred_sport'] ?? preferredSport.toLowerCase()) as String;
+      final primarySport =
+          (insertedProfile['preferred_sport'] ?? preferredSport.toLowerCase())
+              as String;
 
       print('📋 [DEBUG] AuthService: Extracted values from inserted profile:');
       print('   profile_id: $profileId');
       print('   profile_type: "$insertedProfileType"');
       print('   primary_sport: "$primarySport"');
       print('   profile_type == "player": ${insertedProfileType == 'player'}');
-      print('   profile_type == "organiser": ${insertedProfileType == 'organiser'}');
+      print(
+        '   profile_type == "organiser": ${insertedProfileType == 'organiser'}',
+      );
 
       // Create child profile based on profile_type
       if (insertedProfileType == 'player') {
@@ -182,24 +188,34 @@ class AuthService {
               .select()
               .single();
           print('✅ [DEBUG] AuthService: Sport profile created successfully');
-          print('📋 [DEBUG] AuthService: Created sport profile: $sportProfileResult');
+          print(
+            '📋 [DEBUG] AuthService: Created sport profile: $sportProfileResult',
+          );
         } catch (e) {
           print('❌ [DEBUG] AuthService: Failed to create sport profile');
           print('❌ [DEBUG] AuthService: Error type: ${e.runtimeType}');
           print('❌ [DEBUG] AuthService: Error details: $e');
           if (e is PostgrestException) {
             print('❌ [DEBUG] AuthService: Postgrest error code: ${e.code}');
-            print('❌ [DEBUG] AuthService: Postgrest error message: ${e.message}');
-            print('❌ [DEBUG] AuthService: Postgrest error details: ${e.details}');
+            print(
+              '❌ [DEBUG] AuthService: Postgrest error message: ${e.message}',
+            );
+            print(
+              '❌ [DEBUG] AuthService: Postgrest error details: ${e.details}',
+            );
             print('❌ [DEBUG] AuthService: Postgrest error hint: ${e.hint}');
           }
           // Don't rethrow - profile creation succeeded, sport profile is secondary
           // But log extensively so we can debug
-          print('⚠️ [DEBUG] AuthService: Continuing without sport profile - this should be investigated');
+          print(
+            '⚠️ [DEBUG] AuthService: Continuing without sport profile - this should be investigated',
+          );
         }
       } else if (insertedProfileType == 'organiser') {
         // Create organiser_profile for organiser
-        print('🏢 [DEBUG] AuthService: Creating organiser_profile for organiser');
+        print(
+          '🏢 [DEBUG] AuthService: Creating organiser_profile for organiser',
+        );
         print('📋 [DEBUG] AuthService: Organiser profile data:');
         print('   profile_id: $profileId');
         print('   sport: ${primarySport.toLowerCase()}');
@@ -207,7 +223,7 @@ class AuthService {
           final organiserProfileData = {
             'profile_id': profileId,
             'sport': primarySport.toLowerCase(),
-            // Use DB defaults for: organiser_level (1), commission_type ('percent'), 
+            // Use DB defaults for: organiser_level (1), commission_type ('percent'),
             // commission_value (0), is_verified (false), is_active (true)
           };
           final organiserProfileResult = await _supabase
@@ -215,24 +231,36 @@ class AuthService {
               .insert(organiserProfileData)
               .select()
               .single();
-          print('✅ [DEBUG] AuthService: Organiser profile created successfully');
-          print('📋 [DEBUG] AuthService: Created organiser profile: $organiserProfileResult');
+          print(
+            '✅ [DEBUG] AuthService: Organiser profile created successfully',
+          );
+          print(
+            '📋 [DEBUG] AuthService: Created organiser profile: $organiserProfileResult',
+          );
         } catch (e) {
           print('❌ [DEBUG] AuthService: Failed to create organiser profile');
           print('❌ [DEBUG] AuthService: Error type: ${e.runtimeType}');
           print('❌ [DEBUG] AuthService: Error details: $e');
           if (e is PostgrestException) {
             print('❌ [DEBUG] AuthService: Postgrest error code: ${e.code}');
-            print('❌ [DEBUG] AuthService: Postgrest error message: ${e.message}');
-            print('❌ [DEBUG] AuthService: Postgrest error details: ${e.details}');
+            print(
+              '❌ [DEBUG] AuthService: Postgrest error message: ${e.message}',
+            );
+            print(
+              '❌ [DEBUG] AuthService: Postgrest error details: ${e.details}',
+            );
             print('❌ [DEBUG] AuthService: Postgrest error hint: ${e.hint}');
           }
           // Don't rethrow - profile creation succeeded, organiser profile is secondary
           // But log extensively so we can debug
-          print('⚠️ [DEBUG] AuthService: Continuing without organiser profile - this should be investigated');
+          print(
+            '⚠️ [DEBUG] AuthService: Continuing without organiser profile - this should be investigated',
+          );
         }
       } else {
-        print('⚠️ [DEBUG] AuthService: Unknown profile_type: $insertedProfileType, skipping child profile creation');
+        print(
+          '⚠️ [DEBUG] AuthService: Unknown profile_type: $insertedProfileType, skipping child profile creation',
+        );
       }
     } catch (e) {
       print('❌ [DEBUG] AuthService: Profile creation failed: $e');
@@ -295,18 +323,26 @@ class AuthService {
     required IdentifierType type,
   }) async {
     try {
-      print('📧📱 [DEBUG] AuthService: Sending OTP to ${type.name}: $identifier');
+      print(
+        '📧📱 [DEBUG] AuthService: Sending OTP to ${type.name}: $identifier',
+      );
 
       if (type == IdentifierType.email) {
         final normalizedEmail = _normalizeEmail(identifier);
         await _supabase.auth.signInWithOtp(email: normalizedEmail);
-        print('✅ [DEBUG] AuthService: Email OTP sent successfully to: $normalizedEmail');
+        print(
+          '✅ [DEBUG] AuthService: Email OTP sent successfully to: $normalizedEmail',
+        );
       } else {
         await _supabase.auth.signInWithOtp(phone: identifier);
-        print('✅ [DEBUG] AuthService: Phone OTP sent successfully to: $identifier');
+        print(
+          '✅ [DEBUG] AuthService: Phone OTP sent successfully to: $identifier',
+        );
       }
     } catch (e) {
-      print('❌ [DEBUG] AuthService: OTP send failed for ${type.name} $identifier: $e');
+      print(
+        '❌ [DEBUG] AuthService: OTP send failed for ${type.name} $identifier: $e',
+      );
       throw Exception('Failed to send OTP: $e');
     }
   }
@@ -319,7 +355,9 @@ class AuthService {
     required String token,
   }) async {
     try {
-      print('🔐 [DEBUG] AuthService: Verifying OTP for ${type.name}: $identifier');
+      print(
+        '🔐 [DEBUG] AuthService: Verifying OTP for ${type.name}: $identifier',
+      );
 
       AuthResponse response;
       if (type == IdentifierType.email) {
@@ -342,10 +380,14 @@ class AuthService {
         await ensureStubProfileForCurrentUser();
       }
 
-      print('✅ [DEBUG] AuthService: OTP verification successful for ${type.name}: $identifier');
+      print(
+        '✅ [DEBUG] AuthService: OTP verification successful for ${type.name}: $identifier',
+      );
       return response;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: OTP verification failed for ${type.name} $identifier: $e');
+      print(
+        '❌ [DEBUG] AuthService: OTP verification failed for ${type.name} $identifier: $e',
+      );
       throw Exception('OTP verification failed: $e');
     }
   }
@@ -361,7 +403,6 @@ class AuthService {
       token: token,
     );
   }
-
 
   /// Sign out user
   Future<void> signOut() async {
@@ -414,12 +455,9 @@ class AuthService {
     try {
       print('🔐 [DEBUG] AuthService: Initiating Google sign-in');
 
-      // Use a deep link that will be handled by the router
-      // The router will check if user has profile and redirect accordingly
-      // For new Google users, router will redirect to createUserInfo if no profile exists
-      final redirectUrl = kIsWeb
-          ? Uri.base.origin
-          : '${RoutePaths.deepLinkPrefix}${RoutePaths.createUserInfo}';
+      // For mobile, use the app's custom scheme for OAuth callback
+      // For web, use the current origin
+      final redirectUrl = kIsWeb ? Uri.base.origin : 'dabbler://app';
 
       final launched = await _supabase.auth.signInWithOAuth(
         OAuthProvider.google,
@@ -440,12 +478,16 @@ class AuthService {
   /// This should be called AFTER OAuth completes (e.g., from auth state listener)
   Future<GoogleSignInResult> handleGoogleSignInFlow() async {
     try {
-      print('🔍 [DEBUG] AuthService: Starting Google sign-in flow orchestration');
+      print(
+        '🔍 [DEBUG] AuthService: Starting Google sign-in flow orchestration',
+      );
 
       // Get the authenticated user (should be set after OAuth completes)
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        print('⚠️ [DEBUG] AuthService: No user found - OAuth may not have completed yet');
+        print(
+          '⚠️ [DEBUG] AuthService: No user found - OAuth may not have completed yet',
+        );
         return const GoogleSignInResultError(
           message: 'Please complete Google sign-in and try again.',
         );
@@ -468,15 +510,15 @@ class AuthService {
 
       final phone = user.phone;
       final hasPhone = phone != null && phone.isNotEmpty;
-      final phoneValue = phone ?? ''; // Extract non-null value for use in branches
+      final phoneValue =
+          phone ?? ''; // Extract non-null value for use in branches
 
       // Check if user has Google as provider
       final identities = user.identities;
-      final hasGoogleProvider = (identities != null &&
+      final hasGoogleProvider =
+          (identities != null &&
               identities.isNotEmpty &&
-              identities.any(
-                (identity) => identity.provider == 'google',
-              )) ||
+              identities.any((identity) => identity.provider == 'google')) ||
           (user.appMetadata['provider'] == 'google');
 
       print('📋 [DEBUG] AuthService: Provider flags:');
@@ -497,17 +539,16 @@ class AuthService {
       // Step 5: Apply branching logic
       if (!hasProfile && !hasPhone) {
         // User A: New email, no phone - needs full onboarding flow
-        print('✅ [DEBUG] AuthService: Branch A - New Google user (email only) - routing to onboarding');
-        return GoogleSignInResultGoToOnboarding(
-          email: email,
+        print(
+          '✅ [DEBUG] AuthService: Branch A - New Google user (email only) - routing to onboarding',
         );
+        return GoogleSignInResultGoToOnboarding(email: email);
       } else if (!hasProfile && hasPhone) {
         // User B: New email, has phone
-        print('✅ [DEBUG] AuthService: Branch B - New Google user (email + phone)');
-        return GoogleSignInResultGoToPhoneOtp(
-          phone: phoneValue,
-          email: email,
+        print(
+          '✅ [DEBUG] AuthService: Branch B - New Google user (email + phone)',
         );
+        return GoogleSignInResultGoToPhoneOtp(phone: phoneValue, email: email);
       } else if (hasProfile && hasGoogleProvider) {
         // User C: Existing profile, already used Google
         print('✅ [DEBUG] AuthService: Branch C - Existing Google user');
@@ -518,7 +559,9 @@ class AuthService {
         return GoogleSignInResultRequirePassword(email: email);
       } else {
         // Fallback: Should not reach here, but handle gracefully
-        print('⚠️ [DEBUG] AuthService: Unexpected branch - defaulting to error');
+        print(
+          '⚠️ [DEBUG] AuthService: Unexpected branch - defaulting to error',
+        );
         return const GoogleSignInResultError(
           message: 'Unable to determine sign-in path. Please contact support.',
         );
@@ -539,13 +582,13 @@ class AuthService {
       // Since profiles don't store email, we need to:
       // 1. Check if a user exists with this email in auth.users
       // 2. If yes, get their user_id and query profiles by user_id
-      
+
       // For now, we'll use the current user if their email matches
       final user = _supabase.auth.currentUser;
       if (user != null && user.email?.toLowerCase() == email.toLowerCase()) {
         return await getUserProfile();
       }
-      
+
       // If we need to query by email, we'd need an RPC function
       // For now, return null if not the current user
       return null;
@@ -682,7 +725,9 @@ class AuthService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        print('⚠️ [DEBUG] AuthService: No authenticated user for stub profile creation');
+        print(
+          '⚠️ [DEBUG] AuthService: No authenticated user for stub profile creation',
+        );
         return;
       }
 
@@ -694,22 +739,30 @@ class AuthService {
           .maybeSingle();
 
       if (existingProfile != null) {
-        print('✅ [DEBUG] AuthService: Profile already exists, skipping stub creation');
+        print(
+          '✅ [DEBUG] AuthService: Profile already exists, skipping stub creation',
+        );
         return;
       }
 
       // Create stub profile with minimal data and onboard=FALSE
       final emailPart = user.email?.split('@').first;
-      final displayName = user.userMetadata?['display_name'] as String? ??
+      final displayName =
+          user.userMetadata?['display_name'] as String? ??
           emailPart ??
           'Player';
-      
+
       // Ensure display name meets minimum length requirement (2 chars)
-      final safeDisplayName = displayName.length >= 2 
-          ? displayName.substring(0, displayName.length > 50 ? 50 : displayName.length)
+      final safeDisplayName = displayName.length >= 2
+          ? displayName.substring(
+              0,
+              displayName.length > 50 ? 50 : displayName.length,
+            )
           : 'Player';
 
-      print('📝 [DEBUG] AuthService: Creating stub profile for user: ${user.id}');
+      print(
+        '📝 [DEBUG] AuthService: Creating stub profile for user: ${user.id}',
+      );
       print('📋 [DEBUG] AuthService: Display name: "$safeDisplayName"');
 
       final stubProfileData = {
@@ -721,11 +774,11 @@ class AuthService {
         'is_player': true,
       };
 
-      await _supabase
-          .from(SupabaseConfig.usersTable)
-          .insert(stubProfileData);
+      await _supabase.from(SupabaseConfig.usersTable).insert(stubProfileData);
 
-      print('✅ [DEBUG] AuthService: Stub profile created successfully with onboard=false');
+      print(
+        '✅ [DEBUG] AuthService: Stub profile created successfully with onboard=false',
+      );
     } catch (e) {
       print('❌ [DEBUG] AuthService: Error creating stub profile: $e');
       // Don't throw - this is called after auth, we don't want to break the flow
@@ -751,7 +804,9 @@ class AuthService {
         throw Exception('User not authenticated');
       }
 
-      print('🎯 [DEBUG] AuthService: Completing onboarding for user: ${user.id}');
+      print(
+        '🎯 [DEBUG] AuthService: Completing onboarding for user: ${user.id}',
+      );
       print('📋 [DEBUG] AuthService: Onboarding data:');
       print('   display_name: "$displayName"');
       print('   username: "$username"');
@@ -767,9 +822,7 @@ class AuthService {
       // Update password if provided (for email users)
       if (password != null && password.isNotEmpty) {
         print('🔐 [DEBUG] AuthService: Setting password for email user');
-        await _supabase.auth.updateUser(
-          UserAttributes(password: password),
-        );
+        await _supabase.auth.updateUser(UserAttributes(password: password));
         print('✅ [DEBUG] AuthService: Password set successfully');
       }
 
@@ -781,9 +834,7 @@ class AuthService {
         if (username.isNotEmpty) 'username': username,
       };
 
-      await _supabase.auth.updateUser(
-        UserAttributes(data: userMetadata),
-      );
+      await _supabase.auth.updateUser(UserAttributes(data: userMetadata));
       print('✅ [DEBUG] AuthService: Updated auth.users metadata');
 
       // Check if profile exists (should exist as stub from ensureStubProfileForCurrentUser)
@@ -821,7 +872,9 @@ class AuthService {
         print('✅ [DEBUG] AuthService: Profile updated successfully');
       } else {
         // Create new profile (fallback if stub wasn't created)
-        print('📝 [DEBUG] AuthService: Creating new profile (stub was missing)');
+        print(
+          '📝 [DEBUG] AuthService: Creating new profile (stub was missing)',
+        );
 
         final profileData = {
           'user_id': user.id,
@@ -846,7 +899,9 @@ class AuthService {
             .single();
 
         profileId = insertedProfile['id'] as String;
-        print('✅ [DEBUG] AuthService: Profile created successfully: $profileId');
+        print(
+          '✅ [DEBUG] AuthService: Profile created successfully: $profileId',
+        );
       }
 
       // Create child profile based on profile_type
@@ -859,7 +914,7 @@ class AuthService {
             'sport': preferredSport.toLowerCase(),
             'skill_level': 1, // Beginner level
           };
-          
+
           // Check if sport_profile already exists
           final existingSportProfile = await _supabase
               .from('sport_profiles')
@@ -869,12 +924,12 @@ class AuthService {
               .maybeSingle();
 
           if (existingSportProfile == null) {
-            await _supabase
-                .from('sport_profiles')
-                .insert(sportProfileData);
+            await _supabase.from('sport_profiles').insert(sportProfileData);
             print('✅ [DEBUG] AuthService: Sport profile created successfully');
           } else {
-            print('✅ [DEBUG] AuthService: Sport profile already exists, skipping');
+            print(
+              '✅ [DEBUG] AuthService: Sport profile already exists, skipping',
+            );
           }
         } catch (e) {
           print('❌ [DEBUG] AuthService: Failed to create sport profile: $e');
@@ -882,15 +937,17 @@ class AuthService {
         }
       } else if (profileType == 'organiser') {
         // Create organiser_profile for organiser
-        print('🏢 [DEBUG] AuthService: Creating organiser_profile for organiser');
+        print(
+          '🏢 [DEBUG] AuthService: Creating organiser_profile for organiser',
+        );
         try {
           final organiserProfileData = {
             'profile_id': profileId,
             'sport': preferredSport.toLowerCase(),
-            // Use DB defaults for: organiser_level (1), commission_type ('percent'), 
+            // Use DB defaults for: organiser_level (1), commission_type ('percent'),
             // commission_value (0), is_verified (false), is_active (true)
           };
-          
+
           // Check if organiser_profile already exists
           final existingOrganiserProfile = await _supabase
               .from('organiser_profiles')
@@ -903,12 +960,18 @@ class AuthService {
             await _supabase
                 .from('organiser_profiles')
                 .insert(organiserProfileData);
-            print('✅ [DEBUG] AuthService: Organiser profile created successfully');
+            print(
+              '✅ [DEBUG] AuthService: Organiser profile created successfully',
+            );
           } else {
-            print('✅ [DEBUG] AuthService: Organiser profile already exists, skipping');
+            print(
+              '✅ [DEBUG] AuthService: Organiser profile already exists, skipping',
+            );
           }
         } catch (e) {
-          print('❌ [DEBUG] AuthService: Failed to create organiser profile: $e');
+          print(
+            '❌ [DEBUG] AuthService: Failed to create organiser profile: $e',
+          );
           // Don't rethrow - profile update succeeded, organiser profile is secondary
         }
       }
