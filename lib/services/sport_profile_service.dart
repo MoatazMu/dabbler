@@ -32,7 +32,7 @@ class SportProfileService {
           .from('sport_profiles')
           .select()
           .eq('profile_id', profileId)
-          .eq('sport_key', sportKey)
+          .eq('sport', sportKey)
           .limit(1)
           .maybeSingle();
 
@@ -130,7 +130,7 @@ class SportProfileService {
           .from('sport_profile_events')
           .select()
           .eq('profile_id', profileId)
-          .eq('sport_key', sportKey)
+          .eq('sport', sportKey)
           .order('created_at', ascending: false)
           .limit(fetchLimit);
 
@@ -166,7 +166,7 @@ class SportProfileService {
           .from('sport_profile_profile_badges')
           .select('badge:sport_profile_badges!inner(*)')
           .eq('profile_id', profileId)
-          .eq('sport_key', sportKey)
+          .eq('sport', sportKey)
           .order('awarded_at', ascending: false);
 
       final rows = (response as List)
@@ -248,7 +248,7 @@ class SportProfileService {
             'xp_total,matches_played,last_5_matches,reliability_score,ml_avg_vector,ml_vector_count',
           )
           .eq('profile_id', profileId)
-          .eq('sport_key', sportKey)
+          .eq('sport', sportKey)
           .limit(1)
           .maybeSingle();
 
@@ -305,7 +305,7 @@ class SportProfileService {
           .from('sport_profiles')
           .update(updates)
           .eq('profile_id', profileId)
-          .eq('sport_key', sportKey);
+          .eq('sport', sportKey);
 
       Logger.debug(
         '$_logTag: Applied match outcome for profileId=$profileId sportKey=$sportKey (xp +$xpGained)',

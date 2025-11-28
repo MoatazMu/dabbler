@@ -32,6 +32,7 @@ import '../controllers/settings_controller.dart';
 import '../controllers/preferences_controller.dart';
 import '../controllers/privacy_controller.dart';
 import '../controllers/sports_profile_controller.dart';
+import '../controllers/organiser_profile_controller.dart';
 
 // =============================================================================
 // CONTROLLER PROVIDERS (Simplified)
@@ -85,6 +86,12 @@ final profileControllerProvider =
 final sportsProfileControllerProvider =
     StateNotifierProvider<SportsProfileController, SportsProfileState>((ref) {
       return SportsProfileController();
+    });
+
+/// Organiser profile controller provider
+final organiserProfileControllerProvider =
+    StateNotifierProvider<OrganiserProfileController, OrganiserProfileState>((ref) {
+      return OrganiserProfileController();
     });
 
 class SportProfileHeaderData {
@@ -298,6 +305,85 @@ final sportsProfileByIdProvider = Provider.family<SportProfile?, String>((
 // UTILITY PROVIDERS
 // =============================================================================
 
+/// Available profiles provider - lists all profiles (player/organiser) for current user
+final availableProfilesProvider = FutureProvider.autoDispose<List<UserProfile>>((ref) async {
+  final userId = ref.read(currentUserIdProvider);
+  if (userId == null || userId.isEmpty) {
+    return [];
+  }
+
+  try {
+    // Fetch all profiles directly from Supabase
+    final client = ref.watch(supabaseProvider);
+    final response = await client
+        .from('profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', ascending: true);
+
+    if (response.isEmpty) {
+      return [];
+    }
+
+    final profiles = <UserProfile>[];
+    for (final row in response) {
+      final result = Map<String, dynamic>.from(row);
+      
+      // Enrich with auth data (email, phone)
+      try {
+        final authUser = client.auth.currentUser;
+        if (authUser != null) {
+          result['email'] = authUser.email;
+          result['phone_number'] = authUser.phone;
+        }
+      } catch (_) {
+        // Ignore auth data enrichment errors
+      }
+
+      // Enrich with sport profiles
+      try {
+        final profileId = result['id'] as String;
+        final profileType = result['profile_type'] as String?;
+        
+        if (profileType == 'player') {
+          final sportProfilesResponse = await client
+              .from('sport_profiles')
+              .select('sport, skill_level, matches_played, primary_position, rating_total, rating_count')
+              .eq('profile_id', profileId);
+          
+          final sportProfiles = (sportProfilesResponse as List)
+              .map((sp) => SportProfile.fromJson(Map<String, dynamic>.from(sp)))
+              .toList();
+          result['sports_profiles'] = sportProfiles.map((sp) => sp.toJson()).toList();
+        } else if (profileType == 'organiser') {
+          final organiserProfilesResponse = await client
+              .from('organiser_profiles')
+              .select('*')
+              .eq('profile_id', profileId);
+          
+          // For now, just mark that organiser profiles exist
+          result['organiser_profiles'] = organiserProfilesResponse;
+        }
+      } catch (_) {
+        // Ignore sport profile enrichment errors
+      }
+
+      profiles.add(UserProfile.fromJson(result));
+    }
+
+    return profiles;
+  } catch (e) {
+    Logger.error('Failed to load available profiles', e);
+    return [];
+  }
+});
+
+/// Active profile type provider - tracks which profile type is currently selected
+final activeProfileTypeProvider = StateProvider<String?>((ref) {
+  final profileState = ref.watch(profileControllerProvider);
+  return profileState.profile?.profileType;
+});
+
 /// Initialize all profile data provider
 final initializeProfileDataProvider = FutureProvider<bool>((ref) async {
   final profileController = ref.read(profileControllerProvider.notifier);
@@ -307,24 +393,43 @@ final initializeProfileDataProvider = FutureProvider<bool>((ref) async {
   );
   final privacyController = ref.read(privacyControllerProvider.notifier);
   final sportsController = ref.read(sportsProfileControllerProvider.notifier);
+  final organiserController = ref.read(organiserProfileControllerProvider.notifier);
 
   // Resolve current authenticated user id
   final userId = ref.read(currentUserIdProvider);
 
   try {
     if (userId != null && userId.isNotEmpty) {
+      // Load default profile (prefer player)
+      await profileController.loadProfile(userId, profileType: 'player');
+      
+      // If no player profile, try organiser
+      var profileState = ref.read(profileControllerProvider);
+      if (profileState.profile == null) {
+        await profileController.loadProfile(userId, profileType: 'organiser');
+        profileState = ref.read(profileControllerProvider);
+      }
+
+      final profile = profileState.profile;
+      if (profile != null) {
+        if (profile.profileType == 'organiser') {
+          await organiserController.loadOrganiserProfiles(userId);
+        } else {
+          await sportsController.loadSportsProfiles(userId);
+        }
+      }
+
       await Future.wait([
-        profileController.loadProfile(userId),
         settingsController.loadSettings(userId),
         preferencesController.loadPreferences(userId),
         privacyController.loadPrivacySettings(userId),
-        sportsController.loadSportsProfiles(userId),
       ]);
     } else {
       return false;
     }
     return true;
   } catch (e) {
+    Logger.error('Failed to initialize profile data', e);
     return false;
   }
 });

@@ -2,17 +2,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../../app/app_router.dart';
 import '../../controllers/profile_controller.dart';
 import '../../controllers/sports_profile_controller.dart';
+import '../../controllers/organiser_profile_controller.dart';
 import '../../providers/profile_providers.dart';
 import 'package:dabbler/data/models/profile/user_profile.dart';
 import 'package:dabbler/data/models/profile/sports_profile.dart';
+import 'package:dabbler/data/models/profile/organiser_profile.dart';
 import 'package:dabbler/data/models/profile/profile_statistics.dart';
 import 'package:dabbler/features/profile/presentation/widgets/profile_rewards_widget.dart';
 import '../../widgets/profile/player_sport_profile_header.dart';
 import '../../../../../utils/constants/route_constants.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
+import 'package:dabbler/services/moderation_service.dart';
+import 'package:dabbler/data/models/sport_tags.dart';
 // Extracted widgets for hero and basics live alongside this screen for now.
 // If you re-enable them, ensure the import paths match actual file locations.
 
@@ -24,11 +29,13 @@ class ProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _ProfileScreenState extends ConsumerState<ProfileScreen>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, RouteAware {
   late AnimationController _animationController;
   late AnimationController _refreshController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
+  
+  String? _selectedProfileType; // 'player' or 'organiser'
 
   @override
   void initState() {
@@ -62,24 +69,69 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route != null) {
+      AppRouter.routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
   void dispose() {
+    AppRouter.routeObserver.unsubscribe(this);
     _animationController.dispose();
     _refreshController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadProfileData() async {
+  @override
+  void didPopNext() {
+    // Called when returning to this screen from another screen
+    // Refresh profile data to sync with any changes made (e.g., sports preferences)
+    _loadProfileData();
+  }
+
+  Future<void> _loadProfileData({String? profileType}) async {
     final profileController = ref.read(profileControllerProvider.notifier);
     final sportsController = ref.read(sportsProfileControllerProvider.notifier);
+    final organiserController = ref.read(organiserProfileControllerProvider.notifier);
     final user = ref.read(currentUserProvider);
 
     if (user != null) {
-      await Future.wait<void>([
-        profileController.loadProfile(user.id),
-        sportsController.loadSportsProfiles(user.id),
-      ]);
+      // Use selected profile type or default to current profile's type
+      final typeToLoad = profileType ?? _selectedProfileType;
+      
+      await profileController.loadProfile(user.id, profileType: typeToLoad);
+      
+      // Update selected profile type based on loaded profile
+      final profileState = ref.read(profileControllerProvider);
+      final profile = profileState.profile;
+      if (profile != null) {
+        _selectedProfileType = profile.profileType;
+        ref.read(activeProfileTypeProvider.notifier).state = profile.profileType;
+        
+        // Load profile-specific data using profile_id
+        final profileId = profile.id;
+        if (profile.profileType == 'organiser') {
+          await organiserController.loadOrganiserProfiles(user.id, profileId: profileId);
+        } else {
+          await sportsController.loadSportsProfiles(user.id, profileId: profileId);
+        }
+      }
+      
       await _loadAverageRating();
     }
+  }
+  
+  Future<void> _switchProfileType(String profileType) async {
+    if (_selectedProfileType == profileType) return;
+    
+    setState(() {
+      _selectedProfileType = profileType;
+    });
+    
+    await _loadProfileData(profileType: profileType);
   }
 
   Future<void> _loadAverageRating() async {
@@ -96,76 +148,276 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileControllerProvider);
     final sportsState = ref.watch(sportsProfileControllerProvider);
+    final organiserState = ref.watch(organiserProfileControllerProvider);
     final currentUser = ref.watch(currentUserProvider);
     final userId = profileState.profile?.userId ?? currentUser?.id ?? '';
+    final profileType = profileState.profile?.profileType ?? 'player';
     final sportProfileHeaderAsync = userId.isEmpty
         ? const AsyncData<SportProfileHeaderData?>(null)
         : ref.watch(sportProfileHeaderProvider(userId));
 
     final colorScheme = Theme.of(context).colorScheme;
+    final profileId = profileState.profile?.id;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _onRefresh,
-          color: colorScheme.primary,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            slivers: [
-              // Header
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                sliver: SliverToBoxAdapter(child: _buildHeader(context)),
-              ),
-              // Profile Hero Card
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _buildProfileHeroCard(
-                    context,
-                    profileState,
-                    sportsState,
+        child: profileId != null
+            ? FutureBuilder<bool>(
+                future: _checkProfileTakedown(profileId),
+                builder: (context, takedownSnapshot) {
+                  if (takedownSnapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final isTakedown = takedownSnapshot.data ?? false;
+                  if (isTakedown) {
+                    return _buildTakedownPlaceholder(context, colorScheme);
+                  }
+
+                  return RefreshIndicator(
+                    onRefresh: _onRefresh,
+                    color: colorScheme.primary,
+                    child: CustomScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(
+                        parent: BouncingScrollPhysics(),
+                      ),
+                      slivers: [
+                        // Header
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                          sliver: SliverToBoxAdapter(
+                            child: Column(
+                              children: [
+                                _buildHeader(context),
+                                const SizedBox(height: 16),
+                                _buildProfileTypeSwitcher(context),
+                              ],
+                            ),
+                          ),
+                        ),
+                        // Profile Hero Card
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                          sliver: SliverToBoxAdapter(
+                            child: _buildProfileHeroCard(
+                              context,
+                              profileState,
+                              sportsState,
+                            ),
+                          ),
+                        ),
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                          sliver: SliverToBoxAdapter(
+                            child: _buildSportProfileHeaderSection(
+                              context,
+                              sportProfileHeaderAsync,
+                            ),
+                          ),
+                        ),
+                        // Content
+                        SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
+                          sliver: SliverToBoxAdapter(
+                            child: FadeTransition(
+                              opacity: _fadeAnimation,
+                              child: SlideTransition(
+                                position: _slideAnimation,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildQuickActions(context),
+                                    const SizedBox(height: 24),
+                                    _buildProfileCompletion(
+                                      context,
+                                      profileState,
+                                    ),
+                                    _buildBasicInfo(context, profileState),
+                                    if (FeatureFlags.enableRewards)
+                                      _buildRewardsSection(context),
+                                    _buildSportsProfiles(context, sportsState),
+                                    _buildStatisticsSummary(
+                                      context,
+                                      profileState,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              )
+            : RefreshIndicator(
+                onRefresh: _onRefresh,
+                color: colorScheme.primary,
+                child: CustomScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
                   ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _buildSportProfileHeaderSection(
-                    context,
-                    sportProfileHeaderAsync,
-                  ),
-                ),
-              ),
-              // Content
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
-                sliver: SliverToBoxAdapter(
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildQuickActions(context),
-                          const SizedBox(height: 24),
-                          _buildProfileCompletion(context, profileState),
-                          _buildBasicInfo(context, profileState),
-                          if (FeatureFlags.enableRewards)
-                            _buildRewardsSection(context),
-                          _buildSportsProfiles(context, sportsState),
-                          _buildStatisticsSummary(context, profileState),
-                        ],
+                  slivers: [
+                    // Header
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                      sliver: SliverToBoxAdapter(child: _buildHeader(context)),
+                    ),
+                    // Profile Hero Card
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                      sliver: SliverToBoxAdapter(
+                        child: _buildProfileHeroCard(
+                          context,
+                          profileState,
+                          sportsState,
+                        ),
                       ),
                     ),
-                  ),
+                    if (profileType == 'player')
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                        sliver: SliverToBoxAdapter(
+                          child: _buildSportProfileHeaderSection(
+                            context,
+                            sportProfileHeaderAsync,
+                          ),
+                        ),
+                      ),
+                    if (profileType == 'organiser')
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+                        sliver: SliverToBoxAdapter(
+                          child: _buildOrganiserProfileSection(
+                            context,
+                            organiserState,
+                          ),
+                        ),
+                      ),
+                    // Content
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
+                      sliver: SliverToBoxAdapter(
+                        child: FadeTransition(
+                          opacity: _fadeAnimation,
+                          child: SlideTransition(
+                            position: _slideAnimation,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                _buildQuickActions(context),
+                                const SizedBox(height: 24),
+                                _buildProfileCompletion(context, profileState),
+                                _buildBasicInfo(context, profileState),
+                                if (FeatureFlags.enableRewards)
+                                  _buildRewardsSection(context),
+                                if (profileType == 'player')
+                                  _buildSportsProfiles(context, sportsState),
+                                if (profileType == 'organiser')
+                                  _buildOrganiserProfilesList(context, organiserState),
+                                _buildStatisticsSummary(context, profileState),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
+      ),
+    );
+  }
+
+  Widget _buildProfileTypeSwitcher(BuildContext context) {
+    final availableProfilesAsync = ref.watch(availableProfilesProvider);
+    final activeProfileType = ref.watch(activeProfileTypeProvider);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return availableProfilesAsync.when(
+      data: (profiles) {
+        // Only show switcher if user has both profile types
+        if (profiles.length < 2) {
+          return const SizedBox.shrink();
+        }
+
+        final hasPlayer = profiles.any((p) => p.profileType?.toLowerCase() == 'player');
+        final hasOrganiser = profiles.any((p) => p.profileType?.toLowerCase() == 'organiser');
+
+        if (!hasPlayer || !hasOrganiser) {
+          return const SizedBox.shrink();
+        }
+
+        final currentType = activeProfileType ?? _selectedProfileType ?? 'player';
+
+        return Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildProfileTypeChip(
+                context,
+                label: 'Player',
+                type: 'player',
+                isSelected: currentType.toLowerCase() == 'player',
+                onTap: () => _switchProfileType('player'),
+              ),
+              const SizedBox(width: 4),
+              _buildProfileTypeChip(
+                context,
+                label: 'Organiser',
+                type: 'organiser',
+                isSelected: currentType.toLowerCase() == 'organiser',
+                onTap: () => _switchProfileType('organiser'),
+              ),
             ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildProfileTypeChip(
+    BuildContext context, {
+    required String label,
+    required String type,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? colorScheme.primaryContainer
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: textTheme.labelLarge?.copyWith(
+                color: isSelected
+                    ? colorScheme.onPrimaryContainer
+                    : colorScheme.onSurfaceVariant,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
           ),
         ),
       ),
@@ -489,6 +741,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
+  Widget _buildOrganiserProfileSection(
+    BuildContext context,
+    OrganiserProfileState organiserState,
+  ) {
+    if (organiserState.isLoading) {
+      return const SizedBox(
+        height: 140,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (organiserState.profiles.isEmpty) {
+      return _buildOrganiserProfileEmptyState(context);
+    }
+
+    return _buildOrganiserProfilesList(context, organiserState);
+  }
+
   Widget _buildSportProfileEmptyState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -526,6 +796,200 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 const SizedBox(height: 4),
                 Text(
                   'Create a sport profile to track your level, positions, and achievements.',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrganiserProfilesList(
+    BuildContext context,
+    OrganiserProfileState organiserState,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 20),
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Organiser Profiles',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+                const Spacer(),
+              ],
+            ),
+            const SizedBox(height: 20),
+            if (organiserState.profiles.isNotEmpty)
+              SizedBox(
+                height: 180,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: organiserState.profiles.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final organiserProfile = organiserState.profiles[index];
+                    return _buildOrganiserCard(context, organiserProfile);
+                  },
+                ),
+              )
+            else
+              _buildOrganiserProfileEmptyState(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOrganiserCard(
+    BuildContext context,
+    OrganiserProfile profile,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final sportTag = getSportTag(profile.sport);
+
+    return Container(
+      width: 160,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: colorScheme.outline.withValues(alpha: 0.1),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _formatSportName(profile.sport),
+                style: textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                sportTag,
+                style: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(
+                    Icons.star,
+                    size: 16,
+                    color: colorScheme.primary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Level ${profile.organiserLevel}',
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              if (profile.isVerified) ...[
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.verified,
+                      size: 16,
+                      color: colorScheme.primary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Verified',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+          if (profile.commissionValue > 0) ...[
+            const SizedBox(height: 8),
+            Text(
+              '${profile.commissionValue}% commission',
+              style: textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOrganiserProfileEmptyState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: colorScheme.primary.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(Icons.event_note, color: colorScheme.primary),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'No organiser profile yet',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Create an organiser profile to start hosting games and events.',
                   style: textTheme.bodySmall?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -761,6 +1225,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    // Show error if any
+    if (sportsState.errorMessage != null) {
+      return Card(
+        margin: const EdgeInsets.only(bottom: 20),
+        elevation: 0,
+        color: colorScheme.errorContainer,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Error loading sports profiles: ${sportsState.errorMessage}',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onErrorContainer,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
       elevation: 0,
@@ -781,11 +1272,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   ),
                 ),
                 const Spacer(),
-                TextButton.icon(
-                  onPressed: () => context.push('/profile/sports-preferences'),
-                  icon: const Icon(Icons.tune_outlined, size: 18),
-                  label: const Text('Manage'),
-                ),
+                          TextButton.icon(
+                            onPressed: () {
+                              final currentProfileState = ref.read(profileControllerProvider);
+                              final profileType = currentProfileState.profile?.profileType ?? 'player';
+                              context.push(
+                                '/profile/sports-preferences',
+                                extra: {'profileType': profileType},
+                              );
+                            },
+                            icon: const Icon(Icons.tune_outlined, size: 18),
+                            label: const Text('Manage'),
+                          ),
               ],
             ),
             const SizedBox(height: 20),
@@ -856,6 +1354,16 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             style: textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w700,
               color: colorScheme.onSurface,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            getSportTag(sport.sportId),
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -1046,6 +1554,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
+  /// Format sport name from sport key
+  String _formatSportName(String sportKey) {
+    // Convert sport key to display name (e.g., 'football' -> 'Football')
+    if (sportKey.isEmpty) return sportKey;
+    final words = sportKey.split('_');
+    return words.map((word) {
+      if (word.isEmpty) return '';
+      return word[0].toUpperCase() + word.substring(1);
+    }).join(' ');
+  }
+
   /// Format location string combining city and country
   String _formatLocation(String? city, String? country) {
     final cityStr = city?.trim();
@@ -1147,6 +1666,57 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<bool> _checkProfileTakedown(String profileId) async {
+    try {
+      final moderationService = ref.read(moderationServiceProvider);
+      return await moderationService.isContentTakedown(
+        ModTarget.profile,
+        profileId,
+      );
+    } catch (e) {
+      // If check fails, assume not takedown to avoid blocking content
+      return false;
+    }
+  }
+
+  Widget _buildTakedownPlaceholder(
+    BuildContext context,
+    ColorScheme colorScheme,
+  ) {
+    final textTheme = Theme.of(context).textTheme;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.block_rounded,
+              size: 64,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Content Removed',
+              style: textTheme.titleLarge?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'This content has been removed due to a violation of our community guidelines.',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }

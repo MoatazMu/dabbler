@@ -10,7 +10,9 @@ import 'package:dabbler/features/social/presentation/widgets/post/share_post_bot
 import 'package:dabbler/features/social/presentation/widgets/comments/comments_thread.dart';
 import 'package:dabbler/features/social/presentation/widgets/comments/comment_input.dart';
 import '../../../services/social_service.dart';
+import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:intl/intl.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
   final String postId;
@@ -58,11 +60,25 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: postAsync.when(
-          data: (post) => Column(
-            children: [
-              Expanded(child: _buildPostContent(context, theme, post)),
-              _buildCommentInput(context, theme),
-            ],
+          data: (post) => FutureBuilder<bool>(
+            future: _checkPostTakedown(post.id),
+            builder: (context, takedownSnapshot) {
+              if (takedownSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: LoadingWidget());
+              }
+
+              final isTakedown = takedownSnapshot.data ?? false;
+              if (isTakedown) {
+                return _buildTakedownPlaceholder(context, theme);
+              }
+
+              return Column(
+                children: [
+                  Expanded(child: _buildPostContent(context, theme, post)),
+                  _buildCommentInput(context, theme),
+                ],
+              );
+            },
           ),
           loading: () => const Center(child: LoadingWidget()),
           error: (error, stack) => Center(
@@ -707,7 +723,32 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   }
 
   void _submitComment(String content) async {
-    if (content.trim().isNotEmpty) {
+    if (content.trim().isEmpty) return;
+
+    try {
+      // Check cooldown before allowing comment creation
+      final moderationService = ref.read(moderationServiceProvider);
+      final cooldownResult = await moderationService.checkAndBumpCooldown(
+        'comment',
+        windowSeconds: 300, // 5 minute window
+        limitCount: 20, // 20 comments per 5 minutes
+      );
+
+      if (!cooldownResult.allowed) {
+        if (mounted) {
+          final resetTime = DateFormat('HH:mm').format(cooldownResult.resetAt);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'You\'ve reached the comment limit. Try again at $resetTime. '
+                'Remaining: ${cooldownResult.remaining} comments.',
+              ),
+            ),
+          );
+        }
+        return;
+      }
+
       final success = await ref
           .read(socialFeedControllerProvider.notifier)
           .addComment(
@@ -734,6 +775,12 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
             const SnackBar(content: Text('Failed to add comment')),
           );
         }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add comment: ${e.toString()}')),
+        );
       }
     }
   }
@@ -813,7 +860,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     // Show report dialog
     showDialog(
       context: context,
-      builder: (context) => const ReportDialog(type: ReportType.comment),
+      builder: (context) => ReportDialog(
+        type: ReportType.comment,
+        commentId: commentId,
+      ),
     );
   }
 
@@ -902,7 +952,10 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   void _reportPost() {
     showDialog(
       context: context,
-      builder: (context) => const ReportDialog(type: ReportType.post),
+      builder: (context) => ReportDialog(
+        type: ReportType.post,
+        postId: widget.postId,
+      ),
     );
   }
 
@@ -931,6 +984,53 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       context,
       '/social/hashtag',
       arguments: {'hashtag': hashtag},
+    );
+  }
+
+  Future<bool> _checkPostTakedown(String postId) async {
+    try {
+      final moderationService = ref.read(moderationServiceProvider);
+      return await moderationService.isContentTakedown(
+        ModTarget.post,
+        postId,
+      );
+    } catch (e) {
+      // If check fails, assume not takedown to avoid blocking content
+      return false;
+    }
+  }
+
+  Widget _buildTakedownPlaceholder(BuildContext context, ThemeData theme) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.block_rounded,
+              size: 64,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Content Removed',
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'This content has been removed due to a violation of our community guidelines.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -1012,18 +1112,26 @@ class LikesListSheet extends ConsumerWidget {
 }
 
 /// Report dialog
-class ReportDialog extends StatefulWidget {
+class ReportDialog extends ConsumerStatefulWidget {
   final ReportType type;
+  final String? postId;
+  final String? commentId;
 
-  const ReportDialog({super.key, required this.type});
+  const ReportDialog({
+    super.key,
+    required this.type,
+    this.postId,
+    this.commentId,
+  });
 
   @override
-  State<ReportDialog> createState() => _ReportDialogState();
+  ConsumerState<ReportDialog> createState() => _ReportDialogState();
 }
 
-class _ReportDialogState extends State<ReportDialog> {
+class _ReportDialogState extends ConsumerState<ReportDialog> {
   String? _selectedReason;
   final TextEditingController _detailsController = TextEditingController();
+  bool _isSubmitting = false;
 
   final List<String> _reportReasons = [
     'Spam',
@@ -1034,6 +1142,46 @@ class _ReportDialogState extends State<ReportDialog> {
     'Violence',
     'Other',
   ];
+
+  /// Map UI reason string to ReportReason enum
+  ReportReason _mapReasonToEnum(String reason) {
+    switch (reason.toLowerCase()) {
+      case 'spam':
+        return ReportReason.spam;
+      case 'harassment':
+        return ReportReason.harassment;
+      case 'inappropriate content':
+      case 'nudity':
+        return ReportReason.nudity;
+      case 'false information':
+      case 'scam':
+        return ReportReason.scam;
+      case 'hate speech':
+      case 'hate':
+        return ReportReason.hate;
+      case 'violence':
+      case 'danger':
+        return ReportReason.danger;
+      case 'abuse':
+        return ReportReason.abuse;
+      case 'illegal':
+        return ReportReason.illegal;
+      case 'impersonation':
+        return ReportReason.impersonation;
+      default:
+        return ReportReason.other;
+    }
+  }
+
+  /// Map ReportType to ModTarget
+  ModTarget _getModTarget() {
+    switch (widget.type) {
+      case ReportType.post:
+        return ModTarget.post;
+      case ReportType.comment:
+        return ModTarget.comment;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1081,19 +1229,79 @@ class _ReportDialogState extends State<ReportDialog> {
           child: const Text('Cancel'),
         ),
         TextButton(
-          onPressed: _selectedReason != null ? _submitReport : null,
-          child: const Text('Report'),
+          onPressed:
+              (_selectedReason != null && !_isSubmitting) ? _submitReport : null,
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Report'),
         ),
       ],
     );
   }
 
-  void _submitReport() {
-    // Implement report submission
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Report submitted successfully')),
-    );
+  Future<void> _submitReport() async {
+    final reason = _selectedReason;
+    if (reason == null) return;
+
+    // Determine target ID based on type
+    final targetId = widget.type == ReportType.post
+        ? widget.postId
+        : widget.commentId;
+
+    if (targetId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to submit report: missing target ID'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final moderationService = ref.read(moderationServiceProvider);
+      final details = _detailsController.text.trim().isEmpty
+          ? null
+          : _detailsController.text.trim();
+
+      await moderationService.submitReport(
+        target: _getModTarget(),
+        targetId: targetId,
+        reason: _mapReasonToEnum(reason),
+        details: details,
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Report submitted successfully'),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to submit report: ${e.toString()}'),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
+    }
   }
 }
 

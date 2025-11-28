@@ -103,7 +103,7 @@ class ProfileController extends StateNotifier<ProfileState> {
   }
 
   /// Load user profile from repository
-  Future<void> loadProfile(String userId) async {
+  Future<void> loadProfile(String userId, {String? profileType}) async {
     state = state.copyWith(
       isLoading: state.profile == null,
       isRefreshing: state.profile != null,
@@ -111,7 +111,7 @@ class ProfileController extends StateNotifier<ProfileState> {
     );
 
     try {
-      final profile = await _getProfileUseCase(userId);
+      final profile = await _getProfileUseCase(userId, profileType: profileType);
       if (profile != null) {
         await _updateProfileCompletion(profile);
         state = state.copyWith(

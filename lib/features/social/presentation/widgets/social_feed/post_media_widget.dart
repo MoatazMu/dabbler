@@ -650,10 +650,49 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
   }
 
   Widget _buildFullScreenMedia(dynamic media) {
-    switch (media.type?.toLowerCase()) {
+    // Handle String URLs directly
+    if (media is String) {
+      return Image.network(
+        media,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.broken_image, color: Colors.white, size: 64),
+                SizedBox(height: 16),
+                Text(
+                  'Failed to load image',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ],
+            ),
+          );
+        },
+      );
+    }
+
+    // Handle Map objects
+    final mediaType = media is Map
+        ? media['type']?.toString().toLowerCase()
+        : media.type?.toLowerCase();
+    final mediaUrl = media is Map ? media['url']?.toString() : media.url;
+    final thumbnailUrl = media is Map
+        ? media['thumbnailUrl']?.toString()
+        : media.thumbnailUrl;
+
+    switch (mediaType) {
       case 'image':
         return Image.network(
-          media.url,
+          mediaUrl ?? '',
           fit: BoxFit.contain,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
@@ -685,8 +724,8 @@ class _FullScreenMediaViewerState extends State<FullScreenMediaViewer> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              if (media.thumbnailUrl != null)
-                Image.network(media.thumbnailUrl!, fit: BoxFit.contain)
+              if (thumbnailUrl != null)
+                Image.network(thumbnailUrl, fit: BoxFit.contain)
               else
                 const Center(
                   child: Icon(

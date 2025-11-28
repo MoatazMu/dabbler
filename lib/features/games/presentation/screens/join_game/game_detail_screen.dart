@@ -7,6 +7,7 @@ import 'package:dabbler/core/design_system/design_system.dart';
 import '../../controllers/game_detail_controller.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
+import 'package:dabbler/services/moderation_service.dart';
 
 class GameDetailScreen extends ConsumerStatefulWidget {
   final String gameId;
@@ -102,59 +103,81 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-              sliver: SliverToBoxAdapter(
-                child: _buildHeaderSection(game, colorScheme, textTheme),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-              sliver: SliverToBoxAdapter(
-                child: _buildHeroSection(
-                  game,
-                  detailState,
-                  colorScheme,
-                  textTheme,
+        child: FutureBuilder<bool>(
+          future: _checkGameTakedown(game.id),
+          builder: (context, takedownSnapshot) {
+            if (takedownSnapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            final isTakedown = takedownSnapshot.data ?? false;
+            if (isTakedown) {
+              return _buildTakedownPlaceholder(context, colorScheme, textTheme);
+            }
+
+            return CustomScrollView(
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: _buildHeaderSection(game, colorScheme, textTheme),
+                  ),
                 ),
-              ),
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-              sliver: SliverToBoxAdapter(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildQuickInfoCards(
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: _buildHeroSection(
                       game,
                       detailState,
-                      textTheme,
                       colorScheme,
+                      textTheme,
                     ),
-                    const SizedBox(height: 20),
-                    _buildDescriptionSection(game, textTheme, colorScheme),
-                    const SizedBox(height: 20),
-                    _buildPlayersSection(game, textTheme, colorScheme),
-                    const SizedBox(height: 20),
-                    _buildVenueSection(detailState, textTheme, colorScheme),
-                    const SizedBox(height: 20),
-                    _buildOrganizerSection(textTheme, colorScheme),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          ],
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+                  sliver: SliverToBoxAdapter(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildQuickInfoCards(
+                          game,
+                          detailState,
+                          textTheme,
+                          colorScheme,
+                        ),
+                        const SizedBox(height: 20),
+                        _buildDescriptionSection(game, textTheme, colorScheme),
+                        const SizedBox(height: 20),
+                        _buildPlayersSection(game, textTheme, colorScheme),
+                        const SizedBox(height: 20),
+                        _buildVenueSection(detailState, textTheme, colorScheme),
+                        const SizedBox(height: 20),
+                        _buildOrganizerSection(textTheme, colorScheme),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
-      bottomNavigationBar: _buildBottomBar(
-        game,
-        detailState,
-        colorScheme,
-        textTheme,
-        currentUserId,
+      bottomNavigationBar: FutureBuilder<bool>(
+        future: _checkGameTakedown(game.id),
+        builder: (context, takedownSnapshot) {
+          if (takedownSnapshot.data == true) {
+            return const SizedBox.shrink();
+          }
+          return _buildBottomBar(
+            game,
+            detailState,
+            colorScheme,
+            textTheme,
+            currentUserId,
+          );
+        },
       ),
     );
   }
@@ -1365,5 +1388,56 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text(updatedState.error!)));
     }
+  }
+
+  Future<bool> _checkGameTakedown(String gameId) async {
+    try {
+      final moderationService = ModerationService();
+      return await moderationService.isContentTakedown(
+        ModTarget.game,
+        gameId,
+      );
+    } catch (e) {
+      // If check fails, assume not takedown to avoid blocking content
+      return false;
+    }
+  }
+
+  Widget _buildTakedownPlaceholder(
+    BuildContext context,
+    ColorScheme colorScheme,
+    TextTheme textTheme,
+  ) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.block_rounded,
+              size: 64,
+              color: colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Content Removed',
+              style: textTheme.titleLarge?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'This content has been removed due to a violation of our community guidelines.',
+              style: textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

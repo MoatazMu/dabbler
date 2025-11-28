@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dabbler/services/moderation_service.dart';
+import 'dart:async';
 
-class CommentInput extends StatefulWidget {
+class CommentInput extends ConsumerStatefulWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final String hintText;
@@ -19,11 +22,13 @@ class CommentInput extends StatefulWidget {
   });
 
   @override
-  State<CommentInput> createState() => _CommentInputState();
+  ConsumerState<CommentInput> createState() => _CommentInputState();
 }
 
-class _CommentInputState extends State<CommentInput> {
+class _CommentInputState extends ConsumerState<CommentInput> {
   bool _hasText = false;
+  int _blocklistHits = 0;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -34,6 +39,7 @@ class _CommentInputState extends State<CommentInput> {
   @override
   void dispose() {
     widget.controller.removeListener(_onTextChanged);
+    _debounceTimer?.cancel();
     super.dispose();
   }
 
@@ -41,6 +47,28 @@ class _CommentInputState extends State<CommentInput> {
     final hasText = widget.controller.text.trim().isNotEmpty;
     if (hasText != _hasText) {
       setState(() => _hasText = hasText);
+    }
+
+    // Debounce blocklist check
+    _debounceTimer?.cancel();
+    if (hasText) {
+      _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+        _checkBlocklist(widget.controller.text);
+      });
+    } else {
+      setState(() => _blocklistHits = 0);
+    }
+  }
+
+  Future<void> _checkBlocklist(String text) async {
+    try {
+      final moderationService = ref.read(moderationServiceProvider);
+      final hits = await moderationService.contentHitsBlocklist(text);
+      if (mounted) {
+        setState(() => _blocklistHits = hits);
+      }
+    } catch (e) {
+      // Silently fail - don't block user input
     }
   }
 
@@ -63,10 +91,37 @@ class _CommentInputState extends State<CommentInput> {
         ),
       ),
       child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_blocklistHits > 0)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: theme.colorScheme.errorContainer,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_rounded,
+                      size: 16,
+                      color: theme.colorScheme.onErrorContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Your comment contains inappropriate content ($_blocklistHits violation${_blocklistHits > 1 ? 's' : ''}). Please revise.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
               // Avatar
               CircleAvatar(
                 radius: 18,
@@ -144,8 +199,10 @@ class _CommentInputState extends State<CommentInput> {
                   ),
                 ),
               ],
-            ],
-          ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

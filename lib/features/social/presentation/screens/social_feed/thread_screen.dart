@@ -6,8 +6,10 @@ import 'package:dabbler/features/social/providers/social_providers.dart';
 import 'package:dabbler/features/social/presentation/widgets/post/post_content_widget.dart';
 import 'package:dabbler/features/social/presentation/widgets/post/post_author_widget.dart';
 import 'package:dabbler/features/social/presentation/widgets/comments/comments_thread.dart';
-import 'package:dabbler/features/social/presentation/widgets/comments/comment_input.dart';
+import 'package:dabbler/features/home/presentation/widgets/inline_post_composer.dart';
+import 'package:dabbler/features/social/presentation/widgets/social_feed/post_media_widget.dart';
 import '../../../services/social_service.dart';
+import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 
 class ThreadScreen extends ConsumerStatefulWidget {
@@ -21,10 +23,6 @@ class ThreadScreen extends ConsumerStatefulWidget {
 
 class _ThreadScreenState extends ConsumerState<ThreadScreen> {
   final ScrollController _scrollController = ScrollController();
-  final TextEditingController _commentController = TextEditingController();
-  final FocusNode _commentFocus = FocusNode();
-
-  String? _replyingToCommentId;
 
   @override
   void initState() {
@@ -41,8 +39,6 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _commentController.dispose();
-    _commentFocus.dispose();
     super.dispose();
   }
 
@@ -56,11 +52,25 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
       backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: postAsync.when(
-          data: (post) => Column(
-            children: [
-              Expanded(child: _buildThreadContent(context, theme, post)),
-              _buildCommentInput(context, theme),
-            ],
+          data: (post) => FutureBuilder<bool>(
+            future: _checkPostTakedown(post.id),
+            builder: (context, takedownSnapshot) {
+              if (takedownSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: LoadingWidget());
+              }
+
+              final isTakedown = takedownSnapshot.data ?? false;
+              if (isTakedown) {
+                return _buildTakedownPlaceholder(context, theme);
+              }
+
+              return Column(
+                children: [
+                  Expanded(child: _buildThreadContent(context, theme, post)),
+                  _buildCommentInput(context, theme),
+                ],
+              );
+            },
           ),
           loading: () => const Center(child: LoadingWidget()),
           error: (error, stack) => Center(
@@ -144,7 +154,48 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                     minimumSize: const Size(48, 48),
                   ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      PostAuthorWidget(
+                        author: _AuthorData(
+                          name: post.authorName,
+                          avatar: post.authorAvatar,
+                          isVerified: false,
+                        ),
+                        createdAt: post.createdAt,
+                        city: post.cityName,
+                        isEdited: false,
+                        onProfileTap: () => _navigateToProfile(post.authorId),
+                      ),
+                      const SizedBox(height: 4),
+                      // Post type badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _getPostTypeColor(colorScheme, post.kind),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _getPostTypeLabel(post.kind),
+                          style: textTheme.bodySmall?.copyWith(
+                            fontSize: 12,
+                            color: _getPostTypeTextColor(
+                              colorScheme,
+                              post.kind,
+                            ),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
                 if (isOwnPost)
                   PopupMenuButton(
                     icon: Icon(
@@ -252,81 +303,6 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Author info
-                    PostAuthorWidget(
-                      author: _AuthorData(
-                        name: post.authorName,
-                        avatar: post.authorAvatar,
-                        isVerified: false,
-                      ),
-                      createdAt: post.createdAt,
-                      city: post.cityName,
-                      isEdited: false,
-                      onProfileTap: () => _navigateToProfile(post.authorId),
-                    ),
-
-                    const SizedBox(height: 16),
-                    // Vibes display (primary + assigned)
-                    Consumer(
-                      builder: (context, ref, _) {
-                        final vibesAsync = ref.watch(
-                          postVibesProvider(widget.postId),
-                        );
-                        return vibesAsync.when(
-                          data: (rows) {
-                            if (rows.isEmpty && post.primaryVibeId == null) {
-                              return const SizedBox.shrink();
-                            }
-                            // Build chips; prefer assigned vibes data for label/emoji
-                            final chips = <Widget>[];
-                            for (final r in rows) {
-                              final vibe = r['vibes'] as Map<String, dynamic>?;
-                              if (vibe == null) continue;
-                              final id = vibe['id']?.toString();
-                              final label =
-                                  vibe['label']?.toString() ??
-                                  vibe['key']?.toString() ??
-                                  'Vibe';
-                              final emoji = vibe['emoji']?.toString() ?? '';
-                              final isPrimary =
-                                  (post.primaryVibeId != null &&
-                                  id == post.primaryVibeId);
-                              chips.add(
-                                Chip(
-                                  label: Text(
-                                    '${emoji.isNotEmpty ? '$emoji ' : ''}$label',
-                                  ),
-                                  visualDensity: VisualDensity.compact,
-                                  labelStyle: theme.textTheme.bodySmall,
-                                  backgroundColor: isPrimary
-                                      ? colorScheme.primaryContainer
-                                      : colorScheme.surfaceContainerHighest,
-                                  side: BorderSide(
-                                    color: isPrimary
-                                        ? colorScheme.primary
-                                        : colorScheme.outlineVariant
-                                              .withOpacity(0.4),
-                                  ),
-                                ),
-                              );
-                            }
-                            return chips.isEmpty
-                                ? const SizedBox.shrink()
-                                : Padding(
-                                    padding: const EdgeInsets.only(bottom: 8),
-                                    child: Wrap(
-                                      spacing: 8,
-                                      runSpacing: 8,
-                                      children: chips,
-                                    ),
-                                  );
-                          },
-                          loading: () => const SizedBox.shrink(),
-                          error: (_, __) => const SizedBox.shrink(),
-                        );
-                      },
-                    ),
-
                     // Post content
                     PostContentWidget(
                       content: post.content,
@@ -339,90 +315,160 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                       onMentionTap: (userId) => _navigateToProfile(userId),
                       onHashtagTap: (hashtag) => _searchHashtag(hashtag),
                     ),
-
-                    const SizedBox(height: 20),
-
-                    // Engagement stats - minimal one line
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildStatItem(
-                          theme,
-                          icon: Icons.favorite_rounded,
-                          count: post.likesCount,
-                          onTap: () => _handleLike(post.id),
-                        ),
-                        Container(
-                          width: 1,
-                          height: 20,
-                          color: colorScheme.outlineVariant.withOpacity(0.3),
-                        ),
-                        _buildStatItem(
-                          theme,
-                          icon: Icons.comment_rounded,
-                          count: post.commentsCount,
-                          onTap: () => _focusCommentInput(),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Action buttons - Like and Comment only
-                    Row(
-                      children: [
-                        Expanded(
-                          child: FilledButton.tonalIcon(
-                            onPressed: () => _handleLike(post.id),
-                            icon: Icon(
-                              post.isLiked
-                                  ? Icons.favorite_rounded
-                                  : Icons.favorite_border_rounded,
-                              size: 20,
-                            ),
-                            label: Text(post.isLiked ? 'Liked' : 'Like'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor: post.isLiked
-                                  ? colorScheme.primaryContainer
-                                  : colorScheme.surfaceContainerHighest,
-                              foregroundColor: post.isLiked
-                                  ? colorScheme.onPrimaryContainer
-                                  : colorScheme.onSurface,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: FilledButton.tonalIcon(
-                            onPressed: () => _focusCommentInput(),
-                            icon: const Icon(Icons.comment_rounded, size: 20),
-                            label: const Text('Comment'),
-                            style: FilledButton.styleFrom(
-                              backgroundColor:
-                                  colorScheme.surfaceContainerHighest,
-                              foregroundColor: colorScheme.onSurface,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 12,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
+            ),
+          ),
+        ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: 12)),
+
+        // Vibes and engagement in one row
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                // Primary vibe pill
+                Consumer(
+                  builder: (context, ref, _) {
+                    final vibesAsync = ref.watch(
+                      postVibesProvider(widget.postId),
+                    );
+                    return vibesAsync.when(
+                      data: (rows) {
+                        if (rows.isEmpty) return const SizedBox.shrink();
+                        // Find primary vibe
+                        final primaryVibe = rows.firstWhere((r) {
+                          final vibe = r['vibes'] as Map<String, dynamic>?;
+                          if (vibe == null) return false;
+                          final id = vibe['id']?.toString();
+                          return post.primaryVibeId != null &&
+                              id == post.primaryVibeId;
+                        }, orElse: () => rows.first);
+                        final vibe =
+                            primaryVibe['vibes'] as Map<String, dynamic>?;
+                        if (vibe == null) return const SizedBox.shrink();
+                        final label =
+                            vibe['label']?.toString() ??
+                            vibe['key']?.toString() ??
+                            'Vibe';
+                        final emoji = vibe['emoji']?.toString() ?? '';
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: colorScheme.secondaryContainer.withOpacity(
+                              0.5,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (emoji.isNotEmpty)
+                                Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                              if (emoji.isNotEmpty) const SizedBox(width: 4),
+                              Text(
+                                label,
+                                style: textTheme.bodySmall?.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    );
+                  },
+                ),
+                const Spacer(),
+                // Like count
+                _buildActionButton(
+                  context: context,
+                  theme: theme,
+                  emoji: post.isLiked ? '❤️' : '🩶',
+                  label: post.likesCount.toString(),
+                  onTap: () => _handleLike(post.id),
+                ),
+                const SizedBox(width: 16),
+                // Comment count
+                _buildActionButton(
+                  context: context,
+                  theme: theme,
+                  emoji: '💬',
+                  label: post.commentsCount.toString(),
+                  onTap: () {},
+                ),
+              ],
+            ),
+          ),
+        ),
+
+        const SliverToBoxAdapter(child: SizedBox(height: 16)),
+
+        // Action buttons - Like and Comment only
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    onPressed: () => _handleLike(post.id),
+                    icon: Icon(
+                      post.isLiked
+                          ? Icons.favorite_rounded
+                          : Icons.favorite_border_rounded,
+                      size: 20,
+                    ),
+                    label: Text(post.isLiked ? 'Liked' : 'Like'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: post.isLiked
+                          ? colorScheme.primaryContainer
+                          : colorScheme.surfaceContainerHighest,
+                      foregroundColor: post.isLiked
+                          ? colorScheme.onPrimaryContainer
+                          : colorScheme.onSurface,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    onPressed: null, // Comments section is always visible below
+                    icon: const Icon(Icons.comment_rounded, size: 20),
+                    label: const Text('Comment'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colorScheme.surfaceContainerHighest,
+                      foregroundColor: colorScheme.onSurface,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -530,7 +576,8 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: CommentsThread(
                           comment: comments[index],
-                          onReply: (commentId) => _replyToComment(commentId),
+                          onReply:
+                              null, // Reply functionality is handled by the composer
                           onLike: (commentId) => _likeComment(commentId),
                           onReport: (commentId) => _reportComment(commentId),
                           onDelete: (commentId) => _deleteComment(commentId),
@@ -581,38 +628,81 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
     );
   }
 
-  Widget _buildStatItem(
-    ThemeData theme, {
-    required IconData icon,
-    required int count,
-    required VoidCallback onTap,
+  Widget _buildActionButton({
+    required BuildContext context,
+    required ThemeData theme,
+    required String emoji,
+    required String label,
+    VoidCallback? onTap,
   }) {
-    return InkWell(
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 18, color: theme.colorScheme.onSurfaceVariant),
-            const SizedBox(width: 6),
-            Text(
-              count.toString(),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface,
-              ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            emoji,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
+  String _getPostTypeLabel(String kind) {
+    final kindLower = kind.toLowerCase();
+    switch (kindLower) {
+      case 'moment':
+        return 'Moments';
+      case 'dab':
+        return 'Dab';
+      case 'kickin':
+        return 'Kick-in';
+      default:
+        return 'Moments';
+    }
+  }
+
+  Color _getPostTypeColor(ColorScheme colorScheme, String kind) {
+    final kindLower = kind.toLowerCase();
+    switch (kindLower) {
+      case 'moment':
+        return colorScheme.primaryContainer.withOpacity(0.3);
+      case 'dab':
+        return colorScheme.secondaryContainer.withOpacity(0.3);
+      case 'kickin':
+        return colorScheme.tertiaryContainer.withOpacity(0.3);
+      default:
+        return colorScheme.primaryContainer.withOpacity(0.3);
+    }
+  }
+
+  Color _getPostTypeTextColor(ColorScheme colorScheme, String kind) {
+    final kindLower = kind.toLowerCase();
+    switch (kindLower) {
+      case 'moment':
+        return colorScheme.primary;
+      case 'dab':
+        return colorScheme.secondary;
+      case 'kickin':
+        return colorScheme.tertiary;
+      default:
+        return colorScheme.primary;
+    }
+  }
+
   Widget _buildCommentInput(BuildContext context, ThemeData theme) {
     final colorScheme = theme.colorScheme;
-    final textTheme = theme.textTheme;
 
     // Prevent DOM errors by checking if widget is still mounted
     if (!mounted) return const SizedBox.shrink();
@@ -640,59 +730,10 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Reply indicator
-            if (_replyingToCommentId != null)
-              Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.reply_rounded,
-                      size: 18,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Replying to comment',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const Spacer(),
-                    InkWell(
-                      onTap: () => setState(() => _replyingToCommentId = null),
-                      borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.all(4),
-                        child: Icon(
-                          Icons.close_rounded,
-                          size: 18,
-                          color: colorScheme.onPrimaryContainer,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-            // Comment input
-            CommentInput(
-              controller: _commentController,
-              focusNode: _commentFocus,
-              hintText: _replyingToCommentId != null
-                  ? 'Write a reply...'
-                  : 'Add a reply...',
-              onSubmit: (content) => _submitComment(content),
-              onChanged: (text) {
-                // Handle mention suggestions
-                _handleCommentTextChanged(text);
-              },
+            // Comment composer
+            InlinePostComposer(
+              mode: ComposerMode.comment,
+              parentPostId: widget.postId,
             ),
           ],
         ),
@@ -700,7 +741,45 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
     );
   }
 
+  Future<bool> _checkUserStatus() async {
+    try {
+      final moderationService = ref.read(moderationServiceProvider);
+      final currentUserId = ref.read(currentUserIdProvider);
+
+      if (currentUserId.isEmpty) {
+        return true; // Allow if not logged in (will fail auth anyway)
+      }
+
+      final isFrozen = await moderationService.isUserFrozen(currentUserId);
+      final isShadowbanned = await moderationService.isUserShadowbanned(
+        currentUserId,
+      );
+
+      if (isFrozen || isShadowbanned) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isFrozen
+                    ? 'Your account has been frozen. Please contact support.'
+                    : 'Your account has been restricted. Some actions are disabled.',
+              ),
+              backgroundColor: Theme.of(context).colorScheme.errorContainer,
+            ),
+          );
+        }
+        return false;
+      }
+      return true;
+    } catch (e) {
+      // If check fails, allow action (fail-safe)
+      return true;
+    }
+  }
+
   void _handleLike(String postId) async {
+    final canProceed = await _checkUserStatus();
+    if (!canProceed) return;
     try {
       final socialService = SocialService();
       await socialService.toggleLike(postId);
@@ -716,76 +795,10 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
     }
   }
 
-  void _focusCommentInput() {
-    _commentFocus.requestFocus();
-    _scrollToBottom();
-  }
-
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
-
-  void _replyToComment(String commentId) {
-    setState(() => _replyingToCommentId = commentId);
-    _focusCommentInput();
-  }
-
-  void _submitComment(String content) async {
-    if (content.trim().isNotEmpty) {
-      final success = await ref
-          .read(socialFeedControllerProvider.notifier)
-          .addComment(
-            postId: widget.postId,
-            content: content,
-            parentCommentId: _replyingToCommentId,
-          );
-
-      if (success) {
-        _commentController.clear();
-        setState(() => _replyingToCommentId = null);
-
-        // Refresh comments to show the new comment
-        ref.invalidate(postCommentsProvider(widget.postId));
-        ref.invalidate(postDetailsProvider(widget.postId));
-
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Reply added')));
-        }
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Failed to add reply')));
-        }
-      }
-    }
-  }
-
-  void _handleCommentTextChanged(String text) {
-    // Handle @mentions in comments
-    final selection = _commentController.selection;
-    if (selection.baseOffset > 0) {
-      final beforeCursor = text.substring(0, selection.baseOffset);
-      final words = beforeCursor.split(' ');
-      final lastWord = words.isNotEmpty ? words.last : '';
-
-      if (lastWord.startsWith('@') && lastWord.length > 1) {
-        // Trigger mention suggestions for query: ${lastWord.substring(1)}
-      }
-    }
-  }
-
   void _likeComment(String commentId) async {
+    final canProceed = await _checkUserStatus();
+    if (!canProceed) return;
+
     try {
       final socialService = SocialService();
       await socialService.toggleCommentLike(commentId);
@@ -895,10 +908,13 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
   }
 
   void _viewMedia(List<dynamic> media, int initialIndex) {
-    Navigator.pushNamed(
+    Navigator.push(
       context,
-      '/media-viewer',
-      arguments: {'media': media, 'initialIndex': initialIndex},
+      MaterialPageRoute(
+        builder: (context) =>
+            FullScreenMediaViewer(media: media, initialIndex: initialIndex),
+        fullscreenDialog: true,
+      ),
     );
   }
 
@@ -940,10 +956,54 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
           ReportDialog(type: ReportType.post, postId: widget.postId),
     );
   }
+
+  Future<bool> _checkPostTakedown(String postId) async {
+    try {
+      final moderationService = ref.read(moderationServiceProvider);
+      return await moderationService.isContentTakedown(ModTarget.post, postId);
+    } catch (e) {
+      // If check fails, assume not takedown to avoid blocking content
+      return false;
+    }
+  }
+
+  Widget _buildTakedownPlaceholder(BuildContext context, ThemeData theme) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.block_rounded,
+              size: 64,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Content Removed',
+              style: theme.textTheme.titleLarge?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'This content has been removed due to a violation of our community guidelines.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 /// Report dialog
-class ReportDialog extends StatefulWidget {
+class ReportDialog extends ConsumerStatefulWidget {
   final ReportType type;
   final String? postId;
   final String? commentId;
@@ -956,12 +1016,13 @@ class ReportDialog extends StatefulWidget {
   });
 
   @override
-  State<ReportDialog> createState() => _ReportDialogState();
+  ConsumerState<ReportDialog> createState() => _ReportDialogState();
 }
 
-class _ReportDialogState extends State<ReportDialog> {
+class _ReportDialogState extends ConsumerState<ReportDialog> {
   String? _selectedReason;
   final TextEditingController _detailsController = TextEditingController();
+  bool _isSubmitting = false;
 
   final List<String> _reportReasons = [
     'Spam',
@@ -972,6 +1033,46 @@ class _ReportDialogState extends State<ReportDialog> {
     'Violence',
     'Other',
   ];
+
+  /// Map UI reason string to ReportReason enum
+  ReportReason _mapReasonToEnum(String reason) {
+    switch (reason.toLowerCase()) {
+      case 'spam':
+        return ReportReason.spam;
+      case 'harassment':
+        return ReportReason.harassment;
+      case 'inappropriate content':
+      case 'nudity':
+        return ReportReason.nudity;
+      case 'false information':
+      case 'scam':
+        return ReportReason.scam;
+      case 'hate speech':
+      case 'hate':
+        return ReportReason.hate;
+      case 'violence':
+      case 'danger':
+        return ReportReason.danger;
+      case 'abuse':
+        return ReportReason.abuse;
+      case 'illegal':
+        return ReportReason.illegal;
+      case 'impersonation':
+        return ReportReason.impersonation;
+      default:
+        return ReportReason.other;
+    }
+  }
+
+  /// Map ReportType to ModTarget
+  ModTarget _getModTarget() {
+    switch (widget.type) {
+      case ReportType.post:
+        return ModTarget.post;
+      case ReportType.comment:
+        return ModTarget.comment;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1019,40 +1120,75 @@ class _ReportDialogState extends State<ReportDialog> {
           child: const Text('Cancel'),
         ),
         TextButton(
-          onPressed: _selectedReason != null ? _submitReport : null,
-          child: const Text('Report'),
+          onPressed: (_selectedReason != null && !_isSubmitting)
+              ? _submitReport
+              : null,
+          child: _isSubmitting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Report'),
         ),
       ],
     );
   }
 
-  void _submitReport() {
+  Future<void> _submitReport() async {
     final reason = _selectedReason;
     if (reason == null) return;
-    final details = _detailsController.text.trim().isEmpty
-        ? null
-        : _detailsController.text.trim();
-    final svc = SocialService();
-    if (widget.type == ReportType.post && widget.postId != null) {
-      svc
-          .reportPost(postId: widget.postId!, reason: reason, details: details)
-          .then((_) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Report submitted successfully')),
-            );
-          })
-          .catchError((e) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Failed to submit report: $e')),
-            );
-          });
-    } else {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Report submitted')));
+
+    // Determine target ID based on type
+    final targetId = widget.type == ReportType.post
+        ? widget.postId
+        : widget.commentId;
+
+    if (targetId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to submit report: missing target ID'),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isSubmitting = true;
+    });
+
+    try {
+      final moderationService = ref.read(moderationServiceProvider);
+      final details = _detailsController.text.trim().isEmpty
+          ? null
+          : _detailsController.text.trim();
+
+      await moderationService.submitReport(
+        target: _getModTarget(),
+        targetId: targetId,
+        reason: _mapReasonToEnum(reason),
+        details: details,
+      );
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Report submitted successfully')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to submit report: ${e.toString()}')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSubmitting = false;
+        });
+      }
     }
   }
 }

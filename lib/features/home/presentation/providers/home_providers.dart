@@ -7,6 +7,7 @@ final latestFeedPostsProvider = FutureProvider.autoDispose<List<PostModel>>((
   ref,
 ) async {
   final socialService = SocialService();
-  final posts = await socialService.getFeedPosts(limit: 3);
+  // Fetch more posts for the home screen feed (default limit is 20)
+  final posts = await socialService.getFeedPosts(limit: 20);
   return posts;
 });

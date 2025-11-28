@@ -1,5 +1,5 @@
-import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import '../../../utils/enums/social_enums.dart';
 
@@ -141,7 +141,9 @@ class SocialService {
       final user = _supabase.auth.currentUser;
       final Set<String> likedPostIds = {};
       if (user != null) {
-        final postIds = postsResponse.map((post) => post['id'].toString()).toList();
+        final postIds = postsResponse
+            .map((post) => post['id'].toString())
+            .toList();
         if (postIds.isNotEmpty) {
           final likedPosts = await _supabase
               .from('post_likes')
@@ -160,15 +162,16 @@ class SocialService {
         final profile = profilesMap[authorId];
         final postId = post['id'].toString();
 
-        // Extract media URLs from media array
+        // Extract media URL from posts.media jsonb using Supabase Storage
         List<String> mediaUrls = [];
-        final mediaArray = post['media'];
-        if (mediaArray is List) {
-          for (var mediaItem in mediaArray) {
-            if (mediaItem is Map && mediaItem['url'] != null) {
-              mediaUrls.add(mediaItem['url'].toString());
-            } else if (mediaItem is String) {
-              mediaUrls.add(mediaItem);
+        final mediaData = post['media'];
+        if (mediaData is Map<String, dynamic>) {
+          final bucket = mediaData['bucket'] as String?;
+          final path = mediaData['path'] as String?;
+          if (bucket != null && path != null) {
+            final publicUrl = _supabase.storage.from(bucket).getPublicUrl(path);
+            if (publicUrl.isNotEmpty) {
+              mediaUrls = [publicUrl];
             }
           }
         }
@@ -181,7 +184,7 @@ class SocialService {
           'content': post['body'] ?? '', // Map body -> content
           'media_urls': mediaUrls, // Extract URLs from media array
           'visibility': post['visibility'],
-           // Pass through kind and primary_vibe_id so PostModel can surface them.
+          // Pass through kind and primary_vibe_id so PostModel can surface them.
           'kind': post['kind'],
           'primary_vibe_id': post['primary_vibe_id'],
           'created_at': post['created_at'],
@@ -193,7 +196,9 @@ class SocialService {
           'shares_count': 0, // Not in database, default to 0
           'location_name': post['venue_id'], // Could be mapped differently
           'tags': [], // Not directly in schema
-          'is_liked': likedPostIds.contains(postId), // Set is_liked based on user's likes
+          'is_liked': likedPostIds.contains(
+            postId,
+          ), // Set is_liked based on user's likes
           'profiles': profile != null
               ? {
                   'id': profile['user_id'],
@@ -241,7 +246,9 @@ class SocialService {
       final user = _supabase.auth.currentUser;
       final Set<String> likedPostIds = {};
       if (user != null) {
-        final postIds = postsResponse.map((post) => post['id'].toString()).toList();
+        final postIds = postsResponse
+            .map((post) => post['id'].toString())
+            .toList();
         if (postIds.isNotEmpty) {
           final likedPosts = await _supabase
               .from('post_likes')
@@ -257,16 +264,42 @@ class SocialService {
       // Transform database posts to match PostModel expectations
       final enrichedPosts = postsResponse.map((post) {
         final postId = post['id'].toString();
-        
-        // Extract media URLs from media array
+
+        // Extract media URLs from media (handles both single object and array)
         List<String> mediaUrls = [];
-        final mediaArray = post['media'];
-        if (mediaArray is List) {
-          for (var mediaItem in mediaArray) {
-            if (mediaItem is Map && mediaItem['url'] != null) {
-              mediaUrls.add(mediaItem['url'].toString());
-            } else if (mediaItem is String) {
-              mediaUrls.add(mediaItem);
+        final mediaData = post['media'];
+        if (mediaData != null) {
+          if (mediaData is Map) {
+            // Single media object (from PostService)
+            if (mediaData['url'] != null) {
+              mediaUrls.add(mediaData['url'].toString());
+            } else if (mediaData['path'] != null &&
+                mediaData['bucket'] != null) {
+              final bucket = mediaData['bucket'].toString();
+              final path = mediaData['path'].toString();
+              // Construct full URL from storage bucket + path using Supabase Storage API
+              final url = _supabase.storage.from(bucket).getPublicUrl(path);
+              if (url.isNotEmpty) {
+                mediaUrls.add(url);
+              }
+            }
+          } else if (mediaData is List) {
+            // Array of media items (legacy format)
+            for (var mediaItem in mediaData) {
+              if (mediaItem is Map && mediaItem['url'] != null) {
+                mediaUrls.add(mediaItem['url'].toString());
+              } else if (mediaItem is Map &&
+                  mediaItem['path'] != null &&
+                  mediaItem['bucket'] != null) {
+                final bucket = mediaItem['bucket'].toString();
+                final path = mediaItem['path'].toString();
+                final url = _supabase.storage.from(bucket).getPublicUrl(path);
+                if (url.isNotEmpty) {
+                  mediaUrls.add(url);
+                }
+              } else if (mediaItem is String && mediaItem.isNotEmpty) {
+                mediaUrls.add(mediaItem);
+              }
             }
           }
         }
@@ -289,7 +322,9 @@ class SocialService {
           'shares_count': 0, // Not in database, default to 0
           'location_name': post['venue_id'], // Could be mapped differently
           'tags': [], // Not directly in schema
-          'is_liked': likedPostIds.contains(postId), // Set is_liked based on user's likes
+          'is_liked': likedPostIds.contains(
+            postId,
+          ), // Set is_liked based on user's likes
           'profiles': profileResponse != null
               ? {
                   'id': profileResponse['user_id'],
@@ -312,11 +347,14 @@ class SocialService {
   /// Get a single post by ID with joined profile data.
   Future<PostModel> getPostById(String postId) async {
     try {
+      // Parse postId to int if it's a string from URL
+      final postIdInt = int.tryParse(postId) ?? postId;
+
       // Fetch the post row
       final post = await _supabase
           .from('posts')
           .select('*')
-          .eq('id', postId)
+          .eq('id', postIdInt)
           .eq('is_deleted', false)
           .eq('is_hidden_admin', false)
           .maybeSingle();
@@ -341,21 +379,46 @@ class SocialService {
         final existingLike = await _supabase
             .from('post_likes')
             .select('post_id')
-            .eq('post_id', postId)
+            .eq('post_id', postIdInt)
             .eq('user_id', user.id)
             .maybeSingle();
         isLiked = existingLike != null;
       }
 
-      // Extract media URLs from media array
+      // Extract media URLs from media (handles both single object and array)
       List<String> mediaUrls = [];
-      final mediaArray = post['media'];
-      if (mediaArray is List) {
-        for (var mediaItem in mediaArray) {
-          if (mediaItem is Map && mediaItem['url'] != null) {
-            mediaUrls.add(mediaItem['url'].toString());
-          } else if (mediaItem is String) {
-            mediaUrls.add(mediaItem);
+      final mediaData = post['media'];
+      if (mediaData != null) {
+        if (mediaData is Map) {
+          // Single media object (from PostService)
+          if (mediaData['url'] != null) {
+            mediaUrls.add(mediaData['url'].toString());
+          } else if (mediaData['path'] != null && mediaData['bucket'] != null) {
+            final bucket = mediaData['bucket'].toString();
+            final path = mediaData['path'].toString();
+            // Construct full URL from storage bucket + path using Supabase Storage API
+            final url = _supabase.storage.from(bucket).getPublicUrl(path);
+            if (url.isNotEmpty) {
+              mediaUrls.add(url);
+            }
+          }
+        } else if (mediaData is List) {
+          // Array of media items (legacy format)
+          for (var mediaItem in mediaData) {
+            if (mediaItem is Map && mediaItem['url'] != null) {
+              mediaUrls.add(mediaItem['url'].toString());
+            } else if (mediaItem is Map &&
+                mediaItem['path'] != null &&
+                mediaItem['bucket'] != null) {
+              final bucket = mediaItem['bucket'].toString();
+              final path = mediaItem['path'].toString();
+              final url = _supabase.storage.from(bucket).getPublicUrl(path);
+              if (url.isNotEmpty) {
+                mediaUrls.add(url);
+              }
+            } else if (mediaItem is String && mediaItem.isNotEmpty) {
+              mediaUrls.add(mediaItem);
+            }
           }
         }
       }
@@ -395,16 +458,32 @@ class SocialService {
   /// Like/unlike a post
   Future<void> toggleLike(String postId) async {
     try {
+      // Parse postId to int if it's a string from URL
+      final postIdInt = int.tryParse(postId) ?? postId;
+
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
       }
 
+      // Get current user's profile_id (required for post_likes)
+      final profileRes = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (profileRes == null) {
+        throw Exception('Profile not found for current user');
+      }
+
+      final profileId = profileRes['id'] as String;
+
       // Check if already liked
       final existingLike = await _supabase
           .from('post_likes')
           .select('post_id')
-          .eq('post_id', postId)
+          .eq('post_id', postIdInt)
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -413,13 +492,15 @@ class SocialService {
         await _supabase
             .from('post_likes')
             .delete()
-            .eq('post_id', postId)
+            .eq('post_id', postIdInt)
             .eq('user_id', user.id);
       } else {
         // Like: Add the like (trigger will increment like_count automatically)
         await _supabase.from('post_likes').insert({
           'post_id': postId,
           'user_id': user.id,
+          'profile_id':
+              profileId, // Required: use profile_id per social model spec
           'created_at': DateTime.now().toIso8601String(),
         });
       }
@@ -431,16 +512,32 @@ class SocialService {
   /// Like/unlike a comment
   Future<void> toggleCommentLike(String commentId) async {
     try {
+      // Parse commentId to int if it's a string from URL
+      final commentIdInt = int.tryParse(commentId) ?? commentId;
+
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
       }
 
+      // Get current user's profile_id (required for comment_likes)
+      final profileRes = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (profileRes == null) {
+        throw Exception('Profile not found for current user');
+      }
+
+      final profileId = profileRes['id'] as String;
+
       // Check if already liked
       final existingLike = await _supabase
           .from('comment_likes')
           .select('comment_id')
-          .eq('comment_id', commentId)
+          .eq('comment_id', commentIdInt)
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -449,13 +546,15 @@ class SocialService {
         await _supabase
             .from('comment_likes')
             .delete()
-            .eq('comment_id', commentId)
+            .eq('comment_id', commentIdInt)
             .eq('user_id', user.id);
       } else {
         // Like: Add the like (trigger will increment like_count automatically)
         await _supabase.from('comment_likes').insert({
-          'comment_id': commentId,
+          'comment_id': commentIdInt,
           'user_id': user.id,
+          'profile_id':
+              profileId, // Required: use profile_id per social model spec
           'created_at': DateTime.now().toIso8601String(),
         });
       }
@@ -467,13 +566,16 @@ class SocialService {
   /// Hide a post for the current user (post_hides).
   Future<void> hidePost(String postId) async {
     try {
+      // Parse postId to int if it's a string from URL
+      final postIdInt = int.tryParse(postId) ?? postId;
+
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
       }
 
       await _supabase.from('post_hides').upsert({
-        'post_id': postId,
+        'post_id': postIdInt,
         'owner_user_id': user.id,
       });
     } catch (e) {
@@ -484,6 +586,9 @@ class SocialService {
   /// Unhide a post for the current user.
   Future<void> unhidePost(String postId) async {
     try {
+      // Parse postId to int if it's a string from URL
+      final postIdInt = int.tryParse(postId) ?? postId;
+
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
@@ -492,7 +597,7 @@ class SocialService {
       await _supabase
           .from('post_hides')
           .delete()
-          .eq('post_id', postId)
+          .eq('post_id', postIdInt)
           .eq('owner_user_id', user.id);
     } catch (e) {
       throw Exception('Failed to unhide post: $e');
@@ -562,48 +667,51 @@ class SocialService {
   /// Get comments for a post with nested replies
   Future<List<Map<String, dynamic>>> getComments(String postId) async {
     try {
+      // Parse postId to int if it's a string from URL
+      final postIdInt = int.tryParse(postId) ?? postId;
+
       // Fetch all comments for the post (including replies)
       final allComments = await _supabase
           .from('post_comments')
           .select(
             '*, profiles:author_profile_id(user_id, display_name, avatar_url, verified)',
           )
-          .eq('post_id', postId)
+          .eq('post_id', postIdInt)
           .eq('is_deleted', false)
           .eq('is_hidden_admin', false)
           .order('created_at', ascending: true);
 
       final commentsList = List<Map<String, dynamic>>.from(allComments);
-      
+
       // Fetch current user's liked comment IDs
       final user = _supabase.auth.currentUser;
-      final Set<String> likedCommentIds = {};
+      final Set<dynamic> likedCommentIds = {};
       if (user != null && commentsList.isNotEmpty) {
-        final commentIds = commentsList.map((comment) => comment['id'].toString()).toList();
+        final commentIds = commentsList
+            .map((comment) => comment['id'])
+            .toList();
         final likedComments = await _supabase
             .from('comment_likes')
             .select('comment_id')
             .eq('user_id', user.id)
             .inFilter('comment_id', commentIds);
-        likedCommentIds.addAll(
-          likedComments.map((like) => like['comment_id'].toString()),
-        );
+        likedCommentIds.addAll(likedComments.map((like) => like['comment_id']));
       }
-      
+
       // Add like information to each comment
       for (final comment in commentsList) {
-        final commentId = comment['id'].toString();
+        final commentId = comment['id'];
         comment['is_liked'] = likedCommentIds.contains(commentId);
         comment['likes_count'] = comment['like_count'] ?? 0;
       }
-      
+
       // Build nested structure: separate top-level comments from replies
       final topLevelComments = <Map<String, dynamic>>[];
-      final repliesMap = <String, List<Map<String, dynamic>>>{};
-      
+      final repliesMap = <dynamic, List<Map<String, dynamic>>>{};
+
       for (final comment in commentsList) {
-        final parentId = comment['parent_comment_id'] as String?;
-        
+        final parentId = comment['parent_comment_id'];
+
         if (parentId == null) {
           // Top-level comment
           topLevelComments.add(comment);
@@ -612,17 +720,17 @@ class SocialService {
           repliesMap.putIfAbsent(parentId, () => []).add(comment);
         }
       }
-      
+
       // Attach replies to their parent comments
       for (final comment in topLevelComments) {
-        final commentId = comment['id'] as String;
+        final commentId = comment['id'];
         if (repliesMap.containsKey(commentId)) {
           comment['replies'] = repliesMap[commentId]!;
         } else {
           comment['replies'] = <Map<String, dynamic>>[];
         }
       }
-      
+
       return topLevelComments;
     } catch (e) {
       throw Exception('Failed to load comments: $e');
@@ -632,6 +740,9 @@ class SocialService {
   /// Delete a comment
   Future<void> deleteComment(String commentId) async {
     try {
+      // Parse commentId to int if it's a string from URL
+      final commentIdInt = int.tryParse(commentId) ?? commentId;
+
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
@@ -641,14 +752,16 @@ class SocialService {
       await _supabase
           .from('post_comments')
           .update({'is_deleted': true})
-          .eq('id', commentId)
+          .eq('id', commentIdInt)
           .eq('author_user_id', user.id);
     } catch (e) {
       throw Exception('Failed to delete comment: $e');
     }
   }
 
-  /// Report a post (post_reports).
+  /// Report a post (deprecated - use ModerationService.submitReport instead).
+  /// This method now delegates to ModerationService for consistency with the new moderation system.
+  @Deprecated('Use ModerationService.submitReport() instead')
   Future<void> reportPost({
     required String postId,
     required String reason,
@@ -665,48 +778,64 @@ class SocialService {
         throw Exception('Reason must be between 3 and 140 characters');
       }
 
-      await _supabase.from('post_reports').insert({
-        'post_id': postId,
-        'reporter_user_id': user.id,
-        'reason': trimmedReason,
-        if (details != null && details.trim().isNotEmpty)
-          'details': details.trim(),
-        'status': 'open',
-      });
+      // Use the new ModerationService instead of direct table access
+      final moderationService = ModerationService();
+
+      // Map reason string to ReportReason enum
+      ReportReason reportReason;
+      switch (trimmedReason.toLowerCase()) {
+        case 'spam':
+          reportReason = ReportReason.spam;
+          break;
+        case 'abuse':
+        case 'inappropriate content':
+          reportReason = ReportReason.abuse;
+          break;
+        case 'hate':
+          reportReason = ReportReason.hate;
+          break;
+        case 'harassment':
+          reportReason = ReportReason.harassment;
+          break;
+        case 'nudity':
+          reportReason = ReportReason.nudity;
+          break;
+        case 'illegal':
+          reportReason = ReportReason.illegal;
+          break;
+        case 'danger':
+          reportReason = ReportReason.danger;
+          break;
+        case 'scam':
+          reportReason = ReportReason.scam;
+          break;
+        case 'impersonation':
+          reportReason = ReportReason.impersonation;
+          break;
+        default:
+          reportReason = ReportReason.other;
+      }
+
+      await moderationService.submitReport(
+        target: ModTarget.post,
+        targetId: postId,
+        reason: reportReason,
+        details: details?.trim(),
+      );
     } catch (e) {
       throw Exception('Failed to report post: $e');
     }
   }
 
-  /// Upload images to Supabase Storage
+  /// DEPRECATED: Use SocialRepository.uploadPostMedia instead.
+  /// This legacy method has incorrect MIME/extension handling.
+  @Deprecated('Use SocialRepository.uploadPostMedia instead')
   Future<List<String>> uploadImages(List<String> imagePaths) async {
-    try {
-      final user = _supabase.auth.currentUser;
-      if (user == null) {
-        throw Exception('User not authenticated');
-      }
-
-      final List<String> uploadedUrls = [];
-
-      for (final imagePath in imagePaths) {
-        final fileName =
-            '${user.id}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-        await _supabase.storage
-            .from('post-images')
-            .upload(fileName, File(imagePath));
-
-        final publicUrl = _supabase.storage
-            .from('post-images')
-            .getPublicUrl(fileName);
-
-        uploadedUrls.add(publicUrl);
-      }
-
-      return uploadedUrls;
-    } catch (e) {
-      throw Exception('Failed to upload images: $e');
-    }
+    throw UnimplementedError(
+      'uploadImages is deprecated. '
+      'Use SocialRepository.uploadPostMedia to upload XFile objects '
+      'with correct MIME type detection and extension handling.',
+    );
   }
 
   // -----------------------------------------------------------------------------
@@ -730,10 +859,15 @@ class SocialService {
   /// Get vibes assigned to a post (via post_vibes).
   Future<List<Map<String, dynamic>>> getPostVibes(String postId) async {
     try {
+      // Parse postId to int if it's a string from URL
+      final postIdInt = int.tryParse(postId) ?? postId;
+
       final rows = await _supabase
           .from('post_vibes')
-          .select('vibe_id, assigned_at, vibes:vibe_id(id, key, label, emoji, color)')
-          .eq('post_id', postId)
+          .select(
+            'vibe_id, assigned_at, vibes:vibe_id(id, key, label, emoji, color)',
+          )
+          .eq('post_id', postIdInt)
           .order('assigned_at', ascending: false);
       return List<Map<String, dynamic>>.from(rows);
     } catch (e) {
@@ -747,6 +881,9 @@ class SocialService {
     required String vibeId,
   }) async {
     try {
+      // Parse postId to int if it's a string from URL
+      final postIdInt = int.tryParse(postId) ?? postId;
+
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
@@ -754,7 +891,7 @@ class SocialService {
       await _supabase
           .from('posts')
           .update({'primary_vibe_id': vibeId})
-          .eq('id', postId)
+          .eq('id', postIdInt)
           .eq('author_user_id', user.id);
     } catch (e) {
       throw Exception('Failed to set primary vibe: $e');
@@ -767,6 +904,9 @@ class SocialService {
     required String vibeId,
   }) async {
     try {
+      // Parse postId to int if it's a string from URL
+      final postIdInt = int.tryParse(postId) ?? postId;
+
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
@@ -775,18 +915,18 @@ class SocialService {
       final existing = await _supabase
           .from('post_vibes')
           .select('post_id, vibe_id')
-          .eq('post_id', postId)
+          .eq('post_id', postIdInt)
           .eq('vibe_id', vibeId)
           .maybeSingle();
       if (existing != null) {
         await _supabase
             .from('post_vibes')
             .delete()
-            .eq('post_id', postId)
+            .eq('post_id', postIdInt)
             .eq('vibe_id', vibeId);
       } else {
         await _supabase.from('post_vibes').insert({
-          'post_id': postId,
+          'post_id': postIdInt,
           'vibe_id': vibeId,
         });
       }
@@ -794,6 +934,7 @@ class SocialService {
       throw Exception('Failed to toggle post vibe: $e');
     }
   }
+
   /// Check for duplicate posts to prevent spam/reposting
   Future<void> _checkForDuplicatePost(
     String userId,

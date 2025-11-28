@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 import '../services/storage_service.dart';
+import '../../services/moderation_service.dart';
 import '../../features/games/domain/repositories/games_repository.dart';
 import '../../features/games/data/repositories/games_repository_impl.dart';
 import '../../features/games/data/datasources/supabase_games_datasource.dart';
 import '../../routes/route_arguments.dart';
 import '../utils/game_creation_mapper.dart';
+import 'package:intl/intl.dart';
 
 class GameCreationViewModel extends ChangeNotifier {
   GameCreationModel _state = GameCreationModel.initial();
@@ -655,6 +657,22 @@ class GameCreationViewModel extends ChangeNotifier {
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
+      }
+
+      // Check cooldown before allowing game creation
+      final moderationService = ModerationService();
+      final cooldownResult = await moderationService.checkAndBumpCooldown(
+        'game.create',
+        windowSeconds: 86400, // 24 hour window
+        limitCount: 5, // 5 games per day
+      );
+
+      if (!cooldownResult.allowed) {
+        final resetTime = DateFormat('MMM d, HH:mm').format(cooldownResult.resetAt);
+        throw Exception(
+          'You\'ve reached the game creation limit. You can create another game at $resetTime. '
+          'Remaining: ${cooldownResult.remaining} games.',
+        );
       }
 
       // Validate required fields

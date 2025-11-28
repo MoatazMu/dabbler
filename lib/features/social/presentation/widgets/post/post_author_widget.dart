@@ -26,13 +26,10 @@ class PostAuthorWidget extends StatelessWidget {
     return Row(
       children: [
         // Author avatar
-        GestureDetector(
+        AppAvatar.small(
+          imageUrl: author.avatar,
+          fallbackText: author.name,
           onTap: onProfileTap,
-          child: CustomAvatar(
-            imageUrl: author.avatar,
-            radius: 20,
-            fallbackIcon: Icons.person,
-          ),
         ),
 
         const SizedBox(width: 12),

@@ -83,6 +83,10 @@ import 'package:dabbler/features/social/presentation/screens/onboarding/social_o
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_notifications_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_complete_screen.dart';
 
+// Admin screens
+import 'package:dabbler/features/admin/presentation/screens/moderation_queue_screen.dart';
+import 'package:dabbler/features/admin/presentation/screens/safety_overview_screen.dart';
+
 // Utilities
 import '../utils/constants/route_constants.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
@@ -777,11 +781,16 @@ class AppRouter {
     // Profile Sports Preferences route
     GoRoute(
       path: '/profile/sports-preferences',
-      pageBuilder: (context, state) => SharedAxisTransitionPage(
-        key: state.pageKey,
-        child: const ProfileSportsScreen(),
-        type: SharedAxisType.horizontal,
-      ),
+      pageBuilder: (context, state) {
+        final profileType = state.extra is Map<String, dynamic>
+            ? (state.extra as Map<String, dynamic>)['profileType'] as String?
+            : null;
+        return SharedAxisTransitionPage(
+          key: state.pageKey,
+          child: ProfileSportsScreen(profileType: profileType),
+          type: SharedAxisType.horizontal,
+        );
+      },
     ),
 
     // Settings route
@@ -1193,6 +1202,47 @@ class AppRouter {
       pageBuilder: (context, state) => SharedAxisTransitionPage(
         key: state.pageKey,
         child: const _PlaceholderScreen(title: 'Social Analytics'),
+        type: SharedAxisType.horizontal,
+      ),
+    ),
+
+    // Admin routes with admin check guards
+    GoRoute(
+      path: RoutePaths.adminModerationQueue,
+      redirect: (context, state) async {
+        try {
+          final response = await Supabase.instance.client.rpc('is_admin');
+          if (response != true) {
+            return RoutePaths.home; // Redirect non-admins to home
+          }
+        } catch (e) {
+          return RoutePaths.home; // Redirect on error
+        }
+        return null; // Allow access if admin
+      },
+      pageBuilder: (context, state) => SharedAxisTransitionPage(
+        key: state.pageKey,
+        child: const ModerationQueueScreen(),
+        type: SharedAxisType.horizontal,
+      ),
+    ),
+
+    GoRoute(
+      path: RoutePaths.adminSafetyOverview,
+      redirect: (context, state) async {
+        try {
+          final response = await Supabase.instance.client.rpc('is_admin');
+          if (response != true) {
+            return RoutePaths.home; // Redirect non-admins to home
+          }
+        } catch (e) {
+          return RoutePaths.home; // Redirect on error
+        }
+        return null; // Allow access if admin
+      },
+      pageBuilder: (context, state) => SharedAxisTransitionPage(
+        key: state.pageKey,
+        child: const SafetyOverviewScreen(),
         type: SharedAxisType.horizontal,
       ),
     ),

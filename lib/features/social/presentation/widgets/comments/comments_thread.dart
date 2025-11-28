@@ -44,10 +44,10 @@ class CommentsThread extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Comment author avatar
-              CustomAvatar(
+              AppAvatar(
                 imageUrl: comment.author.avatar,
-                radius: nestingLevel > 0 ? 14 : 16,
-                fallbackIcon: Icons.person,
+                fallbackText: comment.author.name,
+                size: nestingLevel > 0 ? 28 : 32,
               ),
 
               const SizedBox(width: 12),

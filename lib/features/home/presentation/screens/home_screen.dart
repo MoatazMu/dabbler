@@ -8,16 +8,18 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
-import 'package:dabbler/widgets/svg_avatar.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
 import 'package:dabbler/features/games/presentation/screens/join_game/game_detail_screen.dart';
-import 'package:dabbler/data/models/social/post_model.dart';
 import 'package:dabbler/features/home/presentation/providers/home_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
 import 'package:dabbler/data/models/games/game.dart';
+import 'package:dabbler/features/social/presentation/widgets/feed/post_card.dart';
+import 'package:dabbler/features/social/services/social_service.dart';
+import 'package:dabbler/features/home/presentation/widgets/inline_post_composer.dart';
+import 'package:dabbler/core/widgets/custom_avatar.dart';
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {
@@ -85,23 +87,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  String _formatRelativeTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
-
-    if (difference.inMinutes < 1) {
-      return 'just now';
-    } else if (difference.inHours < 1) {
-      return '${difference.inMinutes}m';
-    } else if (difference.inDays < 1) {
-      return '${difference.inHours}h';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d';
-    } else {
-      return DateFormat('MMM d').format(dateTime);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -139,11 +124,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       padding: const EdgeInsets.only(top: 28),
                       child: _buildActivitiesButton(),
                     ),
-                    if (FeatureFlags.socialFeed)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 28),
-                        child: _buildLatestFeedsSection(),
-                      ),
+                    // Main Social Feed - Primary feature
+                    Padding(
+                      padding: const EdgeInsets.only(top: 28),
+                      child: _buildSocialFeedSection(),
+                    ),
                     Padding(
                       padding: const EdgeInsets.only(top: 36),
                       child: _buildRecentGamesSection(),
@@ -155,11 +140,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
+      floatingActionButton: const InlinePostComposer(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
   Widget _buildHeroSection(String? displayName) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
@@ -247,25 +233,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 GestureDetector(
                   onTap: () => context.go(RoutePaths.profile),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isDarkMode
-                          ? Colors.white.withOpacity(0.18)
-                          : Colors.black.withOpacity(0.1),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(4),
-                      child: SvgNetworkOrAssetAvatar(
-                        imageUrlOrAsset: _userProfile?['avatar_url'],
-                        radius: 32,
-                        fallbackIcon: Icons.person,
-                        backgroundColor: isDarkMode
-                            ? Colors.white
-                            : Colors.black87,
-                        fallbackColor: colorScheme.primary,
-                      ),
-                    ),
+                  child: AppAvatar.large(
+                    imageUrl: _userProfile?['avatar_url'],
+                    fallbackText: _userProfile?['display_name'],
                   ),
                 ),
               ],
@@ -277,8 +247,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           Padding(
             padding: const EdgeInsets.only(top: 16),
-            child: const ThoughtsInput(
-              onTap: null, // TODO: Navigate to create post screen
+            child: ThoughtsInput(
+              onTap: () {
+                // TODO: Navigate to create post screen
+                // For now, you can use PostService to create posts
+              },
             ),
           ),
         ],
@@ -289,24 +262,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildQuickAccessSection() {
     return Column(
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: AppButtonCard(
-                emoji: '📚',
-                label: 'Community',
-                onTap: () => context.go(RoutePaths.social),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: AppButtonCard(
-                emoji: '🏆',
-                label: 'Sports',
-                onTap: () => context.go(RoutePaths.sports),
-              ),
-            ),
-          ],
+        SizedBox(
+          width: double.infinity,
+          child: AppButtonCard(
+            emoji: '🏆',
+            label: 'Sports',
+            onTap: () => context.go(RoutePaths.sports),
+          ),
         ),
         const SizedBox(height: 12),
         // Only show Create Game button for organisers with permission
@@ -333,8 +295,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: FilledButton.tonalIcon(
             onPressed: () => context.go(RoutePaths.activities),
             style: FilledButton.styleFrom(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
@@ -344,8 +305,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             icon: const Text('⚡', style: TextStyle(fontSize: 18)),
             label: Text(
               'Activities',
-              style: textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w600),
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         ),
@@ -355,8 +317,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: FilledButton.tonalIcon(
               onPressed: () => context.go(RoutePaths.notifications),
               style: FilledButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 16,
+                  horizontal: 20,
+                ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -366,8 +330,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               icon: const Text('🔔', style: TextStyle(fontSize: 18)),
               label: Text(
                 'Notifications',
-                style: textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.w600),
+                style: textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -423,49 +388,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       padding: const EdgeInsets.only(right: 16),
                       child: Column(
                         children: [
-                          Stack(
-                            clipBehavior: Clip.none,
-                            children: [
-                              CircleAvatar(
-                                radius: 26,
-                                backgroundImage: player['avatar_url'] != null
-                                    ? NetworkImage(player['avatar_url'])
-                                    : null,
-                                backgroundColor:
-                                    colorScheme.surfaceContainerHigh,
-                                child: player['avatar_url'] == null
-                                    ? Icon(
-                                        Icons.person,
-                                        size: 26,
-                                        color: colorScheme.onSurfaceVariant,
-                                      )
-                                    : null,
-                              ),
-                              if (player['sport_key'] != null)
-                                Positioned(
-                                  bottom: -2,
-                                  right: -2,
-                                  child: Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.surface,
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: colorScheme.surface,
-                                        width: 2,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        _getSportEmoji(player['sport_key']),
-                                        style: const TextStyle(fontSize: 12),
-                                      ),
-                                    ),
+                          player['sport_key'] != null
+                              ? AppAvatar.withSportBadge(
+                                  imageUrl: player['avatar_url'],
+                                  fallbackText: player['display_name'],
+                                  size: 52,
+                                  sportEmoji: _getSportEmoji(
+                                    player['sport_key'],
                                   ),
+                                )
+                              : AppAvatar(
+                                  imageUrl: player['avatar_url'],
+                                  fallbackText: player['display_name'],
+                                  size: 52,
                                 ),
-                            ],
-                          ),
                         ],
                       ),
                     );
@@ -479,7 +415,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildLatestFeedsSection() {
+  Widget _buildSocialFeedSection() {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
     final postsAsync = ref.watch(latestFeedPostsProvider);
@@ -491,7 +427,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Latest feeds',
+                'Feed',
                 style: textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: colorScheme.onSurface,
@@ -502,10 +438,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Card(
                   elevation: 0,
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.all(24),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        Icon(
+                          Icons.article_outlined,
+                          size: 48,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                        const SizedBox(height: 16),
                         Text(
                           'No posts yet',
                           style: textTheme.titleMedium?.copyWith(
@@ -516,14 +458,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         const SizedBox(height: 8),
                         Text(
                           'Be the first to share something with the community.',
+                          textAlign: TextAlign.center,
                           style: textTheme.bodyMedium?.copyWith(
                             color: colorScheme.onSurfaceVariant,
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton(
-                          onPressed: () => context.go(RoutePaths.social),
-                          child: const Text('Open social feed'),
                         ),
                       ],
                     ),
@@ -534,32 +472,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           );
         }
 
-        final visiblePosts = posts.take(3).toList();
-
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Latest feeds',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
-              ),
-            ),
             Padding(
               padding: const EdgeInsets.only(top: 12),
               child: Column(
-                children: [
-                  ...visiblePosts.map((post) => _buildFeedItem(post)),
-                  if (FeatureFlags.socialFeed)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton(
-                        onPressed: () => context.go(RoutePaths.social),
-                        child: const Text('See all posts'),
+                children: posts
+                    .map(
+                      (post) => PostCard(
+                        post: post,
+                        onLike: () => _handleLikePost(post.id),
+                        onComment: () => _handleCommentPost(post.id),
+                        onPostTap: () => context.pushNamed(
+                          RouteNames.socialPostDetail,
+                          pathParameters: {'postId': post.id},
+                        ),
+                        onProfileTap: () {
+                          // TODO: Navigate to profile
+                        },
                       ),
-                    ),
-                ],
+                    )
+                    .toList(),
               ),
             ),
           ],
@@ -569,7 +503,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Latest feeds',
+            'Feed',
             style: textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: colorScheme.onSurface,
@@ -591,7 +525,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Latest feeds',
+            'Feed',
             style: textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
               color: colorScheme.onSurface,
@@ -636,97 +570,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildFeedItem(PostModel post) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+  Future<void> _handleLikePost(String postId) async {
+    try {
+      final socialService = SocialService();
+      await socialService.toggleLike(postId);
+      // Refresh posts to show updated like count
+      if (mounted) {
+        ref.invalidate(latestFeedPostsProvider);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to like post: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
 
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: colorScheme.surfaceContainerHigh,
-              backgroundImage: post.authorAvatar.isNotEmpty
-                  ? NetworkImage(post.authorAvatar)
-                  : null,
-              child: post.authorAvatar.isEmpty
-                  ? Icon(
-                      Icons.person,
-                      size: 20,
-                      color: colorScheme.onSurfaceVariant,
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          post.authorName,
-                          style: textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _formatRelativeTime(post.createdAt),
-                        style: textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (post.content.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        post.content,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  if (post.mediaUrls.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: AspectRatio(
-                          aspectRatio: 16 / 9,
-                          child: Image.network(
-                            post.mediaUrls.first,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Container(
-                              color: colorScheme.surfaceContainerHigh,
-                              child: Icon(
-                                Icons.broken_image,
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
+  void _handleCommentPost(String postId) {
+    context.pushNamed(
+      RouteNames.socialPostDetail,
+      pathParameters: {'postId': postId},
     );
   }
 

@@ -5,6 +5,7 @@ import 'package:dabbler/core/utils/either.dart';
 import '../../domain/repositories/profile_repository.dart' as domain;
 import '../datasources/profile_data_sources.dart' show ProfileLocalDataSource;
 import '../datasources/profile_remote_datasource.dart';
+import '../datasources/supabase_profile_datasource.dart';
 import 'package:dabbler/data/models/models.dart';
 
 /// Implementation of ProfileRepository with caching and error handling
@@ -21,18 +22,29 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   });
 
   @override
-  Future<Either<Failure, UserProfile>> getProfile(String userId) async {
+  Future<Either<Failure, UserProfile>> getProfile(
+    String userId, {
+    String? profileType,
+  }) async {
     try {
-      // Try to get from cache first
+      // Try to get from cache first (cache key should include profile type if specified)
       final cachedProfile = await localDataSource.getCachedProfile(userId);
       final cacheValid = await localDataSource.isCacheValid(userId);
 
-      if (cachedProfile != null && cacheValid) {
+      // If cached profile matches requested type, use it
+      if (cachedProfile != null &&
+          cacheValid &&
+          (profileType == null ||
+              cachedProfile.profileType?.toLowerCase() ==
+                  profileType.toLowerCase())) {
         return Right(cachedProfile);
       }
 
       // Fetch from remote if cache miss or expired
-      final remoteProfile = await remoteDataSource.getProfile(userId);
+      final remoteProfile = await remoteDataSource.getProfile(
+        userId,
+        profileType: profileType,
+      );
 
       // Cache the result
       await localDataSource.cacheProfile(remoteProfile);
@@ -41,7 +53,10 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     } on ServerFailure catch (e) {
       // Try to return stale cache on server error
       final cachedProfile = await localDataSource.getCachedProfile(userId);
-      if (cachedProfile != null) {
+      if (cachedProfile != null &&
+          (profileType == null ||
+              cachedProfile.profileType?.toLowerCase() ==
+                  profileType.toLowerCase())) {
         return Right(cachedProfile);
       }
       return Left(
@@ -50,7 +65,10 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
     } on NetworkFailure catch (e) {
       // Return cached data on network issues
       final cachedProfile = await localDataSource.getCachedProfile(userId);
-      if (cachedProfile != null) {
+      if (cachedProfile != null &&
+          (profileType == null ||
+              cachedProfile.profileType?.toLowerCase() ==
+                  profileType.toLowerCase())) {
         return Right(cachedProfile);
       }
       return Left(
@@ -58,6 +76,31 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
       );
     } catch (e) {
       return Left(DataFailure(message: 'Failed to get profile: $e'));
+    }
+  }
+
+  /// Get all profiles for a user (player and organiser)
+  Future<Either<Failure, List<UserProfile>>> getAllProfiles(
+    String userId,
+  ) async {
+    try {
+      if (remoteDataSource is SupabaseProfileDataSource) {
+        final profiles =
+            await (remoteDataSource as SupabaseProfileDataSource)
+                .getAllProfiles(userId);
+        return Right(profiles);
+      }
+      // Fallback: try to get player and organiser separately
+      final playerResult = await getProfile(userId, profileType: 'player');
+      final organiserResult = await getProfile(userId, profileType: 'organiser');
+
+      final profiles = <UserProfile>[];
+      playerResult.fold((_) => null, (profile) => profiles.add(profile));
+      organiserResult.fold((_) => null, (profile) => profiles.add(profile));
+
+      return Right(profiles);
+    } catch (e) {
+      return Left(DataFailure(message: 'Failed to get all profiles: $e'));
     }
   }
 

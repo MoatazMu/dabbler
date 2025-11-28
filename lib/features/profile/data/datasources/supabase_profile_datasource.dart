@@ -23,12 +23,19 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
   Future<UserProfile> getProfile(
     String userId, {
     bool includeSports = true,
+    String? profileType,
   }) async {
     try {
-      final response = await _preferPlayerProfile(
-        userId,
-        includeSports: includeSports,
-      );
+      final response = profileType != null
+          ? await _fetchProfileRow(
+              userId,
+              includeSports: includeSports,
+              profileType: profileType,
+            )
+          : await _preferPlayerProfile(
+              userId,
+              includeSports: includeSports,
+            );
 
       if (response == null) {
         throw const DataNotFoundException(message: 'Profile not found');
@@ -46,6 +53,46 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
     } catch (e) {
       if (e is ProfileRemoteDataSourceException) rethrow;
       throw NetworkException(message: 'Failed to fetch profile: $e');
+    }
+  }
+
+  /// Get all profiles for a user (player and organiser)
+  Future<List<UserProfile>> getAllProfiles(
+    String userId, {
+    bool includeSports = true,
+  }) async {
+    try {
+      final response = await _client
+          .from(_usersTable)
+          .select('*')
+          .eq('user_id', userId)
+          .order('created_at', ascending: true);
+
+      if (response.isEmpty) {
+        return [];
+      }
+
+      final profiles = <UserProfile>[];
+      for (final row in response) {
+        final result = Map<String, dynamic>.from(row);
+        await _enrichWithAuthData(result, userId);
+
+        if (includeSports) {
+          await _enrichWithSportProfiles(result, result['id'] as String);
+        }
+
+        profiles.add(UserProfile.fromJson(result));
+      }
+
+      return profiles;
+    } on PostgrestException catch (e) {
+      throw ServerException(
+        message: 'Database error: ${e.message}',
+        details: e,
+      );
+    } catch (e) {
+      if (e is ProfileRemoteDataSourceException) rethrow;
+      throw NetworkException(message: 'Failed to fetch profiles: $e');
     }
   }
 

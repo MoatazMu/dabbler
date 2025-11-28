@@ -13,8 +13,12 @@ typedef UploadProgressCallback = void Function(double progress);
 /// Follows clean architecture principles with Either return types for error handling
 abstract class ProfileRepository {
   /// Retrieves a user profile by user ID
+  /// [profileType] - Optional filter by profile type ('player' or 'organiser')
   /// Returns [UserProfile] on success or [Failure] on error
-  Future<Either<Failure, UserProfile>> getProfile(String userId);
+  Future<Either<Failure, UserProfile>> getProfile(
+    String userId, {
+    String? profileType,
+  });
 
   /// Updates user profile information
   /// Supports partial updates - only non-null fields will be updated

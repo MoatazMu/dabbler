@@ -178,16 +178,34 @@ class PostContentWidget extends StatelessWidget {
   }
 
   Widget _buildSingleMedia(ThemeData theme, dynamic mediaItem, int index) {
+    // Handle both String URLs and Map objects
+    String mediaUrl;
+    String? mediaType;
+
+    if (mediaItem is String) {
+      mediaUrl = mediaItem;
+      mediaType = null;
+    } else if (mediaItem is Map) {
+      mediaUrl = mediaItem['url']?.toString() ?? '';
+      mediaType = mediaItem['type']?.toString();
+    } else {
+      mediaUrl = mediaItem.toString();
+      mediaType = null;
+    }
+
     final isImage =
-        mediaItem['type'] == 'image' ||
-        mediaItem['url'].toString().contains('image') ||
-        mediaItem['url'].toString().contains('jpg') ||
-        mediaItem['url'].toString().contains('png') ||
-        mediaItem['url'].toString().contains('jpeg');
+        mediaType == 'image' ||
+        mediaUrl.contains('image') ||
+        mediaUrl.contains('jpg') ||
+        mediaUrl.contains('png') ||
+        mediaUrl.contains('jpeg') ||
+        mediaUrl.contains('gif') ||
+        mediaUrl.contains('webp');
 
     return GestureDetector(
       onTap: () => onMediaTap?.call(index),
       child: Container(
+        width: double.infinity,
         height: 120,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
@@ -195,9 +213,10 @@ class PostContentWidget extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: isImage
+          child: isImage && mediaUrl.isNotEmpty
               ? Image.network(
-                  mediaItem['url'],
+                  mediaUrl,
+                  width: double.infinity,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) =>
                       _buildMediaPlaceholder(theme),

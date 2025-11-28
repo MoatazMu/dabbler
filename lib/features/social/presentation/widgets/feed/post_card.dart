@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
+import 'package:dabbler/core/widgets/custom_avatar.dart';
 
 /// A card widget for displaying social posts in the feed
 class PostCard extends StatelessWidget {
@@ -25,75 +26,28 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Opacity(
       opacity: isOptimistic ? 0.6 : 1.0,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // First Column: Avatar
-            GestureDetector(
-              onTap: onProfileTap,
-              child: Container(
-                height: 40,
-                width: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: post.authorAvatar.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(post.authorAvatar),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                  color: post.authorAvatar.isEmpty
-                      ? theme.colorScheme.primary.withOpacity(0.1)
-                      : null,
-                ),
-                child: post.authorAvatar.isEmpty
-                    ? Center(
-                        child: Text(
-                          post.authorName.isNotEmpty
-                              ? post.authorName[0].toUpperCase()
-                              : 'U',
-                          style: TextStyle(
-                            color: theme.colorScheme.primary,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      )
-                    : null,
-              ),
-            ),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
+        child: GestureDetector(
+          onTap: onPostTap,
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // First Row: Avatar + Display Name and Time + Post type badge + Overflow menu
+              _buildHeader(context),
 
-            const SizedBox(width: 12),
+              const SizedBox(height: 12),
 
-            // Second Column: Post Content
-            Expanded(
-              child: GestureDetector(
-                onTap: onPostTap,
-                behavior: HitTestBehavior.opaque,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header with Display Name & Time
-                    _buildHeader(context),
+              // Second Row: Content + Media display
+              _buildContent(context),
 
-                    const SizedBox(height: 4),
-
-                    // Content
-                    _buildContent(context),
-
-                    // Actions
-                    _buildActions(context),
-                  ],
-                ),
-              ),
-            ),
-          ],
+              // Third Row: vibe pill + Like action + Comment action
+              _buildActions(context),
+            ],
+          ),
         ),
       ),
     );
@@ -104,23 +58,68 @@ class PostCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Display Name and Time
+        // Avatar
+        AppAvatar.small(
+          imageUrl: post.authorAvatar,
+          fallbackText: post.authorName,
+          onTap: onProfileTap,
+        ),
+
+        const SizedBox(width: 12),
+
+        // Display Name, Time, and Post type badge
         Expanded(
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                post.authorName,
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
-                ),
+              // Name and time row
+              Row(
+                children: [
+                  Text(
+                    post.authorName,
+                    style: textTheme.bodyMedium?.copyWith(
+                      fontSize: 14,
+                      color: colorScheme.onSurface,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '•',
+                    style: textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    _formatTimeAgo(post.createdAt),
+                    style: textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(width: 6),
-              Text(
-                _formatTimeAgo(post.createdAt),
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
+              const SizedBox(height: 4),
+              // Post type badge
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: _getPostTypeColor(colorScheme),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  _getPostTypeLabel(),
+                  style: textTheme.bodySmall?.copyWith(
+                    fontSize: 12,
+                    color: _getPostTypeTextColor(colorScheme),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
@@ -129,9 +128,11 @@ class PostCard extends StatelessWidget {
 
         // Overflow menu (hide/report)
         PopupMenuButton<String>(
+          padding: EdgeInsets.zero,
           icon: Icon(
-            Icons.more_vert_rounded,
+            Icons.more_horiz,
             color: colorScheme.onSurfaceVariant,
+            size: 18,
           ),
           itemBuilder: (context) => [
             const PopupMenuItem<String>(
@@ -167,7 +168,52 @@ class PostCard extends StatelessWidget {
     );
   }
 
+  String _getPostTypeLabel() {
+    final kind = post.kind.toLowerCase();
+    switch (kind) {
+      case 'moment':
+        return 'Moments';
+      case 'dab':
+        return 'Dab';
+      case 'kickin':
+        return 'Kick-in';
+      default:
+        return 'Moments';
+    }
+  }
+
+  Color _getPostTypeColor(ColorScheme colorScheme) {
+    final kind = post.kind.toLowerCase();
+    switch (kind) {
+      case 'moment':
+        return colorScheme.primaryContainer.withOpacity(0.3);
+      case 'dab':
+        return colorScheme.secondaryContainer.withOpacity(0.3);
+      case 'kickin':
+        return colorScheme.tertiaryContainer.withOpacity(0.3);
+      default:
+        return colorScheme.primaryContainer.withOpacity(0.3);
+    }
+  }
+
+  Color _getPostTypeTextColor(ColorScheme colorScheme) {
+    final kind = post.kind.toLowerCase();
+    switch (kind) {
+      case 'moment':
+        return colorScheme.primary;
+      case 'dab':
+        return colorScheme.secondary;
+      case 'kickin':
+        return colorScheme.tertiary;
+      default:
+        return colorScheme.primary;
+    }
+  }
+
   Widget _buildContent(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -183,8 +229,10 @@ class PostCard extends StatelessWidget {
                 textDirection: _isRtl(post.content)
                     ? TextDirection.rtl
                     : TextDirection.ltr,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
+                style: textTheme.bodyMedium?.copyWith(
+                  fontSize: 14,
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ),
@@ -279,11 +327,39 @@ class PostCard extends StatelessWidget {
 
   Widget _buildActions(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return Padding(
       padding: const EdgeInsets.only(top: 12),
       child: Row(
         children: [
+          // Primary vibe pill - using default vibe for now
+          // TODO: Join vibe data from public.vibes in feed query
+          if (post.primaryVibeId != null)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: colorScheme.secondaryContainer.withOpacity(0.5),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('😊', style: const TextStyle(fontSize: 18)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Amazed',
+                    style: textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const Spacer(),
+          // Like action
           _buildActionButton(
             context: context,
             emoji: post.isLiked ? '❤️' : '🩶',
@@ -292,7 +368,8 @@ class PostCard extends StatelessWidget {
             onTap: onLike,
             isDark: isDark,
           ),
-          const SizedBox(width: 24),
+          const SizedBox(width: 16),
+          // Comment action
           _buildActionButton(
             context: context,
             emoji: '💬',
@@ -360,27 +437,30 @@ extension on PostCard {
   Future<void> _hidePost(BuildContext context) async {
     try {
       await SocialService().hidePost(post.id);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Post hidden')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Post hidden')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to hide post: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to hide post: $e')));
     }
   }
 
   Future<void> _reportPost(BuildContext context) async {
     try {
       // Simple quick-report flow; use ThreadScreen dialog for detailed flow
-      await SocialService().reportPost(postId: post.id, reason: 'Inappropriate content');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Report submitted')),
+      await SocialService().reportPost(
+        postId: post.id,
+        reason: 'Inappropriate content',
       );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Report submitted')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to report: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to report: $e')));
     }
   }
 }

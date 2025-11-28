@@ -81,6 +81,10 @@ class RoutePaths {
       '/social-onboarding-notifications';
   static const String socialOnboardingComplete = '/social-onboarding-complete';
 
+  // Admin Routes
+  static const String adminModerationQueue = '/admin/moderation-queue';
+  static const String adminSafetyOverview = '/admin/safety-overview';
+
   // Error Routes
   static const String error = '/error';
 }

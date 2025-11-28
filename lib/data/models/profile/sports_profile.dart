@@ -95,11 +95,11 @@ class SportProfile {
   }
 
   /// Creates a SportProfile from JSON
-  /// Supports both simple schema (sport_key, skill_level) and full schema
+  /// Supports both simple schema (sport/sport_key, skill_level) and full schema
   factory SportProfile.fromJson(Map<String, dynamic> json) {
-    // Handle simple schema from database: sport_key, skill_level, plus optional fields
-    if (json.containsKey('sport_key')) {
-      final sportKey = json['sport_key'] as String;
+    // Handle simple schema from database: sport or sport_key, skill_level, plus optional fields
+    final sportKey = json['sport'] as String? ?? json['sport_key'] as String?;
+    if (sportKey != null) {
       final skillLevelInt = json['skill_level'] as int? ?? 0;
 
       // Calculate average rating from rating_total and rating_count if available

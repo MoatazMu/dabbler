@@ -44,7 +44,7 @@ class SportProfile {
   factory SportProfile.fromJson(Map<String, dynamic> json) {
     return SportProfile(
       profileId: json['profile_id'] as String? ?? json['profileId'] as String? ?? '',
-      sportKey: json['sport_key'] as String? ?? json['sportKey'] as String? ?? '',
+      sportKey: json['sport'] as String? ?? json['sport_key'] as String? ?? json['sportKey'] as String? ?? '',
       attributes: _readMap(json['attributes'] ?? json['profile_attributes']),
       overallLevel: _readDouble(json['overall_level'] ?? json['overallLevel']),
       xpTotal: _readDouble(json['xp_total'] ?? json['xpTotal']),
@@ -150,7 +150,7 @@ class SportProfile {
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
       'profile_id': profileId,
-      'sport_key': sportKey,
+      'sport': sportKey,
       'attributes': attributes,
       'overall_level': overallLevel,
       'xp_total': xpTotal,

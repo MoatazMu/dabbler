@@ -58,14 +58,30 @@ class PostModel extends Post {
             .where((url) => url.isNotEmpty)
             .toList();
       }
-    } else if (json['media'] != null && json['media'] is List) {
-      // DB schema: media is jsonb[] with objects or strings.
-      for (final item in (json['media'] as List)) {
-        if (item is Map && item['url'] != null) {
-          final url = item['url'].toString();
+    } else if (json['media'] != null) {
+      final mediaData = json['media'];
+      if (mediaData is Map) {
+        // Single media object (from PostService - per spec)
+        if (mediaData['url'] != null) {
+          final url = mediaData['url'].toString();
           if (url.isNotEmpty) mediaUrls.add(url);
-        } else if (item is String && item.isNotEmpty) {
-          mediaUrls.add(item);
+        } else if (mediaData['path'] != null) {
+          // Storage path - construct URL or use path as-is
+          final path = mediaData['path'].toString();
+          if (path.isNotEmpty) mediaUrls.add(path);
+        }
+      } else if (mediaData is List) {
+        // Array of media items (legacy format)
+        for (final item in mediaData) {
+          if (item is Map && item['url'] != null) {
+            final url = item['url'].toString();
+            if (url.isNotEmpty) mediaUrls.add(url);
+          } else if (item is Map && item['path'] != null) {
+            final path = item['path'].toString();
+            if (path.isNotEmpty) mediaUrls.add(path);
+          } else if (item is String && item.isNotEmpty) {
+            mediaUrls.add(item);
+          }
         }
       }
     }
@@ -126,7 +142,7 @@ class PostModel extends Post {
     final String? primaryVibeId = json['primary_vibe_id']?.toString();
 
     return PostModel(
-      id: json['id'] ?? '',
+      id: json['id']?.toString() ?? '',
       authorId: json['author_id'] ?? json['user_id'] ?? '',
       authorName:
           authorData['display_name'] ??

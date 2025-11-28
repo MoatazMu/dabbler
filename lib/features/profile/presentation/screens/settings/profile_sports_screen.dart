@@ -9,7 +9,12 @@ import '../../../../../utils/constants/route_constants.dart';
 
 /// Screen for managing user's sports and game preferences
 class ProfileSportsScreen extends ConsumerStatefulWidget {
-  const ProfileSportsScreen({super.key});
+  final String? profileType; // 'player' or 'organiser'
+  
+  const ProfileSportsScreen({
+    super.key,
+    this.profileType,
+  });
 
   @override
   ConsumerState<ProfileSportsScreen> createState() =>
@@ -26,10 +31,14 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
 
   // User's sport preferences - will be loaded from database
   Map<String, SportPreference> _sportPreferences = {};
+  
+  // Current profile type being managed
+  String? _currentProfileType;
 
   @override
   void initState() {
     super.initState();
+    _currentProfileType = widget.profileType;
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
@@ -67,41 +76,85 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
         throw Exception('User not authenticated');
       }
 
-      // Fetch user's sports profiles from database
-      // First get profile_id from user_id
+      // Determine profile type to use
+      String profileType = _currentProfileType ?? 'player';
+      
+      // If profile type not provided, try to detect from current profile
+      if (_currentProfileType == null) {
+        final currentProfile = await supabase
+            .from('profiles')
+            .select('profile_type')
+            .eq('user_id', userId)
+            .order('created_at', ascending: true)
+            .limit(1)
+            .maybeSingle();
+        
+        if (currentProfile != null) {
+          profileType = (currentProfile['profile_type'] as String?)?.toLowerCase() ?? 'player';
+        }
+      }
+      
+      _currentProfileType = profileType;
+
+      // Fetch profile_id for the specific profile type
       final profileResponse = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', userId)
+          .eq('profile_type', profileType)
           .maybeSingle();
 
       if (profileResponse == null) {
-        throw Exception('Profile not found');
+        throw Exception('Profile not found for type: $profileType');
       }
 
       final profileId = profileResponse['id'] as String;
 
-      final response = await supabase
-          .from('sport_profiles')
-          .select('*')
-          .eq('profile_id', profileId);
-
       // Convert database records to SportPreference objects
       final Map<String, SportPreference> preferences = {};
 
-      for (final sportData in response as List) {
-        // sport_profiles table uses 'sport_key', not 'sport_type'
-        final sportKey = (sportData['sport_key'] as String? ?? '')
-            .toLowerCase();
-        if (sportKey.isEmpty) continue;
+      if (profileType == 'player') {
+        // Load from sport_profiles table
+        final response = await supabase
+            .from('sport_profiles')
+            .select('*')
+            .eq('profile_id', profileId);
 
-        preferences[sportKey] = SportPreference(
-          name: _formatSportName(sportData['sport_key'] as String),
-          icon: _getSportIcon(sportKey),
-          isEnabled: true, // If it exists in sport_profiles, it's enabled
-          skillLevel: _parseSkillLevel(sportData['skill_level']),
-          preferredPosition: sportData['primary_position'] as String?,
-        );
+        for (final sportData in response as List) {
+          final sportKey = (sportData['sport'] as String? ?? sportData['sport_key'] as String? ?? '')
+              .toLowerCase();
+          if (sportKey.isEmpty) continue;
+
+          preferences[sportKey] = SportPreference(
+            name: _formatSportName(sportKey),
+            icon: _getSportIcon(sportKey),
+            isEnabled: true,
+            skillLevel: _parseSkillLevel(sportData['skill_level']),
+            preferredPosition: sportData['primary_position'] as String?,
+          );
+        }
+      } else if (profileType == 'organiser') {
+        // Load from organiser_profiles table
+        final response = await supabase
+            .from('organiser_profiles')
+            .select('*')
+            .eq('profile_id', profileId);
+
+        for (final sportData in response as List) {
+          final sportKey = (sportData['sport'] as String? ?? '').toLowerCase();
+          if (sportKey.isEmpty) continue;
+
+          // For organisers, we don't have skill level, but we can use organiser_level
+          final organiserLevel = sportData['organiser_level'] as int? ?? 1;
+          
+          preferences[sportKey] = SportPreference(
+            name: _formatSportName(sportKey),
+            icon: _getSportIcon(sportKey),
+            isEnabled: true,
+            skillLevel: _parseSkillLevelFromOrganiserLevel(organiserLevel),
+            preferredPosition: null, // Organisers don't have positions
+          );
+        }
       }
 
       // Add common sports that user hasn't set up yet
@@ -195,6 +248,13 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       default:
         return Icons.sports;
     }
+  }
+
+  SkillLevel _parseSkillLevelFromOrganiserLevel(int level) {
+    // Map organiser level (1-10) to skill level
+    if (level <= 3) return SkillLevel.beginner;
+    if (level <= 7) return SkillLevel.intermediate;
+    return SkillLevel.advanced;
   }
 
   SkillLevel _parseSkillLevel(dynamic level) {
@@ -400,12 +460,26 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
         ),
         trailing: Switch(
           value: preference.isEnabled,
-          onChanged: (value) {
-            setState(() {
-              _sportPreferences[sportKey] = preference.copyWith(
-                isEnabled: value,
-              );
-            });
+          onChanged: (value) async {
+            // If enabling, just enable it
+            if (value) {
+              setState(() {
+                _sportPreferences[sportKey] = preference.copyWith(
+                  isEnabled: true,
+                );
+              });
+              return;
+            }
+            
+            // If disabling, show confirmation and validate
+            final confirmed = await _showRemoveConfirmation(sportKey);
+            if (confirmed && mounted) {
+              setState(() {
+                _sportPreferences[sportKey] = preference.copyWith(
+                  isEnabled: false,
+                );
+              });
+            }
           },
         ),
         children: preference.isEnabled
@@ -579,54 +653,97 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
         throw Exception('User not authenticated');
       }
 
-      // Get profile_id from user_id
+      // Determine profile type
+      final profileType = _currentProfileType ?? 'player';
+      
+      // Get profile_id for the specific profile type
       final profileResponse = await supabase
           .from('profiles')
           .select('id')
           .eq('user_id', userId)
+          .eq('profile_type', profileType)
           .maybeSingle();
 
       if (profileResponse == null) {
-        throw Exception('Profile not found');
+        throw Exception('Profile not found for type: $profileType');
       }
 
       final profileId = profileResponse['id'] as String;
 
-      // Delete all existing sports profiles for this user
-      await supabase
-          .from('sport_profiles')
-          .delete()
-          .eq('profile_id', profileId);
-
-      // Insert new/updated sports profiles for enabled sports
+      // Get enabled sports
       final enabledSports = _sportPreferences.entries
           .where((entry) => entry.value.isEnabled)
           .toList();
 
-      if (enabledSports.isNotEmpty) {
+      // Validate: must have at least one sport
+      if (enabledSports.isEmpty) {
+        throw Exception('You must have at least one sport enabled');
+      }
+
+      if (profileType == 'player') {
+        // Delete all existing sport_profiles for this profile
+        await supabase
+            .from('sport_profiles')
+            .delete()
+            .eq('profile_id', profileId);
+
+        // Insert new/updated sports profiles
         final sportsData = enabledSports.map((entry) {
+          final sportKey = entry.key.toLowerCase();
           return {
             'profile_id': profileId,
-            'sport_key': entry.key.toLowerCase(),
+            'sport': sportKey,
             'skill_level': _skillLevelToInt(entry.value.skillLevel),
-            // Note: sport_profiles table uses sport_key, not sport_type
-            // Other fields like preferred_position, years_of_experience may need to be in attributes JSONB
+            if (entry.value.preferredPosition != null && entry.value.preferredPosition!.isNotEmpty)
+              'primary_position': entry.value.preferredPosition,
           };
         }).toList();
 
         await supabase.from('sport_profiles').insert(sportsData);
+
+        // Refresh sports profiles in the controller
+        final sportsController = ref.read(sportsProfileControllerProvider.notifier);
+        await sportsController.loadSportsProfiles(userId, profileId: profileId);
+      } else if (profileType == 'organiser') {
+        // Delete all existing organiser_profiles for this profile
+        await supabase
+            .from('organiser_profiles')
+            .delete()
+            .eq('profile_id', profileId);
+
+        // Insert new/updated organiser profiles
+        final organiserData = enabledSports.map((entry) {
+          final sportKey = entry.key.toLowerCase();
+          // Convert skill level back to organiser level (1-10)
+          final organiserLevel = _skillLevelToOrganiserLevel(entry.value.skillLevel);
+          return {
+            'profile_id': profileId,
+            'sport': sportKey,
+            'organiser_level': organiserLevel,
+            'commission_type': 'percent',
+            'commission_value': 0.0,
+            'is_verified': false,
+            'is_active': true,
+          };
+        }).toList();
+
+        await supabase.from('organiser_profiles').insert(organiserData);
+
+        // Refresh organiser profiles in the controller
+        final organiserController = ref.read(organiserProfileControllerProvider.notifier);
+        await organiserController.loadOrganiserProfiles(userId, profileId: profileId);
       }
 
       // Also update the user's preferred sport in the profiles table
       final primarySport = enabledSports.isNotEmpty
-          ? enabledSports.first.key
+          ? enabledSports.first.key.toLowerCase()
           : null;
 
       if (primarySport != null) {
         await supabase
             .from('profiles')
             .update({'preferred_sport': primarySport})
-            .eq('user_id', userId);
+            .eq('id', profileId);
       }
 
       if (mounted) {
@@ -636,6 +753,10 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
             backgroundColor: Colors.green,
           ),
         );
+        // Navigate back after successful save
+        if (mounted) {
+          context.pop();
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -664,6 +785,69 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       case SkillLevel.advanced:
         return 3;
     }
+  }
+
+  int _skillLevelToOrganiserLevel(SkillLevel level) {
+    // Convert skill level to organiser level (1-10 scale)
+    switch (level) {
+      case SkillLevel.beginner:
+        return 1;
+      case SkillLevel.intermediate:
+        return 5;
+      case SkillLevel.advanced:
+        return 10;
+    }
+  }
+  
+  bool _canRemoveSport(String sportKey) {
+    // Check if this is the last enabled sport
+    final enabledCount = _sportPreferences.values.where((p) => p.isEnabled).length;
+    final currentSport = _sportPreferences[sportKey];
+    
+    // Can't remove if it's the last enabled sport
+    if (enabledCount <= 1 && currentSport?.isEnabled == true) {
+      return false;
+    }
+    
+    return true;
+  }
+  
+  Future<bool> _showRemoveConfirmation(String sportKey) async {
+    final sportName = _formatSportName(sportKey);
+    final canRemove = _canRemoveSport(sportKey);
+    
+    if (!canRemove) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('You must have at least one sport enabled'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return false;
+    }
+    
+    return await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Remove $sportName?'),
+        content: Text('Are you sure you want to remove $sportName from your profile?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: const Text('Remove'),
+          ),
+        ],
+      ),
+    ) ?? false;
   }
 }
 

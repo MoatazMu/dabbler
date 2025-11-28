@@ -64,36 +64,44 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
        super(const SportsProfileState());
 
   /// Load sports profiles
-  Future<void> loadSportsProfiles(String userId) async {
+  /// [userId] - The auth user ID
+  /// [profileId] - Optional profile ID. If not provided, will fetch player profile for user
+  Future<void> loadSportsProfiles(String userId, {String? profileId}) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
       final client = Supabase.instance.client;
-      // Resolve the owning profile.id for this auth user
-      final profileRow = await client
-          .from('profiles')
-          .select('id')
-          .eq('user_id', userId)
-          .maybeSingle();
+      
+      String? resolvedProfileId = profileId;
+      
+      // If profileId not provided, resolve the player profile.id for this auth user
+      if (resolvedProfileId == null) {
+        final profileRow = await client
+            .from('profiles')
+            .select('id')
+            .eq('user_id', userId)
+            .eq('profile_type', 'player')
+            .maybeSingle();
 
-      if (profileRow == null) {
-        state = state.copyWith(
-          isLoading: false,
-          profiles: const [],
-          achievements: const {},
-          activeProfileId: null,
-        );
-        return;
+        if (profileRow == null) {
+          state = state.copyWith(
+            isLoading: false,
+            profiles: const [],
+            achievements: const {},
+            activeProfileId: null,
+          );
+          return;
+        }
+
+        resolvedProfileId = profileRow['id'] as String;
       }
-
-      final String profileId = (profileRow['id'] as String);
 
       // Select columns that actually exist in the sport_profiles table
       // Note: Database uses matches_played (not games_played), primary_position (not preferred_positions)
       // average_rating can be calculated from rating_total/rating_count if needed
       final List<dynamic> rows = await client.from('sport_profiles').select(
-        'sport_key, skill_level, matches_played, primary_position, rating_total, rating_count, profile_id',
-      ).eq('profile_id', profileId);
+        'sport, skill_level, matches_played, primary_position, rating_total, rating_count, profile_id',
+      ).eq('profile_id', resolvedProfileId);
 
       final profiles = rows
           .map((row) => SportProfile.fromJson(
@@ -113,7 +121,7 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
         lastSyncTime: DateTime.now(),
         pendingChanges: {},
         hasUnsavedChanges: false,
-        activeProfileId: profiles.isNotEmpty ? profiles.first.sportId : null,
+        activeProfileId: resolvedProfileId,
       );
     } catch (error) {
       state = state.copyWith(

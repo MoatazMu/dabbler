@@ -119,10 +119,15 @@ abstract class ProfileRemoteDataSource {
   // Basic CRUD Operations
 
   /// Fetch user profile with optional sport profile joins
+  /// [profileType] - Optional filter by profile type ('player' or 'organiser')
   /// Throws [NetworkException] for network errors
   /// Throws [DataNotFoundException] if profile doesn't exist
   /// Throws [AuthenticationException] for auth issues
-  Future<UserProfile> getProfile(String userId, {bool includeSports = true});
+  Future<UserProfile> getProfile(
+    String userId, {
+    bool includeSports = true,
+    String? profileType,
+  });
 
   /// Create a new profile
   /// Throws [ValidationException] for invalid data

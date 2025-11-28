@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
+import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/utils/enums/social_enums.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import 'package:dabbler/features/social/providers/social_providers.dart';
+import 'package:intl/intl.dart';
+import 'dart:async';
 
 class AddPostScreen extends ConsumerStatefulWidget {
   const AddPostScreen({super.key});
@@ -18,11 +21,38 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
   final _textController = TextEditingController();
   bool _isPosting = false;
   String? _selectedVibeId;
+  int _blocklistHits = 0;
+  Timer? _debounceTimer;
 
   @override
   void dispose() {
     _textController.dispose();
+    _debounceTimer?.cancel();
     super.dispose();
+  }
+
+  void _onTextChanged(String text) {
+    // Debounce blocklist check
+    _debounceTimer?.cancel();
+    if (text.trim().isNotEmpty) {
+      _debounceTimer = Timer(const Duration(milliseconds: 500), () {
+        _checkBlocklist(text);
+      });
+    } else {
+      setState(() => _blocklistHits = 0);
+    }
+  }
+
+  Future<void> _checkBlocklist(String text) async {
+    try {
+      final moderationService = ref.read(moderationServiceProvider);
+      final hits = await moderationService.contentHitsBlocklist(text);
+      if (mounted) {
+        setState(() => _blocklistHits = hits);
+      }
+    } catch (e) {
+      // Silently fail - don't block user input
+    }
   }
 
   @override
@@ -152,11 +182,45 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                   ),
                   const SizedBox(height: 16),
 
+                  // Blocklist warning
+                  if (_blocklistHits > 0)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.warning_rounded,
+                            size: 16,
+                            color: Theme.of(context).colorScheme.onErrorContainer,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Your post contains inappropriate content ($_blocklistHits violation${_blocklistHits > 1 ? 's' : ''}). Please revise.',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).colorScheme.onErrorContainer,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                   // Text Input
                   TextField(
                     controller: _textController,
                     maxLines: null,
                     minLines: 4,
+                    onChanged: (text) {
+                      _onTextChanged(text);
+                      setState(() {});
+                    },
                     style: const TextStyle(
                       color: Color(0xFFEBD7FA),
                       fontFamily: 'Roboto',
@@ -201,7 +265,6 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                         vertical: 24,
                       ),
                     ),
-                    onChanged: (_) => setState(() {}),
                   ),
                   const SizedBox(height: 16),
                   // Vibes selector (primary)
@@ -268,6 +331,26 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
     setState(() => _isPosting = true);
 
     try {
+      // Check cooldown before allowing post creation
+      final moderationService = ref.read(moderationServiceProvider);
+      final cooldownResult = await moderationService.checkAndBumpCooldown(
+        'post.create',
+        windowSeconds: 3600, // 1 hour window
+        limitCount: 10, // 10 posts per hour
+      );
+
+      if (!cooldownResult.allowed) {
+        if (mounted) {
+          setState(() => _isPosting = false);
+          final resetTime = DateFormat('HH:mm').format(cooldownResult.resetAt);
+          _showError(
+            'You\'ve reached the posting limit. You can post again at $resetTime. '
+            'Remaining: ${cooldownResult.remaining} posts.',
+          );
+        }
+        return;
+      }
+
       final socialService = SocialService();
 
       // Create the post (text only for MVP)
