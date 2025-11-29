@@ -21,6 +21,23 @@ import 'package:dabbler/data/models/sport_tags.dart';
 // Extracted widgets for hero and basics live alongside this screen for now.
 // If you re-enable them, ensure the import paths match actual file locations.
 
+/// Provider that checks if a profile is under takedown
+/// Uses autoDispose.family to cache per profileId and clean up when not needed
+final profileTakedownProvider = FutureProvider.autoDispose.family<bool, String>(
+  (ref, profileId) async {
+    try {
+      final moderationService = ref.read(moderationServiceProvider);
+      return await moderationService.isContentTakedown(
+        ModTarget.profile,
+        profileId,
+      );
+    } catch (e) {
+      // If check fails, assume not takedown to avoid blocking content
+      return false;
+    }
+  },
+);
+
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
@@ -34,7 +51,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   late AnimationController _refreshController;
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
-  
+
   String? _selectedProfileType; // 'player' or 'organiser'
 
   @override
@@ -95,42 +112,51 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Future<void> _loadProfileData({String? profileType}) async {
     final profileController = ref.read(profileControllerProvider.notifier);
     final sportsController = ref.read(sportsProfileControllerProvider.notifier);
-    final organiserController = ref.read(organiserProfileControllerProvider.notifier);
+    final organiserController = ref.read(
+      organiserProfileControllerProvider.notifier,
+    );
     final user = ref.read(currentUserProvider);
 
     if (user != null) {
       // Use selected profile type or default to current profile's type
       final typeToLoad = profileType ?? _selectedProfileType;
-      
+
       await profileController.loadProfile(user.id, profileType: typeToLoad);
-      
+
       // Update selected profile type based on loaded profile
       final profileState = ref.read(profileControllerProvider);
       final profile = profileState.profile;
       if (profile != null) {
         _selectedProfileType = profile.profileType;
-        ref.read(activeProfileTypeProvider.notifier).state = profile.profileType;
-        
+        ref.read(activeProfileTypeProvider.notifier).state =
+            profile.profileType;
+
         // Load profile-specific data using profile_id
         final profileId = profile.id;
         if (profile.profileType == 'organiser') {
-          await organiserController.loadOrganiserProfiles(user.id, profileId: profileId);
+          await organiserController.loadOrganiserProfiles(
+            user.id,
+            profileId: profileId,
+          );
         } else {
-          await sportsController.loadSportsProfiles(user.id, profileId: profileId);
+          await sportsController.loadSportsProfiles(
+            user.id,
+            profileId: profileId,
+          );
         }
       }
-      
+
       await _loadAverageRating();
     }
   }
-  
+
   Future<void> _switchProfileType(String profileType) async {
     if (_selectedProfileType == profileType) return;
-    
+
     setState(() {
       _selectedProfileType = profileType;
     });
-    
+
     await _loadProfileData(profileType: profileType);
   }
 
@@ -159,19 +185,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final profileId = profileState.profile?.id;
 
+    // Watch the takedown provider once per profileId
+    final takedownAsync = profileId != null
+        ? ref.watch(profileTakedownProvider(profileId))
+        : const AsyncData<bool>(false);
+
     return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: profileId != null
-            ? FutureBuilder<bool>(
-                future: _checkProfileTakedown(profileId),
-                builder: (context, takedownSnapshot) {
-                  if (takedownSnapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  final isTakedown = takedownSnapshot.data ?? false;
+            ? takedownAsync.when(
+                data: (isTakedown) {
                   if (isTakedown) {
                     return _buildTakedownPlaceholder(context, colorScheme);
                   }
@@ -252,6 +276,40 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     ),
                   );
                 },
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (_, __) => RefreshIndicator(
+                  onRefresh: _onRefresh,
+                  color: colorScheme.primary,
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
+                    ),
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+                        sliver: SliverToBoxAdapter(
+                          child: Column(
+                            children: [
+                              _buildHeader(context),
+                              const SizedBox(height: 16),
+                              _buildProfileTypeSwitcher(context),
+                            ],
+                          ),
+                        ),
+                      ),
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                        sliver: SliverToBoxAdapter(
+                          child: _buildProfileHeroCard(
+                            context,
+                            profileState,
+                            sportsState,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               )
             : RefreshIndicator(
                 onRefresh: _onRefresh,
@@ -317,7 +375,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                                 if (profileType == 'player')
                                   _buildSportsProfiles(context, sportsState),
                                 if (profileType == 'organiser')
-                                  _buildOrganiserProfilesList(context, organiserState),
+                                  _buildOrganiserProfilesList(
+                                    context,
+                                    organiserState,
+                                  ),
                                 _buildStatisticsSummary(context, profileState),
                               ],
                             ),
@@ -344,14 +405,19 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           return const SizedBox.shrink();
         }
 
-        final hasPlayer = profiles.any((p) => p.profileType?.toLowerCase() == 'player');
-        final hasOrganiser = profiles.any((p) => p.profileType?.toLowerCase() == 'organiser');
+        final hasPlayer = profiles.any(
+          (p) => p.profileType?.toLowerCase() == 'player',
+        );
+        final hasOrganiser = profiles.any(
+          (p) => p.profileType?.toLowerCase() == 'organiser',
+        );
 
         if (!hasPlayer || !hasOrganiser) {
           return const SizedBox.shrink();
         }
 
-        final currentType = activeProfileType ?? _selectedProfileType ?? 'player';
+        final currentType =
+            activeProfileType ?? _selectedProfileType ?? 'player';
 
         return Container(
           padding: const EdgeInsets.all(4),
@@ -860,10 +926,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  Widget _buildOrganiserCard(
-    BuildContext context,
-    OrganiserProfile profile,
-  ) {
+  Widget _buildOrganiserCard(BuildContext context, OrganiserProfile profile) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final sportTag = getSportTag(profile.sport);
@@ -874,9 +937,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.outline.withValues(alpha: 0.1),
-        ),
+        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -903,11 +964,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(
-                    Icons.star,
-                    size: 16,
-                    color: colorScheme.primary,
-                  ),
+                  Icon(Icons.star, size: 16, color: colorScheme.primary),
                   const SizedBox(width: 4),
                   Text(
                     'Level ${profile.organiserLevel}',
@@ -921,11 +978,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(
-                      Icons.verified,
-                      size: 16,
-                      color: colorScheme.primary,
-                    ),
+                    Icon(Icons.verified, size: 16, color: colorScheme.primary),
                     const SizedBox(width: 4),
                     Text(
                       'Verified',
@@ -1272,18 +1325,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   ),
                 ),
                 const Spacer(),
-                          TextButton.icon(
-                            onPressed: () {
-                              final currentProfileState = ref.read(profileControllerProvider);
-                              final profileType = currentProfileState.profile?.profileType ?? 'player';
-                              context.push(
-                                '/profile/sports-preferences',
-                                extra: {'profileType': profileType},
-                              );
-                            },
-                            icon: const Icon(Icons.tune_outlined, size: 18),
-                            label: const Text('Manage'),
-                          ),
+                TextButton.icon(
+                  onPressed: () {
+                    final currentProfileState = ref.read(
+                      profileControllerProvider,
+                    );
+                    final profileType =
+                        currentProfileState.profile?.profileType ?? 'player';
+                    context.push(
+                      '/profile/sports-preferences',
+                      extra: {'profileType': profileType},
+                    );
+                  },
+                  icon: const Icon(Icons.tune_outlined, size: 18),
+                  label: const Text('Manage'),
+                ),
               ],
             ),
             const SizedBox(height: 20),
@@ -1559,10 +1615,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     // Convert sport key to display name (e.g., 'football' -> 'Football')
     if (sportKey.isEmpty) return sportKey;
     final words = sportKey.split('_');
-    return words.map((word) {
-      if (word.isEmpty) return '';
-      return word[0].toUpperCase() + word.substring(1);
-    }).join(' ');
+    return words
+        .map((word) {
+          if (word.isEmpty) return '';
+          return word[0].toUpperCase() + word.substring(1);
+        })
+        .join(' ');
   }
 
   /// Format location string combining city and country
@@ -1668,19 +1726,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ],
       ),
     );
-  }
-
-  Future<bool> _checkProfileTakedown(String profileId) async {
-    try {
-      final moderationService = ref.read(moderationServiceProvider);
-      return await moderationService.isContentTakedown(
-        ModTarget.profile,
-        profileId,
-      );
-    } catch (e) {
-      // If check fails, assume not takedown to avoid blocking content
-      return false;
-    }
   }
 
   Widget _buildTakedownPlaceholder(

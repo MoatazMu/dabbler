@@ -19,3 +19,4 @@ export 'widgets/app_card.dart';
 export 'widgets/social_feed_widgets.dart';
 export 'widgets/app_filter_chip.dart';
 export 'widgets/app_search_input.dart';
+export 'widgets/design_system_button.dart';

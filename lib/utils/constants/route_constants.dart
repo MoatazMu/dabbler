@@ -3,7 +3,8 @@ class RoutePaths {
   // Deep Link Configuration
   static const String deepLinkPrefix = 'dabbler://app';
 
-  // Authentication & Onboarding
+  // Landing & Authentication
+  static const String landing = '/landing';
   static const String phoneInput = '/phone_input';
   static const String emailInput = '/email_input';
   static const String otpVerification = '/otp_verification';

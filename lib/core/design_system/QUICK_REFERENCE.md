@@ -65,6 +65,17 @@ AppActionCard(
 )
 ```
 
+### CTA Button
+```dart
+DesignSystemButton(
+  label: 'Continue',
+  leadingIcon: Icons.add,             // optional
+  trailingIcon: Icons.arrow_forward,  // optional
+  size: DesignSystemButtonSize.large, // small | medium | large
+  onPressed: () {},
+)
+```
+
 ### Generic Card
 ```dart
 AppCard(

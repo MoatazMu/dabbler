@@ -6,6 +6,7 @@ import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/utils/identifier_detector.dart';
 import 'package:dabbler/core/utils/validators.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:dabbler_design_system/dabbler_design_system.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/models/google_sign_in_result.dart';
@@ -249,6 +250,7 @@ class _IdentityVerificationScreenState
                 padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
                 child: _buildBottomSection(),
               ),
+              const DabblerHello(),
             ],
           ),
         ),

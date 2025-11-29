@@ -8,6 +8,7 @@ import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 
 // Onboarding screens
+import 'package:dabbler/features/landing/presentation/screens/landing_page.dart';
 import 'package:dabbler/features/misc/presentation/screens/identity_verification_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/email_input_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/otp_verification_screen.dart';
@@ -111,7 +112,7 @@ class AppRouter {
 
   static final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: RoutePaths.phoneInput, // Start with phone input screen
+    initialLocation: '/landing', // Start with landing page
     debugLogDiagnostics: true, // Enable debug logging to see what's happening
     observers: [_routeObserver],
     errorBuilder: (context, state) => ErrorPage(message: state.error?.message),
@@ -151,6 +152,7 @@ class AppRouter {
       // Includes onboarding screens because email users are unauthenticated during onboarding
       // Phone users become authenticated before onboarding, so we handle them separately
       const authPaths = <String>{
+        RoutePaths.landing, // Landing page
         RoutePaths.register,
         RoutePaths.enterPassword,
         RoutePaths.forgotPassword,
@@ -204,14 +206,15 @@ class AppRouter {
         if (currentUser != null) {
           // Check if this is a Google user
           final identities = currentUser.identities;
-          final isGoogleUser = currentUser.emailConfirmedAt != null &&
+          final isGoogleUser =
+              currentUser.emailConfirmedAt != null &&
               ((identities != null &&
-                  identities.isNotEmpty &&
-                  identities.any(
-                    (identity) => identity.provider == 'google',
-                  )) ||
+                      identities.isNotEmpty &&
+                      identities.any(
+                        (identity) => identity.provider == 'google',
+                      )) ||
                   (currentUser.appMetadata['provider'] == 'google'));
-          
+
           if (isGoogleUser) {
             // Check if profile exists and onboarding is complete
             final profileResponse = await supabase
@@ -219,10 +222,12 @@ class AppRouter {
                 .select('id, onboard')
                 .eq('user_id', currentUser.id)
                 .maybeSingle();
-            
-            final isOnboarded = profileResponse != null && 
-                (profileResponse['onboard'] == true || profileResponse['onboard'] == 'true');
-            
+
+            final isOnboarded =
+                profileResponse != null &&
+                (profileResponse['onboard'] == true ||
+                    profileResponse['onboard'] == 'true');
+
             if (profileResponse == null || !isOnboarded) {
               // Google user without profile or not onboarded - redirect to onboarding start
               // Allow them to stay on any onboarding screen (CreateUserInfo, SportsSelection, IntentSelection, SetUsername)
@@ -236,7 +241,9 @@ class AppRouter {
               }
               // Already on onboarding, allow it
               if (kDebugMode && _routeLogging) {
-                debugPrint('🔍 [ROUTER] Google user ${profileResponse == null ? "without profile" : "not onboarded"} already on onboarding: $loc');
+                debugPrint(
+                  '🔍 [ROUTER] Google user ${profileResponse == null ? "without profile" : "not onboarded"} already on onboarding: $loc',
+                );
               }
               return null;
             }
@@ -251,12 +258,12 @@ class AppRouter {
 
       // If not authenticated, always stay on onboarding/auth screens
       if (!isAuthenticated) {
-        // If not on an auth page, redirect to phone input
+        // If not on an auth page, redirect to landing page first
         if (!isOnAuthPage) {
           if (kDebugMode && _routeLogging) {
-            debugPrint('🔁 [ROUTER] redirect -> ${RoutePaths.phoneInput}');
+            debugPrint('🔁 [ROUTER] redirect -> ${RoutePaths.landing}');
           }
-          return RoutePaths.phoneInput;
+          return RoutePaths.landing;
         }
         // Stay on auth page
         if (kDebugMode && _routeLogging) {
@@ -274,10 +281,12 @@ class AppRouter {
               .select('id, onboard')
               .eq('user_id', currentUser.id)
               .maybeSingle();
-          
-          final isOnboarded = profileResponse != null && 
-              (profileResponse['onboard'] == true || profileResponse['onboard'] == 'true');
-          
+
+          final isOnboarded =
+              profileResponse != null &&
+              (profileResponse['onboard'] == true ||
+                  profileResponse['onboard'] == 'true');
+
           if (profileResponse == null || !isOnboarded) {
             // User not onboarded - redirect to onboarding
             if (kDebugMode && _routeLogging) {
@@ -313,10 +322,12 @@ class AppRouter {
                 .select('id, onboard')
                 .eq('user_id', currentUser.id)
                 .maybeSingle();
-            
-            final isOnboarded = profileResponse != null && 
-                (profileResponse['onboard'] == true || profileResponse['onboard'] == 'true');
-            
+
+            final isOnboarded =
+                profileResponse != null &&
+                (profileResponse['onboard'] == true ||
+                    profileResponse['onboard'] == 'true');
+
             // If no profile exists or not onboarded, user needs to complete onboarding
             if (profileResponse == null || !isOnboarded) {
               // Redirect to onboarding start
@@ -334,7 +345,7 @@ class AppRouter {
           }
           // If check fails, proceed with normal redirect
         }
-        
+
         // User has completed onboarding - redirect to home
         if (kDebugMode && _routeLogging) {
           debugPrint(
@@ -346,7 +357,10 @@ class AppRouter {
 
       // Check if authenticated user without completed onboarding is trying to access protected routes
       // This handles cases where users land on home or other routes after OAuth/OTP
-      if (isAuthenticated && !isOnAuthPage && !isOnboardingPage && loc != '/welcome') {
+      if (isAuthenticated &&
+          !isOnAuthPage &&
+          !isOnboardingPage &&
+          loc != '/welcome') {
         try {
           final supabase = Supabase.instance.client;
           final currentUser = supabase.auth.currentUser;
@@ -356,10 +370,12 @@ class AppRouter {
                 .select('id, onboard')
                 .eq('user_id', currentUser.id)
                 .maybeSingle();
-            
-            final isOnboarded = profileResponse != null && 
-                (profileResponse['onboard'] == true || profileResponse['onboard'] == 'true');
-            
+
+            final isOnboarded =
+                profileResponse != null &&
+                (profileResponse['onboard'] == true ||
+                    profileResponse['onboard'] == 'true');
+
             // If no profile exists or not onboarded, redirect to onboarding
             if (profileResponse == null || !isOnboarded) {
               if (kDebugMode && _routeLogging) {
@@ -372,7 +388,9 @@ class AppRouter {
           }
         } catch (e) {
           if (kDebugMode && _routeLogging) {
-            debugPrint('⚠️ [ROUTER] Error checking profile on protected route: $e');
+            debugPrint(
+              '⚠️ [ROUTER] Error checking profile on protected route: $e',
+            );
           }
           // If check fails, allow access (better UX than blocking)
         }
@@ -392,6 +410,13 @@ class AppRouter {
 
   // Route Definitions - Minimal working set
   static List<RouteBase> get _routes => [
+    // Landing page route
+    GoRoute(
+      path: '/landing',
+      pageBuilder: (context, state) =>
+          FadeTransitionPage(key: state.pageKey, child: const LandingPage()),
+    ),
+
     GoRoute(
       path: RoutePaths.phoneInput,
       pageBuilder: (context, state) => FadeTransitionPage(
@@ -417,15 +442,16 @@ class AppRouter {
         final identifier = extra is Map
             ? extra['identifier'] as String?
             : extra is Map
-                ? extra['phone'] as String? // Legacy support
-                : extra as String?;
+            ? extra['phone']
+                  as String? // Legacy support
+            : extra as String?;
         final identifierTypeStr = extra is Map
             ? extra['identifierType'] as String?
             : null;
         final userExistsBeforeOtp = extra is Map
             ? extra['userExistsBeforeOtp'] as bool?
             : null;
-        
+
         // Parse identifier type
         IdentifierType? identifierType;
         if (identifierTypeStr == 'email') {
@@ -434,7 +460,7 @@ class AppRouter {
           identifierType = IdentifierType.phone;
         }
         // If null, OtpVerificationScreen will auto-detect
-        
+
         return FadeTransitionPage(
           key: state.pageKey,
           child: OtpVerificationScreen(
@@ -588,13 +614,10 @@ class AppRouter {
       path: RoutePaths.emailVerification,
       pageBuilder: (context, state) {
         final extra = state.extra;
-        final onboardingData =
-            extra is Map<String, dynamic> ? extra : null;
+        final onboardingData = extra is Map<String, dynamic> ? extra : null;
         return FadeTransitionPage(
           key: state.pageKey,
-          child: EmailVerificationScreen(
-            onboardingData: onboardingData,
-          ),
+          child: EmailVerificationScreen(onboardingData: onboardingData),
         );
       },
     ),
