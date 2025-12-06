@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
 import 'package:dabbler/core/widgets/custom_avatar.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 
 /// A card widget for displaying social posts in the feed
 class PostCard extends StatelessWidget {
@@ -26,28 +28,28 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
-      opacity: isOptimistic ? 0.6 : 1.0,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 0),
-        child: GestureDetector(
-          onTap: onPostTap,
-          behavior: HitTestBehavior.opaque,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // First Row: Avatar + Display Name and Time + Post type badge + Overflow menu
-              _buildHeader(context),
+    final tokens = context.colorTokens;
 
-              const SizedBox(height: 12),
+    return Container(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: tokens.stroke, width: 0)),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 0),
+      child: GestureDetector(
+        onTap: onPostTap,
+        behavior: HitTestBehavior.opaque,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // First Row: Avatar + Display Name and Time + Post type badge + Overflow menu
+            _buildHeader(context),
 
-              // Second Row: Content + Media display
-              _buildContent(context),
+            // Second Row: Content + Media display
+            _buildContent(context),
 
-              // Third Row: vibe pill + Like action + Comment action
-              _buildActions(context),
-            ],
-          ),
+            // Third Row: vibe pill + Like action + Comment action
+            _buildActions(context),
+          ],
         ),
       ),
     );
@@ -130,7 +132,7 @@ class PostCard extends StatelessWidget {
         PopupMenuButton<String>(
           padding: EdgeInsets.zero,
           icon: Icon(
-            Icons.more_horiz,
+            Iconsax.more_2_copy,
             color: colorScheme.onSurfaceVariant,
             size: 18,
           ),
@@ -139,7 +141,7 @@ class PostCard extends StatelessWidget {
               value: 'hide',
               child: Row(
                 children: [
-                  Icon(Icons.visibility_off_rounded, size: 20),
+                  Icon(Iconsax.eye_slash_copy, size: 20),
                   SizedBox(width: 12),
                   Text('Hide Post'),
                 ],
@@ -149,7 +151,7 @@ class PostCard extends StatelessWidget {
               value: 'report',
               child: Row(
                 children: [
-                  Icon(Icons.flag_rounded, size: 20),
+                  Icon(Iconsax.flag_copy, size: 20),
                   SizedBox(width: 12),
                   Text('Report'),
                 ],
@@ -214,35 +216,38 @@ class PostCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (post.content.isNotEmpty) ...[
-          Directionality(
-            textDirection: TextDirection.ltr,
-            child: Align(
-              alignment: _isRtl(post.content)
-                  ? Alignment.centerRight
-                  : Alignment.centerLeft,
-              child: Text(
-                post.content,
-                textDirection: _isRtl(post.content)
-                    ? TextDirection.rtl
-                    : TextDirection.ltr,
-                style: textTheme.bodyMedium?.copyWith(
-                  fontSize: 14,
-                  color: colorScheme.onSurface,
-                  fontWeight: FontWeight.w400,
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (post.content.isNotEmpty) ...[
+            Directionality(
+              textDirection: TextDirection.ltr,
+              child: Align(
+                alignment: _isRtl(post.content)
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child: Text(
+                  post.content,
+                  textDirection: _isRtl(post.content)
+                      ? TextDirection.rtl
+                      : TextDirection.ltr,
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontSize: 17,
+                    color: colorScheme.onSurface,
+                    fontWeight: FontWeight.w400,
+                  ),
                 ),
               ),
             ),
-          ),
-          if (post.mediaUrls.isNotEmpty) const SizedBox(height: 12),
-        ],
+            if (post.mediaUrls.isNotEmpty) const SizedBox(height: 12),
+          ],
 
-        // Media display
-        if (post.mediaUrls.isNotEmpty) _buildMediaContent(context),
-      ],
+          // Media display
+          if (post.mediaUrls.isNotEmpty) _buildMediaContent(context),
+        ],
+      ),
     );
   }
 
@@ -285,7 +290,7 @@ class PostCard extends StatelessWidget {
                       color: theme.colorScheme.primary.withOpacity(0.2),
                     ),
                     child: Icon(
-                      Icons.play_arrow_rounded,
+                      Iconsax.play_copy,
                       color: theme.colorScheme.primary,
                       size: 40,
                     ),
@@ -314,7 +319,7 @@ class PostCard extends StatelessWidget {
                   return Container(
                     color: theme.colorScheme.surfaceContainerHighest,
                     child: Icon(
-                      Icons.broken_image_outlined,
+                      Iconsax.gallery_slash_copy,
                       color: theme.colorScheme.onSurfaceVariant,
                       size: 48,
                     ),
@@ -331,14 +336,14 @@ class PostCard extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.only(top: 18),
       child: Row(
         children: [
           // Primary vibe pill - using default vibe for now
           // TODO: Join vibe data from public.vibes in feed query
           if (post.primaryVibeId != null)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
               decoration: BoxDecoration(
                 color: colorScheme.secondaryContainer.withOpacity(0.5),
                 borderRadius: BorderRadius.circular(20),
@@ -362,21 +367,19 @@ class PostCard extends StatelessWidget {
           // Like action
           _buildActionButton(
             context: context,
-            emoji: post.isLiked ? '❤️' : '🩶',
+            icon: Iconsax.heart_copy,
             label: post.likesCount.toString(),
             isActive: post.isLiked,
             onTap: onLike,
-            isDark: isDark,
           ),
           const SizedBox(width: 16),
           // Comment action
           _buildActionButton(
             context: context,
-            emoji: '💬',
+            icon: Iconsax.message_copy,
             label: post.commentsCount.toString(),
             isActive: false,
             onTap: onComment,
-            isDark: isDark,
           ),
         ],
       ),
@@ -385,23 +388,28 @@ class PostCard extends StatelessWidget {
 
   Widget _buildActionButton({
     required BuildContext context,
-    required String emoji,
+    required IconData icon,
     required String label,
     required bool isActive,
-    required bool isDark,
     VoidCallback? onTap,
   }) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+
+    // Use filled heart icon when liked (active)
+    final displayIcon = icon == Iconsax.heart_copy && isActive
+        ? Iconsax.heart
+        : icon;
 
     return GestureDetector(
       onTap: onTap,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            emoji,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          Icon(
+            displayIcon,
+            size: 20,
+            color: isActive ? Colors.red : colorScheme.onSurfaceVariant,
           ),
           const SizedBox(width: 4),
           Text(

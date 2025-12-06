@@ -156,7 +156,7 @@ class _GameCardState extends State<GameCard>
                       Row(
                         children: [
                           Icon(
-                            Icons.location_on_outlined,
+                            Iconsax.location_copy,
                             size: 18,
                             color: tertiaryColor,
                           ),

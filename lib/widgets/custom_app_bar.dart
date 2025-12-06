@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../utils/constants/route_constants.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -9,6 +10,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback? onActionPressed;
   final bool showBackButton;
   final bool useGlassmorphism;
+  final String? chipLabel;
+  final int? chipCount;
+  final VoidCallback? onChipPressed;
 
   const CustomAppBar({
     super.key,
@@ -16,6 +20,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onActionPressed,
     this.showBackButton = true,
     this.useGlassmorphism = true,
+    this.chipLabel,
+    this.chipCount,
+    this.onChipPressed,
   });
 
   @override
@@ -80,8 +87,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          Icons.home_rounded,
-                          size: 20,
+                          Iconsax.home_copy,
+                          size: 24,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                         const SizedBox(width: 8),
@@ -105,8 +112,17 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
                 const SizedBox(width: 12),
 
-                // Action Icon
-                if (actionIcon != null)
+                // Action Icon or Chip
+                if (chipLabel != null && onChipPressed != null)
+                  _AppBarChip(
+                    label: chipLabel!,
+                    count: chipCount,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      onChipPressed?.call();
+                    },
+                  )
+                else if (actionIcon != null)
                   _AppBarIconButton(
                     icon: actionIcon!,
                     onTap: () {
@@ -254,6 +270,98 @@ class _AppBarIconButtonState extends State<_AppBarIconButton> {
           widget.icon,
           size: 22,
           color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
+    );
+  }
+}
+
+/// Chip button for app bar showing label and optional count badge
+class _AppBarChip extends StatefulWidget {
+  final String label;
+  final int? count;
+  final VoidCallback onTap;
+
+  const _AppBarChip({required this.label, this.count, required this.onTap});
+
+  @override
+  State<_AppBarChip> createState() => _AppBarChipState();
+}
+
+class _AppBarChipState extends State<_AppBarChip> {
+  bool _isPressed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _isPressed = true),
+      onTapUp: (_) => setState(() => _isPressed = false),
+      onTapCancel: () => setState(() => _isPressed = false),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          color: _isPressed
+              ? Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.9)
+              : Theme.of(context).colorScheme.surfaceContainer.withValues(
+                  alpha: isDark ? 0.7 : 0.8,
+                ),
+          border: Border.all(
+            color: Theme.of(
+              context,
+            ).colorScheme.outline.withValues(alpha: isDark ? 0.4 : 0.6),
+            width: 1.5,
+          ),
+          boxShadow: _isPressed
+              ? []
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              widget.label,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontFamily: 'Inter',
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.1,
+              ),
+            ),
+            if (widget.count != null && widget.count! > 0) ...[
+              const SizedBox(width: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.primary,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  widget.count! > 99 ? '99+' : '${widget.count}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontFamily: 'Inter',
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );

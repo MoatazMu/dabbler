@@ -68,7 +68,7 @@ class AppTypography {
     fontSize: 19,
     fontWeight: FontWeight.w700,
     height: 1.172, // 22.27 / 19
-    letterSpacing: 0,
+    letterSpacing: 1,
   );
 
   // ========== Titles ==========
@@ -116,22 +116,22 @@ class AppTypography {
   );
 
   /// Body Medium - Figma: body/medium
-  /// Font: Roboto Regular (400), Size: 17px, Line: 19.92px
-  static const TextStyle bodyMedium = TextStyle(
-    fontFamily: 'Roboto',
-    fontSize: 17,
-    fontWeight: FontWeight.w400,
-    height: 1.172, // 19.92 / 17
-    letterSpacing: 0,
-  );
-
-  /// Body Small - Figma: body/small
   /// Font: Roboto Regular (400), Size: 15px, Line: 17.58px
-  static const TextStyle bodySmall = TextStyle(
+  static const TextStyle bodyMedium = TextStyle(
     fontFamily: 'Roboto',
     fontSize: 15,
     fontWeight: FontWeight.w400,
     height: 1.172, // 17.58 / 15
+    letterSpacing: 0,
+  );
+
+  /// Body Small - Figma: body/small
+  /// Font: Roboto Regular (400), Size: 12px, Line: 14.06px
+  static const TextStyle bodySmall = TextStyle(
+    fontFamily: 'Roboto',
+    fontSize: 12,
+    fontWeight: FontWeight.w400,
+    height: 1.172, // 14.06 / 12
     letterSpacing: 0,
   );
 

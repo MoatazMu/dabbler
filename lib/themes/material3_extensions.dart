@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Material 3 ColorScheme extension for app-specific category colors
-/// 
+///
 /// This extension adds category colors (main, social, sports, activities, profile)
 /// to the Material 3 ColorScheme, allowing them to be accessed via theme.
 extension AppColorSchemeExtension on ColorScheme {
@@ -10,29 +10,34 @@ extension AppColorSchemeExtension on ColorScheme {
   static const Color _socialDark = Color(0xFF023D99);
   static const Color _sportsDark = Color(0xFF235826);
   static const Color _activitiesDark = Color(0xFF9C2464);
-  static const Color _profileDark = Color(0xFFEC8F1E);
+  static const Color _profileDark = Color(0xFFFCF8EA);
 
   // Category colors for light theme
   static const Color _mainLight = Color(0xFFE0C7FF);
   static const Color _socialLight = Color(0xFFD1EAFA);
   static const Color _sportsLight = Color(0xFFB1FBDA);
   static const Color _activitiesLight = Color(0xFFFCDEE8);
-  static const Color _profileLight = Color(0xFFFCF8EA);
+  static const Color _profileLight = Color(0xFFEC8F1E);
 
   /// Main category color (purple)
-  Color get categoryMain => brightness == Brightness.dark ? _mainDark : _mainLight;
+  Color get categoryMain =>
+      brightness == Brightness.dark ? _mainDark : _mainLight;
 
   /// Social category color (blue)
-  Color get categorySocial => brightness == Brightness.dark ? _socialDark : _socialLight;
+  Color get categorySocial =>
+      brightness == Brightness.dark ? _socialDark : _socialLight;
 
   /// Sports category color (green)
-  Color get categorySports => brightness == Brightness.dark ? _sportsDark : _sportsLight;
+  Color get categorySports =>
+      brightness == Brightness.dark ? _sportsDark : _sportsLight;
 
   /// Activities category color (pink)
-  Color get categoryActivities => brightness == Brightness.dark ? _activitiesDark : _activitiesLight;
+  Color get categoryActivities =>
+      brightness == Brightness.dark ? _activitiesDark : _activitiesLight;
 
   /// Profile category color (orange)
-  Color get categoryProfile => brightness == Brightness.dark ? _profileDark : _profileLight;
+  Color get categoryProfile =>
+      brightness == Brightness.dark ? _profileDark : _profileLight;
 
   /// Get category color by name
   Color getCategoryColor(String category) {
@@ -109,11 +114,13 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
 
 /// Extension to easily access AppThemeExtension from BuildContext
 extension AppThemeExtensionContext on BuildContext {
-  AppThemeExtension get appTheme => Theme.of(this).extension<AppThemeExtension>() ?? const AppThemeExtension(
-    success: Color(0xFF00A63E),
-    warning: Color(0xFFEC8F1E),
-    infoLink: Color(0xFF155DFC),
-  );
+  AppThemeExtension get appTheme =>
+      Theme.of(this).extension<AppThemeExtension>() ??
+      const AppThemeExtension(
+        success: Color(0xFF00A63E),
+        warning: Color(0xFFEC8F1E),
+        infoLink: Color(0xFF155DFC),
+      );
 
   /// Success color
   Color get successColor => appTheme.success;
@@ -127,4 +134,3 @@ extension AppThemeExtensionContext on BuildContext {
   /// Danger color (falls back to ColorScheme.error)
   Color get dangerColor => appTheme.danger ?? Theme.of(this).colorScheme.error;
 }
-

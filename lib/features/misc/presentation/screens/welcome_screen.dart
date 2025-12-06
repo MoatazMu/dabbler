@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:dabbler/themes/design_system.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:dabbler/utils/constants/app_constants.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 
 class WelcomeScreen extends StatefulWidget {
   final String displayName;
@@ -61,111 +60,163 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppConstants.defaultPadding),
-          child: AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
-                  child: Column(
-                    children: [
-                      const Spacer(),
+    final screenHeight = MediaQuery.of(context).size.height;
+    final topPadding = MediaQuery.of(context).padding.top;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-                      // Success Icon with pulse animation
-                      AnimatedBuilder(
-                        animation: _animationController,
-                        builder: (context, child) {
-                          return Transform.scale(
-                            scale: 1.0 + (0.1 * _animationController.value),
-                            child: Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                color: DS.primary.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                Icons.check,
-                                size: 60,
-                                color: DS.primary,
+    return SingleSectionLayout(
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: screenHeight - topPadding - bottomPadding - 48,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Spacer(),
+
+                    // Dabbler logo
+                    Center(
+                      child: SvgPicture.asset(
+                        'assets/images/dabbler_logo.svg',
+                        width: 100,
+                        height: 110,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: AppSpacing.lg),
+
+                    // Dabbler text logo
+                    Center(
+                      child: SvgPicture.asset(
+                        'assets/images/dabbler_text_logo.svg',
+                        width: 130,
+                        height: 25,
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: AppSpacing.xl),
+
+                    // Success Icon with pulse animation
+                    AnimatedBuilder(
+                      animation: _animationController,
+                      builder: (context, child) {
+                        return Transform.scale(
+                          scale: 1.0 + (0.1 * _animationController.value),
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFC18FFF).withOpacity(0.2),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFC18FFF),
+                                width: 2,
                               ),
                             ),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Welcome Message
-                      Text(
-                        'Welcome to Dabbler!',
-                        style: DS.headline.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: DS.onSurface,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Personalized greeting [[memory:3805984]]
-                      Text(
-                        'Hi ${widget.displayName}! 👋',
-                        style: DS.subtitle.copyWith(
-                          color: DS.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      Text(
-                        'Your account has been created successfully.\nGet ready to discover amazing sports experiences!',
-                        style: DS.body.copyWith(color: DS.onSurfaceVariant),
-                        textAlign: TextAlign.center,
-                      ),
-
-                      const SizedBox(height: 48),
-
-                      // Skip to home button (optional)
-                      TextButton(
-                        onPressed: () => context.go('/home'),
-                        child: Text(
-                          'Continue to Home',
-                          style: DS.body.copyWith(
-                            color: DS.primary,
-                            fontWeight: FontWeight.w500,
+                            child: const Icon(
+                              Icons.check_rounded,
+                              size: 50,
+                              color: Color(0xFFC18FFF),
+                            ),
                           ),
+                        );
+                      },
+                    ),
+
+                    SizedBox(height: AppSpacing.xl),
+
+                    // Welcome Message
+                    Text(
+                      'Welcome to Dabbler!',
+                      style: AppTypography.headlineLarge.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    SizedBox(height: AppSpacing.md),
+
+                    // Personalized greeting
+                    Text(
+                      'Hi ${widget.displayName}! 👋',
+                      style: AppTypography.headlineSmall.copyWith(
+                        color: const Color(0xFFC18FFF),
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    SizedBox(height: AppSpacing.md),
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Text(
+                        'Your account has been created successfully.\nGet ready to discover amazing sports experiences!',
+                        style: AppTypography.bodyLarge.copyWith(
+                          color: Colors.white.withOpacity(0.9),
                         ),
+                        textAlign: TextAlign.center,
                       ),
+                    ),
 
-                      const Spacer(),
+                    const Spacer(),
 
-                      // Progress indicator
-                      LinearProgressIndicator(
-                        backgroundColor: DS.border.withOpacity(0.3),
-                        valueColor: AlwaysStoppedAnimation<Color>(DS.primary),
+                    // Progress indicator
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 48),
+                      child: LinearProgressIndicator(
+                        backgroundColor: Colors.white.withOpacity(0.2),
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFFC18FFF),
+                        ),
+                        borderRadius: BorderRadius.circular(2),
                       ),
+                    ),
 
-                      const SizedBox(height: 16),
+                    SizedBox(height: AppSpacing.md),
 
-                      Text(
-                        'Taking you to your home screen...',
-                        style: DS.caption.copyWith(color: DS.onSurfaceVariant),
+                    Text(
+                      'Taking you to your home screen...',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: Colors.white.withOpacity(0.7),
                       ),
-                    ],
-                  ),
+                      textAlign: TextAlign.center,
+                    ),
+
+                    SizedBox(height: AppSpacing.md),
+
+                    // Skip button
+                    AppButton(
+                      onPressed: () => context.go('/home'),
+                      label: 'Continue to Home',
+                      type: AppButtonType.ghost,
+                      size: AppButtonSize.lg,
+                    ),
+
+                    SizedBox(height: AppSpacing.xl),
+                  ],
                 ),
-              );
-            },
-          ),
-        ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

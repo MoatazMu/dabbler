@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../../../../app/app_router.dart';
 import '../../controllers/profile_controller.dart';
 import '../../controllers/sports_profile_controller.dart';
@@ -18,6 +19,7 @@ import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/data/models/sport_tags.dart';
+import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 // Extracted widgets for hero and basics live alongside this screen for now.
 // If you re-enable them, ensure the import paths match actual file locations.
 
@@ -170,6 +172,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     await _loadProfileData();
   }
 
+  void _showManageProfiles() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ManageProfilesSheet(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final profileState = ref.watch(profileControllerProvider);
@@ -190,207 +201,133 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ? ref.watch(profileTakedownProvider(profileId))
         : const AsyncData<bool>(false);
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: profileId != null
-            ? takedownAsync.when(
-                data: (isTakedown) {
-                  if (isTakedown) {
-                    return _buildTakedownPlaceholder(context, colorScheme);
-                  }
+    return profileId != null
+        ? takedownAsync.when(
+            data: (isTakedown) {
+              if (isTakedown) {
+                return Scaffold(
+                  backgroundColor: colorScheme.surface,
+                  body: SafeArea(
+                    child: _buildTakedownPlaceholder(context, colorScheme),
+                  ),
+                );
+              }
 
-                  return RefreshIndicator(
-                    onRefresh: _onRefresh,
-                    color: colorScheme.primary,
-                    child: CustomScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(
-                        parent: BouncingScrollPhysics(),
-                      ),
-                      slivers: [
-                        // Header
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                          sliver: SliverToBoxAdapter(
-                            child: Column(
-                              children: [
-                                _buildHeader(context),
-                                const SizedBox(height: 16),
-                                _buildProfileTypeSwitcher(context),
-                              ],
-                            ),
-                          ),
-                        ),
-                        // Profile Hero Card
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                          sliver: SliverToBoxAdapter(
-                            child: _buildProfileHeroCard(
-                              context,
-                              profileState,
-                              sportsState,
-                            ),
-                          ),
-                        ),
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                          sliver: SliverToBoxAdapter(
-                            child: _buildSportProfileHeaderSection(
-                              context,
-                              sportProfileHeaderAsync,
-                            ),
-                          ),
-                        ),
-                        // Content
-                        SliverPadding(
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
-                          sliver: SliverToBoxAdapter(
-                            child: FadeTransition(
-                              opacity: _fadeAnimation,
-                              child: SlideTransition(
-                                position: _slideAnimation,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    _buildQuickActions(context),
-                                    const SizedBox(height: 24),
-                                    _buildProfileCompletion(
-                                      context,
-                                      profileState,
-                                    ),
-                                    _buildBasicInfo(context, profileState),
-                                    if (FeatureFlags.enableRewards)
-                                      _buildRewardsSection(context),
-                                    _buildSportsProfiles(context, sportsState),
-                                    _buildStatisticsSummary(
-                                      context,
-                                      profileState,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (_, __) => RefreshIndicator(
-                  onRefresh: _onRefresh,
-                  color: colorScheme.primary,
-                  child: CustomScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(
-                      parent: BouncingScrollPhysics(),
-                    ),
-                    slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                        sliver: SliverToBoxAdapter(
-                          child: Column(
-                            children: [
-                              _buildHeader(context),
-                              const SizedBox(height: 16),
-                              _buildProfileTypeSwitcher(context),
-                            ],
-                          ),
-                        ),
-                      ),
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                        sliver: SliverToBoxAdapter(
-                          child: _buildProfileHeroCard(
-                            context,
-                            profileState,
-                            sportsState,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
-            : RefreshIndicator(
+              return TwoSectionLayout(
+                category: 'profile',
                 onRefresh: _onRefresh,
-                color: colorScheme.primary,
-                child: CustomScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics(),
-                  ),
-                  slivers: [
-                    // Header
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                      sliver: SliverToBoxAdapter(child: _buildHeader(context)),
-                    ),
-                    // Profile Hero Card
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                      sliver: SliverToBoxAdapter(
-                        child: _buildProfileHeroCard(
-                          context,
-                          profileState,
-                          sportsState,
-                        ),
-                      ),
-                    ),
-                    if (profileType == 'player')
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                        sliver: SliverToBoxAdapter(
-                          child: _buildSportProfileHeaderSection(
-                            context,
-                            sportProfileHeaderAsync,
-                          ),
-                        ),
-                      ),
-                    if (profileType == 'organiser')
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                        sliver: SliverToBoxAdapter(
-                          child: _buildOrganiserProfileSection(
-                            context,
-                            organiserState,
-                          ),
-                        ),
-                      ),
-                    // Content
-                    SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
-                      sliver: SliverToBoxAdapter(
-                        child: FadeTransition(
-                          opacity: _fadeAnimation,
-                          child: SlideTransition(
-                            position: _slideAnimation,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildQuickActions(context),
-                                const SizedBox(height: 24),
-                                _buildProfileCompletion(context, profileState),
-                                _buildBasicInfo(context, profileState),
-                                if (FeatureFlags.enableRewards)
-                                  _buildRewardsSection(context),
-                                if (profileType == 'player')
-                                  _buildSportsProfiles(context, sportsState),
-                                if (profileType == 'organiser')
-                                  _buildOrganiserProfilesList(
-                                    context,
-                                    organiserState,
-                                  ),
-                                _buildStatisticsSummary(context, profileState),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                topSection: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(context),
+                    const SizedBox(height: 24),
+                    _buildProfileHeroCard(context, profileState, sportsState),
+                    const SizedBox(height: 16),
+                    _buildSportProfileHeaderSection(
+                      context,
+                      sportProfileHeaderAsync,
                     ),
                   ],
                 ),
+                bottomSection: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildQuickActions(context),
+                        // const SizedBox(height: 24),
+                        _buildProfileCompletion(context, profileState),
+                        _buildBasicInfo(context, profileState),
+                        if (FeatureFlags.enableRewards)
+                          _buildRewardsSection(context),
+                        _buildSportsProfiles(context, sportsState),
+                        _buildStatisticsSummary(context, profileState),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+            loading: () => Scaffold(
+              backgroundColor: colorScheme.surface,
+              body: const SafeArea(
+                child: Center(child: CircularProgressIndicator()),
               ),
-      ),
-    );
+            ),
+            error: (_, __) => TwoSectionLayout(
+              category: 'profile',
+              onRefresh: _onRefresh,
+              topSection: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context),
+                  const SizedBox(height: 16),
+                  _buildProfileTypeSwitcher(context),
+                  const SizedBox(height: 24),
+                  _buildProfileHeroCard(context, profileState, sportsState),
+                ],
+              ),
+              bottomSection: const SizedBox(),
+            ),
+          )
+        : TwoSectionLayout(
+            category: 'profile',
+            onRefresh: _onRefresh,
+            topSection: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(context),
+                  const SizedBox(height: 24),
+                  _buildProfileTypeSwitcher(context),
+                  const SizedBox(height: 24),
+                  _buildProfileHeroCard(context, profileState, sportsState),
+                  if (profileType == 'player') ...[
+                    const SizedBox(height: 16),
+                    _buildSportProfileHeaderSection(
+                      context,
+                      sportProfileHeaderAsync,
+                    ),
+                  ],
+                  if (profileType == 'organiser') ...[
+                    const SizedBox(height: 16),
+                    _buildOrganiserProfileSection(context, organiserState),
+                  ],
+                ],
+              ),
+            ),
+            bottomSection: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildQuickActions(context),
+                      const SizedBox(height: 24),
+                      _buildProfileCompletion(context, profileState),
+                      if (profileType == 'organiser' &&
+                          FeatureFlags.enableOrganiserGameCreation)
+                        _buildGameManagementCard(context),
+                      _buildBasicInfo(context, profileState),
+                      if (FeatureFlags.enableRewards)
+                        _buildRewardsSection(context),
+                      if (profileType == 'player')
+                        _buildSportsProfiles(context, sportsState),
+                      if (profileType == 'organiser')
+                        _buildOrganiserProfilesList(context, organiserState),
+                      _buildStatisticsSummary(context, profileState),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          );
   }
 
   Widget _buildProfileTypeSwitcher(BuildContext context) {
@@ -400,21 +337,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     return availableProfilesAsync.when(
       data: (profiles) {
-        // Only show switcher if user has both profile types
-        if (profiles.length < 2) {
-          return const SizedBox.shrink();
-        }
-
         final hasPlayer = profiles.any(
           (p) => p.profileType?.toLowerCase() == 'player',
         );
         final hasOrganiser = profiles.any(
           (p) => p.profileType?.toLowerCase() == 'organiser',
         );
-
-        if (!hasPlayer || !hasOrganiser) {
-          return const SizedBox.shrink();
-        }
 
         final currentType =
             activeProfileType ?? _selectedProfileType ?? 'player';
@@ -432,16 +360,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 context,
                 label: 'Player',
                 type: 'player',
-                isSelected: currentType.toLowerCase() == 'player',
-                onTap: () => _switchProfileType('player'),
+                isSelected: hasPlayer && currentType.toLowerCase() == 'player',
+                isAvailable: hasPlayer,
+                onTap: () {
+                  if (hasPlayer) {
+                    _switchProfileType('player');
+                  } else {
+                    // No player profile yet – start player profile creation flow
+                    context.push(RoutePaths.intentSelection);
+                  }
+                },
               ),
               const SizedBox(width: 4),
               _buildProfileTypeChip(
                 context,
                 label: 'Organiser',
                 type: 'organiser',
-                isSelected: currentType.toLowerCase() == 'organiser',
-                onTap: () => _switchProfileType('organiser'),
+                isSelected:
+                    hasOrganiser && currentType.toLowerCase() == 'organiser',
+                isAvailable: hasOrganiser,
+                onTap: () {
+                  if (hasOrganiser) {
+                    _switchProfileType('organiser');
+                  } else {
+                    // No organiser profile yet – start organiser profile creation flow
+                    context.push(RoutePaths.createUserInfo);
+                  }
+                },
               ),
             ],
           ),
@@ -457,6 +402,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     required String label,
     required String type,
     required bool isSelected,
+    required bool isAvailable,
     required VoidCallback onTap,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -476,7 +422,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           ),
           child: Center(
             child: Text(
-              label,
+              isAvailable ? label : '$label (+)',
               style: textTheme.labelLarge?.copyWith(
                 color: isSelected
                     ? colorScheme.onPrimaryContainer
@@ -499,14 +445,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         IconButton.filledTonal(
           onPressed: () =>
               context.canPop() ? context.pop() : context.go('/home'),
-          icon: const Icon(Icons.dashboard_rounded),
+          icon: const Icon(Iconsax.home_copy),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
+            backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.0),
             foregroundColor: colorScheme.onSurface,
             minimumSize: const Size(48, 48),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -521,12 +467,23 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             ],
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
+        IconButton.filledTonal(
+          onPressed: () => _showManageProfiles(),
+          icon: const Icon(Iconsax.convert_copy),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.0),
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+          tooltip: 'Manage profiles',
+        ),
+        const SizedBox(width: 8),
         IconButton.filledTonal(
           onPressed: () => context.push('/settings'),
-          icon: const Icon(Icons.settings_outlined),
+          icon: const Icon(Iconsax.setting_copy),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
+            backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.0),
             foregroundColor: colorScheme.onSurface,
             minimumSize: const Size(48, 48),
           ),
@@ -546,9 +503,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(0),
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
+        // color: colorScheme.primaryContainer,
         borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
@@ -568,10 +525,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          _buildHeroStats(context, profileState, sportsState),
-          const SizedBox(height: 16),
-          _buildHeroDataPoints(context, profileState),
+          const SizedBox(height: 18),
+          _buildUnifiedStats(context, profileState, sportsState),
         ],
       ),
     );
@@ -586,7 +541,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: colorScheme.primary.withValues(alpha: 0.35),
+          color: colorScheme.categoryProfile.withValues(alpha: 0.35),
           width: 3,
         ),
       ),
@@ -596,9 +551,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           : Container(
               color: colorScheme.primaryContainer.withValues(alpha: 0.6),
               child: Icon(
-                Icons.person_outline,
+                Iconsax.profile_circle_copy,
                 size: 42,
-                color: colorScheme.onPrimaryContainer,
+                color: const Color(0xFFFEFEFE),
               ),
             ),
     );
@@ -616,6 +571,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ? profile!.bio!
         : 'Add a short bio so teammates know what to expect.';
 
+    final textColor = colorScheme.brightness == Brightness.dark
+        ? const Color(0xFFFEFEFE).withValues(alpha: 0.92)
+        : const Color(0xFF1A1A1A).withValues(alpha: 0.92);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -625,15 +584,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               : 'Complete your profile',
           style: textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w700,
-            color: colorScheme.onPrimaryContainer,
+            color: textColor,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           subtitle,
-          style: textTheme.bodyMedium?.copyWith(
-            color: colorScheme.onPrimaryContainer.withValues(alpha: 0.85),
-          ),
+          style: textTheme.bodyMedium?.copyWith(color: textColor),
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
         ),
@@ -641,145 +598,132 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     );
   }
 
-  Widget _buildHeroStats(
+  Widget _buildUnifiedStats(
     BuildContext context,
     ProfileState profileState,
     SportsProfileState sportsState,
   ) {
     final profile = profileState.profile;
-    final statistics = profile?.statistics ?? const ProfileStatistics();
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    final statTiles = [
-      _HeroStat(
-        label: 'Games',
-        value: statistics.totalGamesPlayed.toString(),
-        icon: Icons.sports_soccer,
-      ),
-      _HeroStat(
-        label: 'Win rate',
-        value: statistics.winRateFormatted,
-        icon: Icons.emoji_events_outlined,
-      ),
-      _HeroStat(
-        label: 'Sports',
-        value: sportsState.profiles.length.toString(),
-        icon: Icons.sports_handball,
-      ),
-    ];
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: statTiles.map((stat) {
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(stat.icon, size: 18, color: colorScheme.primary),
-              const SizedBox(width: 6),
-              Text(
-                stat.value,
-                style: textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                stat.label,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          );
-        }).toList(),
-      ),
-    );
-  }
-
-  Widget _buildHeroDataPoints(BuildContext context, ProfileState profileState) {
-    final profile = profileState.profile;
     if (profile == null) {
       return const SizedBox.shrink();
     }
 
-    final stats = profile.statistics;
+    final statistics = profile.statistics;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final dataPoints = [
-      _ProfileDataPoint(
-        icon: Icons.verified_user_outlined,
+    final allStats = [
+      _StatItem(
+        icon: Iconsax.medal_star_copy,
+        label: 'Games',
+        value: statistics.totalGamesPlayed.toString(),
+      ),
+      _StatItem(
+        icon: Iconsax.cup_copy,
+        label: 'Win rate',
+        value: statistics.winRateFormatted,
+      ),
+      _StatItem(
+        icon: Iconsax.game_copy,
+        label: 'Sports',
+        value: sportsState.profiles.length.toString(),
+      ),
+      _StatItem(
+        icon: Iconsax.verify_copy,
         label: 'Reliability',
-        value: '${stats.getReliabilityScore().round()}%',
+        value: '${statistics.getReliabilityScore().round()}%',
       ),
-      _ProfileDataPoint(
-        icon: Icons.flash_on_outlined,
+      _StatItem(
+        icon: Iconsax.flash_copy,
         label: 'Activity',
-        value: stats.getActivityLevel(),
+        value: statistics.getActivityLevel(),
       ),
-      _ProfileDataPoint(
-        icon: Icons.schedule_outlined,
+      _StatItem(
+        icon: Iconsax.clock_copy,
         label: 'Last play',
-        value: stats.lastActiveFormatted,
+        value: statistics.lastActiveFormatted,
       ),
     ];
 
-    return Wrap(
-      spacing: 12,
-      runSpacing: 12,
-      children: dataPoints
-          .map((point) => _buildDataPointChip(point, colorScheme, textTheme))
-          .toList(),
+    return Column(
+      children: [
+        // First row: 3 stats
+        Row(
+          children: allStats.sublist(0, 3).asMap().entries.map((entry) {
+            final index = entry.key;
+            final stat = entry.value;
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: index < 2 ? 8 : 0),
+                child: _buildStatCard(stat, colorScheme, textTheme),
+              ),
+            );
+          }).toList(),
+        ),
+        // Second row: 3 stats
+        Row(
+          children: allStats.sublist(3, 6).asMap().entries.map((entry) {
+            final index = entry.key;
+            final stat = entry.value;
+            return Expanded(
+              child: Padding(
+                padding: EdgeInsets.only(right: index < 2 ? 8 : 0),
+                child: _buildStatCard(stat, colorScheme, textTheme),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
-  Widget _buildDataPointChip(
-    _ProfileDataPoint point,
+  Widget _buildStatCard(
+    _StatItem stat,
     ColorScheme colorScheme,
     TextTheme textTheme,
   ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: colorScheme.onSurface.withValues(alpha: 0.08),
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+        side: BorderSide(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
         ),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(point.icon, size: 18, color: colorScheme.primary),
-          const SizedBox(width: 8),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                point.value,
-                style: textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+        child: Row(
+          children: [
+            Icon(stat.icon, size: 20, color: colorScheme.categoryProfile),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    stat.value,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    stat.label,
+                    style: textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
               ),
-              const SizedBox(height: 2),
-              Text(
-                point.label,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -845,7 +789,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               color: colorScheme.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.sports_soccer, color: colorScheme.primary),
+            child: Icon(Iconsax.medal_star_copy, color: colorScheme.primary),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -866,6 +810,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: () {
+                    // Start player profile creation flow
+                    context.push(RoutePaths.intentSelection);
+                  },
+                  icon: const Icon(Iconsax.profile_circle_copy),
+                  label: const Text('Create player profile'),
+                ),
               ],
             ),
           ),
@@ -884,8 +837,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
       elevation: 0,
-      color: colorScheme.surfaceContainerHigh,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      color: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF585858).withValues(alpha: 0.6)
+          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -964,7 +924,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Icons.star, size: 16, color: colorScheme.primary),
+                  Icon(Iconsax.star_copy, size: 16, color: colorScheme.primary),
                   const SizedBox(width: 4),
                   Text(
                     'Level ${profile.organiserLevel}',
@@ -978,7 +938,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Icon(Icons.verified, size: 16, color: colorScheme.primary),
+                    Icon(
+                      Iconsax.verify_copy,
+                      size: 16,
+                      color: colorScheme.primary,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Verified',
@@ -1026,7 +990,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               color: colorScheme.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Icons.event_note, color: colorScheme.primary),
+            child: Icon(Iconsax.note_copy, color: colorScheme.primary),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1047,6 +1011,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     color: colorScheme.onSurfaceVariant,
                   ),
                 ),
+                const SizedBox(height: 12),
+                FilledButton.icon(
+                  onPressed: () {
+                    // Start organiser profile creation flow
+                    context.push(RoutePaths.createUserInfo);
+                  },
+                  icon: const Icon(Iconsax.calendar_copy),
+                  label: const Text('Create organiser profile'),
+                ),
               ],
             ),
           ),
@@ -1056,29 +1029,100 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildQuickActions(BuildContext context) {
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildGameManagementCard(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
-    final actions = <Widget>[
-      FilledButton.icon(
-        onPressed: () => context.push('/profile/edit'),
-        icon: const Icon(Icons.edit_outlined),
-        label: const Text('Edit profile'),
-      ),
-      OutlinedButton.icon(
-        onPressed: () => context.push('/settings'),
-        icon: const Icon(Icons.settings_outlined),
-        label: const Text('Settings'),
-        style: OutlinedButton.styleFrom(foregroundColor: colorScheme.primary),
-      ),
-      if (FeatureFlags.enableRewards)
-        OutlinedButton.icon(
-          onPressed: () => context.push(RoutePaths.rewards),
-          icon: const Icon(Icons.emoji_events_outlined),
-          label: const Text('Rewards'),
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 20),
+      color: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF585858).withValues(alpha: 0.6)
+          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
         ),
-    ];
-
-    return Wrap(spacing: 12, runSpacing: 12, children: actions);
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Iconsax.calendar_copy,
+                    color: colorScheme.categoryProfile,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Game Management',
+                        style: textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Create and manage your games',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: () => context.push(RoutePaths.createGame),
+              icon: const Icon(Iconsax.add_copy),
+              label: const Text('Create New Game'),
+              style: FilledButton.styleFrom(
+                backgroundColor: colorScheme.categoryProfile,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 48),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () {
+                // Navigate to my games / game management screen
+                context.push('/my-games');
+              },
+              icon: const Icon(Iconsax.note_copy),
+              label: const Text('View My Games'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colorScheme.categoryProfile,
+                side: BorderSide(
+                  color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+                ),
+                minimumSize: const Size(double.infinity, 48),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildProfileCompletion(
@@ -1092,10 +1136,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
-      color: colorScheme.surfaceContainerHighest,
+      color: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF585858).withValues(alpha: 0.6)
+          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1103,7 +1154,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           children: [
             Row(
               children: [
-                Icon(Icons.trending_up, color: colorScheme.primary),
+                Icon(Iconsax.chart_copy, color: colorScheme.categoryProfile),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -1132,7 +1183,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   '${completion.toInt()}%',
                   style: textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w700,
-                    color: colorScheme.primary,
+                    color: colorScheme.categoryProfile,
                   ),
                 ),
               ],
@@ -1140,17 +1191,24 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             const SizedBox(height: 16),
             LinearProgressIndicator(
               value: completion / 100,
-              backgroundColor: colorScheme.surface,
-              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+              backgroundColor: colorScheme.surface.withValues(alpha: 0.5),
+              valueColor: AlwaysStoppedAnimation<Color>(
+                colorScheme.categoryProfile,
+              ),
               minHeight: 6,
               borderRadius: BorderRadius.circular(8),
             ),
             if (completion < 80) ...[
               const SizedBox(height: 16),
-              FilledButton.tonalIcon(
+              FilledButton.tonal(
                 onPressed: () => context.push('/profile/edit'),
-                icon: const Icon(Icons.auto_fix_high_outlined),
-                label: const Text('Complete profile'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: colorScheme.categoryProfile.withValues(
+                    alpha: 0.2,
+                  ),
+                  foregroundColor: colorScheme.onSurface,
+                ),
+                child: const Text('Complete profile'),
               ),
             ],
           ],
@@ -1167,8 +1225,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 20),
-      color: colorScheme.surfaceContainerHighest,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      color: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF585858).withValues(alpha: 0.6)
+          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1187,49 +1252,45 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 IconButton(
                   tooltip: 'Edit profile',
                   onPressed: () => context.push('/profile/edit'),
-                  icon: const Icon(Icons.edit_outlined),
+                  icon: const Icon(Iconsax.edit_copy),
                 ),
               ],
             ),
             const SizedBox(height: 16),
             if (profile != null && (profile.email?.isNotEmpty ?? false))
-              _buildInfoRow(context, Icons.email_outlined, profile.email ?? ''),
+              _buildInfoRow(context, Iconsax.sms_copy, profile.email ?? ''),
             if (profile?.phoneNumber?.isNotEmpty == true)
-              _buildInfoRow(
-                context,
-                Icons.phone_outlined,
-                profile!.phoneNumber!,
-              ),
+              _buildInfoRow(context, Iconsax.call_copy, profile!.phoneNumber!),
             // Location: Combine city and country if available
             if (profile?.city?.isNotEmpty == true ||
                 profile?.country?.isNotEmpty == true)
               _buildInfoRow(
                 context,
-                Icons.location_city_outlined,
+                Iconsax.building_copy,
                 _formatLocation(profile!.city, profile.country),
               ),
             if (profile?.age != null)
               _buildInfoRow(
                 context,
-                Icons.cake_outlined,
+                Iconsax.calendar_copy,
                 '${profile!.age!} years old',
               ),
             if (profile?.gender?.isNotEmpty == true)
-              _buildInfoRow(context, Icons.person_outline, profile!.gender!),
-            if (profile?.language?.isNotEmpty == true)
               _buildInfoRow(
                 context,
-                Icons.language_outlined,
-                profile!.language!,
+                Iconsax.profile_circle_copy,
+                profile!.gender!,
               ),
+            if (profile?.language?.isNotEmpty == true)
+              _buildInfoRow(context, Iconsax.global_copy, profile!.language!),
             if (profile?.preferredSport?.isNotEmpty == true)
               _buildInfoRow(
                 context,
-                Icons.sports_soccer,
+                Iconsax.medal_star_copy,
                 profile!.preferredSport!,
               ),
             if (profile?.intention?.isNotEmpty == true)
-              _buildInfoRow(context, Icons.flag_outlined, profile!.intention!),
+              _buildInfoRow(context, Iconsax.flag_copy, profile!.intention!),
             if (profile == null ||
                 ((profile.email?.isEmpty ?? true) &&
                     profile.phoneNumber == null &&
@@ -1289,7 +1350,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           padding: const EdgeInsets.all(20),
           child: Row(
             children: [
-              Icon(Icons.error_outline, color: colorScheme.onErrorContainer),
+              Icon(Iconsax.danger_copy, color: colorScheme.onErrorContainer),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
@@ -1308,8 +1369,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
       elevation: 0,
-      color: colorScheme.surfaceContainerHigh,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      color: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF585858).withValues(alpha: 0.6)
+          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1325,7 +1393,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   ),
                 ),
                 const Spacer(),
-                TextButton.icon(
+                FilledButton.tonalIcon(
                   onPressed: () {
                     final currentProfileState = ref.read(
                       profileControllerProvider,
@@ -1337,8 +1405,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       extra: {'profileType': profileType},
                     );
                   },
-                  icon: const Icon(Icons.tune_outlined, size: 18),
+                  // icon: Icon(
+                  //   Iconsax.setting_4_copy,
+                  //   size: 18,
+                  //   color: colorScheme.categoryProfile,
+                  // ),
                   label: const Text('Manage'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: colorScheme.categoryProfile.withValues(
+                      alpha: 0.2,
+                    ),
+                    foregroundColor: colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),
@@ -1376,7 +1454,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -1390,18 +1468,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withValues(alpha: 0.5),
+                  color: colorScheme.categoryProfile.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   _getSportIcon(sport.sportName),
-                  color: colorScheme.primary,
+                  color: colorScheme.categoryProfile,
                   size: 24,
                 ),
               ),
               const Spacer(),
               if (sport.isPrimarySport)
-                Icon(Icons.star_rounded, size: 20, color: colorScheme.primary),
+                Icon(
+                  Iconsax.star_copy,
+                  size: 20,
+                  color: colorScheme.categoryProfile,
+                ),
             ],
           ),
           const SizedBox(height: 16),
@@ -1470,8 +1552,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 24),
-      color: colorScheme.surfaceContainerHigh,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+      color: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF585858).withValues(alpha: 0.6)
+          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -1492,7 +1581,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     context,
                     'Games played',
                     statistics.totalGamesPlayed.toString(),
-                    Icons.sports_esports_outlined,
+                    Iconsax.game_copy,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1501,7 +1590,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     context,
                     'Win rate',
                     statistics.winRateFormatted,
-                    Icons.emoji_events_outlined,
+                    Iconsax.cup_copy,
                   ),
                 ),
               ],
@@ -1514,7 +1603,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     context,
                     'Avg. rating',
                     statistics.ratingFormatted,
-                    Icons.star_rate_rounded,
+                    Iconsax.star_copy,
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -1523,7 +1612,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     context,
                     'Teammates',
                     statistics.uniqueTeammates.toString(),
-                    Icons.groups_2_outlined,
+                    Iconsax.people_copy,
                   ),
                 ),
               ],
@@ -1549,13 +1638,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+          color: colorScheme.categoryProfile.withValues(alpha: 0.5),
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: colorScheme.primary),
+          Icon(icon, color: colorScheme.categoryProfile),
           const SizedBox(height: 12),
           Text(
             value,
@@ -1587,13 +1676,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: colorScheme.outlineVariant.withValues(alpha: 0.4),
+          color: colorScheme.categoryProfile.withValues(alpha: 0.4),
         ),
       ),
       child: Column(
         children: [
           Icon(
-            Icons.info_outline,
+            Iconsax.info_circle_copy,
             color: colorScheme.onSurfaceVariant,
             size: 28,
           ),
@@ -1644,22 +1733,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   IconData _getSportIcon(String sportName) {
     switch (sportName.toLowerCase()) {
       case 'basketball':
-        return Icons.sports_basketball;
+        return Iconsax.game_copy;
       case 'football':
       case 'soccer':
-        return Icons.sports_soccer;
+        return Iconsax.medal_star_copy;
       case 'tennis':
-        return Icons.sports_tennis;
+        return Iconsax.game_copy;
       case 'volleyball':
-        return Icons.sports_volleyball;
+        return Iconsax.game_copy;
       case 'baseball':
-        return Icons.sports_baseball;
+        return Iconsax.game_copy;
       case 'hockey':
-        return Icons.sports_hockey;
+        return Iconsax.game_copy;
       case 'golf':
-        return Icons.sports_golf;
+        return Iconsax.game_copy;
       default:
-        return Icons.sports;
+        return Iconsax.game_copy;
     }
   }
 
@@ -1707,8 +1796,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
+        color: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF585858).withValues(alpha: 0.6)
+            : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1719,7 +1813,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             alignment: Alignment.centerRight,
             child: OutlinedButton.icon(
               onPressed: () => context.push(RoutePaths.leaderboard),
-              icon: const Icon(Icons.leaderboard_outlined, size: 18),
+              icon: const Icon(Iconsax.ranking_copy, size: 18),
               label: const Text('View leaderboard'),
             ),
           ),
@@ -1740,7 +1834,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.block_rounded,
+              Iconsax.close_square_copy,
               size: 64,
               color: colorScheme.onSurfaceVariant,
             ),
@@ -1767,24 +1861,246 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 }
 
-class _HeroStat {
-  final String label;
-  final String value;
-  final IconData icon;
+class ManageProfilesSheet extends ConsumerWidget {
+  const ManageProfilesSheet({super.key});
 
-  const _HeroStat({
-    required this.label,
-    required this.value,
-    required this.icon,
-  });
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final availableProfilesAsync = ref.watch(availableProfilesProvider);
+    final activeProfileType = ref.watch(activeProfileTypeProvider);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'Manage Profiles',
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Iconsax.close_circle_copy),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              availableProfilesAsync.when(
+                data: (profiles) {
+                  if (profiles.isEmpty) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Text(
+                          'No profiles found',
+                          style: textTheme.bodyMedium?.copyWith(
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ...profiles.map((profile) {
+                        final isActive =
+                            profile.profileType?.toLowerCase() ==
+                            activeProfileType?.toLowerCase();
+                        return _ProfileListTile(
+                          profile: profile,
+                          isActive: isActive,
+                          onTap: () {
+                            // Switch to this profile
+                            ref
+                                .read(profileControllerProvider.notifier)
+                                .loadProfile(
+                                  profile.userId,
+                                  profileType: profile.profileType,
+                                );
+                            ref.read(activeProfileTypeProvider.notifier).state =
+                                profile.profileType;
+                            Navigator.pop(context);
+                          },
+                        );
+                      }),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () {
+                            Navigator.pop(context);
+                            // Determine which profile type to create
+                            final hasPlayer = profiles.any(
+                              (p) => p.profileType?.toLowerCase() == 'player',
+                            );
+                            final hasOrganiser = profiles.any(
+                              (p) =>
+                                  p.profileType?.toLowerCase() == 'organiser',
+                            );
+
+                            if (!hasPlayer) {
+                              context.push(RoutePaths.intentSelection);
+                            } else if (!hasOrganiser) {
+                              context.push(RoutePaths.createUserInfo);
+                            } else {
+                              // Show choice dialog if both exist (future)
+                              context.push(RoutePaths.intentSelection);
+                            }
+                          },
+                          icon: const Icon(Iconsax.add_copy),
+                          label: const Text('Add Profile'),
+                          style: FilledButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+                error: (error, _) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Text(
+                      'Error loading profiles',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.error,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _ProfileDataPoint {
+class _ProfileListTile extends StatelessWidget {
+  final UserProfile profile;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  const _ProfileListTile({
+    required this.profile,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      elevation: 0,
+      color: colorScheme.surfaceContainerHigh,
+      margin: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: colorScheme.primaryContainer,
+                backgroundImage:
+                    profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
+                    ? NetworkImage(profile.avatarUrl!)
+                    : null,
+                child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
+                    ? Text(
+                        profile.getDisplayName().isNotEmpty
+                            ? profile.getDisplayName()[0].toUpperCase()
+                            : 'P',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      profile.getDisplayName().isNotEmpty
+                          ? profile.getDisplayName()
+                          : 'Profile',
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        profile.profileType?.toUpperCase() ?? 'PLAYER',
+                        style: textTheme.labelSmall?.copyWith(
+                          color: colorScheme.onPrimaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              Radio<bool>(
+                value: true,
+                groupValue: isActive,
+                onChanged: (_) => onTap(),
+                activeColor: colorScheme.primary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _StatItem {
   final IconData icon;
   final String label;
   final String value;
 
-  const _ProfileDataPoint({
+  const _StatItem({
     required this.icon,
     required this.label,
     required this.value,

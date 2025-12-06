@@ -7,6 +7,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 
+// Design System
+import 'package:dabbler/core/design_system/examples/theme_showcase_screen.dart';
+
 // Onboarding screens
 import 'package:dabbler/features/landing/presentation/screens/landing_page.dart';
 import 'package:dabbler/features/misc/presentation/screens/identity_verification_screen.dart';
@@ -37,7 +40,7 @@ import 'package:dabbler/features/authentication/presentation/screens/register_sc
 
 // Core screens
 import 'package:dabbler/features/error/presentation/pages/error_page.dart';
-import 'package:dabbler/features/home/presentation/screens/home_screen.dart';
+import 'package:dabbler/features/home/presentation/screens/main_navigation_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/social_screen.dart';
 import 'package:dabbler/features/explore/presentation/screens/sports_screen.dart';
 import 'package:dabbler/features/misc/presentation/screens/activities_screen_v2.dart';
@@ -688,7 +691,7 @@ class AppRouter {
       name: RouteNames.home,
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
-        child: const HomeScreen(),
+        child: const MainNavigationScreen(),
       ),
     ),
 
@@ -1267,6 +1270,15 @@ class AppRouter {
         key: state.pageKey,
         child: const SafetyOverviewScreen(),
         type: SharedAxisType.horizontal,
+      ),
+    ),
+
+    // Design System Showcase
+    GoRoute(
+      path: '/showcase',
+      pageBuilder: (context, state) => FadeTransitionPage(
+        key: state.pageKey,
+        child: const ThemeShowcaseScreen(),
       ),
     ),
 

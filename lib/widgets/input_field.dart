@@ -1,5 +1,15 @@
 import 'package:flutter/material.dart';
 
+/// Custom input field matching Figma design specifications
+/// Node: 196:1099 (Input)
+///
+/// Design specs:
+/// - Size: 319×42px (height: 42px)
+/// - Padding: 12px all around
+/// - Corner radius: 9px
+/// - Background: #FBFBFB
+/// - Border: Primary color stroke
+/// - Layout: Horizontal with 6px spacing
 class CustomInputField extends StatelessWidget {
   final String? label;
   final String? placeholder;
@@ -44,7 +54,7 @@ class CustomInputField extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -58,45 +68,91 @@ class CustomInputField extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
-        Row(
-          children: [
-            if (prefixIcon != null) ...[
-              Padding(
-                padding: const EdgeInsets.only(left: 16, right: 8),
-                child: Icon(
-                  prefixIcon!,
-                  size: 20,
-                  color: colorScheme.onSurfaceVariant,
+        Container(
+          height: 42.0, // Figma spec
+          decoration: BoxDecoration(
+            color: const Color(0xFFFBFBFB), // Figma background color
+            borderRadius: BorderRadius.circular(9.0), // Figma corner radius
+            border: Border.all(
+              color: errorText != null
+                  ? colorScheme.error
+                  : colorScheme.primary,
+              width: 1.0,
+            ),
+          ),
+          child: Row(
+            children: [
+              // Prefix icon container
+              if (prefixIcon != null) ...[
+                Padding(
+                  padding: const EdgeInsets.only(left: 12.0), // Figma padding
+                  child: Icon(
+                    prefixIcon!,
+                    size: 18.0,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 6.0), // Figma item spacing
+              ] else
+                const SizedBox(width: 12.0), // Figma padding when no prefix
+              // Text input (grows to fill)
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  onChanged: onChanged,
+                  onTap: onTap,
+                  obscureText: obscureText,
+                  readOnly: readOnly,
+                  enabled: enabled,
+                  keyboardType: keyboardType,
+                  maxLines: maxLines,
+                  minLines: minLines,
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurface,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: placeholder ?? hintText,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 10.0, // Center text vertically in 42px height
+                    ),
+                    isDense: true,
+                  ),
                 ),
               ),
-            ],
-            Expanded(
-              child: TextField(
-                controller: controller,
-                onChanged: onChanged,
-                onTap: onTap,
-                obscureText: obscureText,
-                readOnly: readOnly,
-                enabled: enabled,
-                keyboardType: keyboardType,
-                maxLines: maxLines,
-                minLines: minLines,
-                style: textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurface,
+
+              // Suffix icon container
+              if (suffixIcon != null) ...[
+                const SizedBox(width: 6.0), // Figma item spacing
+                Padding(
+                  padding: const EdgeInsets.only(right: 12.0), // Figma padding
+                  child: suffixIcon,
                 ),
-                decoration: InputDecoration(
-                  hintText: placeholder ?? hintText,
-                  helperText: helperText,
-                  errorText: errorText,
-                  prefixIcon: null, // Handled separately above
-                  suffixIcon: suffixIcon,
-                  // Material 3 uses InputDecorationTheme from theme
-                  // Only override specific properties if needed
-                ).applyDefaults(Theme.of(context).inputDecorationTheme),
+              ] else
+                const SizedBox(width: 12.0), // Figma padding when no suffix
+            ],
+          ),
+        ),
+
+        // Helper and error text below the field
+        if (helperText != null || errorText != null) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 12.0),
+            child: Text(
+              errorText ?? helperText!,
+              style: textTheme.bodySmall?.copyWith(
+                color: errorText != null
+                    ? colorScheme.error
+                    : colorScheme.onSurfaceVariant,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ],
     );
   }
@@ -132,7 +188,7 @@ class CustomTextArea extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -153,9 +209,7 @@ class CustomTextArea extends StatelessWidget {
           enabled: enabled,
           minLines: minLines,
           maxLines: maxLines,
-          style: textTheme.bodyLarge?.copyWith(
-            color: colorScheme.onSurface,
-          ),
+          style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
           decoration: InputDecoration(
             hintText: placeholder,
             helperText: helperText,

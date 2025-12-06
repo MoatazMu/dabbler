@@ -90,7 +90,9 @@ final sportsProfileControllerProvider =
 
 /// Organiser profile controller provider
 final organiserProfileControllerProvider =
-    StateNotifierProvider<OrganiserProfileController, OrganiserProfileState>((ref) {
+    StateNotifierProvider<OrganiserProfileController, OrganiserProfileState>((
+      ref,
+    ) {
       return OrganiserProfileController();
     });
 
@@ -108,45 +110,45 @@ class SportProfileHeaderData {
 
 final sportProfileHeaderProvider = FutureProvider.autoDispose
     .family<SportProfileHeaderData?, String>((ref, userId) async {
-  if (userId.isEmpty) {
-    return null;
-  }
+      if (userId.isEmpty) {
+        return null;
+      }
 
-  final service = ref.watch(sportProfileServiceProvider);
+      final service = ref.watch(sportProfileServiceProvider);
 
-  try {
-    final profiles = await service.getSportProfilesForUser(userId);
-    if (profiles.isEmpty) {
-      return null;
-    }
+      try {
+        final profiles = await service.getSportProfilesForUser(userId);
+        if (profiles.isEmpty) {
+          return null;
+        }
 
-    final selectedProfile = _selectPrimarySportProfile(profiles);
+        final selectedProfile = _selectPrimarySportProfile(profiles);
 
-    final badges = await service.getPlayerBadges(
-      selectedProfile.profileId,
-      selectedProfile.sportKey,
-    );
-    final tier = await service.getTierById(selectedProfile.tierId);
+        final badges = await service.getPlayerBadges(
+          selectedProfile.profileId,
+          selectedProfile.sportKey,
+        );
+        final tier = await service.getTierById(selectedProfile.tierId);
 
-    return SportProfileHeaderData(
-      profile: selectedProfile,
-      tier: tier,
-      badges: badges,
-    );
-  } on SportProfileServiceException catch (error) {
-    Logger.warning(
-      'Failed to load sport profile header for userId=$userId',
-      error,
-    );
-    return null;
-  } catch (error) {
-    Logger.error(
-      'Unexpected error loading sport profile header for userId=$userId',
-      error,
-    );
-    return null;
-  }
-});
+        return SportProfileHeaderData(
+          profile: selectedProfile,
+          tier: tier,
+          badges: badges,
+        );
+      } on SportProfileServiceException catch (error) {
+        Logger.warning(
+          'Failed to load sport profile header for userId=$userId',
+          error,
+        );
+        return null;
+      } catch (error) {
+        Logger.error(
+          'Unexpected error loading sport profile header for userId=$userId',
+          error,
+        );
+        return null;
+      }
+    });
 
 /// Profile edit controller provider
 final profileEditControllerProvider =
@@ -306,7 +308,9 @@ final sportsProfileByIdProvider = Provider.family<SportProfile?, String>((
 // =============================================================================
 
 /// Available profiles provider - lists all profiles (player/organiser) for current user
-final availableProfilesProvider = FutureProvider.autoDispose<List<UserProfile>>((ref) async {
+final availableProfilesProvider = FutureProvider.autoDispose<List<UserProfile>>((
+  ref,
+) async {
   final userId = ref.read(currentUserIdProvider);
   if (userId == null || userId.isEmpty) {
     return [];
@@ -328,7 +332,7 @@ final availableProfilesProvider = FutureProvider.autoDispose<List<UserProfile>>(
     final profiles = <UserProfile>[];
     for (final row in response) {
       final result = Map<String, dynamic>.from(row);
-      
+
       // Enrich with auth data (email, phone)
       try {
         final authUser = client.auth.currentUser;
@@ -344,23 +348,27 @@ final availableProfilesProvider = FutureProvider.autoDispose<List<UserProfile>>(
       try {
         final profileId = result['id'] as String;
         final profileType = result['profile_type'] as String?;
-        
+
         if (profileType == 'player') {
           final sportProfilesResponse = await client
               .from('sport_profiles')
-              .select('sport, skill_level, matches_played, primary_position, rating_total, rating_count')
+              .select(
+                'sport, skill_level, matches_played, primary_position, rating_total, rating_count',
+              )
               .eq('profile_id', profileId);
-          
+
           final sportProfiles = (sportProfilesResponse as List)
               .map((sp) => SportProfile.fromJson(Map<String, dynamic>.from(sp)))
               .toList();
-          result['sports_profiles'] = sportProfiles.map((sp) => sp.toJson()).toList();
+          result['sports_profiles'] = sportProfiles
+              .map((sp) => sp.toJson())
+              .toList();
         } else if (profileType == 'organiser') {
           final organiserProfilesResponse = await client
               .from('organiser_profiles')
               .select('*')
               .eq('profile_id', profileId);
-          
+
           // For now, just mark that organiser profiles exist
           result['organiser_profiles'] = organiserProfilesResponse;
         }
@@ -393,7 +401,9 @@ final initializeProfileDataProvider = FutureProvider<bool>((ref) async {
   );
   final privacyController = ref.read(privacyControllerProvider.notifier);
   final sportsController = ref.read(sportsProfileControllerProvider.notifier);
-  final organiserController = ref.read(organiserProfileControllerProvider.notifier);
+  final organiserController = ref.read(
+    organiserProfileControllerProvider.notifier,
+  );
 
   // Resolve current authenticated user id
   final userId = ref.read(currentUserIdProvider);
@@ -402,7 +412,7 @@ final initializeProfileDataProvider = FutureProvider<bool>((ref) async {
     if (userId != null && userId.isNotEmpty) {
       // Load default profile (prefer player)
       await profileController.loadProfile(userId, profileType: 'player');
-      
+
       // If no player profile, try organiser
       var profileState = ref.read(profileControllerProvider);
       if (profileState.profile == null) {
@@ -433,6 +443,9 @@ final initializeProfileDataProvider = FutureProvider<bool>((ref) async {
     return false;
   }
 });
+
+/// Tracks whether profile bootstrap has completed for the current session
+final profileBootstrapCompletedProvider = StateProvider<bool>((ref) => false);
 
 /// Save all profile changes provider
 final saveAllProfileChangesProvider = FutureProvider<bool>((ref) async {
@@ -529,7 +542,8 @@ advanced_profile.SportProfile _selectPrimarySportProfile(
 
 bool _isPrimaryProfile(advanced_profile.SportProfile profile) {
   final attributes = profile.attributes;
-  final dynamic candidate = attributes['is_primary'] ??
+  final dynamic candidate =
+      attributes['is_primary'] ??
       attributes['isPrimary'] ??
       attributes['primary'];
 

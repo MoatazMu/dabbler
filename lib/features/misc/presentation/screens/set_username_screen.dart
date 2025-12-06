@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
-import 'package:dabbler/utils/constants/app_constants.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
-import 'package:dabbler/widgets/input_field.dart';
+
 import 'package:dabbler/widgets/onboarding_progress.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 import 'dart:async';
 
 class SetUsernameScreen extends ConsumerStatefulWidget {
@@ -167,7 +169,9 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
         password: null, // Phone/Google users don't set password here
       );
 
-      debugPrint('✅ [DEBUG] SetUsernameScreen: Onboarding completed successfully');
+      debugPrint(
+        '✅ [DEBUG] SetUsernameScreen: Onboarding completed successfully',
+      );
 
       // Clear onboarding data
       ref.read(onboardingDataProvider.notifier).clear();
@@ -196,113 +200,152 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
   Widget build(BuildContext context) {
     final onboardingData = ref.watch(onboardingDataProvider);
     final phone = onboardingData?.phone ?? '';
+    final email = onboardingData?.email ?? '';
+    final identifier = phone.isNotEmpty ? phone : email;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Set Username'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppConstants.defaultPadding),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final screenHeight = MediaQuery.of(context).size.height;
+    final topPadding = MediaQuery.of(context).padding.top;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
+    return SingleSectionLayout(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: screenHeight - topPadding - bottomPadding - 48,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header Container
+            Column(
               children: [
-                // Onboarding Progress
-                OnboardingProgress(),
-
-                const SizedBox(height: 32),
-
-                const Text(
-                  'Choose Your Username',
-                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                if (phone.isNotEmpty)
-                  Text(
-                    'Phone: $phone',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
-                  ),
-                const SizedBox(height: 32),
-
-                // Username Field
-                Text(
-                  'Username',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                CustomInputField(
-                  controller: _usernameController,
-                  label: 'Username',
-                  hintText: 'Choose a unique username',
-                  onChanged: _checkUsernameAvailability,
-                  suffixIcon: _isCheckingUsername
-                      ? const Padding(
-                          padding: EdgeInsets.all(12.0),
-                          child: SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        )
-                      : _usernameError == null &&
-                            _usernameController.text.isNotEmpty
-                      ? const Icon(Icons.check_circle, color: Colors.green)
-                      : null,
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Username is required';
-                    }
-                    if (value.trim().length < 3) {
-                      return 'Username must be at least 3 characters';
-                    }
-                    if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
-                      return 'Username can only contain letters, numbers, and underscores';
-                    }
-                    return null;
-                  },
-                ),
-                if (_usernameError != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(
-                      _usernameError!,
-                      style: const TextStyle(color: Colors.red, fontSize: 12),
+                SizedBox(height: AppSpacing.xl),
+                // Dabbler logo
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/images/dabbler_logo.svg',
+                    width: 80,
+                    height: 88,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
                     ),
                   ),
-
-                const SizedBox(height: 32),
-
-                // Submit Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _handleSubmit,
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          )
-                        : const Text('Complete'),
+                ),
+                SizedBox(height: AppSpacing.md),
+                // Dabbler text logo
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/images/dabbler_text_logo.svg',
+                    width: 110,
+                    height: 21,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
+                SizedBox(height: AppSpacing.lg),
+                // Onboarding Progress
+                const OnboardingProgress(currentStep: 4),
+                SizedBox(height: AppSpacing.xl),
+                // Title
+                Text(
+                  'Choose Your Username',
+                  style: AppTypography.headlineMedium.copyWith(
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppSpacing.sm),
+                // Subtitle
+                if (identifier.isNotEmpty)
+                  Text(
+                    identifier,
+                    style: AppTypography.bodyLarge.copyWith(
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
               ],
             ),
-          ),
+
+            const SizedBox(height: 40),
+
+            // Form Container
+            Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Username Field
+                  // Text(
+                  //   'Username',
+                  //   style: AppTypography.titleMedium.copyWith(
+                  //     fontWeight: FontWeight.w600,
+                  //     color: Colors.white,
+                  //   ),
+                  // ),
+                  SizedBox(height: AppSpacing.sm),
+                  AppInputField(
+                    controller: _usernameController,
+                    label: 'Username',
+                    hintText: 'Choose a unique username',
+                    onChanged: _checkUsernameAvailability,
+                    suffixIcon: _isCheckingUsername
+                        ? const Padding(
+                            padding: EdgeInsets.all(12.0),
+                            child: SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : _usernameError == null &&
+                              _usernameController.text.isNotEmpty
+                        ? const Icon(
+                            Iconsax.tick_circle_copy,
+                            color: Colors.green,
+                          )
+                        : null,
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return 'Username is required';
+                      }
+                      if (value.trim().length < 3) {
+                        return 'Username must be at least 3 characters';
+                      }
+                      if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
+                        return 'Username can only contain letters, numbers, and underscores';
+                      }
+                      return null;
+                    },
+                  ),
+                  if (_usernameError != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        _usernameError!,
+                        style: AppTypography.bodySmall.copyWith(
+                          color: const Color(0xFFD32F2F),
+                        ),
+                      ),
+                    ),
+
+                  SizedBox(height: AppSpacing.xl),
+
+                  // Submit Button
+                  AppButton(
+                    onPressed: _isLoading ? null : _handleSubmit,
+                    label: _isLoading ? 'Completing...' : 'Complete',
+                    type: AppButtonType.filled,
+                    size: AppButtonSize.lg,
+                  ),
+                  SizedBox(height: AppSpacing.xl),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -40,68 +40,69 @@ class PlayerSportProfileHeader extends StatelessWidget {
         ? 0.0
         : (xpCurrent / xpTarget).clamp(0.0, 1.0);
 
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: backgroundGradient,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _buildSportKeyChip(context, isVerified),
-              const SizedBox(width: 12),
-              if (tier != null && tier!.key.isNotEmpty)
-                _buildTierChip(context, tier!),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Overall ${profile.overallLevel.toStringAsFixed(1)}',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            color: colorScheme.onPrimary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _buildPositionLabel(secondaryPositions),
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onPrimary.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (tier?.iconUrl.isNotEmpty == true)
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: colorScheme.onPrimary.withOpacity(0.1),
-                  backgroundImage: NetworkImage(tier!.iconUrl),
-                ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _buildXpSection(context, xpCurrent, xpTarget, progress),
-          const SizedBox(height: 16),
-          _buildFormAndReliability(context),
-          if (badges.isNotEmpty) ...[
-            const SizedBox(height: 16),
-            _buildBadgeRow(context),
-          ],
-        ],
-      ),
-    );
+    // return Container(
+    //   padding: const EdgeInsets.all(20),
+    //   decoration: BoxDecoration(
+    //     gradient: backgroundGradient,
+    //     borderRadius: BorderRadius.circular(20),
+    //   ),
+    //   child: Column(
+    //     crossAxisAlignment: CrossAxisAlignment.start,
+    //     children: [
+    //       Row(
+    //         children: [
+    //           _buildSportKeyChip(context, isVerified),
+    //           const SizedBox(width: 12),
+    //           if (tier != null && tier!.key.isNotEmpty)
+    //             _buildTierChip(context, tier!),
+    //         ],
+    //       ),
+    //       const SizedBox(height: 16),
+    //       Row(
+    //         crossAxisAlignment: CrossAxisAlignment.end,
+    //         children: [
+    //           Expanded(
+    //             child: Column(
+    //               crossAxisAlignment: CrossAxisAlignment.start,
+    //               children: [
+    //                 Text(
+    //                   'Overall ${profile.overallLevel.toStringAsFixed(1)}',
+    //                   style: Theme.of(context).textTheme.headlineSmall
+    //                       ?.copyWith(
+    //                         color: colorScheme.onPrimary,
+    //                         fontWeight: FontWeight.w700,
+    //                       ),
+    //                 ),
+    //                 const SizedBox(height: 4),
+    //                 Text(
+    //                   _buildPositionLabel(secondaryPositions),
+    //                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+    //                     color: colorScheme.onPrimary.withOpacity(0.8),
+    //                   ),
+    //                 ),
+    //               ],
+    //             ),
+    //           ),
+    //           if (tier?.iconUrl.isNotEmpty == true)
+    //             CircleAvatar(
+    //               radius: 24,
+    //               backgroundColor: colorScheme.onPrimary.withOpacity(0.1),
+    //               backgroundImage: NetworkImage(tier!.iconUrl),
+    //             ),
+    //         ],
+    //       ),
+    //       const SizedBox(height: 20),
+    //       _buildXpSection(context, xpCurrent, xpTarget, progress),
+    //       const SizedBox(height: 16),
+    //       _buildFormAndReliability(context),
+    //       if (badges.isNotEmpty) ...[
+    //         const SizedBox(height: 16),
+    //         _buildBadgeRow(context),
+    //       ],
+    //     ],
+    //   ),
+    // );
+    return const SizedBox.shrink();
   }
 
   LinearGradient _buildGradient(ColorScheme colorScheme) {

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
-import 'package:dabbler/core/utils/constants.dart';
-import 'package:dabbler/widgets/app_button.dart';
 import 'package:dabbler/widgets/onboarding_progress.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 
 class IntentSelectionScreen extends ConsumerStatefulWidget {
   const IntentSelectionScreen({super.key});
@@ -139,175 +140,180 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Your Intent'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Onboarding Progress
-            OnboardingProgress(),
+    final screenHeight = MediaQuery.of(context).size.height;
+    final topPadding = MediaQuery.of(context).padding.top;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-            // Main Content
-            Expanded(
-              child: _isLoadingData
-                  ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(
-                        AppConstants.defaultPadding,
+    return SingleSectionLayout(
+      child: _isLoadingData
+          ? const Center(child: CircularProgressIndicator())
+          : ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: screenHeight - topPadding - bottomPadding - 48,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header Container
+                  Column(
+                    children: [
+                      SizedBox(height: AppSpacing.xl),
+                      // Dabbler logo
+                      Center(
+                        child: SvgPicture.asset(
+                          'assets/images/dabbler_logo.svg',
+                          width: 80,
+                          height: 88,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                       ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const SizedBox(height: 32),
-
-                          // Header
-                          Text(
-                            'What is your main goal?',
-                            style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+                      SizedBox(height: AppSpacing.md),
+                      // Dabbler text logo
+                      Center(
+                        child: SvgPicture.asset(
+                          'assets/images/dabbler_text_logo.svg',
+                          width: 110,
+                          height: 21,
+                          colorFilter: const ColorFilter.mode(
+                            Colors.white,
+                            BlendMode.srcIn,
                           ),
+                        ),
+                      ),
+                      SizedBox(height: AppSpacing.lg),
+                      // Onboarding Progress
+                      const OnboardingProgress(currentStep: 2),
+                      SizedBox(height: AppSpacing.xl),
+                      // Title
+                      Text(
+                        'What is your main goal?',
+                        style: AppTypography.headlineMedium.copyWith(
+                          color: Colors.white,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      SizedBox(height: AppSpacing.sm),
+                      // Subtitle
+                      Text(
+                        'Choose how you want to use Dabbler',
+                        style: AppTypography.bodyLarge.copyWith(
+                          color: Colors.white.withOpacity(0.9),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
 
-                          const SizedBox(height: 8),
+                  const SizedBox(height: 40),
 
-                          Text(
-                            'Choose how you want to use Dabbler',
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(color: Colors.grey[600]),
-                            textAlign: TextAlign.center,
-                          ),
+                  // Form Container
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Intent Options - Filtered by feature flags
+                      ..._intentOptions.map((option) {
+                        final isSelected = _selectedIntent == option['value'];
 
-                          const SizedBox(height: 48),
-
-                          // Intent Options - Filtered by feature flags
-                          ..._intentOptions.map((option) {
-                            final isSelected =
-                                _selectedIntent == option['value'];
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 16),
-                              child: GestureDetector(
-                                onTap: () => _selectIntent(option['value']!),
-                                child: Container(
-                                  padding: const EdgeInsets.all(20),
-                                  decoration: BoxDecoration(
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () => _selectIntent(option['value']!),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Ink(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  border: Border.all(
                                     color: isSelected
-                                        ? Theme.of(
-                                            context,
-                                          ).primaryColor.withOpacity(0.1)
-                                        : Colors.grey[50],
-                                    border: Border.all(
+                                        ? const Color(0xFFC18FFF)
+                                        : Colors.white.withOpacity(0.3),
+                                    width: isSelected ? 2 : 1.5,
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      _getIntentIcon(option['icon']!),
+                                      size: 24,
                                       color: isSelected
-                                          ? Theme.of(context).primaryColor
-                                          : Colors.grey[300]!,
-                                      width: isSelected ? 2 : 1,
+                                          ? const Color(0xFFC18FFF)
+                                          : Colors.white.withOpacity(0.7),
                                     ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 56,
-                                        height: 56,
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? Theme.of(
-                                                  context,
-                                                ).primaryColor.withOpacity(0.2)
-                                              : Colors.grey[200],
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          _getIntentIcon(option['icon']!),
-                                          size: 28,
-                                          color: isSelected
-                                              ? Theme.of(context).primaryColor
-                                              : Colors.grey[600],
+                                    SizedBox(width: AppSpacing.md),
+                                    Expanded(
+                                      child: Text(
+                                        option['title']!,
+                                        style: AppTypography.bodyLarge.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              option['title']!,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .titleLarge
-                                                  ?.copyWith(
-                                                    fontWeight: FontWeight.w600,
-                                                    color: isSelected
-                                                        ? Theme.of(
-                                                            context,
-                                                          ).primaryColor
-                                                        : Colors.grey[800],
-                                                  ),
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              option['description']!,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium
-                                                  ?.copyWith(
-                                                    color: Colors.grey[600],
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
+                                    ),
+                                    if (isSelected)
+                                      const Icon(
+                                        Iconsax.tick_circle_copy,
+                                        size: 20,
+                                        color: Color(0xFFC18FFF),
                                       ),
-                                      if (isSelected)
-                                        Icon(
-                                          Icons.check_circle,
-                                          size: 28,
-                                          color: Theme.of(context).primaryColor,
-                                        ),
-                                    ],
-                                  ),
+                                  ],
                                 ),
                               ),
-                            );
-                          }),
-
-                          const SizedBox(height: 32),
-
-                          // Continue Button
-                          AppButton(
-                            onPressed: (_isLoading || _selectedIntent == null)
-                                ? null
-                                : _handleSubmit,
-                            label: _isLoading ? 'Continuing...' : 'Continue',
+                            ),
                           ),
+                        );
+                      }),
 
-                          const SizedBox(height: 32),
-                        ],
+                      SizedBox(height: AppSpacing.xl),
+
+                      // Continue Button
+                      AppButton(
+                        onPressed: (_isLoading || _selectedIntent == null)
+                            ? null
+                            : _handleSubmit,
+                        label: _isLoading ? 'Continuing...' : 'Continue',
+                        type: AppButtonType.filled,
+                        size: AppButtonSize.lg,
                       ),
-                    ),
+
+                      SizedBox(height: AppSpacing.md),
+
+                      // Back Button
+                      AppButton(
+                        onPressed: () => context.pop(),
+                        label: 'Back',
+                        type: AppButtonType.ghost,
+                        size: AppButtonSize.lg,
+                      ),
+
+                      SizedBox(height: AppSpacing.xl),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
   IconData _getIntentIcon(String icon) {
     switch (icon) {
       case 'calendar':
-        return Icons.event;
+        return Iconsax.calendar_1_copy;
       case 'trophy':
-        return Icons.emoji_events;
+        return Iconsax.cup_copy;
       case 'people':
-        return Icons.people;
+        return Iconsax.people_copy;
       default:
-        return Icons.sports_soccer;
+        return Iconsax.activity_copy;
     }
   }
 }

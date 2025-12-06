@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -18,8 +20,8 @@ import 'package:dabbler/widgets/thoughts_input.dart';
 import 'package:dabbler/data/models/games/game.dart';
 import 'package:dabbler/features/social/presentation/widgets/feed/post_card.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
-import 'package:dabbler/features/home/presentation/widgets/inline_post_composer.dart';
 import 'package:dabbler/core/widgets/custom_avatar.dart';
+import 'package:dabbler/themes/material3_extensions.dart';
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {
@@ -53,8 +55,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   bool _shouldShowCreateGame() {
-    final profileState = ref.read(profileControllerProvider);
+    final profileState = ref.watch(profileControllerProvider);
     final profileType = profileState.profile?.profileType;
+
+    print('🔍 [DEBUG] _shouldShowCreateGame - profileType: $profileType');
+    print(
+      '🔍 [DEBUG] enablePlayerGameCreation: ${FeatureFlags.enablePlayerGameCreation}',
+    );
+    print(
+      '🔍 [DEBUG] enableOrganiserGameCreation: ${FeatureFlags.enableOrganiserGameCreation}',
+    );
 
     if (profileType == 'player') {
       return FeatureFlags.enablePlayerGameCreation;
@@ -65,7 +75,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   bool _shouldShowJoinGame() {
-    final profileState = ref.read(profileControllerProvider);
+    final profileState = ref.watch(profileControllerProvider);
     final profileType = profileState.profile?.profileType;
 
     if (profileType == 'player') {
@@ -87,10 +97,125 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  Future<void> _handleRefresh() async {
+    // Reload user profile
+    await _loadUserProfile();
+
+    // Invalidate providers to refresh data
+    ref.invalidate(profileControllerProvider);
+    ref.invalidate(userUpcomingGamesProvider);
+    ref.invalidate(latestFeedPostsProvider);
+
+    // Small delay for smooth UX
+    await Future.delayed(const Duration(milliseconds: 300));
+  }
+
+  Widget _buildHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    // Extract initials from display name
+    String? getInitials(String? displayName) {
+      if (displayName == null || displayName.isEmpty) return null;
+      final parts = displayName.trim().split(' ');
+      if (parts.isEmpty) return null;
+      if (parts.length == 1) {
+        return parts[0][0].toUpperCase();
+      }
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    }
+
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => context.go('/home'),
+          child: DSAvatar.size48(
+            imageUrl:
+                _userProfile?['avatar_url'] is String &&
+                    (_userProfile!['avatar_url'] as String).isNotEmpty
+                ? _userProfile!['avatar_url']
+                : null,
+            initials: getInitials(_userProfile?['display_name']),
+            backgroundColor: colorScheme.categoryMain.withValues(alpha: 0.2),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            'Home',
+            style: textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: colorScheme.onSurface,
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        if (FeatureFlags.enableNotificationCenter)
+          IconButton.filledTonal(
+            onPressed: () => context.go(RoutePaths.notifications),
+            icon: const Icon(Iconsax.notification_status_copy),
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.categoryMain.withValues(alpha: 0.2),
+              foregroundColor: colorScheme.onSurface,
+              minimumSize: const Size(48, 48),
+            ),
+          ),
+        if (FeatureFlags.enableNotificationCenter) const SizedBox(width: 8),
+        IconButton.filledTonal(
+          onPressed: () => context.go(RoutePaths.profile),
+          icon: const Icon(Iconsax.user_copy),
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.categoryMain.withValues(alpha: 0.2),
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGreetingSection(String? displayName) {
+    final tokens = context.colorTokens;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '${_getGreeting()},',
+          style: AppTypography.titleMedium.copyWith(color: tokens.titleOnHead),
+        ),
+        if (displayName != null)
+          Text(
+            '$displayName!',
+            style: AppTypography.displaySmall.copyWith(
+              color: tokens.titleOnHead,
+            ),
+          )
+        else
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Complete your profile',
+                style: AppTypography.titleMedium.copyWith(
+                  color: tokens.titleOnHead,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              const SizedBox(height: 8),
+              AppButton.primary(
+                label: 'Update now',
+                onPressed: () => context.go(RoutePaths.profile),
+                size: AppButtonSize.sm,
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     // Get display name from users table - NO FALLBACK to 'Player'
     final displayName =
         _userProfile?['display_name'] != null &&
@@ -98,149 +223,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ? (_userProfile!['display_name'] as String).split(' ').first
         : null;
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: _buildHeroSection(displayName),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildQuickAccessSection(),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 28),
-                      child: _buildNewlyJoinedSection(),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 28),
-                      child: _buildActivitiesButton(),
-                    ),
-                    // Main Social Feed - Primary feature
-                    Padding(
-                      padding: const EdgeInsets.only(top: 28),
-                      child: _buildSocialFeedSection(),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 36),
-                      child: _buildRecentGamesSection(),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      floatingActionButton: const InlinePostComposer(),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
-  }
-
-  Widget _buildHeroSection(String? displayName) {
-    final textTheme = Theme.of(context).textTheme;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    final heroColor = isDarkMode
-        ? const Color(0xFF4A148C)
-        : const Color(0xFFE0C7FF);
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
-    final subtextColor = isDarkMode
-        ? Colors.white.withOpacity(0.85)
-        : Colors.black.withOpacity(0.7);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: Column(
+    return TwoSectionLayout(
+      category: 'main',
+      topSection: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: heroColor,
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '${_getGreeting()},',
-                        style: textTheme.titleMedium?.copyWith(
-                          color: subtextColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: displayName != null
-                            ? Text(
-                                '$displayName!',
-                                style: textTheme.headlineSmall?.copyWith(
-                                  color: textColor,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              )
-                            : Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Complete your profile',
-                                    style: textTheme.titleMedium?.copyWith(
-                                      color: textColor,
-                                      fontStyle: FontStyle.italic,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 8),
-                                    child: FilledButton.tonal(
-                                      onPressed: () =>
-                                          context.go(RoutePaths.profile),
-                                      style: FilledButton.styleFrom(
-                                        backgroundColor: isDarkMode
-                                            ? Colors.white.withOpacity(0.15)
-                                            : Colors.black.withOpacity(0.1),
-                                        foregroundColor: textColor,
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 16,
-                                          vertical: 10,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
-                                      ),
-                                      child: const Text('Update now'),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () => context.go(RoutePaths.profile),
-                  child: AppAvatar.large(
-                    imageUrl: _userProfile?['avatar_url'],
-                    fallbackText: _userProfile?['display_name'],
-                  ),
-                ),
-              ],
-            ),
-          ),
+          _buildHeader(),
+          const SizedBox(height: 24),
+          _buildGreetingSection(displayName),
           Padding(
             padding: const EdgeInsets.only(top: 16),
             child: _buildUpcomingGameSection(),
@@ -250,27 +240,139 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: ThoughtsInput(
               onTap: () {
                 // TODO: Navigate to create post screen
-                // For now, you can use PostService to create posts
               },
             ),
           ),
         ],
       ),
+      bottomSection: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildQuickAccessSection(),
+          Padding(
+            padding: const EdgeInsets.only(top: 0),
+            child: _buildNewlyJoinedSection(),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 0),
+            child: _buildActivitiesButton(),
+          ),
+          // Main Social Feed - Primary feature
+          Padding(
+            padding: const EdgeInsets.only(top: 28),
+            child: _buildSocialFeedSection(),
+          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(top: 36),
+          //   child: _buildRecentGamesSection(),
+          // ),
+        ],
+      ),
+      onRefresh: _handleRefresh,
+    );
+  }
+
+  Widget _buildHeroSection(String? displayName) {
+    final tokens = context.colorTokens;
+
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${_getGreeting()},',
+                    style: AppTypography.titleMedium.copyWith(
+                      color: tokens.titleOnHead,
+                    ),
+                  ),
+                  if (displayName != null)
+                    Text(
+                      '$displayName!',
+                      style: AppTypography.displaySmall.copyWith(
+                        color: tokens.titleOnHead,
+                      ),
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Complete your profile',
+                          style: AppTypography.titleMedium.copyWith(
+                            color: tokens.titleOnHead,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        AppButton.primary(
+                          label: 'Update now',
+                          onPressed: () => context.go(RoutePaths.profile),
+                          size: AppButtonSize.sm,
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Row(
+              children: [
+                if (FeatureFlags.enableNotificationCenter)
+                  GestureDetector(
+                    onTap: () => context.go(RoutePaths.notifications),
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      alignment: Alignment.center,
+                      child: SvgPicture.asset(
+                        'assets/icons/notification.svg',
+                        width: 24,
+                        height: 24,
+                        colorFilter: ColorFilter.mode(
+                          tokens.titleOnHead,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    ),
+                  ),
+                if (FeatureFlags.enableNotificationCenter)
+                  const SizedBox(width: 12),
+                GestureDetector(
+                  onTap: () => context.go(RoutePaths.profile),
+                  child: DSAvatar.size54(
+                    imageUrl: _userProfile?['avatar_url'],
+                    initials: _userProfile?['display_name'],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: _buildUpcomingGameSection(),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: ThoughtsInput(
+            onTap: () {
+              // TODO: Navigate to create post screen
+              // For now, you can use PostService to create posts
+            },
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildQuickAccessSection() {
     return Column(
       children: [
-        SizedBox(
-          width: double.infinity,
-          child: AppButtonCard(
-            emoji: '🏆',
-            label: 'Sports',
-            onTap: () => context.go(RoutePaths.sports),
-          ),
-        ),
-        const SizedBox(height: 12),
         // Only show Create Game button for organisers with permission
         if (_shouldShowCreateGame())
           SizedBox(
@@ -286,8 +388,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildActivitiesButton() {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.colorTokens;
 
     return Row(
       children: [
@@ -297,18 +398,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(12),
               ),
-              backgroundColor: colorScheme.secondaryContainer,
-              foregroundColor: colorScheme.onSecondaryContainer,
+              backgroundColor: tokens.section,
+              foregroundColor: tokens.titleOnSec,
             ),
             icon: const Text('⚡', style: TextStyle(fontSize: 18)),
-            label: Text(
-              'Activities',
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            label: Text('Activities', style: AppTypography.labelMedium),
           ),
         ),
         if (FeatureFlags.enableNotificationCenter) ...[
@@ -322,18 +418,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   horizontal: 20,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                backgroundColor: colorScheme.secondaryContainer,
-                foregroundColor: colorScheme.onSecondaryContainer,
+                backgroundColor: tokens.section,
+                foregroundColor: tokens.titleOnSec,
               ),
               icon: const Text('🔔', style: TextStyle(fontSize: 18)),
-              label: Text(
-                'Notifications',
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+              label: Text('Notifications', style: AppTypography.labelMedium),
             ),
           ),
         ],
@@ -342,8 +433,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildNewlyJoinedSection() {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.colorTokens;
 
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _fetchRecentPlayers(),
@@ -368,9 +458,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               'Newly joined',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: colorScheme.onSurface,
+              style: AppTypography.titleLarge.copyWith(
+                color: tokens.titleOnSec,
               ),
             ),
             Padding(
@@ -416,8 +505,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildSocialFeedSection() {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.colorTokens;
     final postsAsync = ref.watch(latestFeedPostsProvider);
 
     return postsAsync.when(
@@ -428,9 +516,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Text(
                 'Feed',
-                style: textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
+                style: AppTypography.titleLarge.copyWith(
+                  color: tokens.titleOnSec,
                 ),
               ),
               Padding(
@@ -442,25 +529,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.article_outlined,
-                          size: 48,
-                          color: colorScheme.onSurfaceVariant,
+                        SvgPicture.asset(
+                          'assets/icons/document-text.svg',
+                          width: 48,
+                          height: 48,
+                          colorFilter: ColorFilter.mode(
+                            tokens.neutralOpacity,
+                            BlendMode.srcIn,
+                          ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No posts yet',
-                          style: textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurface,
+                          style: AppTypography.titleMedium.copyWith(
+                            color: tokens.titleOnSec,
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Be the first to share something with the community.',
                           textAlign: TextAlign.center,
-                          style: textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: tokens.neutralOpacity,
                           ),
                         ),
                       ],
@@ -476,7 +566,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.only(top: 0),
               child: Column(
                 children: posts
                     .map(
@@ -504,10 +594,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           Text(
             'Feed',
-            style: textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-            ),
+            style: AppTypography.titleLarge.copyWith(color: tokens.titleOnSec),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -526,10 +613,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           Text(
             'Feed',
-            style: textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface,
-            ),
+            style: AppTypography.titleLarge.copyWith(color: tokens.titleOnSec),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -542,23 +626,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Text(
                       'Unable to load posts',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
+                      style: AppTypography.titleMedium.copyWith(
+                        color: tokens.titleOnSec,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Please check your connection and try again.',
-                      style: textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: tokens.neutralOpacity,
                       ),
                     ),
                     const SizedBox(height: 12),
-                    OutlinedButton.icon(
+                    OutlinedButton(
                       onPressed: () => ref.refresh(latestFeedPostsProvider),
-                      icon: const Icon(Icons.refresh),
-                      label: const Text('Retry'),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SvgPicture.asset(
+                            'assets/icons/refresh.svg',
+                            width: 16,
+                            height: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text('Retry'),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -598,8 +691,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildRecentGamesSection() {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.colorTokens;
 
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _fetchRecentGames(),
@@ -615,9 +707,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               'Recent Games',
-              style: textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: colorScheme.onSurface,
+              style: AppTypography.titleLarge.copyWith(
+                color: tokens.titleOnSec,
               ),
             ),
             Padding(
@@ -633,8 +724,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildRecentGameItem(Map<String, dynamic> game) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.colorTokens;
 
     final sport = game['sport'] ?? 'Football';
     final format = game['format'] ?? 'Futsal';
@@ -677,9 +767,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Expanded(
                     child: Text(
                       title,
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: colorScheme.onSurface,
+                      style: AppTypography.titleMedium.copyWith(
+                        color: tokens.titleOnSec,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -688,9 +777,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(width: 8),
                   Text(
                     '$currentPlayers/$maxPlayers',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                      fontWeight: FontWeight.w600,
+                    style: AppTypography.labelSmall.copyWith(
+                      color: tokens.neutralOpacity,
                     ),
                   ),
                 ],
@@ -702,8 +790,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Expanded(
                     child: Text(
                       '$sport • $format • $date at $time',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: tokens.neutralOpacity,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -713,8 +801,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Flexible(
                     child: Text(
                       location,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
+                      style: AppTypography.bodySmall.copyWith(
+                        color: tokens.neutralOpacity,
                       ),
                       textAlign: TextAlign.right,
                       overflow: TextOverflow.ellipsis,
@@ -909,7 +997,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// Builds collapsible reminder cards in Apple Wallet style
+  /// Builds upcoming game cards using design system component
   Widget _buildCollapsibleReminderCards(List<Game> games) {
     return Column(
       children: List.generate(games.length, (index) {
@@ -919,10 +1007,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
         return Padding(
           padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
-          child: _CollapsibleReminderCard(
+          child: _StatefulUpcomingGameCard(
             game: game,
             isFirst: isFirst,
-            isLast: isLast,
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -937,77 +1024,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 }
 
-/// Collapsible reminder card widget in Apple Wallet style
-class _CollapsibleReminderCard extends StatefulWidget {
+/// Stateful wrapper for UpcomingGameCard to handle expand/collapse
+class _StatefulUpcomingGameCard extends StatefulWidget {
   final Game game;
   final bool isFirst;
-  final bool isLast;
   final VoidCallback onTap;
 
-  const _CollapsibleReminderCard({
+  const _StatefulUpcomingGameCard({
     required this.game,
     required this.isFirst,
-    required this.isLast,
     required this.onTap,
   });
 
   @override
-  State<_CollapsibleReminderCard> createState() =>
-      _CollapsibleReminderCardState();
+  State<_StatefulUpcomingGameCard> createState() =>
+      _StatefulUpcomingGameCardState();
 }
 
-class _CollapsibleReminderCardState extends State<_CollapsibleReminderCard>
-    with SingleTickerProviderStateMixin {
+class _StatefulUpcomingGameCardState extends State<_StatefulUpcomingGameCard> {
   bool _isExpanded = false;
-  late AnimationController _animationController;
-  late Animation<double> _expandAnimation;
   Timer? _countdownTimer;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _expandAnimation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    );
     // First card is expanded by default
-    if (widget.isFirst) {
-      _isExpanded = true;
-      _animationController.value = 1.0;
-    }
+    _isExpanded = widget.isFirst;
     _startCountdownTimer();
   }
 
   @override
   void dispose() {
     _countdownTimer?.cancel();
-    _animationController.dispose();
     super.dispose();
-  }
-
-  @override
-  void didUpdateWidget(covariant _CollapsibleReminderCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.game.id != widget.game.id ||
-        oldWidget.game.scheduledDate != widget.game.scheduledDate ||
-        oldWidget.game.startTime != widget.game.startTime) {
-      _startCountdownTimer();
-    }
-  }
-
-  void _toggleExpanded() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-      if (_isExpanded) {
-        _animationController.forward();
-      } else {
-        _animationController.reverse();
-      }
-    });
   }
 
   void _startCountdownTimer() {
@@ -1049,212 +1098,6 @@ class _CollapsibleReminderCardState extends State<_CollapsibleReminderCard>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-    final countdownLabel = _getCountdownLabel();
-    final timeFormat = '${widget.game.startTime} - ${widget.game.endTime}';
-
-    // Calculate border radius for Apple Wallet style (rounded corners only on first/last)
-    final borderRadius = BorderRadius.only(
-      topLeft: Radius.circular(widget.isFirst ? 20 : 0),
-      topRight: Radius.circular(widget.isFirst ? 20 : 0),
-      bottomLeft: Radius.circular(widget.isLast ? 20 : 0),
-      bottomRight: Radius.circular(widget.isLast ? 20 : 0),
-    );
-
-    return GestureDetector(
-      // Vertical swipe to expand/collapse like a notification stack
-      onVerticalDragEnd: (details) {
-        final velocity = details.primaryVelocity ?? 0;
-        if (velocity > 0 && !_isExpanded) {
-          // Swipe down to expand
-          _toggleExpanded();
-        } else if (velocity < 0 && _isExpanded) {
-          // Swipe up to collapse
-          _toggleExpanded();
-        }
-      },
-      child: Card(
-        elevation: 0,
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(borderRadius: borderRadius),
-        clipBehavior: Clip.antiAlias,
-        child: Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
-            borderRadius: borderRadius,
-            border: Border(
-              top: widget.isFirst
-                  ? BorderSide.none
-                  : BorderSide(
-                      color: colorScheme.outlineVariant.withOpacity(0.3),
-                      width: 0.5,
-                    ),
-            ),
-          ),
-          child: Column(
-            children: [
-              // Collapsed/Header view
-              InkWell(
-                onTap: widget.onTap,
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      // Sport emoji
-                      Text(
-                        _getSportEmoji(widget.game.sport),
-                        style: const TextStyle(fontSize: 24),
-                      ),
-                      const SizedBox(width: 12),
-                      // Game title and time
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.game.title,
-                              style: textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: colorScheme.onSurface,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              timeFormat,
-                              style: textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Countdown badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.errorContainer,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Text(
-                          countdownLabel,
-                          style: textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onErrorContainer,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Expand/collapse icon (tap to toggle)
-                      InkWell(
-                        onTap: _toggleExpanded,
-                        borderRadius: BorderRadius.circular(20),
-                        child: RotationTransition(
-                          turns: _expandAnimation,
-                          child: Icon(
-                            Icons.keyboard_arrow_down,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              // Expanded details
-              SizeTransition(
-                sizeFactor: _expandAnimation,
-                axisAlignment: -1.0,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Divider(
-                        height: 1,
-                        thickness: 0.5,
-                        color: colorScheme.outlineVariant.withOpacity(0.3),
-                      ),
-                      const SizedBox(height: 12),
-                      // Date
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 16,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            DateFormat(
-                              'EEE, MMM d',
-                            ).format(widget.game.scheduledDate),
-                            style: textTheme.bodyMedium?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      // Location
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.location_on,
-                            size: 16,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              widget.game.venueName ?? 'Location TBD',
-                              style: textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      // View details button
-                      SizedBox(
-                        width: double.infinity,
-                        child: OutlinedButton(
-                          onPressed: widget.onTap,
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'View Details',
-                            style: textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   String _getSportEmoji(String? sport) {
     if (sport == null) return '⚽';
     switch (sport.toLowerCase()) {
@@ -1275,6 +1118,42 @@ class _CollapsibleReminderCardState extends State<_CollapsibleReminderCard>
         return '⚽';
     }
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final countdownLabel = _getCountdownLabel();
+    final dateTime =
+        '${DateFormat('EEE, MMM d').format(widget.game.scheduledDate)} - ${widget.game.startTime} - ${widget.game.endTime}';
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _isExpanded = !_isExpanded;
+        });
+      },
+      child: _isExpanded
+          ? UpcomingGameCard.expanded(
+              title: 'Upcoming Game',
+              gameName: widget.game.title,
+              timeRemaining: countdownLabel,
+              sportIcon: AppSportIcon.size18(
+                emoji: _getSportEmoji(widget.game.sport),
+              ),
+              dateTime: dateTime,
+              location: widget.game.venueName ?? 'Location TBD',
+              width: double.infinity,
+            )
+          : UpcomingGameCard.collapsed(
+              title: 'Upcoming Game',
+              gameName: widget.game.title,
+              timeRemaining: countdownLabel,
+              sportIcon: AppSportIcon.size18(
+                emoji: _getSportEmoji(widget.game.sport),
+              ),
+              width: double.infinity,
+            ),
+    );
+  }
 }
 
 class _FeedLoadingPlaceholder extends StatelessWidget {
@@ -1282,7 +1161,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final tokens = context.colorTokens;
 
     return Card(
       elevation: 0,
@@ -1296,7 +1175,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHigh,
+                color: tokens.section,
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
@@ -1309,7 +1188,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
                     height: 16,
                     width: 120,
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHigh,
+                      color: tokens.section,
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -1318,7 +1197,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
                     height: 12,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHigh,
+                      color: tokens.section,
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -1327,7 +1206,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
                     height: 12,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: colorScheme.surfaceContainerHigh,
+                      color: tokens.section,
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),

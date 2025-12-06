@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 /// Enum representing different types of notifications in the app
 enum NotificationType {
@@ -28,17 +29,17 @@ enum NotificationType {
   IconData get icon {
     switch (this) {
       case NotificationType.gameInvite:
-        return Icons.sports;
+        return Iconsax.game_copy;
       case NotificationType.message:
-        return Icons.message;
+        return Iconsax.message_copy;
       case NotificationType.friendRequest:
-        return Icons.person_add;
+        return Iconsax.user_add_copy;
       case NotificationType.gameReminder:
-        return Icons.schedule;
+        return Iconsax.clock_copy;
       case NotificationType.systemUpdate:
-        return Icons.system_update;
+        return Iconsax.setting_2_copy;
       case NotificationType.marketing:
-        return Icons.campaign;
+        return Iconsax.notification_copy;
     }
   }
 
@@ -240,10 +241,10 @@ enum NotificationPriority {
 
 /// Enum representing different delivery methods for notifications
 enum NotificationDeliveryMethod {
-  push('push', 'Push Notifications', Icons.notifications),
-  email('email', 'Email', Icons.email),
-  sms('sms', 'SMS', Icons.sms),
-  inApp('in_app', 'In-App', Icons.app_registration);
+  push('push', 'Push Notifications', Iconsax.notification_copy),
+  email('email', 'Email', Iconsax.sms_copy),
+  sms('sms', 'SMS', Iconsax.message_copy),
+  inApp('in_app', 'In-App', Iconsax.mobile_copy);
 
   final String value;
   final String displayName;
@@ -320,16 +321,18 @@ enum NotificationTiming {
 
 /// Enum representing notification categories for grouping
 enum NotificationCategory {
-  social('social', 'Social', Icons.people, [
+  social('social', 'Social', Iconsax.people_copy, [
     NotificationType.friendRequest,
     NotificationType.message,
   ]),
-  gaming('gaming', 'Gaming', Icons.sports, [
+  gaming('gaming', 'Gaming', Iconsax.game_copy, [
     NotificationType.gameInvite,
     NotificationType.gameReminder,
   ]),
-  system('system', 'System', Icons.settings, [NotificationType.systemUpdate]),
-  promotional('promotional', 'Promotional', Icons.local_offer, [
+  system('system', 'System', Iconsax.setting_2_copy, [
+    NotificationType.systemUpdate,
+  ]),
+  promotional('promotional', 'Promotional', Iconsax.ticket_copy, [
     NotificationType.marketing,
   ]);
 

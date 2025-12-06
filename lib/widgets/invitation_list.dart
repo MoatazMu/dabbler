@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/themes/app_theme.dart';
 
 // Player model for invitations
@@ -257,7 +258,11 @@ class _InvitationListState extends State<InvitationList>
         fontWeight: FontWeight.w600,
         color: context.colors.primary,
       ),
-      deleteIcon: Icon(Icons.close, size: 16, color: context.colors.primary),
+      deleteIcon: Icon(
+        Iconsax.close_circle_copy,
+        size: 16,
+        color: context.colors.primary,
+      ),
     );
   }
 
@@ -276,7 +281,7 @@ class _InvitationListState extends State<InvitationList>
             decoration: InputDecoration(
               hintText: 'Search contacts...',
               prefixIcon: Icon(
-                Icons.search,
+                Iconsax.search_normal_copy,
                 color: context.colors.onSurfaceVariant,
               ),
               border: OutlineInputBorder(
@@ -301,7 +306,7 @@ class _InvitationListState extends State<InvitationList>
               ? _buildAntdEmptyState(
                   context,
                   'No contacts found',
-                  Icons.phone,
+                  Iconsax.call_copy,
                 )
               : ListView.separated(
                   itemCount: filteredContacts.length,
@@ -334,7 +339,7 @@ class _InvitationListState extends State<InvitationList>
             decoration: InputDecoration(
               hintText: 'Search recent teammates...',
               prefixIcon: Icon(
-                Icons.search,
+                Iconsax.search_normal_copy,
                 color: context.colors.onSurfaceVariant,
               ),
               border: OutlineInputBorder(
@@ -359,7 +364,7 @@ class _InvitationListState extends State<InvitationList>
               ? _buildAntdEmptyState(
                   context,
                   'No recent teammates found',
-                  Icons.group,
+                  Iconsax.people_copy,
                 )
               : ListView.separated(
                   itemCount: filteredTeammates.length,
@@ -387,7 +392,7 @@ class _InvitationListState extends State<InvitationList>
             decoration: InputDecoration(
               hintText: 'Search players by name or email...',
               prefixIcon: Icon(
-                Icons.search,
+                Iconsax.search_normal_copy,
                 color: context.colors.onSurfaceVariant,
               ),
               border: OutlineInputBorder(
@@ -410,13 +415,13 @@ class _InvitationListState extends State<InvitationList>
               ? _buildAntdEmptyState(
                   context,
                   'Enter a name or email to search',
-                  Icons.search,
+                  Iconsax.search_normal_copy,
                 )
               : widget.searchResults.isEmpty
               ? _buildAntdEmptyState(
                   context,
                   'No players found',
-                  Icons.person_add,
+                  Iconsax.user_add_copy,
                 )
               : ListView.separated(
                   itemCount: widget.searchResults.length,
@@ -452,8 +457,8 @@ class _InvitationListState extends State<InvitationList>
         size: AntdButtonSize.small,
         onPressed: () => widget.onPlayerToggle(player),
         child: isSelected
-            ? const Icon(Icons.check, size: 16)
-            : const Icon(Icons.person_add, size: 16),
+            ? const Icon(Iconsax.tick_circle_copy, size: 16)
+            : const Icon(Iconsax.user_add_copy, size: 16),
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),

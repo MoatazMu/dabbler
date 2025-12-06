@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/core/utils/constants.dart';
 import 'package:dabbler/core/utils/helpers.dart';
-import 'package:dabbler/widgets/app_button.dart';
 import 'package:dabbler/widgets/onboarding_progress.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
@@ -158,133 +160,164 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sports Preferences'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Onboarding Progress
-            OnboardingProgress(),
+    final screenHeight = MediaQuery.of(context).size.height;
+    final topPadding = MediaQuery.of(context).padding.top;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-            // Main Content
-            Expanded(
-              child: _isLoadingData
-                  ? const Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(
-                      padding: const EdgeInsets.all(
-                        AppConstants.defaultPadding,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const SizedBox(height: 32),
-
-                          // Header
-                          Text(
-                            'Choose Your Sports',
-                            style: Theme.of(context).textTheme.headlineMedium
-                                ?.copyWith(fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
+    return SingleSectionLayout(
+      child: _isLoadingData
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: screenHeight - topPadding - bottomPadding - 48,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Header Container
+                    Column(
+                      children: [
+                        SizedBox(height: AppSpacing.xl),
+                        // Dabbler logo
+                        Center(
+                          child: SvgPicture.asset(
+                            'assets/images/dabbler_logo.svg',
+                            width: 80,
+                            height: 88,
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
                           ),
-
-                          const SizedBox(height: 8),
-
-                          Text(
-                            'Select your preferred sport and additional interests',
-                            style: Theme.of(context).textTheme.bodyLarge
-                                ?.copyWith(color: Colors.grey[600]),
-                            textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: AppSpacing.md),
+                        // Dabbler text logo
+                        Center(
+                          child: SvgPicture.asset(
+                            'assets/images/dabbler_text_logo.svg',
+                            width: 110,
+                            height: 21,
+                            colorFilter: const ColorFilter.mode(
+                              Colors.white,
+                              BlendMode.srcIn,
+                            ),
                           ),
+                        ),
+                        SizedBox(height: AppSpacing.lg),
+                        // Onboarding Progress
+                        const OnboardingProgress(currentStep: 3),
+                        SizedBox(height: AppSpacing.xl),
+                        // Title
+                        Text(
+                          'Choose Your Sports',
+                          style: AppTypography.headlineMedium.copyWith(
+                            color: Colors.white,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(height: AppSpacing.sm),
+                        // Subtitle
+                        Text(
+                          'Select your preferred sport and additional interests',
+                          style: AppTypography.bodyLarge.copyWith(
+                            color: Colors.white.withOpacity(0.9),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
 
-                          const SizedBox(height: 40),
+                    const SizedBox(height: 40),
 
-                          // Preferred Sport Section
-                          Row(
-                            children: [
-                              Text(
-                                'Preferred Sport',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.w600),
+                    // Form Container
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Preferred Sport Section
+                        Row(
+                          children: [
+                            Text(
+                              'Preferred Sport',
+                              style: AppTypography.titleLarge.copyWith(
+                                color: Colors.white,
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.red[50],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  'Required',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: Colors.red[700],
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Required',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: Colors.red,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: AppSpacing.xs),
+
+                        Text(
+                          'Choose your main sport',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: Colors.white.withOpacity(0.7),
                           ),
+                        ),
 
-                          const SizedBox(height: 4),
+                        SizedBox(height: AppSpacing.md),
 
-                          Text(
-                            'Choose your main sport',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: Colors.grey[600]),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Preferred Sport Grid
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 3,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                  childAspectRatio: 1.0,
-                                ),
-                            itemCount: AppConstants.availableSports
+                        // Preferred Sport Grid
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                crossAxisSpacing: 12,
+                                mainAxisSpacing: 12,
+                                childAspectRatio: 1.0,
+                              ),
+                          itemCount: AppConstants.availableSports
+                              .where(
+                                (sport) => FeatureFlags.isSportEnabled(sport),
+                              )
+                              .length,
+                          itemBuilder: (context, index) {
+                            final enabledSports = AppConstants.availableSports
                                 .where(
                                   (sport) => FeatureFlags.isSportEnabled(sport),
                                 )
-                                .length,
-                            itemBuilder: (context, index) {
-                              final enabledSports = AppConstants.availableSports
-                                  .where(
-                                    (sport) =>
-                                        FeatureFlags.isSportEnabled(sport),
-                                  )
-                                  .toList();
-                              final sport = enabledSports[index];
-                              final isSelected = _preferredSport == sport;
+                                .toList();
+                            final sport = enabledSports[index];
+                            final isSelected = _preferredSport == sport;
 
-                              return GestureDetector(
+                            return Material(
+                              color: Colors.transparent,
+                              child: InkWell(
                                 onTap: () => _selectPreferredSport(sport),
-                                child: Container(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Ink(
                                   decoration: BoxDecoration(
-                                    color: isSelected
-                                        ? Theme.of(
-                                            context,
-                                          ).primaryColor.withOpacity(0.1)
-                                        : Colors.grey[50],
+                                    color: Colors.transparent,
                                     border: Border.all(
                                       color: isSelected
-                                          ? Theme.of(context).primaryColor
-                                          : Colors.grey[300]!,
-                                      width: isSelected ? 2 : 1,
+                                          ? const Color(0xFFC18FFF)
+                                          : Colors.white.withOpacity(0.3),
+                                      width: isSelected ? 2 : 1.5,
                                     ),
                                     borderRadius: BorderRadius.circular(12),
                                   ),
+                                  padding: const EdgeInsets.all(16),
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
@@ -292,25 +325,16 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                         AppHelpers.getSportIcon(sport),
                                         size: 32,
                                         color: isSelected
-                                            ? Theme.of(context).primaryColor
-                                            : Colors.grey[600],
+                                            ? const Color(0xFFC18FFF)
+                                            : Colors.white,
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
                                         AppHelpers.getSportDisplayName(sport),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(
-                                              fontWeight: isSelected
-                                                  ? FontWeight.w600
-                                                  : FontWeight.normal,
-                                              color: isSelected
-                                                  ? Theme.of(
-                                                      context,
-                                                    ).primaryColor
-                                                  : Colors.grey[700],
-                                            ),
+                                        style: AppTypography.bodySmall.copyWith(
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.white,
+                                        ),
                                         textAlign: TextAlign.center,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -318,162 +342,150 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                       if (isSelected) ...[
                                         const SizedBox(height: 4),
                                         Icon(
-                                          Icons.check_circle,
+                                          Iconsax.tick_circle_copy,
                                           size: 16,
-                                          color: Theme.of(context).primaryColor,
+                                          color: const Color(0xFFC18FFF),
                                         ),
                                       ],
                                     ],
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-
-                          const SizedBox(height: 40),
-
-                          // Interests Section
-                          Row(
-                            children: [
-                              Text(
-                                'Additional Interests',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(fontWeight: FontWeight.w600),
                               ),
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 2,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.blue[50],
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  'Optional',
-                                  style: Theme.of(context).textTheme.bodySmall
-                                      ?.copyWith(
-                                        color: Colors.blue[700],
-                                        fontWeight: FontWeight.w600,
-                                      ),
+                            );
+                          },
+                        ),
+
+                        SizedBox(height: AppSpacing.xxl),
+
+                        // Interests Section
+                        Row(
+                          children: [
+                            Text(
+                              'Additional Interests',
+                              style: AppTypography.titleLarge.copyWith(
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'Optional',
+                                style: AppTypography.bodySmall.copyWith(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ],
+                            ),
+                          ],
+                        ),
+
+                        SizedBox(height: AppSpacing.xs),
+
+                        Text(
+                          'Select up to 3 additional sports (${_interests.length}/3)',
+                          style: AppTypography.bodySmall.copyWith(
+                            color: Colors.white.withOpacity(0.7),
                           ),
+                        ),
 
-                          const SizedBox(height: 4),
+                        SizedBox(height: AppSpacing.md),
 
-                          Text(
-                            'Select up to 3 additional sports (${_interests.length}/3)',
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: Colors.grey[600]),
-                          ),
+                        // Interests Chips
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: AppConstants.availableSports.map((sport) {
+                            final isSelected = _interests.contains(sport);
+                            final isPreferred = _preferredSport == sport;
+                            final isDisabled =
+                                isPreferred ||
+                                (_interests.length >= 3 && !isSelected);
 
-                          const SizedBox(height: 16),
-
-                          // Interests Grid
-                          GridView.builder(
-                            shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 3,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                  childAspectRatio: 1.0,
-                                ),
-                            itemCount: AppConstants.availableSports.length,
-                            itemBuilder: (context, index) {
-                              final sport = AppConstants.availableSports[index];
-                              final isSelected = _interests.contains(sport);
-                              final isPreferred = _preferredSport == sport;
-                              final isDisabled =
-                                  isPreferred ||
-                                  (_interests.length >= 3 && !isSelected);
-
-                              return Opacity(
-                                opacity: isDisabled ? 0.5 : 1.0,
-                                child: GestureDetector(
-                                  onTap: isDisabled
-                                      ? null
-                                      : () => _toggleInterest(sport),
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? Colors.green[50]
-                                          : Colors.grey[50],
-                                      border: Border.all(
-                                        color: isSelected
-                                            ? Colors.green
-                                            : Colors.grey[300]!,
-                                        width: isSelected ? 2 : 1,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          AppHelpers.getSportIcon(sport),
-                                          size: 32,
-                                          color: isSelected
-                                              ? Colors.green[700]
-                                              : Colors.grey[600],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Text(
-                                          AppHelpers.getSportDisplayName(sport),
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .bodySmall
-                                              ?.copyWith(
-                                                fontWeight: isSelected
-                                                    ? FontWeight.w600
-                                                    : FontWeight.normal,
-                                                color: isSelected
-                                                    ? Colors.green[700]
-                                                    : Colors.grey[700],
-                                              ),
-                                          textAlign: TextAlign.center,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        if (isSelected) ...[
-                                          const SizedBox(height: 4),
-                                          Icon(
-                                            Icons.check_circle,
-                                            size: 16,
-                                            color: Colors.green[700],
-                                          ),
-                                        ],
-                                      ],
-                                    ),
+                            return Opacity(
+                              opacity: isDisabled ? 0.5 : 1.0,
+                              child: FilterChip(
+                                label: Text(
+                                  AppHelpers.getSportDisplayName(sport),
+                                  style: AppTypography.bodyMedium.copyWith(
+                                    color: isSelected
+                                        ? const Color(0xFFC18FFF)
+                                        : Colors.white,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.normal,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
+                                avatar: Icon(
+                                  AppHelpers.getSportIcon(sport),
+                                  size: 20,
+                                  color: isSelected
+                                      ? const Color(0xFFC18FFF)
+                                      : Colors.white,
+                                ),
+                                selected: isSelected,
+                                showCheckmark: false,
+                                onSelected: isDisabled
+                                    ? null
+                                    : (bool selected) => _toggleInterest(sport),
+                                backgroundColor: Colors.transparent,
+                                selectedColor: const Color(
+                                  0xFFC18FFF,
+                                ).withOpacity(0.2),
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? const Color(0xFFC18FFF)
+                                      : Colors.white.withOpacity(0.3),
+                                  width: isSelected ? 2 : 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
 
-                          const SizedBox(height: 32),
+                        SizedBox(height: AppSpacing.xl),
 
-                          // Continue Button
-                          AppButton(
-                            onPressed: (_isLoading || _preferredSport == null)
-                                ? null
-                                : _handleSubmit,
-                            label: _isLoading ? 'Continuing...' : 'Continue',
-                          ),
+                        // Continue Button
+                        AppButton(
+                          onPressed: (_isLoading || _preferredSport == null)
+                              ? null
+                              : _handleSubmit,
+                          label: _isLoading ? 'Continuing...' : 'Continue',
+                          type: AppButtonType.filled,
+                          size: AppButtonSize.lg,
+                        ),
 
-                          const SizedBox(height: 32),
-                        ],
-                      ),
+                        SizedBox(height: AppSpacing.md),
+
+                        // Back Button
+                        AppButton(
+                          onPressed: () => context.pop(),
+                          label: 'Back',
+                          type: AppButtonType.ghost,
+                          size: AppButtonSize.lg,
+                        ),
+
+                        SizedBox(height: AppSpacing.xl),
+                      ],
                     ),
+                  ],
+                ),
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

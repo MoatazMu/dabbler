@@ -2,12 +2,13 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 /// Enum representing different privacy levels for user content and profile visibility
 enum PrivacyLevel {
-  public('public', 'Everyone', Icons.public),
-  friends('friends', 'Friends Only', Icons.people),
-  private('private', 'Only Me', Icons.lock);
+  public('public', 'Everyone', Iconsax.global_copy),
+  friends('friends', 'Friends Only', Iconsax.people_copy),
+  private('private', 'Only Me', Iconsax.lock_copy);
 
   final String value;
   final String displayName;
@@ -159,12 +160,16 @@ enum PrivacyLevel {
 
 /// Enum representing different types of content that can have privacy settings
 enum ContentType {
-  profile('profile', 'Profile Information', Icons.person),
-  gameHistory('game_history', 'Game History', Icons.history),
-  personalInfo('personal_info', 'Personal Information', Icons.info),
-  achievements('achievements', 'Achievements', Icons.emoji_events),
-  location('location', 'Location', Icons.location_city),
-  contactInfo('contact_info', 'Contact Information', Icons.contact_phone);
+  profile('profile', 'Profile Information', Iconsax.user_copy),
+  gameHistory('game_history', 'Game History', Iconsax.clock_copy),
+  personalInfo(
+    'personal_info',
+    'Personal Information',
+    Iconsax.info_circle_copy,
+  ),
+  achievements('achievements', 'Achievements', Iconsax.medal_copy),
+  location('location', 'Location', Iconsax.location_copy),
+  contactInfo('contact_info', 'Contact Information', Iconsax.call_copy);
 
   final String value;
   final String displayName;
@@ -233,11 +238,11 @@ enum PrivacySensitivity {
 
 /// Enum representing different privacy settings categories
 enum PrivacyCategory {
-  visibility('visibility', 'Profile Visibility', Icons.visibility),
-  communication('communication', 'Communication', Icons.message),
-  discovery('discovery', 'Search & Discovery', Icons.search),
-  sharing('sharing', 'Data Sharing', Icons.share),
-  analytics('analytics', 'Analytics & Tracking', Icons.analytics);
+  visibility('visibility', 'Profile Visibility', Iconsax.eye_copy),
+  communication('communication', 'Communication', Iconsax.message_copy),
+  discovery('discovery', 'Search & Discovery', Iconsax.search_normal_copy),
+  sharing('sharing', 'Data Sharing', Iconsax.share_copy),
+  analytics('analytics', 'Analytics & Tracking', Iconsax.chart_copy);
 
   final String value;
   final String displayName;

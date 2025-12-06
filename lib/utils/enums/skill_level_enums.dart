@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 /// Enum representing different skill levels with visual and functional properties
 enum SkillLevel {
@@ -36,7 +37,7 @@ enum SkillLevel {
       children: List.generate(
         5,
         (index) => Icon(
-          index < value ? Icons.star : Icons.star_border,
+          index < value ? Iconsax.star_1_copy : Iconsax.star_copy,
           color: color,
           size: size,
         ),
@@ -96,7 +97,7 @@ enum SkillLevel {
             const SizedBox(width: 8),
             ...List.generate(
               value,
-              (index) => Icon(Icons.star, color: color, size: 16),
+              (index) => Icon(Iconsax.star_1_copy, color: color, size: 16),
             ),
           ],
         ],

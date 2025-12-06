@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/utils/constants.dart';
 import 'package:dabbler/core/utils/validators.dart';
 import 'package:dabbler/core/utils/helpers.dart';
-import 'package:dabbler/widgets/input_field.dart';
+
 import 'package:dabbler/widgets/onboarding_progress.dart';
 import 'package:dabbler/core/services/user_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
@@ -136,10 +137,10 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       // 2. Check for a valid email OR phone from the previous screen or authenticated user.
       String? email = widget.email;
       String? phone = widget.phone;
-      
+
       // If email/phone not provided but user is authenticated (e.g., Google OAuth),
       // get it from the authenticated user
-      if ((email == null || email.isEmpty) && 
+      if ((email == null || email.isEmpty) &&
           (phone == null || phone.isEmpty) &&
           _authService.isAuthenticated()) {
         final currentUser = _authService.getCurrentUser();
@@ -149,7 +150,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
           '📧 [DEBUG] CreateUserInformation: No email/phone in route, getting from authenticated user: email=$email, phone=$phone',
         );
       }
-      
+
       if ((email == null || email.isEmpty) &&
           (phone == null || phone.isEmpty) &&
           mounted) {
@@ -164,7 +165,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       debugPrint(
         '📧 [DEBUG] CreateUserInformation: Initializing form for: $identifier',
       );
-      
+
       // Update widget.email/phone for use in the rest of the method
       // We'll use local variables email/phone instead of widget.email/phone
 
@@ -176,7 +177,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         // Use resolved email/phone (from widget or authenticated user)
         final resolvedEmail = email ?? currentEmail;
         final resolvedPhone = phone ?? currentPhone;
-        
+
         debugPrint('🔍 [DEBUG] CreateUserInformation: Session check:');
         debugPrint('  widget.email: ${widget.email}');
         debugPrint('  widget.phone: ${widget.phone}');
@@ -217,7 +218,9 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         if (matchesSession) {
           // Same user -> check if they have a profile
           // If no profile exists, treat as new registration (not profile edit)
-          final existingProfile = await _authService.getUserProfile(fields: ['id']);
+          final existingProfile = await _authService.getUserProfile(
+            fields: ['id'],
+          );
           if (existingProfile != null) {
             // User has profile -> treat as profile edit
             print(
@@ -414,7 +417,8 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
 
       // Get email/phone from widget or authenticated user
       final resolvedEmail = widget.email ?? _authService.getCurrentUserEmail();
-      final resolvedPhone = widget.phone ?? _authService.getCurrentUser()?.phone;
+      final resolvedPhone =
+          widget.phone ?? _authService.getCurrentUser()?.phone;
 
       // Initialize with email or phone if not already done
       if (ref.read(onboardingDataProvider) == null) {
@@ -494,9 +498,10 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       children: [
         Text(
           'Birth Date',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
+          style: AppTypography.bodyMedium.copyWith(
+            fontWeight: FontWeight.w500,
+            color: Colors.white.withOpacity(0.9),
+            fontSize: 15,
           ),
         ),
         const SizedBox(height: 8),
@@ -504,43 +509,36 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
           onTap: () => _showDatePicker(context),
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               border: Border.all(
                 color: _selectedBirthDate != null
                     ? Theme.of(context).colorScheme.primary
-                    : Theme.of(
-                        context,
-                      ).colorScheme.outline.withValues(alpha: 0.3),
-                width: 1.5,
+                    : Colors.white.withOpacity(0.3),
+                width: _selectedBirthDate != null ? 2 : 1.5,
               ),
-              borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-              color: _selectedBirthDate != null
-                  ? Theme.of(
-                      context,
-                    ).colorScheme.primary.withValues(alpha: 0.05)
-                  : Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(12),
+              color: Colors.white.withOpacity(0.1),
             ),
             child: Row(
               children: [
                 Icon(
-                  Icons.calendar_today,
+                  Iconsax.calendar_copy,
                   color: _selectedBirthDate != null
                       ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                      : Colors.white.withOpacity(0.7),
                   size: 20,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
                     ageText,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    style: AppTypography.bodyLarge.copyWith(
                       color: _selectedBirthDate != null
-                          ? Theme.of(context).colorScheme.onSurface
-                          : Theme.of(context).colorScheme.onSurfaceVariant,
-                      fontWeight: _selectedBirthDate != null
-                          ? FontWeight.w500
-                          : FontWeight.normal,
+                          ? Colors.white
+                          : Colors.white.withOpacity(0.5),
+                      fontWeight: FontWeight.normal,
+                      fontSize: 15,
                     ),
                   ),
                 ),
@@ -567,7 +565,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
     );
   }
 
-  /// Show date picker dialog
+  /// Show native date picker
   Future<void> _showDatePicker(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -580,12 +578,21 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       lastDate: DateTime.now().subtract(
         const Duration(days: 4745),
       ), // 13 years ago
+      initialDatePickerMode: DatePickerMode.year,
+      initialEntryMode: DatePickerEntryMode.calendarOnly,
       builder: (context, child) {
         return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: Theme.of(context).colorScheme.copyWith(
+          data: ThemeData.dark().copyWith(
+            scaffoldBackgroundColor: const Color(0xFF4A148C),
+            canvasColor: const Color(0xFF4A148C),
+            colorScheme: ColorScheme.dark(
+              surface: const Color(0xFF4A148C),
+              onSurface: Colors.white,
               primary: Theme.of(context).colorScheme.primary,
-              onPrimary: Theme.of(context).colorScheme.onPrimary,
+              onPrimary: Colors.white,
+            ),
+            dialogTheme: DialogThemeData(
+              backgroundColor: const Color(0xFF4A148C),
             ),
           ),
           child: child!,
@@ -607,9 +614,10 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       children: [
         Text(
           'Gender',
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
+          style: AppTypography.bodyMedium.copyWith(
+            fontWeight: FontWeight.w500,
+            color: Colors.white.withOpacity(0.9),
+            fontSize: 15,
           ),
         ),
         const SizedBox(height: 8),
@@ -618,16 +626,12 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
           decoration: BoxDecoration(
             border: Border.all(
               color: _selectedGender.isNotEmpty
-                  ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.3)
-                  : Theme.of(
-                      context,
-                    ).colorScheme.outline.withValues(alpha: 0.3),
-              width: 1.0,
+                  ? Theme.of(context).colorScheme.primary
+                  : Colors.white.withOpacity(0.3),
+              width: _selectedGender.isNotEmpty ? 2 : 1.5,
             ),
-            borderRadius: BorderRadius.circular(AppConstants.borderRadius),
-            color: _selectedGender.isNotEmpty
-                ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.05)
-                : Theme.of(context).colorScheme.surface.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white.withOpacity(0.1),
           ),
           child: Column(
             children: [
@@ -652,28 +656,30 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.15)
               : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Row(
           children: [
             Expanded(
               child: Text(
                 AppHelpers.capitalize(gender),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                style: AppTypography.bodyLarge.copyWith(
                   color: isSelected
                       ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurface,
+                      : Colors.white,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontSize: 15,
                 ),
               ),
             ),
             if (isSelected)
               Icon(
-                Icons.check,
+                Iconsax.tick_circle_copy,
                 color: Theme.of(context).colorScheme.primary,
                 size: 20,
               ),
@@ -693,124 +699,112 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       );
     }
 
-    return TwoSectionLayout(
-      topSection: _buildTopSection(),
-      bottomSection: _buildBottomSection(),
-    );
-  }
-
-  Widget _buildTopSection() {
-    return Column(
-      children: [
-        SizedBox(height: AppSpacing.huge),
-        // Logo
-        SvgPicture.asset(
-          'assets/images/dabbler_logo.svg',
-          width: 80,
-          height: 88,
+    return SingleSectionLayout(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight:
+              MediaQuery.of(context).size.height -
+              MediaQuery.of(context).padding.top -
+              MediaQuery.of(context).padding.bottom -
+              48,
         ),
-        SizedBox(height: AppSpacing.md),
-        SvgPicture.asset(
-          'assets/images/dabbler_text_logo.svg',
-          width: 110,
-          height: 21,
-        ),
-        SizedBox(height: AppSpacing.lg),
-        // Onboarding Progress
-        OnboardingProgress(),
-        SizedBox(height: AppSpacing.xl),
-        // Header
-        Text(
-          'We would like to know you',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: AppSpacing.sm),
-        Text(
-          'Tell us a bit about yourself',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w400,
-            color: AppColors.textLight70,
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomSection() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Name Input
-          CustomInputField(
-            controller: _nameController,
-            label: 'Display Name',
-            hintText: 'Choose a name',
-            validator: AppValidators.validateName,
-          ),
-          SizedBox(height: AppSpacing.md),
-
-          // Birth Date Picker
-          _buildBirthDatePicker(context),
-          SizedBox(height: AppSpacing.md),
-
-          // Gender Selection
-          _buildGenderSelect(context),
-          SizedBox(height: AppSpacing.xl),
-
-          // Continue Button
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: (_isLoading || !_areAllFieldsValid())
-                  ? null
-                  : _handleSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _areAllFieldsValid()
-                    ? AppColors.primaryPurple
-                    : AppColors.buttonDisabled,
-                foregroundColor: _areAllFieldsValid()
-                    ? AppColors.buttonForeground
-                    : AppColors.buttonDisabledForeground,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppSpacing.buttonBorderRadius,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            // Header Container: Logo, Title, and Stepper
+            Column(
+              children: [
+                SizedBox(height: AppSpacing.xl),
+                // Logo
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/images/dabbler_logo.svg',
+                    width: 80,
+                    height: 88,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ),
-              ),
-              child: _isLoading
-                  ? SizedBox(
-                      height: 24,
-                      width: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          AppColors.buttonForeground,
-                        ),
-                      ),
-                    )
-                  : Text(
-                      _areAllFieldsValid()
-                          ? 'Continue'
-                          : 'Fill all fields to continue',
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w500,
-                      ),
+                SizedBox(height: AppSpacing.md),
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/images/dabbler_text_logo.svg',
+                    width: 110,
+                    height: 21,
+                    colorFilter: const ColorFilter.mode(
+                      Colors.white,
+                      BlendMode.srcIn,
                     ),
+                  ),
+                ),
+                SizedBox(height: AppSpacing.lg),
+                // Onboarding Progress
+                const OnboardingProgress(currentStep: 1),
+                SizedBox(height: AppSpacing.xl),
+                // Header
+                Text(
+                  'We would like to know you',
+                  style: AppTypography.headlineMedium.copyWith(
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppSpacing.sm),
+                Text(
+                  'Tell us a bit about yourself',
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: Colors.white.withOpacity(0.9),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-          ),
-        ],
+
+            const SizedBox(height: 40),
+
+            // Form Container: Inputs and CTA
+            Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Name Input
+                  AppInputField(
+                    controller: _nameController,
+                    label: 'Display Name',
+                    hintText: 'Choose a name',
+                    validator: AppValidators.validateName,
+                  ),
+                  SizedBox(height: AppSpacing.md),
+
+                  // Birth Date Picker
+                  _buildBirthDatePicker(context),
+                  SizedBox(height: AppSpacing.md),
+
+                  // Gender Selection
+                  _buildGenderSelect(context),
+                  SizedBox(height: AppSpacing.xl),
+
+                  // Continue Button
+                  AppButton(
+                    onPressed: (_isLoading || !_areAllFieldsValid())
+                        ? null
+                        : _handleSubmit,
+                    label: _isLoading
+                        ? 'Continuing...'
+                        : _areAllFieldsValid()
+                        ? 'Continue'
+                        : 'Fill all fields to continue',
+                    type: AppButtonType.filled,
+                    size: AppButtonSize.lg,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 /// Information dialog widget with different types (success, error, warning, info)
 enum InfoType { success, error, warning, info }
@@ -42,13 +43,13 @@ class InfoDialog extends StatelessWidget {
   IconData _getIconForType(InfoType type) {
     switch (type) {
       case InfoType.success:
-        return Icons.check_circle_outline;
+        return Iconsax.tick_circle_copy;
       case InfoType.error:
-        return Icons.error_outline;
+        return Iconsax.danger_copy;
       case InfoType.warning:
-        return Icons.warning_outlined;
+        return Iconsax.warning_2_copy;
       case InfoType.info:
-        return Icons.info_outline;
+        return Iconsax.info_circle_copy;
     }
   }
 

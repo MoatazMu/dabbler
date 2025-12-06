@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 class AvatarWidget extends StatelessWidget {
   final String? imageUrl;
@@ -80,7 +81,7 @@ class AvatarWidget extends StatelessWidget {
     if (initials.isEmpty) {
       return Center(
         child: Icon(
-          Icons.person,
+          Iconsax.user_copy,
           size: size * 0.5,
           color: textColor ?? const Color(0xFF1890FF),
         ),

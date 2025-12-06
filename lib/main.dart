@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:dabbler/core/config/environment.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
-import 'package:dabbler/themes/app_theme.dart';
+import 'package:dabbler/core/design_system/tokens/token_based_theme.dart';
 import 'package:dabbler/core/services/theme_service.dart';
 import 'package:dabbler/core/services/location_service.dart';
 import 'package:flutter/material.dart';
@@ -122,8 +122,8 @@ class MyApp extends StatelessWidget {
         return MaterialApp.router(
           title: 'Dabbler',
           routerConfig: appRouter,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
+          theme: TokenBasedTheme.build(AppThemeMode.mainLight),
+          darkTheme: TokenBasedTheme.build(AppThemeMode.mainDark),
           themeMode: _themeService.effectiveThemeMode,
           debugShowCheckedModeBanner: false,
           builder: (context, child) {

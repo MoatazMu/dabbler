@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -20,7 +21,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  final String _appVersion = '1.0.0';
+  final String _appVersion = '1.0.4';
 
   final List<SettingsSection> _allSections = [
     SettingsSection(
@@ -29,14 +30,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         SettingsItem(
           title: 'Account Management',
           subtitle: 'Email, password, security',
-          icon: Icons.person_outline,
+          icon: Iconsax.profile_circle_copy,
           route: '/settings/account',
           searchTerms: ['account', 'email', 'password', 'security', 'login'],
         ),
         SettingsItem(
           title: 'Privacy Settings',
           subtitle: 'Control your data and visibility',
-          icon: Icons.privacy_tip_outlined,
+          icon: Iconsax.shield_tick_copy,
           route: '/settings/privacy',
           searchTerms: ['privacy', 'visibility', 'data', 'sharing', 'profile'],
         ),
@@ -48,14 +49,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         SettingsItem(
           title: 'Game Preferences',
           subtitle: 'Game types, duration, competition',
-          icon: Icons.sports_esports_outlined,
+          icon: Iconsax.game_copy,
           route: '/preferences/games',
           searchTerms: ['games', 'types', 'duration', 'competition', 'team'],
         ),
         SettingsItem(
           title: 'Availability',
           subtitle: 'Schedule and time preferences',
-          icon: Icons.schedule_outlined,
+          icon: Iconsax.calendar_copy,
           route: '/preferences/availability',
           searchTerms: ['availability', 'schedule', 'time', 'calendar'],
         ),
@@ -67,14 +68,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         SettingsItem(
           title: 'Theme',
           subtitle: 'Light, dark, or system default',
-          icon: Icons.palette_outlined,
+          icon: Iconsax.colorfilter_copy,
           route: '/settings/theme',
           searchTerms: ['theme', 'dark', 'light', 'appearance'],
         ),
         SettingsItem(
+          title: 'Design System Showcase',
+          subtitle: 'View all design components',
+          icon: Iconsax.element_3_copy,
+          route: '/showcase',
+          searchTerms: ['design', 'system', 'showcase', 'components', 'theme'],
+        ),
+        SettingsItem(
           title: 'Language',
           subtitle: 'Choose your preferred language',
-          icon: Icons.language_outlined,
+          icon: Iconsax.global_copy,
           route: '/settings/language',
           searchTerms: ['language', 'locale', 'translate'],
         ),
@@ -86,21 +94,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         SettingsItem(
           title: 'Help Center',
           subtitle: 'FAQs and tutorials',
-          icon: Icons.help_outline,
+          icon: Iconsax.info_circle_copy,
           route: '/help/center',
           searchTerms: ['help', 'faq', 'support', 'tutorials'],
         ),
         SettingsItem(
           title: 'Contact Support',
           subtitle: 'Get help from our team',
-          icon: Icons.support_agent_outlined,
+          icon: Iconsax.message_question_copy,
           route: '/help/contact',
           searchTerms: ['contact', 'support', 'help', 'team'],
         ),
         SettingsItem(
           title: 'Report a Bug',
           subtitle: 'Help us improve the app',
-          icon: Icons.bug_report_outlined,
+          icon: Iconsax.danger_copy,
           route: '/help/bug-report',
           searchTerms: ['bug', 'report', 'issue', 'problem'],
         ),
@@ -112,21 +120,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         SettingsItem(
           title: 'Terms of Service',
           subtitle: 'Read our terms and conditions',
-          icon: Icons.description_outlined,
+          icon: Iconsax.document_text_copy,
           route: '/about/terms',
           searchTerms: ['terms', 'service', 'conditions', 'legal'],
         ),
         SettingsItem(
           title: 'Privacy Policy',
           subtitle: 'How we handle your data',
-          icon: Icons.policy_outlined,
+          icon: Iconsax.security_card_copy,
           route: '/about/privacy',
           searchTerms: ['privacy', 'policy', 'data', 'legal'],
         ),
         SettingsItem(
           title: 'Licenses',
           subtitle: 'Open source licenses',
-          icon: Icons.code_outlined,
+          icon: Iconsax.code_circle_copy,
           route: '/about/licenses',
           searchTerms: ['licenses', 'open', 'source', 'legal'],
         ),
@@ -213,7 +221,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       children: [
         IconButton.filledTonal(
           onPressed: () => context.pop(),
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: const Icon(Iconsax.arrow_left_copy),
           style: IconButton.styleFrom(
             backgroundColor: colorScheme.surfaceContainerHigh,
             foregroundColor: colorScheme.onSurface,
@@ -238,7 +246,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         const SizedBox(width: 16),
         IconButton.filledTonal(
           onPressed: () => context.push('/help/center'),
-          icon: const Icon(Icons.help_outline),
+          icon: const Icon(Iconsax.info_circle_copy),
           style: IconButton.styleFrom(
             backgroundColor: colorScheme.surfaceContainerHigh,
             foregroundColor: colorScheme.onSurface,
@@ -309,7 +317,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         },
         decoration: InputDecoration(
           hintText: 'Search settings',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: const Icon(Iconsax.search_normal_copy),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   onPressed: () {
@@ -318,7 +326,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                       _searchQuery = '';
                     });
                   },
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Iconsax.close_circle_copy),
                 )
               : null,
           filled: true,
@@ -439,7 +447,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             ),
           ),
           trailing: Icon(
-            Icons.chevron_right,
+            Iconsax.arrow_right_3_copy,
             color: colorScheme.onSurfaceVariant,
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -478,7 +486,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               color: colorScheme.error.withOpacity(0.12),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(Icons.logout, color: colorScheme.error),
+            child: Icon(Iconsax.logout_copy, color: colorScheme.error),
           ),
           title: Text(
             'Sign out',
@@ -494,7 +502,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             ),
           ),
           trailing: Icon(
-            Icons.chevron_right,
+            Iconsax.arrow_right_3_copy,
             color: colorScheme.onSurfaceVariant,
           ),
           contentPadding: const EdgeInsets.symmetric(
@@ -546,9 +554,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   }
 
   void _showSignOutDialog() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: Colors.transparent,
         title: const Text('Sign Out'),
         content: const Text(
           'Are you sure you want to sign out of your account?',
@@ -563,9 +575,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
               Navigator.of(context).pop();
               await _signOut();
             },
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
+            style: TextButton.styleFrom(foregroundColor: colorScheme.error),
             child: const Text('Sign Out'),
           ),
         ],

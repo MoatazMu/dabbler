@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:dabbler/features/explore/presentation/screens/sports_history_screen.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/core/design_system/widgets/app_card.dart';
 import 'package:dabbler/core/design_system/widgets/app_filter_chip.dart';
 import 'package:dabbler/core/design_system/widgets/app_search_input.dart';
 import 'package:dabbler/core/design_system/ds.dart';
+import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/features/venues/presentation/screens/venue_detail_screen.dart';
 import 'package:dabbler/features/games/providers/games_providers.dart';
@@ -22,18 +25,18 @@ IconData _sportIconFor(String sport) {
   switch (sport.toLowerCase()) {
     case 'football':
     case 'soccer':
-      return Icons.sports_soccer;
+      return Iconsax.medal_star_copy;
     case 'cricket':
-      return Icons.sports_cricket;
+      return Iconsax.game_copy;
     case 'padel':
     case 'tennis':
-      return Icons.sports_tennis;
+      return Iconsax.game_copy;
     case 'basketball':
-      return Icons.sports_basketball;
+      return Iconsax.game_copy;
     case 'volleyball':
-      return Icons.sports_volleyball;
+      return Iconsax.game_copy;
     default:
-      return Icons.sports;
+      return Iconsax.game_copy;
   }
 }
 
@@ -93,7 +96,7 @@ class VenueCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
-                Icons.location_city,
+                Iconsax.building_copy,
                 color: colorScheme.onPrimaryContainer,
                 size: 28,
               ),
@@ -143,7 +146,7 @@ class VenueCard extends StatelessWidget {
                   Row(
                     children: [
                       Icon(
-                        Icons.location_on,
+                        Iconsax.location_copy,
                         size: 14,
                         color: colorScheme.onSurfaceVariant,
                       ),
@@ -159,7 +162,7 @@ class VenueCard extends StatelessWidget {
                       if (distance.isNotEmpty) ...[
                         const SizedBox(width: 8),
                         Icon(
-                          Icons.navigation,
+                          Iconsax.routing_copy,
                           size: 12,
                           color: colorScheme.primary,
                         ),
@@ -255,7 +258,7 @@ class VenueCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                Icons.star,
+                                Iconsax.star_copy,
                                 size: 12,
                                 color: colorScheme.onTertiaryContainer,
                               ),
@@ -281,7 +284,7 @@ class VenueCard extends StatelessWidget {
             // Arrow icon
             const SizedBox(width: 8),
             Icon(
-              Icons.chevron_right,
+              Iconsax.arrow_right_3_copy,
               color: colorScheme.onSurfaceVariant,
               size: 20,
             ),
@@ -383,21 +386,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   final List<Map<String, dynamic>> _sports = [
     {
       'name': 'Football',
-      'icon': Icons.sports_soccer,
+      'icon': Iconsax.medal_star_copy,
       'color': Colors.green,
       'description': 'Find football games near you',
       'count': 30,
     },
     {
       'name': 'Cricket',
-      'icon': Icons.sports_cricket,
+      'icon': Iconsax.game_copy,
       'color': Colors.orange,
       'description': 'Join cricket games and tournaments',
       'count': 15,
     },
     {
       'name': 'Padel',
-      'icon': Icons.sports_tennis,
+      'icon': Iconsax.game_copy,
       'color': Colors.blue,
       'description': 'Discover padel courts and players',
       'count': 8,
@@ -444,13 +447,41 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   bool _shouldShowCreateGame() {
-    final profileState = ref.read(profileControllerProvider);
+    final profileState = ref.watch(profileControllerProvider);
     final profileType = profileState.profile?.profileType;
+
+    print('🔍 [DEBUG] Sports Screen - profileType: $profileType');
+    print(
+      '🔍 [DEBUG] enablePlayerGameCreation: ${FeatureFlags.enablePlayerGameCreation}',
+    );
+    print(
+      '🔍 [DEBUG] enableOrganiserGameCreation: ${FeatureFlags.enableOrganiserGameCreation}',
+    );
 
     if (profileType == 'player') {
       return FeatureFlags.enablePlayerGameCreation;
     } else if (profileType == 'organiser') {
       return FeatureFlags.enableOrganiserGameCreation;
+    }
+    return false;
+  }
+
+  bool _shouldShowJoinButton() {
+    final profileState = ref.watch(profileControllerProvider);
+    final profileType = profileState.profile?.profileType;
+
+    print('🔍 [DEBUG] Sports Screen Join - profileType: $profileType');
+    print(
+      '🔍 [DEBUG] enablePlayerGameJoining: ${FeatureFlags.enablePlayerGameJoining}',
+    );
+    print(
+      '🔍 [DEBUG] enableOrganiserGameJoining: ${FeatureFlags.enableOrganiserGameJoining}',
+    );
+
+    if (profileType == 'player') {
+      return FeatureFlags.enablePlayerGameJoining;
+    } else if (profileType == 'organiser') {
+      return FeatureFlags.enableOrganiserGameJoining;
     }
     return false;
   }
@@ -725,233 +756,152 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _handleRefresh,
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
-            slivers: [
-              // Header
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                sliver: SliverToBoxAdapter(child: _buildHeader()),
-              ),
-              // Hero Section, Tab Switcher, Search, and Sports Chips
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    children: [
-                      // Builder(
-                      //   builder: (context) {
-                      //     final isDarkMode =
-                      //         Theme.of(context).brightness == Brightness.dark;
-                      //     final heroColor = isDarkMode
-                      //         ? const Color(0xFF4A148C)
-                      //         : const Color(0xFFE0C7FF);
-                      //     final textColor = isDarkMode
-                      //         ? Colors.white
-                      //         : Colors.black87;
-                      //     final subtextColor = isDarkMode
-                      //         ? Colors.white.withOpacity(0.8)
-                      //         : Colors.black.withOpacity(0.7);
-
-                      //     return Container(
-                      //       width: double.infinity,
-                      //       padding: const EdgeInsets.all(24),
-                      //       decoration: BoxDecoration(
-                      //         color: heroColor,
-                      //         borderRadius: BorderRadius.circular(28),
-                      //       ),
-                      //       child: Column(
-                      //         crossAxisAlignment: CrossAxisAlignment.start,
-                      //         children: [
-                      //           Text(
-                      //             'Weekend picks',
-                      //             style: textTheme.labelLarge?.copyWith(
-                      //               color: subtextColor,
-                      //               fontWeight: FontWeight.w600,
-                      //               letterSpacing: 0.6,
-                      //             ),
-                      //           ),
-                      //           const SizedBox(height: 8),
-                      //           Text(
-                      //             'Book a spot before it fills up',
-                      //             style: textTheme.headlineSmall?.copyWith(
-                      //               color: textColor,
-                      //               fontWeight: FontWeight.w700,
-                      //             ),
-                      //           ),
-                      //           const SizedBox(height: 12),
-                      //           Text(
-                      //             'Curated sessions from the community tailored to your sports preferences.',
-                      //             style: textTheme.bodyMedium?.copyWith(
-                      //               color: isDarkMode
-                      //                   ? Colors.white.withOpacity(0.85)
-                      //                   : Colors.black.withOpacity(0.7),
-                      //             ),
-                      //           ),
-                      //         ],
-                      //       ),
-                      //     );
-                      //   },
-                      // ),
-                      // const SizedBox(height: 24),
-                      _buildTabSwitcher(),
-                      const SizedBox(height: 16),
-                      _buildSearchRow(),
-                      _buildSportsChips(),
-                    ],
-                  ),
-                ),
-              ),
-              // Tab Content
-              if (_mainTabController.index == 0)
-                ..._buildGamesTabSlivers()
-              else
-                ..._buildVenuesTabSlivers(),
-            ],
-          ),
-        ),
+    return TwoSectionLayout(
+      category: 'sports',
+      onRefresh: _handleRefresh,
+      topSection: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(),
+          const SizedBox(height: 24),
+          _buildTabSwitcher(),
+          const SizedBox(height: 16),
+          _buildSearchRow(),
+          _buildSportsChips(),
+        ],
       ),
+      bottomSection: _mainTabController.index == 0
+          ? _buildGamesTabContent()
+          : _buildVenuesTabContent(),
     );
   }
 
-  List<Widget> _buildGamesTabSlivers() {
+  Widget _buildGamesTabContent() {
     final publicGamesAsync = publicGamesProvider;
 
-    return [
-      SliverPadding(
-        padding: const EdgeInsets.all(16),
-        sliver: Consumer(
-          builder: (context, ref, child) {
-            final gamesAsync = ref.watch(publicGamesAsync);
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Consumer(
+        builder: (context, ref, child) {
+          final gamesAsync = ref.watch(publicGamesAsync);
 
-            return gamesAsync.when(
-              data: (allGames) {
-                // Filter by sport (or show all when 'All' is selected)
-                final selectedSportName =
-                    (_sports[_selectedSportIndex]['name'] as String)
-                        .toLowerCase();
-                final sportFilteredGames = selectedSportName == 'all'
-                    ? allGames
-                    : allGames
-                          .where(
-                            (game) =>
-                                game.sport.toLowerCase() == selectedSportName,
-                          )
-                          .toList();
+          return gamesAsync.when(
+            data: (allGames) {
+              // Filter by sport (or show all when 'All' is selected)
+              final selectedSportName =
+                  (_sports[_selectedSportIndex]['name'] as String)
+                      .toLowerCase();
+              final sportFilteredGames = selectedSportName == 'all'
+                  ? allGames
+                  : allGames
+                        .where(
+                          (game) =>
+                              game.sport.toLowerCase() == selectedSportName,
+                        )
+                        .toList();
 
-                // Filter by search query if any
-                final searchFilteredGames = _searchQuery.isEmpty
-                    ? sportFilteredGames
-                    : sportFilteredGames.where((game) {
-                        return game.title.toLowerCase().contains(
-                              _searchQuery.toLowerCase(),
-                            ) ||
-                            game.description.toLowerCase().contains(
-                              _searchQuery.toLowerCase(),
-                            );
-                      }).toList();
+              // Filter out past games - only show upcoming games
+              final now = DateTime.now();
+              final upcomingGames = sportFilteredGames.where((game) {
+                final gameStartTime = game.getScheduledStartDateTime();
+                return gameStartTime.isAfter(now);
+              }).toList();
 
-                // Sort by scheduled start date by default; toggle via sort icon
-                searchFilteredGames.sort(
-                  (a, b) => _isSortAscending
-                      ? a.scheduledDate.compareTo(b.scheduledDate)
-                      : b.scheduledDate.compareTo(a.scheduledDate),
-                );
+              // Filter by search query if any
+              final searchFilteredGames = _searchQuery.isEmpty
+                  ? upcomingGames
+                  : upcomingGames.where((game) {
+                      return game.title.toLowerCase().contains(
+                            _searchQuery.toLowerCase(),
+                          ) ||
+                          game.description.toLowerCase().contains(
+                            _searchQuery.toLowerCase(),
+                          );
+                    }).toList();
 
-                if (searchFilteredGames.isEmpty) {
-                  return SliverFillRemaining(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.sports_esports,
-                            size: 64,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.3),
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No ${_sports[_selectedSportIndex]['name']} games found',
-                            style: Theme.of(context).textTheme.titleLarge
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurface.withOpacity(0.6),
-                                ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Be the first to create one!',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                }
+              // Sort by scheduled start date by default; toggle via sort icon
+              searchFilteredGames.sort(
+                (a, b) => _isSortAscending
+                    ? a.scheduledDate.compareTo(b.scheduledDate)
+                    : b.scheduledDate.compareTo(a.scheduledDate),
+              );
 
-                return SliverList(
-                  delegate: SliverChildBuilderDelegate((context, index) {
-                    final game = searchFilteredGames[index];
-                    return _buildGameCard(game);
-                  }, childCount: searchFilteredGames.length),
-                );
-              },
-              loading: () => const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (error, stack) => SliverFillRemaining(
-                child: Center(
+              if (searchFilteredGames.isEmpty) {
+                return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: Theme.of(context).colorScheme.error,
+                        Iconsax.game_copy,
+                        size: 64,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.3),
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'Failed to load games',
-                        style: Theme.of(context).textTheme.titleLarge,
+                        'No ${_sports[_selectedSportIndex]['name']} games found',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.6),
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        error.toString(),
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      const SizedBox(height: 16),
-                      FilledButton(
-                        onPressed: () => ref.refresh(publicGamesAsync),
-                        child: const Text('Retry'),
+                        'Be the first to create one!',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ],
                   ),
-                ),
+                );
+              }
+
+              return ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: searchFilteredGames.length,
+                itemBuilder: (context, index) {
+                  final game = searchFilteredGames[index];
+                  return _buildGameCard(game);
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Iconsax.danger_copy,
+                    size: 48,
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load games',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    error.toString(),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: () => ref.refresh(publicGamesAsync),
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
-    ];
+    );
   }
 
   Widget _buildGameCard(game) {
@@ -1058,7 +1008,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 Row(
                   children: [
                     Icon(
-                      Icons.access_time,
+                      Iconsax.clock_copy,
                       size: 16,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -1081,7 +1031,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 Row(
                   children: [
                     Icon(
-                      Icons.place,
+                      Iconsax.location_copy,
                       size: 16,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
@@ -1117,7 +1067,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   Row(
                     children: [
                       Icon(
-                        Icons.people_alt_rounded,
+                        Iconsax.profile_2user_copy,
                         size: 18,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -1135,45 +1085,57 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       ),
                     ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 2,
-                    ),
-                    decoration: ShapeDecoration(
-                      color: _sports[_selectedSportIndex]['color'].withOpacity(
-                        0.9,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        side: BorderSide(
-                          width: 1,
-                          color: Colors.white.withOpacity(0.12),
+                  // Only show Join button for players with permission
+                  if (_shouldShowJoinButton())
+                    GestureDetector(
+                      onTap: () {
+                        // Navigate to game detail to join
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                GameDetailScreen(gameId: game.id),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 2,
                         ),
-                        borderRadius: BorderRadius.circular(22),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.add,
-                          size: 18,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Join',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            fontSize: 14,
-                            fontFamily: 'Inter',
-                            fontWeight: FontWeight.w500,
-                            height: 1.43,
+                        decoration: ShapeDecoration(
+                          color: _sports[_selectedSportIndex]['color']
+                              .withOpacity(0.9),
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              width: 1,
+                              color: Colors.white.withOpacity(0.12),
+                            ),
+                            borderRadius: BorderRadius.circular(22),
                           ),
                         ),
-                      ],
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Iconsax.add_copy,
+                              size: 18,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              'Join',
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.onPrimary,
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w500,
+                                height: 1.43,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -1198,23 +1160,19 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     }
   }
 
-  List<Widget> _buildVenuesTabSlivers() {
-    return [
-      SliverPadding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        sliver: SliverToBoxAdapter(
-          child: _buildVenuesTab(
-            _sports[_selectedSportIndex]['name'],
-            _searchQuery,
-            sportSpecificFilters: _sportSpecificFilters,
-            filterArea: _selectedArea,
-            priceRange: _selectedPriceRange,
-            rating: _selectedRating,
-            amenities: _selectedAmenities,
-          ),
-        ),
+  Widget _buildVenuesTabContent() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      child: _buildVenuesTab(
+        _sports[_selectedSportIndex]['name'],
+        _searchQuery,
+        sportSpecificFilters: _sportSpecificFilters,
+        filterArea: _selectedArea,
+        priceRange: _selectedPriceRange,
+        rating: _selectedRating,
+        amenities: _selectedAmenities,
       ),
-    ];
+    );
   }
 
   Widget _buildHeader() {
@@ -1223,16 +1181,16 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
     return Row(
       children: [
-        IconButton.filledTonal(
-          onPressed: () => context.go(RoutePaths.home),
-          icon: const Icon(Icons.dashboard_rounded),
-          style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
-            foregroundColor: colorScheme.onSurface,
-            minimumSize: const Size(48, 48),
-          ),
-        ),
-        const SizedBox(width: 16),
+        // IconButton.filledTonal(
+        //   onPressed: () =>
+        //       context.canPop() ? context.pop() : context.go(RoutePaths.home),
+        //   icon: const Icon(Iconsax.home_copy),
+        //   style: IconButton.styleFrom(
+        //     backgroundColor: colorScheme.categorySports.withValues(alpha: 0.2),
+        //     foregroundColor: colorScheme.onSurface,
+        //     minimumSize: const Size(48, 48),
+        //   ),
+        // ),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -1247,11 +1205,28 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             ],
           ),
         ),
-        const SizedBox(width: 16),
-        if (_shouldShowCreateGame())
+        const SizedBox(width: 12),
+        IconButton.filledTonal(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const SportsHistoryScreen(),
+              ),
+            );
+          },
+          icon: const Icon(Iconsax.clock_copy),
+          tooltip: 'History',
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.categorySports.withValues(alpha: 0.2),
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        if (_shouldShowCreateGame()) ...[
+          const SizedBox(width: 8),
           FilledButton.icon(
             onPressed: () => context.push(RoutePaths.createGame),
-            icon: const Icon(Icons.add_rounded),
+            icon: const Icon(Iconsax.add_copy),
             label: const Text('Create'),
             style: FilledButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -1260,6 +1235,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               ),
             ),
           ),
+        ],
       ],
     );
   }
@@ -1287,7 +1263,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.sports_esports, size: 20),
+                Icon(Iconsax.game_copy, size: 20),
                 SizedBox(width: 8),
                 Text('Games'),
               ],
@@ -1297,7 +1273,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.location_city, size: 20),
+                Icon(Iconsax.building_copy, size: 20),
                 SizedBox(width: 8),
                 Text('Venues'),
               ],
@@ -1324,7 +1300,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         const SizedBox(width: 12),
         IconButton.filledTonal(
           onPressed: _showFilterModal,
-          icon: const Icon(Icons.tune_rounded),
+          icon: const Icon(Iconsax.setting_4_copy),
           style: IconButton.styleFrom(
             backgroundColor: colorScheme.surfaceContainerHigh,
             foregroundColor: colorScheme.onSurface,
@@ -1335,7 +1311,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         IconButton.filledTonal(
           onPressed: _handleSortTap,
           tooltip: _sortTooltip(ref),
-          icon: const Icon(Icons.sort_rounded),
+          icon: const Icon(Iconsax.sort_copy),
           style: IconButton.styleFrom(
             backgroundColor: colorScheme.surfaceContainerHigh,
             foregroundColor: colorScheme.onSurface,
@@ -1531,7 +1507,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 child: Row(
                   children: [
                     Icon(
-                      Icons.location_city,
+                      Iconsax.building_copy,
                       size: 16,
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -1631,7 +1607,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 color: DS.error.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Icons.wifi_off, size: 48, color: DS.error),
+              child: Icon(Iconsax.wifi_square_copy, size: 48, color: DS.error),
             ),
             const SizedBox(height: 24),
             Text(
@@ -1651,7 +1627,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _refreshVenues,
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Iconsax.refresh_copy),
               label: const Text('Retry'),
             ),
           ],
@@ -1673,7 +1649,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
                 color: DS.primary.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Icons.location_city, size: 48, color: DS.primary),
+              child: Icon(Iconsax.building_copy, size: 48, color: DS.primary),
             ),
             const SizedBox(height: 24),
             Text(
@@ -1693,7 +1669,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
             const SizedBox(height: 24),
             FilledButton.icon(
               onPressed: _refreshVenues,
-              icon: const Icon(Icons.filter_list),
+              icon: const Icon(Iconsax.filter_copy),
               label: const Text('Adjust Filters'),
             ),
           ],

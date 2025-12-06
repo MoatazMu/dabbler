@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/core/utils/identifier_detector.dart';
 import 'package:dabbler/core/utils/validators.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
-import 'package:dabbler_design_system/dabbler_design_system.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
-import 'package:dabbler/themes/app_theme.dart';
 import 'package:dabbler/core/models/google_sign_in_result.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 
@@ -30,7 +29,6 @@ class _IdentityVerificationScreenState
   String? _successMessage;
   bool _isPhoneValid = false;
   IdentifierType _currentIdentifierType = IdentifierType.phone;
-  bool _hasText = false;
 
   @override
   void initState() {
@@ -57,7 +55,6 @@ class _IdentityVerificationScreenState
     // If not numeric-like, treat as email and never show phone prefix
     if (!isNumericLike) {
       setState(() {
-        _hasText = trimmed.isNotEmpty;
         _currentIdentifierType = IdentifierType.email;
         _isPhoneValid = false;
       });
@@ -82,8 +79,27 @@ class _IdentityVerificationScreenState
       }
     }
 
+    // Enforce digit limits based on starting digit
+    final digitsOnly = working.replaceAll(RegExp(r'[^\d]'), '');
+    int maxLength;
+
+    if (digitsOnly.startsWith('0')) {
+      maxLength = 10; // 05XXXXXXXX
+    } else {
+      maxLength = 9; // 5XXXXXXXX
+    }
+
+    if (digitsOnly.length > maxLength) {
+      // Truncate to max length
+      final truncated = digitsOnly.substring(0, maxLength);
+      _phoneController.value = TextEditingValue(
+        text: truncated,
+        selection: TextSelection.collapsed(offset: truncated.length),
+      );
+      working = truncated;
+    }
+
     setState(() {
-      _hasText = working.isNotEmpty;
       _currentIdentifierType = IdentifierType.phone;
     });
 
@@ -232,266 +248,267 @@ class _IdentityVerificationScreenState
 
   @override
   Widget build(BuildContext context) {
+    return SingleSectionLayout(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight:
+              MediaQuery.of(context).size.height -
+              MediaQuery.of(context).padding.top -
+              MediaQuery.of(context).padding.bottom -
+              48,
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            // Header Container: Logo, Title
+            Column(
+              children: [
+                SizedBox(height: AppSpacing.xl),
+                // Dabbler logo
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/images/dabbler_logo.svg',
+                    width: 80,
+                    height: 88,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
+                SizedBox(height: AppSpacing.md),
+                // Dabbler text logo
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/images/dabbler_text_logo.svg',
+                    width: 110,
+                    height: 21,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                ),
+                SizedBox(height: AppSpacing.xl),
+                // Title
+                Text(
+                  'Identity verification',
+                  style: AppTypography.headlineMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppSpacing.sm),
+                // Subtitle
+                Text(
+                  'Enter your email or mobile number to get started',
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 40),
+
+            // Form Container: Inputs and CTA
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Phone input field
+                _buildPhoneInput(),
+                SizedBox(height: AppSpacing.md),
+
+                // Continue button
+                AppButton(
+                  onPressed: _isLoading ? null : _handleSubmit,
+                  label: _isLoading ? 'Sending...' : 'Continue',
+                  type: AppButtonType.filled,
+                  size: AppButtonSize.lg,
+                ),
+
+                SizedBox(height: AppSpacing.lg),
+
+                // Divider with "or"
+                _buildDivider(),
+
+                SizedBox(height: AppSpacing.lg),
+
+                // Continue with Google button
+                AppButton(
+                  onPressed: _isLoading ? null : _handleGoogleSignIn,
+                  label: 'Continue with Google',
+                  type: AppButtonType.outline,
+                  size: AppButtonSize.lg,
+                  leftIcon: const Text(
+                    'G',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  ),
+                ),
+
+                // Error/Success messages
+                if (_errorMessage != null) ...[
+                  SizedBox(height: AppSpacing.md),
+                  _buildErrorMessage(),
+                ],
+
+                if (_successMessage != null) ...[
+                  SizedBox(height: AppSpacing.md),
+                  _buildSuccessMessage(),
+                ],
+
+                SizedBox(height: AppSpacing.xl),
+
+                // Terms text at bottom
+                _buildTermsText(),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorMessage() {
     final colorScheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: _buildHeroSection(),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
-                child: _buildBottomSection(),
-              ),
-              const DabblerHello(),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeroSection() {
-    final textTheme = Theme.of(context).textTheme;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    final heroColor = isDarkMode
-        ? const Color(0xFF4A148C)
-        : const Color(0xFFE0C7FF);
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
-    final subtextColor = isDarkMode
-        ? Colors.white.withOpacity(0.85)
-        : Colors.black.withOpacity(0.7);
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
+      padding: EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: heroColor,
-        borderRadius: BorderRadius.circular(18),
+        color: isDark
+            ? colorScheme.error.withValues(alpha: 0.15)
+            : colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colorScheme.error.withValues(alpha: 0.3)),
       ),
-      child: Column(
+      child: Row(
         children: [
-          // Dabbler logo and text
-          _buildLogo(textColor),
-          const SizedBox(height: 24),
-          // Screen title
-          Text(
-            'Identity verification',
-            style: textTheme.headlineSmall?.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.w800,
-            ),
+          Icon(
+            Iconsax.danger_copy,
+            color: isDark ? colorScheme.error : colorScheme.onErrorContainer,
+            size: 20,
           ),
-          const SizedBox(height: 8),
-          Text(
-            'Enter your email or mobile number to get started',
-            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
-            textAlign: TextAlign.center,
+          SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              _errorMessage!,
+              style: AppTypography.bodyMedium.copyWith(
+                color: isDark
+                    ? colorScheme.error
+                    : colorScheme.onErrorContainer,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildLogo(Color iconColor) {
-    return Column(
-      children: [
-        // Dabbler geometric icon
-        SvgPicture.asset(
-          'assets/images/dabbler_logo.svg',
-          width: 80,
-          height: 88,
-          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-        ),
-        SizedBox(height: AppSpacing.md),
-        // Dabbler text logo
-        SvgPicture.asset(
-          'assets/images/dabbler_text_logo.svg',
-          width: 110,
-          height: 21,
-          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomSection() {
-    return Column(
-      children: [
-        // Phone input field
-        _buildPhoneInput(),
-        const SizedBox(height: 16), // Material 3 spacing: 16dp
-        // Continue button
-        _buildEmailButton(),
-
-        const SizedBox(height: 24), // Material 3 spacing: 24dp
-        // Divider with "or"
-        _buildDivider(),
-
-        const SizedBox(height: 24), // Material 3 spacing: 24dp
-        // Continue with Google button
-        _buildGoogleButton(),
-
-        const SizedBox(height: 24), // Material 3 spacing: 24dp
-        // Terms and privacy
-        _buildTermsText(),
-
-        // Error/Success messages - using Material 3 colors
-        if (_errorMessage != null) ...[
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.errorContainer,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  color: Theme.of(context).colorScheme.onErrorContainer,
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _errorMessage!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.onErrorContainer,
-                    ),
-                  ),
-                ),
-              ],
+  Widget _buildSuccessMessage() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final successColor = isDark
+        ? const Color(0xFF4CAF50)
+        : const Color(0xFF2E7D32);
+    return Container(
+      padding: EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: isDark
+            ? successColor.withValues(alpha: 0.15)
+            : const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: successColor.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(Iconsax.tick_circle_copy, color: successColor, size: 20),
+          SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Text(
+              _successMessage!,
+              style: AppTypography.bodyMedium.copyWith(color: successColor),
             ),
           ),
         ],
-
-        if (_successMessage != null) ...[
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color:
-                  Theme.of(
-                    context,
-                  ).extension<AppThemeExtension>()?.success.withOpacity(0.1) ??
-                  Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  Icons.check_circle_outline,
-                  color:
-                      Theme.of(
-                        context,
-                      ).extension<AppThemeExtension>()?.success ??
-                      Theme.of(context).colorScheme.primary,
-                  size: 20,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    _successMessage!,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color:
-                          Theme.of(
-                            context,
-                          ).extension<AppThemeExtension>()?.success ??
-                          Theme.of(context).colorScheme.onPrimaryContainer,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ],
+      ),
     );
   }
 
   Widget _buildPhoneInput() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    // Use Material 3 TextFormField with proper styling and validation
     return Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      child: TextFormField(
-        controller: _phoneController,
-        keyboardType: _currentIdentifierType == IdentifierType.email
-            ? TextInputType.emailAddress
-            : TextInputType.phone,
-        onChanged: (value) {
-          _onPhoneChanged(value);
-        },
-        validator: (value) {
-          final trimmed = value?.trim() ?? '';
-
-          if (trimmed.isEmpty) {
-            return 'Email or phone number is required';
-          }
-
-          final isNumericLike = _isNumericLike(trimmed);
-
-          if (isNumericLike) {
-            // UAE-only phone rule
-            if (_isValidUaeMobile(trimmed)) {
-              return null;
-            }
-            return 'Use UAE mobile number only or email';
-          } else {
-            // Email validation
-            return AppValidators.validateEmail(trimmed);
-          }
-        },
-        style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
-        decoration: InputDecoration(
-          hintText: 'Email or phone number',
-          // Show no prefix by default; only once user types a number (phone)
-          prefixIcon: !_hasText
-              ? null
-              : _currentIdentifierType == IdentifierType.phone
-              ? Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 8),
-                  child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          AppInputField(
+            controller: _phoneController,
+            label: 'Email or phone number',
+            keyboardType: _currentIdentifierType == IdentifierType.email
+                ? TextInputType.emailAddress
+                : TextInputType.phone,
+            prefixWidget: _currentIdentifierType == IdentifierType.phone
+                ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        Icons.phone_outlined,
-                        color: colorScheme.onSurfaceVariant,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 16),
+                      const Text('🇦🇪', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
                       Text(
-                        _countryCode,
-                        style: textTheme.bodyLarge?.copyWith(
-                          color: colorScheme.onSurface,
+                        '+971',
+                        style: AppTypography.bodyLarge.copyWith(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      const SizedBox(width: 12),
                       Container(
-                        width: 1,
-                        height: 20,
-                        color: colorScheme.outlineVariant,
+                        height: 24,
+                        width: 1.5,
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
+                      const SizedBox(width: 12),
                     ],
-                  ),
-                )
-              : null,
-          // Material 3 uses InputDecorationTheme from theme
-        ).applyDefaults(Theme.of(context).inputDecorationTheme),
+                  )
+                : null,
+            onChanged: (value) {
+              _onPhoneChanged(value);
+            },
+          ),
+          if (_formKey.currentState?.validate() == false &&
+              _phoneController.text.isNotEmpty) ...[
+            SizedBox(height: AppSpacing.xs),
+            Text(
+              _getValidationError(_phoneController.text),
+              style: AppTypography.bodySmall.copyWith(
+                color: Theme.of(context).colorScheme.error,
+              ),
+            ),
+          ],
+        ],
       ),
     );
+  }
+
+  String _getValidationError(String value) {
+    final trimmed = value.trim();
+
+    if (trimmed.isEmpty) {
+      return 'Email or phone number is required';
+    }
+
+    final isNumericLike = _isNumericLike(trimmed);
+
+    if (isNumericLike) {
+      if (_isValidUaeMobile(trimmed)) {
+        return '';
+      }
+      return 'Use UAE mobile number only or email';
+    } else {
+      return AppValidators.validateEmail(trimmed) ?? '';
+    }
   }
 
   /// For now, we only support UAE numbers, so always use +971
@@ -530,44 +547,18 @@ class _IdentityVerificationScreenState
     return local != null;
   }
 
-  Widget _buildEmailButton() {
-    // Use Material 3 FilledButton for primary action
-    return FilledButton.icon(
-      onPressed: _isLoading ? null : _handleSubmit,
-      icon: _isLoading
-          ? SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).colorScheme.onPrimary,
-                ),
-              ),
-            )
-          : const Icon(Icons.login, size: 20),
-      label: Text(_isLoading ? 'Sending...' : 'Continue'),
-      style: FilledButton.styleFrom(
-        minimumSize: const Size(double.infinity, 56),
-      ),
-    );
-  }
-
   Widget _buildDivider() {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    // Use Material 3 Divider
     return Row(
       children: [
         Expanded(
           child: Divider(color: colorScheme.outlineVariant, thickness: 1),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
           child: Text(
             'or',
-            style: textTheme.bodyMedium?.copyWith(
+            style: AppTypography.bodyMedium.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
           ),
@@ -576,32 +567,6 @@ class _IdentityVerificationScreenState
           child: Divider(color: colorScheme.outlineVariant, thickness: 1),
         ),
       ],
-    );
-  }
-
-  Widget _buildGoogleButton() {
-    // Use Material 3 OutlinedButton for secondary actions
-    return OutlinedButton.icon(
-      onPressed: _isLoading ? null : _handleGoogleSignIn,
-      icon: _isLoading
-          ? SizedBox(
-              height: 20,
-              width: 20,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  Theme.of(context).colorScheme.primary,
-                ),
-              ),
-            )
-          : const Text(
-              'G',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-            ),
-      label: const Text('Continue with Google'),
-      style: OutlinedButton.styleFrom(
-        minimumSize: const Size(double.infinity, 56),
-      ),
     );
   }
 
@@ -703,60 +668,31 @@ class _IdentityVerificationScreenState
 
   Widget _buildTermsText() {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Wrap(
-      alignment: WrapAlignment.center,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 4,
-      children: [
-        Text(
-          'By continuing, you agree to our',
-          style: textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
+    return Text.rich(
+      TextSpan(
+        text: 'By continuing, you agree to our ',
+        style: AppTypography.bodySmall.copyWith(
+          color: colorScheme.onSurfaceVariant,
         ),
-        TextButton(
-          onPressed: () {
-            // TODO: Open Terms of Service
-          },
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Text(
-            'Terms of Service',
-            style: textTheme.bodySmall?.copyWith(
+        children: [
+          TextSpan(
+            text: 'Terms of Service',
+            style: AppTypography.bodySmall.copyWith(
               color: colorScheme.primary,
               decoration: TextDecoration.underline,
             ),
           ),
-        ),
-        Text(
-          'and',
-          style: textTheme.bodySmall?.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-        TextButton(
-          onPressed: () {
-            // TODO: Open Privacy Policy
-          },
-          style: TextButton.styleFrom(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            minimumSize: Size.zero,
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          ),
-          child: Text(
-            'Privacy Policy',
-            style: textTheme.bodySmall?.copyWith(
+          const TextSpan(text: ' and '),
+          TextSpan(
+            text: 'Privacy Policy',
+            style: AppTypography.bodySmall.copyWith(
               color: colorScheme.primary,
               decoration: TextDecoration.underline,
             ),
           ),
-        ),
-      ],
+        ],
+      ),
+      textAlign: TextAlign.center,
     );
   }
 }

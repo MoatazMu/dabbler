@@ -39,9 +39,9 @@ class MentionSuggestions extends StatelessWidget {
                 (user.username?.isNotEmpty == true) ? user.username![0] : '?',
               ),
             ),
-            title: Text('${user.username ?? ''} ${user.displayName ?? ''}'),
+            title: Text('${user.username ?? ''} ${user.displayName}'),
             subtitle: Text(
-              '@${(user.username ?? '').toLowerCase()}${(user.displayName ?? '').toLowerCase()}',
+              '@${user.username?.toLowerCase() ?? ''}${user.displayName.toLowerCase()}',
             ),
             onTap: () => onMentionSelected(user),
           );

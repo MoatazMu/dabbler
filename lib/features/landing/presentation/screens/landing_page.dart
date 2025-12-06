@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
@@ -13,142 +14,158 @@ class LandingPage extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              colorScheme.primary,
-              colorScheme.primary.withOpacity(0.8),
-              colorScheme.secondary,
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 60),
-
-                  // Testimonial Card
-                  _buildTestimonialCard(colorScheme),
-
-                  const SizedBox(height: 48),
-
-                  // Main Quote
-                  Text(
-                    'Between work and life finding a game feels harder than a 90-minute run.',
-                    style: AppTypography.displayLarge.copyWith(
-                      color: Colors.white,
-                      height: 1.2,
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // Value Proposition
-                  Text(
-                    'Dabbler connects players, captains, and venues so you can stop searching and start playing',
-                    style: AppTypography.headlineSmall.copyWith(
-                      color: Colors.white.withOpacity(0.9),
-                      height: 1.4,
-                    ),
-                  ),
-
-                  const SizedBox(height: 48),
-
-                  // Continue Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () => context.go(RoutePaths.phoneInput),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: colorScheme.primary,
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 18,
-                          horizontal: 32,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(100),
-                        ),
-                      ),
-                      child: Text(
-                        'Continue',
-                        style: AppTypography.labelLarge.copyWith(
-                          color: colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
+      body: Stack(
+        children: [
+          // Background gradient
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  colorScheme.primary,
+                  colorScheme.primary.withOpacity(0.95),
                 ],
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
 
-  Widget _buildTestimonialCard(ColorScheme colorScheme) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Avatar and Name
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
+          // Decorative Frame overlay
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.4,
+              child: SvgPicture.asset(
+                'assets/elements/Frame.svg',
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.white.withOpacity(0.1),
+                  BlendMode.softLight,
                 ),
-                child: const Icon(Icons.person, color: Colors.white, size: 28),
               ),
-              const SizedBox(width: 12),
-              Column(
+            ),
+          ),
+
+          // Content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 24, right: 24, top: 60),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Noor',
-                    style: AppTypography.titleLarge.copyWith(
-                      color: Colors.white,
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // User testimonial card
+                          _buildUserCard(),
+
+                          const SizedBox(height: 48),
+
+                          // User quote
+
+                          // Main headline
+                          Text(
+                            'I promised myself I\'d play at least twice a week but, between work and life finding a game feels harder than a 90-minute run.',
+                            style: AppTypography.displayLarge.copyWith(
+                              color: Colors.white,
+                            ),
+                          ),
+
+                          const SizedBox(height: 48),
+                        ],
+                      ),
                     ),
                   ),
-                  Text(
-                    'Determined',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: Colors.white.withOpacity(0.7),
+
+                  // Value proposition - fixed before button
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
+                    child: Text(
+                      'Dabbler connects players, captains, and venues so you can stop searching and start playing',
+                      style: AppTypography.headlineSmall.copyWith(
+                        color: Colors.white.withOpacity(0.95),
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+
+                  // Continue button
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 60),
+                    child: AppButton(
+                      onPressed: () => context.go(RoutePaths.phoneInput),
+                      label: 'Continue',
+                      type: AppButtonType.filled,
+                      size: AppButtonSize.lg,
+                      backgroundColor: Colors.white,
+                      foregroundColor: colorScheme.primary,
                     ),
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 16),
+        ],
+      ),
+    );
+  }
 
-          // Quote
-          Text(
-            'I promised myself I\'d play at least twice a week.',
-            style: AppTypography.titleLarge.copyWith(
-              color: Colors.white,
-              height: 1.4,
+  Widget _buildUserCard() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(0, 60, 0, 0),
+      decoration: BoxDecoration(
+        // color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Avatar with image
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              image: const DecorationImage(
+                image: AssetImage('assets/elements/Avatar.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(width: 18),
+
+          // User info
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Badge with emoji
+                AppLabel(
+                  text: 'Determined',
+                  size: AppLabelSize.defaultSize,
+                  leftIcon: const Text('💪', style: TextStyle(fontSize: 15)),
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF7327CE),
+                ),
+                const SizedBox(height: 12),
+
+                // Name
+                Text(
+                  'Noor',
+                  style: AppTypography.headlineSmall.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

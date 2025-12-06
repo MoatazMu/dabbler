@@ -84,8 +84,7 @@ class SupabaseErrorMapper {
     String? overrideMessage,
     StackTrace? stackTrace,
   }) {
-    final message =
-        overrideMessage ?? exception.message ?? 'Unexpected Supabase error';
+    final message = overrideMessage ?? exception.message;
     final code = exception.code;
     final details = _detailsToMap(exception.details);
 

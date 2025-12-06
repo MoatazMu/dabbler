@@ -24,9 +24,9 @@ class OtpVerificationScreen extends ConsumerStatefulWidget {
     this.userExistsBeforeOtp,
     @Deprecated('Use identifier instead') String? phoneNumber,
   }) : assert(
-          identifier != null || phoneNumber != null,
-          'Either identifier or phoneNumber must be provided',
-        );
+         identifier != null || phoneNumber != null,
+         'Either identifier or phoneNumber must be provided',
+       );
 
   // Getter for backward compatibility
   String? get phoneNumber => identifier;
@@ -46,14 +46,14 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   bool _isLoading = false;
   bool _isResending = false;
   int _resendCountdown = 0;
-  
+
   late String _identifier;
   late IdentifierType _identifierType;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Determine identifier and type
     _identifier = widget.identifier ?? widget.phoneNumber ?? '';
     if (widget.identifierType != null) {
@@ -64,7 +64,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       _identifierType = detection.type;
       _identifier = detection.normalizedValue;
     }
-    
+
     print(
       '🔍 [DEBUG] OtpVerificationScreen: Initialized with identifier=${_identifierType.name}: $_identifier, userExistsBeforeOtp=${widget.userExistsBeforeOtp}',
     );
@@ -87,14 +87,22 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       _resendCountdown = 30;
     });
 
-    Future.delayed(const Duration(seconds: 1), () {
-      if (mounted && _resendCountdown > 0) {
-        setState(() {
-          _resendCountdown--;
-        });
-        _startResendCountdown();
-      }
-    });
+    _countdown();
+  }
+
+  void _countdown() {
+    if (!mounted) return;
+
+    if (_resendCountdown > 0) {
+      Future.delayed(const Duration(seconds: 1), () {
+        if (mounted) {
+          setState(() {
+            _resendCountdown--;
+          });
+          _countdown();
+        }
+      });
+    }
   }
 
   void _onOtpChanged(String value, int index) {
@@ -190,10 +198,13 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   Future<void> _checkUserProfileAndNavigate() async {
     try {
       final authService = AuthService();
-      final userProfile = await authService.getUserProfile(fields: ['id', 'onboard']);
+      final userProfile = await authService.getUserProfile(
+        fields: ['id', 'onboard'],
+      );
 
       // Check if user has completed onboarding
-      final isOnboarded = userProfile != null && 
+      final isOnboarded =
+          userProfile != null &&
           (userProfile['onboard'] == true || userProfile['onboard'] == 'true');
 
       print(
@@ -237,16 +248,10 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       if (mounted) {
         if (_identifierType == IdentifierType.email) {
           ref.read(onboardingDataProvider.notifier).initWithEmail(_identifier);
-          context.go(
-            RoutePaths.createUserInfo,
-            extra: {'email': _identifier},
-          );
+          context.go(RoutePaths.createUserInfo, extra: {'email': _identifier});
         } else {
           ref.read(onboardingDataProvider.notifier).initWithPhone(_identifier);
-          context.go(
-            RoutePaths.createUserInfo,
-            extra: {'phone': _identifier},
-          );
+          context.go(RoutePaths.createUserInfo, extra: {'phone': _identifier});
         }
       }
     }
@@ -259,15 +264,14 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
     try {
       final authService = AuthService();
-      await authService.sendOtp(
-        identifier: _identifier,
-        type: _identifierType,
-      );
+      await authService.sendOtp(identifier: _identifier, type: _identifierType);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('OTP sent successfully to your ${_identifierType == IdentifierType.email ? 'email' : 'phone'}'),
+            content: Text(
+              'OTP sent successfully to your ${_identifierType == IdentifierType.email ? 'email' : 'phone'}',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -291,246 +295,225 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final screenHeight = MediaQuery.of(context).size.height;
+    final topPadding = MediaQuery.of(context).padding.top;
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-                child: _buildHeroSection(),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 40),
-                child: _buildBottomSection(),
-              ),
-            ],
-          ),
+    return SingleSectionLayout(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: screenHeight - topPadding - bottomPadding - 48,
         ),
-      ),
-    );
-  }
-
-  Widget _buildHeroSection() {
-    final textTheme = Theme.of(context).textTheme;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-
-    final heroColor = isDarkMode
-        ? const Color(0xFF4A148C)
-        : const Color(0xFFE0C7FF);
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
-    final subtextColor = isDarkMode
-        ? Colors.white.withOpacity(0.85)
-        : Colors.black.withOpacity(0.7);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: heroColor,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        children: [
-          // Logo
-          _buildLogo(textColor),
-          const SizedBox(height: 24),
-          // Header
-          Text(
-            _identifierType == IdentifierType.email
-                ? 'Verify Your Email'
-                : 'Verify Your Phone',
-            style: textTheme.headlineSmall?.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.w800,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _identifierType == IdentifierType.email
-                ? 'We\'ve sent a 6-digit code to your email'
-                : 'We\'ve sent a 6-digit code to',
-            style: textTheme.bodyLarge?.copyWith(color: subtextColor),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _identifier,
-            style: textTheme.bodyLarge?.copyWith(
-              color: textColor,
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLogo(Color iconColor) {
-    return Column(
-      children: [
-        SvgPicture.asset(
-          'assets/images/dabbler_logo.svg',
-          width: 80,
-          height: 88,
-          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-        ),
-        const SizedBox(height: 16),
-        SvgPicture.asset(
-          'assets/images/dabbler_text_logo.svg',
-          width: 110,
-          height: 21,
-          colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomSection() {
-    return Column(
-      children: [
-        // OTP Input Fields
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: List.generate(6, (index) {
-            return SizedBox(
-              width: 45,
-              child: TextField(
-                controller: _otpControllers[index],
-                focusNode: _focusNodes[index],
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.center,
-                maxLength: 1,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                decoration: InputDecoration(
-                  counterText: '',
-                  filled: true,
-                  fillColor: AppColors.cardColor(context),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    borderSide: BorderSide(color: AppColors.borderDark),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Header Container
+            Column(
+              children: [
+                SizedBox(height: AppSpacing.xl),
+                // Dabbler logo
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/images/dabbler_logo.svg',
+                    width: 80,
+                    height: 88,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface,
+                      BlendMode.srcIn,
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    borderSide: BorderSide(color: AppColors.borderDark),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(AppSpacing.sm),
-                    borderSide: BorderSide(color: AppColors.primaryPurple),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                onChanged: (value) => _onOtpChanged(value, index),
-              ),
-            );
-          }),
-        ),
-        SizedBox(height: AppSpacing.xl),
-
-        // Verify Button
-        SizedBox(
-          width: double.infinity,
-          height: 56,
-          child: ElevatedButton(
-            onPressed: _isLoading ? null : _handleSubmit,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primaryPurple,
-              foregroundColor: AppColors.buttonForeground,
-              elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  AppSpacing.buttonBorderRadius,
+                SizedBox(height: AppSpacing.md),
+                // Dabbler text logo
+                Center(
+                  child: SvgPicture.asset(
+                    'assets/images/dabbler_text_logo.svg',
+                    width: 110,
+                    height: 21,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface,
+                      BlendMode.srcIn,
+                    ),
+                  ),
                 ),
-              ),
+                SizedBox(height: AppSpacing.xl),
+                // Title
+                Text(
+                  _identifierType == IdentifierType.email
+                      ? 'Verify Your Email'
+                      : 'Verify Your Phone',
+                  style: AppTypography.headlineMedium.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppSpacing.sm),
+                // Subtitle
+                Text(
+                  _identifierType == IdentifierType.email
+                      ? 'We\'ve sent a 6-digit code to your email'
+                      : 'We\'ve sent a 6-digit code to',
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppSpacing.md),
+                // Identifier
+                Text(
+                  _identifier,
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            child: _isLoading
-                ? SizedBox(
-                    height: 24,
-                    width: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.buttonForeground,
+
+            const SizedBox(height: 40),
+
+            // Form Container
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Instructions text
+                Text(
+                  'Enter the 6-digit code',
+                  style: AppTypography.bodyLarge.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: AppSpacing.lg),
+
+                // OTP Input Fields
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(6, (index) {
+                    return SizedBox(
+                      width: 48,
+                      child: TextField(
+                        controller: _otpControllers[index],
+                        focusNode: _focusNodes[index],
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        maxLength: 1,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        decoration: InputDecoration(
+                          counterText: '',
+                          filled: true,
+                          fillColor:
+                              Theme.of(context).brightness == Brightness.dark
+                              ? Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHighest
+                              : Theme.of(
+                                  context,
+                                ).colorScheme.surfaceContainerHigh,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
+                              width: 1.5,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.outlineVariant,
+                              width: 1.5,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: Theme.of(context).colorScheme.primary,
+                              width: 2,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                          ),
+                        ),
+                        onChanged: (value) => _onOtpChanged(value, index),
+                      ),
+                    );
+                  }),
+                ),
+                SizedBox(height: AppSpacing.xl),
+
+                // Verify Button
+                AppButton(
+                  onPressed: _isLoading ? null : _handleSubmit,
+                  label: _isLoading ? 'Verifying...' : 'Verify',
+                  type: AppButtonType.filled,
+                  size: AppButtonSize.lg,
+                ),
+
+                SizedBox(height: AppSpacing.lg),
+
+                // Resend OTP
+                Column(
+                  children: [
+                    Text(
+                      'Didn\'t receive the code?',
+                      style: AppTypography.bodyMedium.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
-                  )
-                : Text(
-                    'Verify',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-                  ),
-          ),
-        ),
-        SizedBox(height: AppSpacing.lg),
+                    SizedBox(height: AppSpacing.xs),
+                    if (_resendCountdown > 0)
+                      Text(
+                        'Resend in $_resendCountdown s',
+                        style: AppTypography.bodyMedium.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      )
+                    else
+                      GestureDetector(
+                        onTap: _isResending ? null : _handleResend,
+                        child: Text(
+                          _isResending ? 'Sending...' : 'Resend',
+                          style: AppTypography.bodyMedium.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
 
-        // Resend OTP
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Didn\'t receive the code? ',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+                SizedBox(height: AppSpacing.xl),
+
+                // Change identifier button
+                AppButton(
+                  onPressed: () => context.go(RoutePaths.phoneInput),
+                  label: _identifierType == IdentifierType.email
+                      ? 'Change Email'
+                      : 'Change Phone Number',
+                  type: AppButtonType.ghost,
+                  size: AppButtonSize.lg,
+                ),
+                SizedBox(height: AppSpacing.xl),
+              ],
             ),
-            if (_resendCountdown > 0)
-              Text(
-                'Resend in $_resendCountdown seconds',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              )
-            else
-              GestureDetector(
-                onTap: _isResending ? null : _handleResend,
-                child: Text(
-                  _isResending ? 'Sending...' : 'Resend',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primaryPurple,
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
           ],
         ),
-        SizedBox(height: AppSpacing.xxl),
-
-        // Change identifier
-        TextButton(
-          onPressed: () {
-            context.go(RoutePaths.phoneInput);
-          },
-          child: Text(
-            _identifierType == IdentifierType.email
-                ? 'Change Email'
-                : 'Change Phone Number',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              decoration: TextDecoration.underline,
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

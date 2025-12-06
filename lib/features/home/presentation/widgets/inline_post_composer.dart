@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/utils/enums/social_enums.dart';
 import 'package:dabbler/data/social/social_repository.dart';
 import 'package:dabbler/features/home/presentation/providers/home_providers.dart';
 import 'package:dabbler/features/social/providers/social_providers.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 
 final socialRepositoryProvider = Provider<SocialRepository>(
   (ref) => SocialRepository(),
@@ -204,7 +207,7 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                 ),
               ),
               _buildAttachmentOption(
-                icon: Icons.camera_alt,
+                icon: Iconsax.camera_copy,
                 label: 'Camera',
                 onTap: () async {
                   Navigator.pop(context);
@@ -217,7 +220,7 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                 },
               ),
               _buildAttachmentOption(
-                icon: Icons.photo_library,
+                icon: Iconsax.gallery_copy,
                 label: 'Gallery',
                 onTap: () async {
                   Navigator.pop(context);
@@ -228,7 +231,7 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                 },
               ),
               _buildAttachmentOption(
-                icon: Icons.insert_drive_file,
+                icon: Iconsax.document_copy,
                 label: 'Files',
                 onTap: () {
                   Navigator.pop(context);
@@ -277,19 +280,19 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                 ),
               ),
               _buildPostTypeOption(
-                icon: Icons.image_outlined,
+                icon: Iconsax.gallery_copy,
                 label: 'Moment',
                 subtitle: 'Share a photo or video moment',
                 value: 'moment',
               ),
               _buildPostTypeOption(
-                icon: Icons.chat_bubble_outline,
+                icon: Iconsax.message_text_copy,
                 label: 'Dab',
                 subtitle: 'Quick thoughts and updates',
                 value: 'dab',
               ),
               _buildPostTypeOption(
-                icon: Icons.sports_soccer,
+                icon: Iconsax.medal_star_copy,
                 label: 'Kick-in',
                 subtitle: 'Game-related content',
                 value: 'kickin',
@@ -429,7 +432,7 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
               ),
             ),
             if (isSelected)
-              Icon(Icons.check_circle, color: colorScheme.primary),
+              Icon(Iconsax.tick_circle_copy, color: colorScheme.primary),
           ],
         ),
       ),
@@ -528,7 +531,7 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
               ),
             ),
             if (isSelected)
-              Icon(Icons.check_circle, color: colorScheme.primary),
+              Icon(Iconsax.tick_circle_copy, color: colorScheme.primary),
           ],
         ),
       ),
@@ -538,14 +541,14 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final tokens = context.colorTokens;
     final hasContent =
         _textController.text.isNotEmpty || _selectedMedia.isNotEmpty;
 
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(0),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
+        color: tokens.header,
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
@@ -560,52 +563,40 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
         children: [
           // Main input area
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // First line: typing space
-                TextField(
+                AppTextArea(
                   controller: _textController,
-                  focusNode: _focusNode,
-                  maxLines: null,
-                  textInputAction: TextInputAction.newline,
-                  decoration: InputDecoration(
-                    hintText: "What's on your mind?",
-                    hintStyle: textTheme.bodyLarge?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 0,
-                      vertical: 8,
-                    ),
-                  ),
-                  style: textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurface,
-                  ),
-                  onChanged: (value) => setState(() {}),
+                  placeholder: "What's on your mind?",
+                  minLines: 1,
+                  maxLines: 5,
                 ),
 
-                const SizedBox(height: 4),
+                const SizedBox(height: 12),
 
                 // Second line: controls
                 Row(
                   children: [
                     // Attachment button
-                    IconButton(
-                      onPressed: _showAttachmentOptions,
-                      icon: const Icon(Icons.add),
-                      iconSize: 24,
-                      padding: const EdgeInsets.all(8),
-                      constraints: const BoxConstraints(
-                        minWidth: 40,
-                        minHeight: 40,
-                      ),
-                      style: IconButton.styleFrom(
-                        foregroundColor: colorScheme.onSurfaceVariant,
+                    GestureDetector(
+                      onTap: _showAttachmentOptions,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        alignment: Alignment.center,
+                        child: SvgPicture.asset(
+                          'assets/icons/add.svg',
+                          width: 18,
+                          height: 18,
+                          colorFilter: ColorFilter.mode(
+                            colorScheme.onSurfaceVariant,
+                            BlendMode.srcIn,
+                          ),
+                        ),
                       ),
                     ),
 
@@ -650,14 +641,13 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                               children: [
                                 Text(
                                   emoji,
-                                  style: const TextStyle(fontSize: 12),
+                                  style: const TextStyle(fontSize: 18),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   label,
-                                  style: textTheme.labelSmall?.copyWith(
+                                  style: AppTypography.labelMedium.copyWith(
                                     color: colorScheme.onSecondaryContainer,
-                                    fontWeight: FontWeight.w500,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -685,19 +675,18 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                         ),
                         child: Text(
                           _selectedKind == 'moment'
-                              ? 'Moment'
+                              ? 'Moments'
                               : _selectedKind == 'dab'
                               ? 'Dab'
                               : 'Kick-in',
-                          style: textTheme.labelMedium?.copyWith(
+                          style: AppTypography.labelMedium.copyWith(
                             color: colorScheme.primary,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
                     ),
 
-                    const Spacer(),
+                    // const Spacer(),
 
                     // Send/Post button
                     if (hasContent)
@@ -713,7 +702,7 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                                 ),
                               )
                             : Icon(
-                                Icons.arrow_upward,
+                                Iconsax.arrow_up_copy,
                                 color: colorScheme.primary,
                               ),
                         iconSize: 24,
@@ -751,7 +740,9 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                             borderRadius: BorderRadius.circular(8),
                             child: Container(
                               color: colorScheme.surfaceContainerHighest,
-                              child: const Center(child: Icon(Icons.image)),
+                              child: const Center(
+                                child: Icon(Iconsax.gallery_copy),
+                              ),
                             ),
                           ),
                           Positioned(
@@ -770,7 +761,7 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
-                                  Icons.close,
+                                  Iconsax.close_circle_copy,
                                   size: 16,
                                   color: Colors.white,
                                 ),
