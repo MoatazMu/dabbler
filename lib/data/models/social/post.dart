@@ -1,7 +1,7 @@
 import '../../../../utils/enums/social_enums.dart';
 
 /// Domain entity for social posts.
-/// 
+///
 /// This is the UI/domain representation built on top of the canonical
 /// `public.posts` schema and joined profile data.
 class Post {
@@ -48,6 +48,12 @@ class Post {
   /// Primary vibe ID maps to `public.posts.primary_vibe_id` (nullable).
   final String? primaryVibeId;
 
+  /// Vibe emoji for display (joined from vibes table)
+  final String? vibeEmoji;
+
+  /// Vibe label for display (joined from vibes table)
+  final String? vibeLabel;
+
   const Post({
     required this.id,
     required this.authorId,
@@ -77,6 +83,8 @@ class Post {
     this.activityData,
     this.kind = 'moment',
     this.primaryVibeId,
+    this.vibeEmoji,
+    this.vibeLabel,
   });
 
   @override

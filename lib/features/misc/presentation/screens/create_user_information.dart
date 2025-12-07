@@ -500,7 +500,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
           'Birth Date',
           style: AppTypography.bodyMedium.copyWith(
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.9),
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 15,
           ),
         ),
@@ -514,11 +514,11 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
               border: Border.all(
                 color: _selectedBirthDate != null
                     ? Theme.of(context).colorScheme.primary
-                    : Colors.white.withOpacity(0.3),
+                    : Theme.of(context).colorScheme.outline,
                 width: _selectedBirthDate != null ? 2 : 1.5,
               ),
               borderRadius: BorderRadius.circular(12),
-              color: Colors.white.withOpacity(0.1),
+              color: Theme.of(context).colorScheme.surface,
             ),
             child: Row(
               children: [
@@ -526,7 +526,9 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                   Iconsax.calendar_copy,
                   color: _selectedBirthDate != null
                       ? Theme.of(context).colorScheme.primary
-                      : Colors.white.withOpacity(0.7),
+                      : Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withOpacity(0.7),
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -535,8 +537,10 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                     ageText,
                     style: AppTypography.bodyLarge.copyWith(
                       color: _selectedBirthDate != null
-                          ? Colors.white
-                          : Colors.white.withOpacity(0.5),
+                          ? Theme.of(context).colorScheme.onSurface
+                          : Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.5),
                       fontWeight: FontWeight.normal,
                       fontSize: 15,
                     ),
@@ -581,20 +585,10 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       initialDatePickerMode: DatePickerMode.year,
       initialEntryMode: DatePickerEntryMode.calendarOnly,
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+
         return Theme(
-          data: ThemeData.dark().copyWith(
-            scaffoldBackgroundColor: const Color(0xFF4A148C),
-            canvasColor: const Color(0xFF4A148C),
-            colorScheme: ColorScheme.dark(
-              surface: const Color(0xFF4A148C),
-              onSurface: Colors.white,
-              primary: Theme.of(context).colorScheme.primary,
-              onPrimary: Colors.white,
-            ),
-            dialogTheme: DialogThemeData(
-              backgroundColor: const Color(0xFF4A148C),
-            ),
-          ),
+          data: isDark ? ThemeData.dark() : ThemeData.light(),
           child: child!,
         );
       },
@@ -616,7 +610,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
           'Gender',
           style: AppTypography.bodyMedium.copyWith(
             fontWeight: FontWeight.w500,
-            color: Colors.white.withOpacity(0.9),
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 15,
           ),
         ),
@@ -627,11 +621,11 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
             border: Border.all(
               color: _selectedGender.isNotEmpty
                   ? Theme.of(context).colorScheme.primary
-                  : Colors.white.withOpacity(0.3),
+                  : Theme.of(context).colorScheme.outline,
               width: _selectedGender.isNotEmpty ? 2 : 1.5,
             ),
             borderRadius: BorderRadius.circular(12),
-            color: Colors.white.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.surface,
           ),
           child: Column(
             children: [
@@ -671,7 +665,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                 style: AppTypography.bodyLarge.copyWith(
                   color: isSelected
                       ? Theme.of(context).colorScheme.primary
-                      : Colors.white,
+                      : Theme.of(context).colorScheme.onSurface,
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   fontSize: 15,
                 ),
@@ -721,8 +715,8 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                     'assets/images/dabbler_logo.svg',
                     width: 80,
                     height: 88,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -733,8 +727,8 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                     'assets/images/dabbler_text_logo.svg',
                     width: 110,
                     height: 21,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -747,7 +741,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                 Text(
                   'We would like to know you',
                   style: AppTypography.headlineMedium.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -755,7 +749,9 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                 Text(
                   'Tell us a bit about yourself',
                   style: AppTypography.bodyLarge.copyWith(
-                    color: Colors.white.withOpacity(0.9),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.8),
                   ),
                   textAlign: TextAlign.center,
                 ),

@@ -35,6 +35,8 @@ class PostModel extends Post {
     super.activityData,
     super.kind,
     super.primaryVibeId,
+    super.vibeEmoji,
+    super.vibeLabel,
   });
 
   /// Create PostModel from Supabase JSON response
@@ -141,6 +143,19 @@ class PostModel extends Post {
     // Map primary vibe ID if present.
     final String? primaryVibeId = json['primary_vibe_id']?.toString();
 
+    // Parse vibe data if joined
+    String? vibeEmoji;
+    String? vibeLabel;
+    if (json['vibe'] != null && json['vibe'] is Map) {
+      final vibeData = json['vibe'] as Map<String, dynamic>;
+      vibeEmoji = vibeData['emoji']?.toString();
+      vibeLabel =
+          vibeData['label_en']?.toString() ?? vibeData['key']?.toString();
+    } else if (json['vibe_emoji'] != null) {
+      vibeEmoji = json['vibe_emoji']?.toString();
+      vibeLabel = json['vibe_label']?.toString();
+    }
+
     return PostModel(
       id: json['id']?.toString() ?? '',
       authorId: json['author_id'] ?? json['user_id'] ?? '',
@@ -184,6 +199,8 @@ class PostModel extends Post {
           : null,
       kind: kind,
       primaryVibeId: primaryVibeId,
+      vibeEmoji: vibeEmoji,
+      vibeLabel: vibeLabel,
     );
   }
 
@@ -202,6 +219,8 @@ class PostModel extends Post {
       'visibility': _visibilityToString(visibility),
       'kind': kind,
       'primary_vibe_id': primaryVibeId,
+      'vibe_emoji': vibeEmoji,
+      'vibe_label': vibeLabel,
     };
 
     // Add optional fields only if they have values
@@ -299,6 +318,8 @@ class PostModel extends Post {
     String? shareOriginalId,
     String? kind,
     String? primaryVibeId,
+    String? vibeEmoji,
+    String? vibeLabel,
   }) {
     return PostModel(
       id: id ?? this.id,
@@ -327,6 +348,8 @@ class PostModel extends Post {
       shareOriginalId: shareOriginalId ?? this.shareOriginalId,
       kind: kind ?? this.kind,
       primaryVibeId: primaryVibeId ?? this.primaryVibeId,
+      vibeEmoji: vibeEmoji ?? this.vibeEmoji,
+      vibeLabel: vibeLabel ?? this.vibeLabel,
     );
   }
 

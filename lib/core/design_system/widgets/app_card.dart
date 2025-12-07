@@ -27,7 +27,7 @@ class AppCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: padding ?? const EdgeInsets.all(16),
+          padding: padding ?? const EdgeInsets.all(0),
           child: child,
         ),
       ),
@@ -51,7 +51,7 @@ class AppButtonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Card(
       elevation: 0, // Material 3 uses color for depth
       child: InkWell(
@@ -97,7 +97,7 @@ class AppActionCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Card(
       elevation: 0, // Material 3 uses color for depth
       child: InkWell(

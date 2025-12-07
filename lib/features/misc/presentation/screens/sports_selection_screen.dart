@@ -186,8 +186,8 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                             'assets/images/dabbler_logo.svg',
                             width: 80,
                             height: 88,
-                            colorFilter: const ColorFilter.mode(
-                              Colors.white,
+                            colorFilter: ColorFilter.mode(
+                              Theme.of(context).colorScheme.onSurface,
                               BlendMode.srcIn,
                             ),
                           ),
@@ -199,8 +199,8 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                             'assets/images/dabbler_text_logo.svg',
                             width: 110,
                             height: 21,
-                            colorFilter: const ColorFilter.mode(
-                              Colors.white,
+                            colorFilter: ColorFilter.mode(
+                              Theme.of(context).colorScheme.onSurface,
                               BlendMode.srcIn,
                             ),
                           ),
@@ -213,7 +213,7 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                         Text(
                           'Choose Your Sports',
                           style: AppTypography.headlineMedium.copyWith(
-                            color: Colors.white,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -222,7 +222,9 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                         Text(
                           'Select your preferred sport and additional interests',
                           style: AppTypography.bodyLarge.copyWith(
-                            color: Colors.white.withOpacity(0.9),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.9),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -241,7 +243,7 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                             Text(
                               'Preferred Sport',
                               style: AppTypography.titleLarge.copyWith(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -270,7 +272,9 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                         Text(
                           'Choose your main sport',
                           style: AppTypography.bodySmall.copyWith(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.7),
                           ),
                         ),
 
@@ -311,8 +315,12 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                     color: Colors.transparent,
                                     border: Border.all(
                                       color: isSelected
-                                          ? const Color(0xFFC18FFF)
-                                          : Colors.white.withOpacity(0.3),
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.primary
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.outline,
                                       width: isSelected ? 2 : 1.5,
                                     ),
                                     borderRadius: BorderRadius.circular(12),
@@ -325,15 +333,21 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                         AppHelpers.getSportIcon(sport),
                                         size: 32,
                                         color: isSelected
-                                            ? const Color(0xFFC18FFF)
-                                            : Colors.white,
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
                                         AppHelpers.getSportDisplayName(sport),
                                         style: AppTypography.bodySmall.copyWith(
                                           fontWeight: FontWeight.normal,
-                                          color: Colors.white,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
                                         ),
                                         textAlign: TextAlign.center,
                                         maxLines: 1,
@@ -344,7 +358,9 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                         Icon(
                                           Iconsax.tick_circle_copy,
                                           size: 16,
-                                          color: const Color(0xFFC18FFF),
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                         ),
                                       ],
                                     ],
@@ -363,7 +379,7 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                             Text(
                               'Additional Interests',
                               style: AppTypography.titleLarge.copyWith(
-                                color: Colors.white,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -392,7 +408,9 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                         Text(
                           'Select up to 3 additional sports (${_interests.length}/3)',
                           style: AppTypography.bodySmall.copyWith(
-                            color: Colors.white.withOpacity(0.7),
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withOpacity(0.7),
                           ),
                         ),
 
@@ -416,8 +434,10 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                   AppHelpers.getSportDisplayName(sport),
                                   style: AppTypography.bodyMedium.copyWith(
                                     color: isSelected
-                                        ? const Color(0xFFC18FFF)
-                                        : Colors.white,
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
                                     fontWeight: isSelected
                                         ? FontWeight.w600
                                         : FontWeight.normal,
@@ -427,8 +447,8 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                   AppHelpers.getSportIcon(sport),
                                   size: 20,
                                   color: isSelected
-                                      ? const Color(0xFFC18FFF)
-                                      : Colors.white,
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.onSurface,
                                 ),
                                 selected: isSelected,
                                 showCheckmark: false,
@@ -436,13 +456,13 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                     ? null
                                     : (bool selected) => _toggleInterest(sport),
                                 backgroundColor: Colors.transparent,
-                                selectedColor: const Color(
-                                  0xFFC18FFF,
-                                ).withOpacity(0.2),
+                                selectedColor: Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.2),
                                 side: BorderSide(
                                   color: isSelected
-                                      ? const Color(0xFFC18FFF)
-                                      : Colors.white.withOpacity(0.3),
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context).colorScheme.outline,
                                   width: isSelected ? 2 : 1.5,
                                 ),
                                 shape: RoundedRectangleBorder(

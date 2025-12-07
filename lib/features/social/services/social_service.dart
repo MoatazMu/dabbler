@@ -1,6 +1,7 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import '../../../utils/enums/social_enums.dart';
 
 class SocialService {
@@ -9,6 +10,30 @@ class SocialService {
   SocialService._internal();
 
   final SupabaseClient _supabase = Supabase.instance.client;
+  final AuthService _authService = AuthService();
+
+  /// Ensure session is fresh before making Supabase queries
+  Future<void> _ensureValidSession() async {
+    try {
+      final session = _supabase.auth.currentSession;
+      if (session == null) return;
+
+      // Check if session expires in less than 5 minutes
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(
+        (session.expiresAt ?? 0) * 1000,
+      );
+      final now = DateTime.now();
+      final timeToExpiry = expiresAt.difference(now);
+
+      if (timeToExpiry.inMinutes < 5) {
+        print('🔄 [DEBUG] SocialService: Session expiring soon, refreshing...');
+        await _authService.refreshSession();
+        print('✅ [DEBUG] SocialService: Session refreshed successfully');
+      }
+    } catch (e) {
+      print('⚠️ [DEBUG] SocialService: Session refresh failed: $e');
+    }
+  }
 
   /// Create a new post
   Future<PostModel> createPost({
@@ -19,6 +44,8 @@ class SocialService {
     List<String> tags = const [],
   }) async {
     try {
+      await _ensureValidSession();
+
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
@@ -109,10 +136,12 @@ class SocialService {
   /// Get posts for the social feed
   Future<List<PostModel>> getFeedPosts({int limit = 20, int offset = 0}) async {
     try {
-      // Query posts using actual database schema
+      await _ensureValidSession();
+
+      // Query posts using actual database schema, join vibe data
       final postsResponse = await _supabase
           .from('posts')
-          .select('*')
+          .select('*, vibe:vibes!primary_vibe_id(emoji, label_en, key)')
           .eq('visibility', 'public')
           .eq('is_deleted', false)
           .eq('is_hidden_admin', false)
@@ -187,6 +216,7 @@ class SocialService {
           // Pass through kind and primary_vibe_id so PostModel can surface them.
           'kind': post['kind'],
           'primary_vibe_id': post['primary_vibe_id'],
+          'vibe': post['vibe'], // Pass joined vibe data
           'created_at': post['created_at'],
           'updated_at': post['updated_at'],
           'likes_count':
@@ -225,6 +255,8 @@ class SocialService {
     int offset = 0,
   }) async {
     try {
+      await _ensureValidSession();
+
       // Query posts using actual database schema
       final postsResponse = await _supabase
           .from('posts')
@@ -347,6 +379,8 @@ class SocialService {
   /// Get a single post by ID with joined profile data.
   Future<PostModel> getPostById(String postId) async {
     try {
+      await _ensureValidSession();
+
       // Parse postId to int if it's a string from URL
       final postIdInt = int.tryParse(postId) ?? postId;
 
@@ -458,8 +492,7 @@ class SocialService {
   /// Like/unlike a post
   Future<void> toggleLike(String postId) async {
     try {
-      // Parse postId to int if it's a string from URL
-      final postIdInt = int.tryParse(postId) ?? postId;
+      await _ensureValidSession();
 
       final user = _supabase.auth.currentUser;
       if (user == null) {
@@ -479,23 +512,31 @@ class SocialService {
 
       final profileId = profileRes['id'] as String;
 
-      // Check if already liked
-      final existingLike = await _supabase
+      // Check if already liked - use the original postId consistently
+      // post_likes table uses composite key (post_id, user_id), no id column
+      final existingLikes = await _supabase
           .from('post_likes')
           .select('post_id')
-          .eq('post_id', postIdInt)
-          .eq('user_id', user.id)
-          .maybeSingle();
+          .eq('post_id', postId)
+          .eq('user_id', user.id);
 
-      if (existingLike != null) {
+      final isCurrentlyLiked = existingLikes.isNotEmpty;
+      print(
+        '💡 [DEBUG] toggleLike: postId=$postId, userId=${user.id}, isCurrentlyLiked=$isCurrentlyLiked, foundLikes=${existingLikes.length}',
+      );
+
+      if (isCurrentlyLiked) {
         // Unlike: Remove the like (trigger will decrement like_count automatically)
+        print('💔 [DEBUG] Unliking post $postId');
         await _supabase
             .from('post_likes')
             .delete()
-            .eq('post_id', postIdInt)
+            .eq('post_id', postId)
             .eq('user_id', user.id);
+        print('✅ [DEBUG] Unlike completed for post $postId');
       } else {
         // Like: Add the like (trigger will increment like_count automatically)
+        print('❤️ [DEBUG] Liking post $postId');
         await _supabase.from('post_likes').insert({
           'post_id': postId,
           'user_id': user.id,
@@ -503,6 +544,7 @@ class SocialService {
               profileId, // Required: use profile_id per social model spec
           'created_at': DateTime.now().toIso8601String(),
         });
+        print('✅ [DEBUG] Like completed for post $postId');
       }
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
@@ -583,6 +625,51 @@ class SocialService {
     }
   }
 
+  /// Delete a post (only owner can delete)
+  Future<void> deletePost(String postId) async {
+    try {
+      await _ensureValidSession();
+
+      final user = _supabase.auth.currentUser;
+      if (user == null) {
+        throw Exception('User not authenticated');
+      }
+
+      // Get the current user's profile ID
+      final profileRes = await _supabase
+          .from('profiles')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+      if (profileRes == null) {
+        throw Exception('Profile not found');
+      }
+
+      final profileId = profileRes['id'] as String;
+
+      // Verify ownership before deleting
+      final postData = await _supabase
+          .from('posts')
+          .select('author_profile_id')
+          .eq('id', postId)
+          .maybeSingle();
+
+      if (postData == null) {
+        throw Exception('Post not found');
+      }
+
+      if (postData['author_profile_id'] != profileId) {
+        throw Exception('You can only delete your own posts');
+      }
+
+      // Delete the post (cascade deletes will handle related records)
+      await _supabase.from('posts').delete().eq('id', postId);
+    } catch (e) {
+      throw Exception('Failed to delete post: $e');
+    }
+  }
+
   /// Unhide a post for the current user.
   Future<void> unhidePost(String postId) async {
     try {
@@ -633,6 +720,8 @@ class SocialService {
     String? parentCommentId,
   }) async {
     try {
+      await _ensureValidSession();
+
       final user = _supabase.auth.currentUser;
       if (user == null) {
         throw Exception('User not authenticated');
@@ -667,6 +756,8 @@ class SocialService {
   /// Get comments for a post with nested replies
   Future<List<Map<String, dynamic>>> getComments(String postId) async {
     try {
+      await _ensureValidSession();
+
       // Parse postId to int if it's a string from URL
       final postIdInt = int.tryParse(postId) ?? postId;
 

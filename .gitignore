@@ -5,6 +5,12 @@
 .env
 !.env.example
 
+# Figma MCP files with secrets
+figma-mcp/
+
+# Release builds
+releases/
+
 # Miscellaneous
 *.class
 *.lock

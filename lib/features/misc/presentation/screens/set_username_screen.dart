@@ -226,8 +226,8 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
                     'assets/images/dabbler_logo.svg',
                     width: 80,
                     height: 88,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -239,8 +239,8 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
                     'assets/images/dabbler_text_logo.svg',
                     width: 110,
                     height: 21,
-                    colorFilter: const ColorFilter.mode(
-                      Colors.white,
+                    colorFilter: ColorFilter.mode(
+                      Theme.of(context).colorScheme.onSurface,
                       BlendMode.srcIn,
                     ),
                   ),
@@ -253,7 +253,7 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
                 Text(
                   'Choose Your Username',
                   style: AppTypography.headlineMedium.copyWith(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -263,7 +263,9 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
                   Text(
                     identifier,
                     style: AppTypography.bodyLarge.copyWith(
-                      color: Colors.white.withOpacity(0.9),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withOpacity(0.9),
                     ),
                     textAlign: TextAlign.center,
                   ),

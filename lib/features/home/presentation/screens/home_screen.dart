@@ -259,7 +259,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           // Main Social Feed - Primary feature
           Padding(
-            padding: const EdgeInsets.only(top: 28),
+            padding: const EdgeInsets.only(top: 0),
             child: _buildSocialFeedSection(),
           ),
           // Padding(
@@ -388,48 +388,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildActivitiesButton() {
-    final tokens = context.colorTokens;
-
-    return Row(
-      children: [
-        Expanded(
-          child: FilledButton.tonalIcon(
-            onPressed: () => context.go(RoutePaths.activities),
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              backgroundColor: tokens.section,
-              foregroundColor: tokens.titleOnSec,
-            ),
-            icon: const Text('⚡', style: TextStyle(fontSize: 18)),
-            label: Text('Activities', style: AppTypography.labelMedium),
-          ),
-        ),
-        if (FeatureFlags.enableNotificationCenter) ...[
-          const SizedBox(width: 12),
-          Expanded(
-            child: FilledButton.tonalIcon(
-              onPressed: () => context.go(RoutePaths.notifications),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  vertical: 16,
-                  horizontal: 20,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                backgroundColor: tokens.section,
-                foregroundColor: tokens.titleOnSec,
-              ),
-              icon: const Text('🔔', style: TextStyle(fontSize: 18)),
-              label: Text('Notifications', style: AppTypography.labelMedium),
-            ),
-          ),
-        ],
-      ],
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildNewlyJoinedSection() {
@@ -458,7 +417,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               'Newly joined',
-              style: AppTypography.titleLarge.copyWith(
+              style: AppTypography.titleMedium.copyWith(
                 color: tokens.titleOnSec,
               ),
             ),
@@ -474,7 +433,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   itemBuilder: (context, index) {
                     final player = displayPlayers[index];
                     return Padding(
-                      padding: const EdgeInsets.only(right: 16),
+                      padding: const EdgeInsets.only(right: 12),
                       child: Column(
                         children: [
                           player['sport_key'] != null
@@ -574,6 +533,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         post: post,
                         onLike: () => _handleLikePost(post.id),
                         onComment: () => _handleCommentPost(post.id),
+                        onDelete: () {
+                          // Refresh feed after deletion
+                          ref.invalidate(latestFeedPostsProvider);
+                        },
                         onPostTap: () => context.pushNamed(
                           RouteNames.socialPostDetail,
                           pathParameters: {'postId': post.id},
@@ -665,12 +628,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _handleLikePost(String postId) async {
     try {
+      print('🎯 [DEBUG] HomeScreen: Starting toggleLike for post $postId');
       final socialService = SocialService();
       await socialService.toggleLike(postId);
+
+      print('⏳ [DEBUG] HomeScreen: Waiting for DB trigger to complete...');
+      // Wait for database trigger to update like_count
+      await Future.delayed(const Duration(milliseconds: 400));
+
+      print('🔄 [DEBUG] HomeScreen: Refreshing feed posts provider');
       // Refresh posts to show updated like count
       if (mounted) {
         ref.invalidate(latestFeedPostsProvider);
       }
+      print('✅ [DEBUG] HomeScreen: Feed refresh complete');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -818,8 +789,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  /// Ensure session is fresh before making Supabase queries
+  Future<void> _ensureValidSession() async {
+    try {
+      final session = Supabase.instance.client.auth.currentSession;
+      if (session == null) return;
+
+      // Check if session expires in less than 5 minutes
+      final expiresAt = DateTime.fromMillisecondsSinceEpoch(
+        (session.expiresAt ?? 0) * 1000,
+      );
+      final now = DateTime.now();
+      final timeToExpiry = expiresAt.difference(now);
+
+      if (timeToExpiry.inMinutes < 5) {
+        print('🔄 [DEBUG] HomeScreen: Session expiring soon, refreshing...');
+        await _authService.refreshSession();
+        print('✅ [DEBUG] HomeScreen: Session refreshed successfully');
+      }
+    } catch (e) {
+      print('⚠️ [DEBUG] HomeScreen: Session refresh failed: $e');
+    }
+  }
+
   Future<List<Map<String, dynamic>>> _fetchRecentPlayers() async {
     try {
+      await _ensureValidSession();
+
       final supabase = Supabase.instance.client;
       final response = await supabase
           .from('profiles')
@@ -847,6 +843,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<List<Map<String, dynamic>>> _fetchRecentGames() async {
     try {
+      await _ensureValidSession();
+
       final supabase = Supabase.instance.client;
       final response = await supabase
           .from('games')

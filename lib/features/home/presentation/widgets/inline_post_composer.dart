@@ -167,6 +167,11 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
           _selectedMedia.clear();
         });
 
+        // Close the modal if in post mode
+        if (widget.mode == ComposerMode.post) {
+          Navigator.of(context).pop();
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Post shared successfully!')),
         );
@@ -686,33 +691,22 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                       ),
                     ),
 
-                    // const Spacer(),
+                    const Spacer(),
 
                     // Send/Post button
                     if (hasContent)
-                      IconButton(
-                        onPressed: _isPosting ? null : _handlePost,
-                        icon: _isPosting
-                            ? SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: colorScheme.primary,
-                                ),
-                              )
-                            : Icon(
-                                Iconsax.arrow_up_copy,
-                                color: colorScheme.primary,
-                              ),
-                        iconSize: 24,
-                        padding: const EdgeInsets.all(8),
+                      ConstrainedBox(
                         constraints: const BoxConstraints(
-                          minWidth: 40,
-                          minHeight: 40,
+                          minWidth: 60,
+                          maxWidth: 100,
+                          minHeight: 36,
+                          maxHeight: 36,
                         ),
-                        style: IconButton.styleFrom(
-                          backgroundColor: colorScheme.primaryContainer,
+                        child: AppButton(
+                          onPressed: _isPosting ? null : _handlePost,
+                          label: _isPosting ? 'Posting...' : 'Post',
+                          type: AppButtonType.filled,
+                          size: AppButtonSize.sm,
                         ),
                       ),
                   ],

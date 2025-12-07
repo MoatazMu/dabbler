@@ -89,7 +89,10 @@ class AppInputField extends StatelessWidget {
           ),
           decoration: InputDecoration(
             hintText: placeholder ?? hintText,
-            hintStyle: TextStyle(color: colorScheme.surface, fontSize: 15),
+            hintStyle: TextStyle(
+              color: colorScheme.onSurface.withOpacity(0.5),
+              fontSize: 15,
+            ),
             helperText: helperText,
             helperStyle: textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,

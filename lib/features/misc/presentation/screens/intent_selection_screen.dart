@@ -165,8 +165,8 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                           'assets/images/dabbler_logo.svg',
                           width: 80,
                           height: 88,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
+                          colorFilter: ColorFilter.mode(
+                            Theme.of(context).colorScheme.onSurface,
                             BlendMode.srcIn,
                           ),
                         ),
@@ -178,8 +178,8 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                           'assets/images/dabbler_text_logo.svg',
                           width: 110,
                           height: 21,
-                          colorFilter: const ColorFilter.mode(
-                            Colors.white,
+                          colorFilter: ColorFilter.mode(
+                            Theme.of(context).colorScheme.onSurface,
                             BlendMode.srcIn,
                           ),
                         ),
@@ -192,7 +192,7 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                       Text(
                         'What is your main goal?',
                         style: AppTypography.headlineMedium.copyWith(
-                          color: Colors.white,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -201,7 +201,9 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                       Text(
                         'Choose how you want to use Dabbler',
                         style: AppTypography.bodyLarge.copyWith(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withOpacity(0.8),
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -234,8 +236,8 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                                   color: Colors.transparent,
                                   border: Border.all(
                                     color: isSelected
-                                        ? const Color(0xFFC18FFF)
-                                        : Colors.white.withOpacity(0.3),
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.outline,
                                     width: isSelected ? 2 : 1.5,
                                   ),
                                   borderRadius: BorderRadius.circular(12),
@@ -246,24 +248,33 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                                       _getIntentIcon(option['icon']!),
                                       size: 24,
                                       color: isSelected
-                                          ? const Color(0xFFC18FFF)
-                                          : Colors.white.withOpacity(0.7),
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.primary
+                                          : Theme.of(context)
+                                                .colorScheme
+                                                .onSurface
+                                                .withOpacity(0.7),
                                     ),
                                     SizedBox(width: AppSpacing.md),
                                     Expanded(
                                       child: Text(
                                         option['title']!,
                                         style: AppTypography.bodyLarge.copyWith(
-                                          color: Colors.white,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
                                           fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ),
                                     if (isSelected)
-                                      const Icon(
+                                      Icon(
                                         Iconsax.tick_circle_copy,
                                         size: 20,
-                                        color: Color(0xFFC18FFF),
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary,
                                       ),
                                   ],
                                 ),

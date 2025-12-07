@@ -432,4 +432,41 @@ class SocialRepository {
 
     return PostModel.fromJson(json);
   }
+
+  // ---------------------------------------------------------------------------
+  // Delete post
+  // ---------------------------------------------------------------------------
+
+  Future<bool> deletePost(String postId) async {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      throw Exception('User not authenticated');
+    }
+
+    // Get the current user's profile ID
+    final profileId = await _getCurrentProfileId();
+    if (profileId == null) {
+      throw Exception('Profile not found');
+    }
+
+    // Verify ownership before deleting
+    final postData = await _client
+        .from('posts')
+        .select('author_profile_id')
+        .eq('id', postId)
+        .maybeSingle();
+
+    if (postData == null) {
+      throw Exception('Post not found');
+    }
+
+    if (postData['author_profile_id'] != profileId) {
+      throw Exception('You can only delete your own posts');
+    }
+
+    // Delete the post (cascade deletes will handle related records)
+    await _client.from('posts').delete().eq('id', postId);
+
+    return true;
+  }
 }

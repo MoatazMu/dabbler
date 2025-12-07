@@ -7,7 +7,6 @@ import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/features/explore/presentation/screens/sports_history_screen.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/core/design_system/widgets/app_card.dart';
-import 'package:dabbler/core/design_system/widgets/app_filter_chip.dart';
 import 'package:dabbler/core/design_system/widgets/app_search_input.dart';
 import 'package:dabbler/core/design_system/ds.dart';
 import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
@@ -83,26 +82,10 @@ class VenueCard extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: AppCard(
         onTap: onTap,
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(0),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Venue icon/image
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Iconsax.building_copy,
-                color: colorScheme.onPrimaryContainer,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 16),
-
             // Venue info
             Expanded(
               child: Column(
@@ -763,9 +746,9 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          const SizedBox(height: 24),
+          // const SizedBox(height: 24),
           _buildTabSwitcher(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 9),
           _buildSearchRow(),
           _buildSportsChips(),
         ],
@@ -1162,7 +1145,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   Widget _buildVenuesTabContent() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
       child: _buildVenuesTab(
         _sports[_selectedSportIndex]['name'],
         _searchQuery,
@@ -1245,36 +1228,48 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final textTheme = Theme.of(context).textTheme;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: TabBar(
         controller: _mainTabController,
-
-        indicatorSize: TabBarIndicatorSize.tab,
-        labelColor: colorScheme.onPrimaryContainer,
-        unselectedLabelColor: colorScheme.onSurfaceVariant,
-        labelStyle: textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
+        indicator: BoxDecoration(
+          color: colorScheme.categorySports.withValues(alpha: 0.2),
+          borderRadius: BorderRadius.circular(10),
         ),
-        unselectedLabelStyle: textTheme.titleMedium?.copyWith(
+        indicatorSize: TabBarIndicatorSize.tab,
+        dividerHeight: 0,
+        labelColor: colorScheme.categorySports,
+        unselectedLabelColor: colorScheme.onSurfaceVariant,
+        labelStyle: textTheme.bodyMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
+        ),
+        unselectedLabelStyle: textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.w500,
+          fontSize: 14,
         ),
         tabs: const [
           Tab(
+            height: 40,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Iconsax.game_copy, size: 20),
-                SizedBox(width: 8),
+                Icon(Iconsax.game_copy, size: 18),
+                SizedBox(width: 6),
                 Text('Games'),
               ],
             ),
           ),
           Tab(
+            height: 40,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Iconsax.building_copy, size: 20),
-                SizedBox(width: 8),
+                Icon(Iconsax.building_copy, size: 18),
+                SizedBox(width: 6),
                 Text('Venues'),
               ],
             ),
@@ -1323,36 +1318,82 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Widget _buildSportsChips() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12),
-      child: Row(
-        children: List.generate(_sports.length, (index) {
-          final sport = _sports[index];
-          final isSelected = _selectedSportIndex == index;
-          return Flexible(
-            flex: 1,
-            child: Padding(
-              padding: EdgeInsets.only(
-                right: index < _sports.length - 1 ? 8 : 0,
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: List.generate(_sports.length, (index) {
+            final sport = _sports[index];
+            final isSelected = _selectedSportIndex == index;
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  _selectedSportIndex = index;
+                });
+              },
+              child: Container(
+                margin: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? colorScheme.categorySports
+                      : colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      sport['icon'] as IconData,
+                      size: 16,
+                      color: isSelected
+                          ? colorScheme.onPrimary
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      sport['name'] as String,
+                      style: textTheme.labelMedium?.copyWith(
+                        color: isSelected
+                            ? colorScheme.onPrimary
+                            : colorScheme.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    if (isSelected && sport['count'] != null) ...[
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          '${sport['count']}',
+                          style: textTheme.labelSmall?.copyWith(
+                            color: colorScheme.onPrimary,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
               ),
-              child: AppFilterChip(
-                icon: sport['icon'] as IconData?,
-                iconColor: sport['color'] as Color?,
-                label: sport['name'],
-                isSelected: isSelected,
-                count: isSelected ? sport['count'] : null,
-                selectedColor: Theme.of(context).colorScheme.categorySports,
-                selectedBorderColor: Colors.transparent,
-                selectedTextColor: Theme.of(context).colorScheme.onSurface,
-                onTap: () {
-                  setState(() {
-                    _selectedSportIndex = index;
-                  });
-                },
-              ),
-            ),
-          );
-        }),
+            );
+          }),
+        ),
       ),
     );
   }
@@ -1534,7 +1575,7 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
             _buildEmptyState()
           else
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 0),
               child: ListView.separated(
                 controller: _scrollController,
                 padding: const EdgeInsets.symmetric(vertical: 0),
