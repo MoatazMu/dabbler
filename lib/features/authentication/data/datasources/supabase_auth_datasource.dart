@@ -16,39 +16,20 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
     required String password,
   }) async {
     try {
-      print(
-        '🔐 [DEBUG] SupabaseAuthDataSource: Attempting sign in for: $email',
-      );
       final response = await client.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
-      print(
-        '🔐 [DEBUG] SupabaseAuthDataSource: Sign in response - user: ${response.user != null}, session: ${response.session != null}',
-      );
-
       // Accept successful session even if user payload is not populated
       if (response.session != null) {
-        print(
-          '✅ [DEBUG] SupabaseAuthDataSource: Valid session found, converting to model',
-        );
         return _convertSessionToModel(response.session!);
       }
       if (response.user == null) {
-        print(
-          '❌ [DEBUG] SupabaseAuthDataSource: No user in response, throwing InvalidCredentialsException',
-        );
         throw InvalidCredentialsException();
       }
-      print(
-        '✅ [DEBUG] SupabaseAuthDataSource: Converting full auth response to model',
-      );
       return _convertAuthResponseToModel(response);
     } on supabase.AuthException catch (e) {
-      print(
-        '❌ [DEBUG] SupabaseAuthDataSource: Supabase auth exception: ${e.message}',
-      );
       if (e.message.contains('Invalid login credentials')) {
         throw InvalidCredentialsException();
       } else if (e.message.contains('Email not confirmed')) {
@@ -57,9 +38,6 @@ class SupabaseAuthDataSource implements AuthRemoteDataSource {
         throw AuthException(e.message);
       }
     } catch (e) {
-      print(
-        '❌ [DEBUG] SupabaseAuthDataSource: General exception during signInWithEmail: $e',
-      );
       throw NetworkException(e.toString());
     }
   }

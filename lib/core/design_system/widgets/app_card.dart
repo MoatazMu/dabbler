@@ -19,17 +19,25 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Material 3 Card uses elevation 0 and surface container colors
-    return Card(
-      elevation: 0, // Material 3 uses color for depth, not elevation
-      color: backgroundColor, // Will use theme's surfaceContainer if null
+    if (backgroundColor != null || elevation != null) {
+      return Card(
+        color: backgroundColor,
+        elevation: elevation ?? 0,
+        child: InkWell(
+          onTap: onTap,
+          child: padding != null
+              ? Padding(padding: padding!, child: child)
+              : child,
+        ),
+      );
+    }
+
+    return Card.filled(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: padding ?? const EdgeInsets.all(0),
-          child: child,
-        ),
+        child: padding != null
+            ? Padding(padding: padding!, child: child)
+            : child,
       ),
     );
   }
@@ -52,11 +60,9 @@ class AppButtonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
 
-    return Card(
-      elevation: 0, // Material 3 uses color for depth
+    return Card.filled(
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
           child: Row(
@@ -98,40 +104,32 @@ class AppActionCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Card(
-      elevation: 0, // Material 3 uses color for depth
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(emoji, style: const TextStyle(fontSize: 22)),
-                  const SizedBox(width: 8),
-                  Text(
-                    title,
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Text(
-                subtitle,
-                style: textTheme.bodySmall?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
+    return ActionChip(
+      avatar: Text(emoji, style: const TextStyle(fontSize: 20)),
+      label: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            title,
+            style: textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
           ),
-        ),
+          Text(
+            subtitle,
+            style: textTheme.bodySmall?.copyWith(
+              fontSize: 11,
+              color: colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
+      onPressed: onTap,
+      backgroundColor: colorScheme.surfaceContainerHighest,
+      side: BorderSide.none,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     );
   }
 }

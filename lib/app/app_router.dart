@@ -133,7 +133,6 @@ class AppRouter {
   ) async {
     if (kDebugMode && _routeLogging) {
       // Compact single-line log
-      debugPrint('🔍 [ROUTER] redirect check -> ${state.matchedLocation}');
     }
 
     try {
@@ -145,11 +144,7 @@ class AppRouter {
       // Also read the full auth state for debugging
       final authState = container.read(simpleAuthProvider);
 
-      if (kDebugMode && _routeLogging) {
-        debugPrint(
-          '🔍 [ROUTER] auth=$isAuthenticated guest=$isGuest loading=${authState.isLoading} error=${authState.error}',
-        );
-      }
+      if (kDebugMode && _routeLogging) {}
 
       // Auth paths: Routes that unauthenticated users can access
       // Includes onboarding screens because email users are unauthenticated during onboarding
@@ -187,17 +182,11 @@ class AppRouter {
       final isOnAuthPage = authPaths.contains(loc);
       final isOnboardingPage = onboardingPaths.contains(loc);
 
-      if (kDebugMode && _routeLogging) {
-        debugPrint(
-          '🔍 [ROUTER] loc=$loc, isOnAuthPage=$isOnAuthPage, authPaths contains: ${authPaths.contains(loc)}',
-        );
-      }
+      if (kDebugMode && _routeLogging) {}
 
       // Don't redirect while auth state is loading
       if (authState.isLoading) {
-        if (kDebugMode && _routeLogging) {
-          debugPrint('🔍 [ROUTER] Auth state loading, staying on current page');
-        }
+        if (kDebugMode && _routeLogging) {}
         return null;
       }
 
@@ -235,27 +224,17 @@ class AppRouter {
               // Google user without profile or not onboarded - redirect to onboarding start
               // Allow them to stay on any onboarding screen (CreateUserInfo, SportsSelection, IntentSelection, SetUsername)
               if (!isOnboardingPage) {
-                if (kDebugMode && _routeLogging) {
-                  debugPrint(
-                    '🔁 [ROUTER] Google user ${profileResponse == null ? "without profile" : "not onboarded"} detected on $loc, redirect -> createUserInfo',
-                  );
-                }
+                if (kDebugMode && _routeLogging) {}
                 return RoutePaths.createUserInfo;
               }
               // Already on onboarding, allow it
-              if (kDebugMode && _routeLogging) {
-                debugPrint(
-                  '🔍 [ROUTER] Google user ${profileResponse == null ? "without profile" : "not onboarded"} already on onboarding: $loc',
-                );
-              }
+              if (kDebugMode && _routeLogging) {}
               return null;
             }
           }
         }
       } catch (e) {
-        if (kDebugMode && _routeLogging) {
-          debugPrint('⚠️ [ROUTER] Error checking Google user profile: $e');
-        }
+        if (kDebugMode && _routeLogging) {}
         // Continue with normal flow if check fails
       }
 
@@ -263,15 +242,11 @@ class AppRouter {
       if (!isAuthenticated) {
         // If not on an auth page, redirect to landing page first
         if (!isOnAuthPage) {
-          if (kDebugMode && _routeLogging) {
-            debugPrint('🔁 [ROUTER] redirect -> ${RoutePaths.landing}');
-          }
+          if (kDebugMode && _routeLogging) {}
           return RoutePaths.landing;
         }
         // Stay on auth page
-        if (kDebugMode && _routeLogging) {
-          debugPrint('🔍 [ROUTER] Staying on auth page: $loc');
-        }
+        if (kDebugMode && _routeLogging) {}
         return null;
       }
 
@@ -292,17 +267,11 @@ class AppRouter {
 
           if (profileResponse == null || !isOnboarded) {
             // User not onboarded - redirect to onboarding
-            if (kDebugMode && _routeLogging) {
-              debugPrint(
-                '🔁 [ROUTER] User ${profileResponse == null ? "without profile" : "not onboarded"}, redirect -> createUserInfo',
-              );
-            }
+            if (kDebugMode && _routeLogging) {}
             return RoutePaths.createUserInfo;
           }
         } catch (e) {
-          if (kDebugMode && _routeLogging) {
-            debugPrint('⚠️ [ROUTER] Error checking onboard status: $e');
-          }
+          if (kDebugMode && _routeLogging) {}
           // Continue with normal flow if check fails
         }
       }
@@ -334,27 +303,17 @@ class AppRouter {
             // If no profile exists or not onboarded, user needs to complete onboarding
             if (profileResponse == null || !isOnboarded) {
               // Redirect to onboarding start
-              if (kDebugMode && _routeLogging) {
-                debugPrint(
-                  '🔁 [ROUTER] Authenticated user ${profileResponse == null ? "without profile" : "not onboarded"} on auth page, redirect -> createUserInfo',
-                );
-              }
+              if (kDebugMode && _routeLogging) {}
               return RoutePaths.createUserInfo;
             }
           }
         } catch (e) {
-          if (kDebugMode && _routeLogging) {
-            debugPrint('⚠️ [ROUTER] Error checking profile: $e');
-          }
+          if (kDebugMode && _routeLogging) {}
           // If check fails, proceed with normal redirect
         }
 
         // User has completed onboarding - redirect to home
-        if (kDebugMode && _routeLogging) {
-          debugPrint(
-            '🔁 [ROUTER] ✅ Authenticated user onboarded, redirect -> home',
-          );
-        }
+        if (kDebugMode && _routeLogging) {}
         return RoutePaths.home;
       }
 
@@ -381,32 +340,20 @@ class AppRouter {
 
             // If no profile exists or not onboarded, redirect to onboarding
             if (profileResponse == null || !isOnboarded) {
-              if (kDebugMode && _routeLogging) {
-                debugPrint(
-                  '🔁 [ROUTER] Authenticated user ${profileResponse == null ? "without profile" : "not onboarded"} on protected route, redirect -> createUserInfo',
-                );
-              }
+              if (kDebugMode && _routeLogging) {}
               return RoutePaths.createUserInfo;
             }
           }
         } catch (e) {
-          if (kDebugMode && _routeLogging) {
-            debugPrint(
-              '⚠️ [ROUTER] Error checking profile on protected route: $e',
-            );
-          }
+          if (kDebugMode && _routeLogging) {}
           // If check fails, allow access (better UX than blocking)
         }
       }
 
-      if (kDebugMode && _routeLogging) {
-        debugPrint('🔍 [ROUTER] No redirect needed for: $loc');
-      }
+      if (kDebugMode && _routeLogging) {}
       return null;
     } catch (e) {
-      if (kDebugMode && _routeLogging) {
-        debugPrint('❌ [ROUTER] Error in redirect logic: $e');
-      }
+      if (kDebugMode && _routeLogging) {}
       return null;
     }
   }
@@ -1201,16 +1148,21 @@ class AppRouter {
     ),
 
     GoRoute(
-      path: RoutePaths.socialChat,
+      path: '${RoutePaths.socialChat}/:conversationId',
       name: RouteNames.socialChat,
       redirect: (context, state) {
         if (!FeatureFlags.messaging) return RoutePaths.home;
         return null;
       },
-      pageBuilder: (context, state) => FadeThroughTransitionPage(
-        key: state.pageKey,
-        child: const _PlaceholderScreen(title: 'Chat'),
-      ),
+      pageBuilder: (context, state) {
+        final conversationId = state.pathParameters['conversationId'] ?? '';
+        return FadeThroughTransitionPage(
+          key: state.pageKey,
+          child: _PlaceholderScreen(
+            title: 'Chat: ${conversationId.substring(0, 8)}...',
+          ),
+        );
+      },
     ),
 
     GoRoute(

@@ -16,10 +16,10 @@ class SportProfileTier {
       id: json['id'] as String? ?? '',
       key: json['key'] as String? ?? json['tier_key'] as String? ?? '',
       minLevel: _readDouble(json['min_level'] ?? json['minLevel']),
-      colorPrimary:
-          _readString(json['color_primary'] ?? json['colorPrimary']),
-      colorSecondary:
-          _readString(json['color_secondary'] ?? json['colorSecondary']),
+      colorPrimary: _readString(json['color_primary'] ?? json['colorPrimary']),
+      colorSecondary: _readString(
+        json['color_secondary'] ?? json['colorSecondary'],
+      ),
       iconUrl: _readString(json['icon_url'] ?? json['iconUrl']),
     );
   }

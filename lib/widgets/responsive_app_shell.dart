@@ -24,8 +24,9 @@ class ResponsiveAppShell extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final bool clampWidth = constraints.maxWidth > maxContentWidth;
-        final double targetWidth =
-            clampWidth ? maxContentWidth : constraints.maxWidth;
+        final double targetWidth = clampWidth
+            ? maxContentWidth
+            : constraints.maxWidth;
 
         Widget content;
 
@@ -36,9 +37,7 @@ class ResponsiveAppShell extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
               child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: targetWidth,
-                ),
+                constraints: BoxConstraints(maxWidth: targetWidth),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(38),
                   boxShadow: [

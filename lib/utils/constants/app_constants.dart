@@ -2,7 +2,7 @@
 class AppConstants {
   // App Information
   static const String appName = 'Dabbler';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.0.5';
   static const int buildNumber = 1;
 
   // Animation Durations

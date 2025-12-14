@@ -394,8 +394,9 @@ class GameCreationViewModel extends ChangeNotifier {
 
     try {
       // Build select columns
-      String selectColumns = 'id,name_en,address_line1,city,amenities,is_active,lat,lng,is_indoor,surface_type,min_price_per_hour,max_price_per_hour,rating,rating_count';
-      
+      String selectColumns =
+          'id,name_en,address_line1,city,amenities,is_active,lat,lng,is_indoor,surface_type,min_price_per_hour,max_price_per_hour,rating,rating_count';
+
       // Add venue_spaces join if sport filter is needed
       if (_state.selectedSport != null) {
         selectColumns += ',venue_spaces(sport,is_active)';
@@ -418,14 +419,15 @@ class GameCreationViewModel extends ChangeNotifier {
         _availableVenues = response
             .map((raw) {
               final venueData = Map<String, dynamic>.from(raw as Map);
-              
+
               // Filter by sport if selected (client-side filter on venue_spaces)
               if (_state.selectedSport != null) {
                 final spaces = venueData['venue_spaces'];
                 if (spaces is List) {
                   final hasSportSpace = spaces.any((space) {
                     if (space is Map<String, dynamic>) {
-                      return space['sport'] == _state.selectedSport?.toLowerCase() &&
+                      return space['sport'] ==
+                              _state.selectedSport?.toLowerCase() &&
                           (space['is_active'] ?? true);
                     }
                     return false;
@@ -438,7 +440,9 @@ class GameCreationViewModel extends ChangeNotifier {
               }
 
               // Create VenueSlot from database data
-              final tomorrow = _state.selectedDate ?? DateTime.now().add(const Duration(days: 1));
+              final tomorrow =
+                  _state.selectedDate ??
+                  DateTime.now().add(const Duration(days: 1));
               final startAt = DateTime(
                 tomorrow.year,
                 tomorrow.month,
@@ -472,7 +476,9 @@ class GameCreationViewModel extends ChangeNotifier {
                 timeSlot: TimeSlot(
                   startTime: startAt,
                   duration: Duration(minutes: _state.gameDuration ?? 90),
-                  price: (venueData['min_price_per_hour'] as num?)?.toDouble() ?? 0.0,
+                  price:
+                      (venueData['min_price_per_hour'] as num?)?.toDouble() ??
+                      0.0,
                 ),
                 amenities: amenitiesMap,
               );
@@ -486,9 +492,7 @@ class GameCreationViewModel extends ChangeNotifier {
       _state = _state.copyWith(isLoading: false, error: null);
       // Debug: log count to help diagnose empty lists
       // ignore: avoid_print
-      print('✅ loadAvailableVenues: loaded ${_availableVenues.length} venues');
     } catch (e) {
-      print('❌ Error loading venues: $e');
       _state = _state.copyWith(
         isLoading: false,
         error: 'Failed to load venues: $e',
@@ -668,7 +672,9 @@ class GameCreationViewModel extends ChangeNotifier {
       );
 
       if (!cooldownResult.allowed) {
-        final resetTime = DateFormat('MMM d, HH:mm').format(cooldownResult.resetAt);
+        final resetTime = DateFormat(
+          'MMM d, HH:mm',
+        ).format(cooldownResult.resetAt);
         throw Exception(
           'You\'ve reached the game creation limit. You can create another game at $resetTime. '
           'Remaining: ${cooldownResult.remaining} games.',
@@ -726,20 +732,12 @@ class GameCreationViewModel extends ChangeNotifier {
         hostProfileId: profileId,
       );
 
-      print('🎮 Creating game with data: $gameData');
-
       // Create game via repository
       final result = await _gamesRepository.createGame(gameData);
 
-      result.fold(
-        (failure) {
-          print('❌ Failed to create game: ${failure.message}');
-          throw Exception(failure.message);
-        },
-        (game) {
-          print('✅ Game created successfully with ID: ${game.id}');
-        },
-      );
+      result.fold((failure) {
+        throw Exception(failure.message);
+      }, (game) {});
 
       // If this was a draft, delete it after successful creation
       if (_state.isDraft && _state.draftId != null) {
@@ -749,9 +747,7 @@ class GameCreationViewModel extends ChangeNotifier {
       _state = _state.copyWith(isLoading: false);
       notifyListeners();
       return true;
-    } catch (e, stackTrace) {
-      print('❌ Exception in createGame: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       _state = _state.copyWith(
         isLoading: false,
         error: 'Failed to create game: $e',

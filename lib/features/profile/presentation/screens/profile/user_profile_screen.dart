@@ -10,14 +10,17 @@ import 'package:dabbler/data/models/profile/profile_statistics.dart';
 import 'package:dabbler/themes/app_theme.dart';
 import '../../../../../utils/constants/route_constants.dart';
 import '../../widgets/profile/player_sport_profile_header.dart';
+import 'package:dabbler/data/repositories/friends_repository_impl.dart';
+import 'package:dabbler/features/misc/data/datasources/supabase_remote_data_source.dart';
+import 'package:dabbler/features/misc/data/datasources/supabase_error_mapper.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:dabbler/core/fp/result.dart';
+import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   final String userId;
 
-  const UserProfileScreen({
-    super.key,
-    required this.userId,
-  });
+  const UserProfileScreen({super.key, required this.userId});
 
   @override
   ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -100,8 +103,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
     final profileState = ref.watch(profileControllerProvider);
     final sportsState = ref.watch(sportsProfileControllerProvider);
     final colorScheme = Theme.of(context).colorScheme;
-    final sportProfileHeaderAsync =
-        ref.watch(sportProfileHeaderProvider(widget.userId));
+    final sportProfileHeaderAsync = ref.watch(
+      sportProfileHeaderProvider(widget.userId),
+    );
 
     // Show loading state
     if (profileState.isLoading) {
@@ -121,11 +125,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.error_outline,
-                  size: 64,
-                  color: colorScheme.error,
-                ),
+                Icon(Icons.error_outline, size: 64, color: colorScheme.error),
                 const SizedBox(height: 16),
                 Text(
                   'Profile not found',
@@ -135,8 +135,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                 Text(
                   profileState.errorMessage ?? 'Unable to load profile',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
@@ -152,64 +152,31 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
       );
     }
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _onRefresh,
-          color: colorScheme.primary,
-          child: CustomScrollView(
-            physics: const AlwaysScrollableScrollPhysics(
-              parent: BouncingScrollPhysics(),
-            ),
-            slivers: [
-              // Header
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                sliver: SliverToBoxAdapter(child: _buildHeader(context)),
-              ),
-              // Profile Hero Card
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _buildProfileHeroCard(
-                    context,
-                    profileState,
-                    sportsState,
-                  ),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _buildSportProfileHeaderSection(
-                    context,
-                    sportProfileHeaderAsync,
-                  ),
-                ),
-              ),
-              // Content
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 48),
-                sliver: SliverToBoxAdapter(
-                  child: FadeTransition(
-                    opacity: _fadeAnimation,
-                    child: SlideTransition(
-                      position: _slideAnimation,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _buildActionButtons(context),
-                          const SizedBox(height: 24),
-                          _buildBasicInfo(context, profileState),
-                          _buildSportsProfiles(context, sportsState),
-                          _buildStatisticsSummary(context, profileState),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+    return TwoSectionLayout(
+      category: 'social',
+      onRefresh: _onRefresh,
+      topSection: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(context),
+          const SizedBox(height: 24),
+          _buildProfileHeroCard(context, profileState, sportsState),
+          const SizedBox(height: 16),
+          _buildSportProfileHeaderSection(context, sportProfileHeaderAsync),
+        ],
+      ),
+      bottomSection: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildActionButtons(context),
+              const SizedBox(height: 24),
+              _buildBasicInfo(context, profileState),
+              _buildSportsProfiles(context, sportsState),
+              _buildStatisticsSummary(context, profileState),
             ],
           ),
         ),
@@ -224,15 +191,16 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
     return Row(
       children: [
         IconButton.filledTonal(
-          onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
+          onPressed: () =>
+              context.canPop() ? context.pop() : context.go('/home'),
           icon: const Icon(Icons.arrow_back_rounded),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
+            backgroundColor: colorScheme.categorySocial.withValues(alpha: 0.0),
             foregroundColor: colorScheme.onSurface,
             minimumSize: const Size(48, 48),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,12 +215,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
             ],
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         IconButton.filledTonal(
           onPressed: () => _showMoreOptions(context),
           icon: const Icon(Icons.more_vert),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
+            backgroundColor: colorScheme.categorySocial.withValues(alpha: 0.0),
             foregroundColor: colorScheme.onSurface,
             minimumSize: const Size(48, 48),
           ),
@@ -275,7 +243,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF),
+        color: isDarkMode
+            ? Colors.white.withOpacity(0.1)
+            : Colors.white.withOpacity(0.6),
         borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
@@ -500,7 +470,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
             ),
             const SizedBox(height: 16),
             if (profile?.email?.isNotEmpty == true)
-              _buildInfoRow(context, Icons.email_outlined, profile!.email ?? ''),
+              _buildInfoRow(
+                context,
+                Icons.email_outlined,
+                profile!.email ?? '',
+              ),
             if (profile?.phoneNumber?.isNotEmpty == true)
               _buildInfoRow(
                 context,
@@ -856,9 +830,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: colorScheme.outline.withOpacity(0.2),
-        ),
+        border: Border.all(color: colorScheme.outline.withOpacity(0.2)),
       ),
       child: Row(
         children: [
@@ -869,10 +841,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
               color: colorScheme.primary.withOpacity(0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(
-              Icons.sports_soccer,
-              color: colorScheme.primary,
-            ),
+            child: Icon(Icons.sports_soccer, color: colorScheme.primary),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -970,22 +939,140 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
   }
 
   void _sendMessage(BuildContext context) {
-    // TODO: Implement message functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Message functionality coming soon')),
+    final userId = widget.userId;
+    context.push('${RoutePaths.socialChat}/$userId');
+  }
+
+  void _addFriend(BuildContext context) async {
+    try {
+      final client = Supabase.instance.client;
+      final errorMapper = SupabaseErrorMapper();
+      final supabaseService = SupabaseService(client, errorMapper);
+      final friendsRepo = FriendsRepositoryImpl(supabaseService);
+
+      final result = await friendsRepo.sendFriendRequest(widget.userId);
+
+      if (mounted) {
+        switch (result) {
+          case Ok():
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Friend request sent')),
+            );
+          case Err(:final error):
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Failed: ${error.message}')));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  Future<void> _blockUser(BuildContext context) async {
+    try {
+      final client = Supabase.instance.client;
+      final errorMapper = SupabaseErrorMapper();
+      final supabaseService = SupabaseService(client, errorMapper);
+      final friendsRepo = FriendsRepositoryImpl(supabaseService);
+
+      final result = await friendsRepo.blockUser(widget.userId);
+
+      if (mounted) {
+        switch (result) {
+          case Ok():
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('User blocked')));
+          case Err(:final error):
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Failed: ${error.message}')));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+
+  void _reportUser(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Report User'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Why are you reporting this user?'),
+            const SizedBox(height: 16),
+            ...[
+              'Harassment',
+              'Spam',
+              'Inappropriate content',
+              'Hate speech',
+              'Other',
+            ].map(
+              (reason) => ListTile(
+                title: Text(reason),
+                onTap: () {
+                  Navigator.pop(context);
+                  _submitUserReport(context, reason);
+                },
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
     );
   }
 
-  void _addFriend(BuildContext context) {
-    // TODO: Implement add friend functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Add friend functionality coming soon')),
-    );
+  Future<void> _submitUserReport(BuildContext context, String reason) async {
+    try {
+      final client = Supabase.instance.client;
+
+      await client.from('reports').insert({
+        'reporter_id': client.auth.currentUser?.id,
+        'reported_user_id': widget.userId,
+        'reason': reason,
+        'target_type': 'user',
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Report submitted')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to submit report: $e')));
+      }
+    }
   }
 
   void _showMoreOptions(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     showModalBottomSheet(
       context: context,
+      backgroundColor: colorScheme.surface,
       builder: (context) => Container(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -994,12 +1081,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
             ListTile(
               leading: const Icon(Icons.block_outlined),
               title: const Text('Block user'),
-              onTap: () {
+              onTap: () async {
                 Navigator.pop(context);
-                // TODO: Implement block functionality
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Block functionality coming soon')),
-                );
+                await _blockUser(context);
               },
             ),
             ListTile(
@@ -1007,10 +1091,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
               title: const Text('Report user'),
               onTap: () {
                 Navigator.pop(context);
-                // TODO: Implement report functionality
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Report functionality coming soon')),
-                );
+                _reportUser(context);
               },
             ),
           ],
@@ -1031,4 +1112,3 @@ class _HeroStat {
     required this.icon,
   });
 }
-

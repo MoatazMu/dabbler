@@ -16,9 +16,9 @@ import 'package:path/path.dart' as path;
 class Logger {
   static void info(String message) => debugPrint('[INFO] $message');
   static void error(String message, [dynamic error]) =>
-      debugPrint('[ERROR] $message: $error');
+      debugPrint('[ERROR] $message${error != null ? ': $error' : ''}');
   static void warning(String message, [dynamic error]) =>
-      debugPrint('[WARNING] $message: $error');
+      debugPrint('[WARNING] $message${error != null ? ': $error' : ''}');
   static void debug(String message) => debugPrint('[DEBUG] $message');
 }
 
@@ -1627,10 +1627,6 @@ Last Updated: ${DateTime.now().toIso8601String()}
       //     'expires_at': request.expiresAt,
       //   },
       // );
-
-      debugPrint(
-        'GDPR Export Complete Email would be sent to: ${request.userEmail}',
-      );
     } catch (e) {
       Logger.error('$_logTag: Error sending completion email', e);
     }
@@ -1646,10 +1642,6 @@ Last Updated: ${DateTime.now().toIso8601String()}
       );
 
       // Placeholder for error email sending
-      debugPrint(
-        'GDPR Export Error Email would be sent to: ${request.userEmail}',
-      );
-      debugPrint('Error: $error');
     } catch (e) {
       Logger.error('$_logTag: Error sending error email', e);
     }

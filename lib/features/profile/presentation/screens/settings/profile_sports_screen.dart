@@ -10,11 +10,8 @@ import '../../../../../utils/constants/route_constants.dart';
 /// Screen for managing user's sports and game preferences
 class ProfileSportsScreen extends ConsumerStatefulWidget {
   final String? profileType; // 'player' or 'organiser'
-  
-  const ProfileSportsScreen({
-    super.key,
-    this.profileType,
-  });
+
+  const ProfileSportsScreen({super.key, this.profileType});
 
   @override
   ConsumerState<ProfileSportsScreen> createState() =>
@@ -31,7 +28,7 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
 
   // User's sport preferences - will be loaded from database
   Map<String, SportPreference> _sportPreferences = {};
-  
+
   // Current profile type being managed
   String? _currentProfileType;
 
@@ -78,7 +75,7 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
 
       // Determine profile type to use
       String profileType = _currentProfileType ?? 'player';
-      
+
       // If profile type not provided, try to detect from current profile
       if (_currentProfileType == null) {
         final currentProfile = await supabase
@@ -88,12 +85,14 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
             .order('created_at', ascending: true)
             .limit(1)
             .maybeSingle();
-        
+
         if (currentProfile != null) {
-          profileType = (currentProfile['profile_type'] as String?)?.toLowerCase() ?? 'player';
+          profileType =
+              (currentProfile['profile_type'] as String?)?.toLowerCase() ??
+              'player';
         }
       }
-      
+
       _currentProfileType = profileType;
 
       // Fetch profile_id for the specific profile type
@@ -121,8 +120,11 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
             .eq('profile_id', profileId);
 
         for (final sportData in response as List) {
-          final sportKey = (sportData['sport'] as String? ?? sportData['sport_key'] as String? ?? '')
-              .toLowerCase();
+          final sportKey =
+              (sportData['sport'] as String? ??
+                      sportData['sport_key'] as String? ??
+                      '')
+                  .toLowerCase();
           if (sportKey.isEmpty) continue;
 
           preferences[sportKey] = SportPreference(
@@ -146,7 +148,7 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
 
           // For organisers, we don't have skill level, but we can use organiser_level
           final organiserLevel = sportData['organiser_level'] as int? ?? 1;
-          
+
           preferences[sportKey] = SportPreference(
             name: _formatSportName(sportKey),
             icon: _getSportIcon(sportKey),
@@ -470,7 +472,7 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
               });
               return;
             }
-            
+
             // If disabling, show confirmation and validate
             final confirmed = await _showRemoveConfirmation(sportKey);
             if (confirmed && mounted) {
@@ -655,7 +657,7 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
 
       // Determine profile type
       final profileType = _currentProfileType ?? 'player';
-      
+
       // Get profile_id for the specific profile type
       final profileResponse = await supabase
           .from('profiles')
@@ -694,7 +696,8 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
             'profile_id': profileId,
             'sport': sportKey,
             'skill_level': _skillLevelToInt(entry.value.skillLevel),
-            if (entry.value.preferredPosition != null && entry.value.preferredPosition!.isNotEmpty)
+            if (entry.value.preferredPosition != null &&
+                entry.value.preferredPosition!.isNotEmpty)
               'primary_position': entry.value.preferredPosition,
           };
         }).toList();
@@ -702,7 +705,9 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
         await supabase.from('sport_profiles').insert(sportsData);
 
         // Refresh sports profiles in the controller
-        final sportsController = ref.read(sportsProfileControllerProvider.notifier);
+        final sportsController = ref.read(
+          sportsProfileControllerProvider.notifier,
+        );
         await sportsController.loadSportsProfiles(userId, profileId: profileId);
       } else if (profileType == 'organiser') {
         // Delete all existing organiser_profiles for this profile
@@ -715,7 +720,9 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
         final organiserData = enabledSports.map((entry) {
           final sportKey = entry.key.toLowerCase();
           // Convert skill level back to organiser level (1-10)
-          final organiserLevel = _skillLevelToOrganiserLevel(entry.value.skillLevel);
+          final organiserLevel = _skillLevelToOrganiserLevel(
+            entry.value.skillLevel,
+          );
           return {
             'profile_id': profileId,
             'sport': sportKey,
@@ -730,8 +737,13 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
         await supabase.from('organiser_profiles').insert(organiserData);
 
         // Refresh organiser profiles in the controller
-        final organiserController = ref.read(organiserProfileControllerProvider.notifier);
-        await organiserController.loadOrganiserProfiles(userId, profileId: profileId);
+        final organiserController = ref.read(
+          organiserProfileControllerProvider.notifier,
+        );
+        await organiserController.loadOrganiserProfiles(
+          userId,
+          profileId: profileId,
+        );
       }
 
       // Also update the user's preferred sport in the profiles table
@@ -798,24 +810,26 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
         return 10;
     }
   }
-  
+
   bool _canRemoveSport(String sportKey) {
     // Check if this is the last enabled sport
-    final enabledCount = _sportPreferences.values.where((p) => p.isEnabled).length;
+    final enabledCount = _sportPreferences.values
+        .where((p) => p.isEnabled)
+        .length;
     final currentSport = _sportPreferences[sportKey];
-    
+
     // Can't remove if it's the last enabled sport
     if (enabledCount <= 1 && currentSport?.isEnabled == true) {
       return false;
     }
-    
+
     return true;
   }
-  
+
   Future<bool> _showRemoveConfirmation(String sportKey) async {
     final sportName = _formatSportName(sportKey);
     final canRemove = _canRemoveSport(sportKey);
-    
+
     if (!canRemove) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -827,27 +841,30 @@ class _ProfileSportsScreenState extends ConsumerState<ProfileSportsScreen>
       }
       return false;
     }
-    
+
     return await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Remove $sportName?'),
-        content: Text('Are you sure you want to remove $sportName from your profile?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Remove $sportName?'),
+            content: Text(
+              'Are you sure you want to remove $sportName from your profile?',
             ),
-            child: const Text('Remove'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: TextButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                ),
+                child: const Text('Remove'),
+              ),
+            ],
           ),
-        ],
-      ),
-    ) ?? false;
+        ) ??
+        false;
   }
 }
 

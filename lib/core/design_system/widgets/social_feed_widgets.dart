@@ -177,7 +177,10 @@ class SocialFeedPost extends StatelessWidget {
             : null,
       ),
       child: avatarUrl == null
-          ? Icon(Icons.person, color: Theme.of(context).colorScheme.onSurfaceVariant)
+          ? Icon(
+              Icons.person,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            )
           : null,
     );
   }

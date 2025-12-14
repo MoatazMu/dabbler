@@ -358,16 +358,19 @@ final vibesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
 
 /// Provider for vibes assigned to a specific post
 final postVibesProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, postId) async {
-  final socialService = SocialService();
-  return socialService.getPostVibes(postId);
-});
+    FutureProvider.family<List<Map<String, dynamic>>, String>((
+      ref,
+      postId,
+    ) async {
+      final socialService = SocialService();
+      return socialService.getPostVibes(postId);
+    });
 
 /// Helper function to transform a comment with nested replies
 _CommentData _transformComment(Map<String, dynamic> comment) {
   final profile = comment['profiles'];
   final replies = comment['replies'] as List<dynamic>? ?? [];
-  
+
   return _CommentData(
     id: comment['id'],
     authorId: comment['author_user_id'],
@@ -382,7 +385,9 @@ _CommentData _transformComment(Map<String, dynamic> comment) {
     ),
     likesCount: comment['likes_count'] ?? comment['like_count'] ?? 0,
     isLiked: comment['is_liked'] == true || comment['user_has_liked'] == true,
-    replies: replies.map((reply) => _transformComment(reply as Map<String, dynamic>)).toList(),
+    replies: replies
+        .map((reply) => _transformComment(reply as Map<String, dynamic>))
+        .toList(),
   );
 }
 
@@ -426,9 +431,13 @@ final postLikesProvider = FutureProvider.family<List<dynamic>, String>((
   ref,
   postId,
 ) async {
-  // TODO: Implement actual database fetch for post likes
-  // For now, return empty list (likes feature not in MVP phase)
-  return [];
+  try {
+    final socialService = SocialService();
+    final likes = await socialService.getPostLikes(postId);
+    return likes;
+  } catch (e) {
+    return [];
+  }
 });
 
 /// Provider for current user ID - connected to auth service

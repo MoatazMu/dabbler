@@ -45,19 +45,26 @@ final circleFeedStreamProvider = StreamProvider.autoDispose
     });
 
 final friendInboxProvider =
-    FutureProvider.autoDispose<Result<List<Map<String, dynamic>>, Failure>>((ref) {
+    FutureProvider.autoDispose<Result<List<Map<String, dynamic>>, Failure>>((
+      ref,
+    ) {
       final repo = ref.watch(circleRepositoryProvider);
       return repo.friendRequestsInbox();
     });
 
 final friendOutboxProvider =
-    FutureProvider.autoDispose<Result<List<Map<String, dynamic>>, Failure>>((ref) {
+    FutureProvider.autoDispose<Result<List<Map<String, dynamic>>, Failure>>((
+      ref,
+    ) {
       final repo = ref.watch(circleRepositoryProvider);
       return repo.friendRequestsOutbox();
     });
 
 final squadCardsProvider = FutureProvider.autoDispose
-    .family<Result<List<Map<String, dynamic>>, Failure>, SquadCardsArgs>((ref, args) {
+    .family<Result<List<Map<String, dynamic>>, Failure>, SquadCardsArgs>((
+      ref,
+      args,
+    ) {
       final repo = ref.watch(circleRepositoryProvider);
       return repo.squadCards(
         squadId: args.squadId,
@@ -67,7 +74,10 @@ final squadCardsProvider = FutureProvider.autoDispose
     });
 
 final squadDetailProvider = FutureProvider.autoDispose
-    .family<Result<List<Map<String, dynamic>>, Failure>, String>((ref, squadId) {
+    .family<Result<List<Map<String, dynamic>>, Failure>, String>((
+      ref,
+      squadId,
+    ) {
       final repo = ref.watch(circleRepositoryProvider);
       return repo.squadDetail(squadId);
     });

@@ -40,15 +40,10 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     bool ascending = true,
   }) async {
     try {
-      print('🔍 [DEBUG] getVenues called with filters: $filters');
-
       final cacheKey = 'venues_${filters.hashCode}_${page}_$limit';
 
       // Check cache first
       if (_isCacheValid(cacheKey)) {
-        print(
-          '📦 [DEBUG] Returning ${_listCache[cacheKey]!.length} venues from cache',
-        );
         return _listCache[cacheKey]!;
       }
 
@@ -90,10 +85,7 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           ) // Use name_en for alphabetical sorting
           .range((page - 1) * limit, page * limit - 1);
 
-      print('✅ [DEBUG] Fetched ${response.length} venues from database');
-      if (response.isNotEmpty) {
-        print('📍 [DEBUG] First venue ID: ${response.first['id']}');
-      }
+      if (response.isNotEmpty) {}
 
       var venues = response
           .map<VenueModel>((json) => VenueModel.fromJson(json))
@@ -105,16 +97,21 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
         if (sports != null) {
           final sportList = sports is List ? sports : [sports];
           venues = venues.where((venue) {
-            return venue.supportedSports.any((sport) =>
-                sportList.any((filterSport) =>
-                    sport.toLowerCase() == filterSport.toString().toLowerCase()));
+            return venue.supportedSports.any(
+              (sport) => sportList.any(
+                (filterSport) =>
+                    sport.toLowerCase() == filterSport.toString().toLowerCase(),
+              ),
+            );
           }).toList();
         }
-        
+
         // Filter by rating if provided
         if (filters['min_rating'] != null) {
           final minRating = filters['min_rating'] as num;
-          venues = venues.where((venue) => venue.rating >= minRating.toDouble()).toList();
+          venues = venues
+              .where((venue) => venue.rating >= minRating.toDouble())
+              .toList();
         }
       }
 
@@ -122,21 +119,15 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
       _listCache[cacheKey] = venues;
       _cacheTimestamps[cacheKey] = DateTime.now();
 
-      print('🎯 [DEBUG] Returning ${venues.length} parsed venues');
       return venues;
     } on PostgrestException catch (e) {
-      print('❌ [ERROR] PostgrestException: ${e.message}, code: ${e.code}');
-
       // Handle RLS infinite recursion error gracefully (code 42P17)
       if (e.code == '42P17') {
-        print('⚠️ [ERROR] RLS infinite recursion in venue_members policy');
-        print('⚠️ [ERROR] Returning empty venues list until RLS is fixed');
         return [];
       }
 
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {
-      print('❌ [ERROR] Failed to get venues: $e');
       throw VenueServerException('Failed to get venues: ${e.toString()}');
     }
   }
@@ -495,9 +486,7 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
         'update_venue_average_rating',
         params: {'venue_id': venueId},
       );
-    } catch (e) {
-      print('Failed to update venue average rating: $e');
-    }
+    } catch (e) {}
   }
 
   @override

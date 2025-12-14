@@ -13,10 +13,6 @@ class AppBackground extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final color = isDark ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
 
-    return IgnorePointer(
-      child: Container(
-        color: color,
-      ),
-    );
+    return IgnorePointer(child: Container(color: color));
   }
 }

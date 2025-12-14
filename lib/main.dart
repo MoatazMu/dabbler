@@ -4,14 +4,24 @@ import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import 'package:dabbler/core/design_system/tokens/token_based_theme.dart';
 import 'package:dabbler/core/services/theme_service.dart';
-import 'package:dabbler/core/services/location_service.dart';
+import 'package:dabbler/core/services/app_lifecycle_manager.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'app/app_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'widgets/responsive_app_shell.dart';
-import 'services/notifications/push_notification_service.dart';
+
+// Top-level background message handler for Firebase
+// This function must be a top-level function (not in a class)
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Handle background messages here
+  // You can show local notifications, update badge counts, etc.
+  // Note: Avoid heavy processing here
+  debugPrint('Background message received: ${message.messageId}');
+}
 
 // Feature flags for future functionality
 class AppFeatures {
@@ -55,9 +65,16 @@ Future<void> main() async {
   try {
     await Environment.load();
 
-    // Initialize theme and location services before running the app
+    // Register background message handler (must be before Firebase.initializeApp)
+    if (!kIsWeb) {
+      FirebaseMessaging.onBackgroundMessage(
+        _firebaseMessagingBackgroundHandler,
+      );
+    }
+
+    // Initialize theme service before running the app
+    // Location service is now initialized on-demand in sports screen
     await ThemeService().init();
-    await LocationService().init();
 
     final anonKey = Environment.supabaseAnonKey;
 
@@ -76,11 +93,8 @@ Future<void> main() async {
       ),
     );
 
-    // Initialize push notifications & request OS permissions if enabled
+    // Push notification service is now initialized on-demand in home screen
     // On web, this will be a no-op to avoid Firebase Messaging web compatibility issues
-    if (FeatureFlags.enablePushNotifications) {
-      await PushNotificationService.instance.init();
-    }
 
     // Log the Supabase authorization token (JWT) after initialization and sign-in
     final authService = Supabase.instance.client.auth;
@@ -88,15 +102,13 @@ Future<void> main() async {
     final accessToken = session?.accessToken;
     if (accessToken != null) {
       // Use debugPrint for logging in development
-      debugPrint('Supabase Authorization Token: $accessToken');
-    } else {
-      debugPrint(
-        'No Supabase Authorization Token found. User may not be signed in.',
-      );
-    }
+    } else {}
 
     // Log feature flags snapshot once per session
     _logFlagsOnce();
+
+    // Initialize app lifecycle manager
+    AppLifecycleManager().init();
 
     runApp(const ProviderScope(child: MyApp()));
   } catch (e) {

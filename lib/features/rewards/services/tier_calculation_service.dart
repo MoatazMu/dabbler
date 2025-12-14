@@ -344,10 +344,7 @@ class TierCalculationService extends ChangeNotifier {
 
       _isInitialized = true;
       notifyListeners();
-
-      debugPrint('TierCalculationService initialized for user: $userId');
     } catch (e) {
-      debugPrint('Error initializing TierCalculationService: $e');
       rethrow;
     }
   }
@@ -395,7 +392,6 @@ class TierCalculationService extends ChangeNotifier {
 
       return projection;
     } catch (e) {
-      debugPrint('Error getting tier projection: $e');
       rethrow;
     }
   }
@@ -427,7 +423,6 @@ class TierCalculationService extends ChangeNotifier {
 
       return benefits;
     } catch (e) {
-      debugPrint('Error getting user benefits: $e');
       return [];
     }
   }
@@ -446,10 +441,7 @@ class TierCalculationService extends ChangeNotifier {
       _projectionCache.remove(userId);
 
       notifyListeners();
-
-      debugPrint('Applied ${benefits.length} benefits for tier: ${tier.name}');
     } catch (e) {
-      debugPrint('Error applying tier benefits: $e');
       rethrow;
     }
   }
@@ -486,7 +478,6 @@ class TierCalculationService extends ChangeNotifier {
 
       return null;
     } catch (e) {
-      debugPrint('Error checking tier upgrade: $e');
       return null;
     }
   }
@@ -514,7 +505,6 @@ class TierCalculationService extends ChangeNotifier {
 
       return history;
     } catch (e) {
-      debugPrint('Error getting tier upgrade history: $e');
       return [];
     }
   }
@@ -534,7 +524,6 @@ class TierCalculationService extends ChangeNotifier {
 
       return 1.0;
     } catch (e) {
-      debugPrint('Error getting points multiplier: $e');
       return 1.0;
     }
   }
@@ -562,7 +551,6 @@ class TierCalculationService extends ChangeNotifier {
       final daysNeeded = (projection.pointsToNextTier / dailyRate).ceil();
       return Duration(days: daysNeeded);
     } catch (e) {
-      debugPrint('Error estimating time to next tier: $e');
       return null;
     }
   }
@@ -673,9 +661,7 @@ class TierCalculationService extends ChangeNotifier {
           await _applyOtherBenefit(userId, benefit);
           break;
       }
-    } catch (e) {
-      debugPrint('Error applying benefit ${benefit.id}: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _processTierUpgrade(
@@ -726,12 +712,7 @@ class TierCalculationService extends ChangeNotifier {
 
       // Clear cache
       clearUserCache(userId);
-
-      debugPrint(
-        'Tier upgrade processed: $fromTier -> $toTier for user: $userId',
-      );
     } catch (e) {
-      debugPrint('Error processing tier upgrade: $e');
       rethrow;
     }
   }
@@ -774,7 +755,6 @@ class TierCalculationService extends ChangeNotifier {
 
       return (totalPoints / daysDiff).round();
     } catch (e) {
-      debugPrint('Error calculating daily points rate: $e');
       return 0;
     }
   }
@@ -797,9 +777,7 @@ class TierCalculationService extends ChangeNotifier {
       // Refresh projection cache
       _projectionCache.remove(_currentUserId!);
       await getTierProjection(_currentUserId!);
-    } catch (e) {
-      debugPrint('Error in periodic calculations: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _loadInitialData() async {
@@ -811,9 +789,7 @@ class TierCalculationService extends ChangeNotifier {
         getTierProjection(_currentUserId!),
         getUserBenefits(_currentUserId!),
       ]);
-    } catch (e) {
-      debugPrint('Error loading initial data: $e');
-    }
+    } catch (e) {}
   }
 
   String _generateUpgradeId() {
@@ -826,7 +802,6 @@ class TierCalculationService extends ChangeNotifier {
     Map<String, dynamic> config,
   ) async {
     // Implementation for unlocking exclusive content
-    debugPrint('Unlocking exclusive content for user: $userId');
   }
 
   Future<void> _enablePrioritySupport(
@@ -834,7 +809,6 @@ class TierCalculationService extends ChangeNotifier {
     Map<String, dynamic> config,
   ) async {
     // Implementation for enabling priority support
-    debugPrint('Enabling priority support for user: $userId');
   }
 
   Future<void> _unlockCustomization(
@@ -842,7 +816,6 @@ class TierCalculationService extends ChangeNotifier {
     Map<String, dynamic> config,
   ) async {
     // Implementation for unlocking customization options
-    debugPrint('Unlocking customization for user: $userId');
   }
 
   Future<void> _enableEarlyAccess(
@@ -850,7 +823,6 @@ class TierCalculationService extends ChangeNotifier {
     Map<String, dynamic> config,
   ) async {
     // Implementation for enabling early access
-    debugPrint('Enabling early access for user: $userId');
   }
 
   Future<void> _enableFreeFeatures(
@@ -858,7 +830,6 @@ class TierCalculationService extends ChangeNotifier {
     Map<String, dynamic> config,
   ) async {
     // Implementation for enabling free features
-    debugPrint('Enabling free features for user: $userId');
   }
 
   Future<void> _enableSocialPerks(
@@ -866,7 +837,6 @@ class TierCalculationService extends ChangeNotifier {
     Map<String, dynamic> config,
   ) async {
     // Implementation for enabling social perks
-    debugPrint('Enabling social perks for user: $userId');
   }
 
   Future<void> _enableGamingBoosts(
@@ -874,12 +844,10 @@ class TierCalculationService extends ChangeNotifier {
     Map<String, dynamic> config,
   ) async {
     // Implementation for enabling gaming boosts
-    debugPrint('Enabling gaming boosts for user: $userId');
   }
 
   Future<void> _applyOtherBenefit(String userId, TierBenefit benefit) async {
     // Implementation for other benefit types
-    debugPrint('Applying other benefit ${benefit.id} for user: $userId');
   }
 
   /// Map BadgeTier to TierLevel

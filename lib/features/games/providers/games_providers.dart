@@ -263,7 +263,6 @@ final userUpcomingGamesProvider = FutureProvider.autoDispose<List<Game>>((
   return result.fold(
     (failure) {
       // Log error but return empty list to avoid breaking UI
-      print('Error loading games: ${failure.message}');
       return [];
     },
     (games) {
@@ -302,8 +301,6 @@ final nextUpcomingGameProvider = Provider.autoDispose<AsyncValue<Game?>>((ref) {
 
 /// Fetches all public games from Supabase (for Explore screen)
 final publicGamesProvider = FutureProvider.autoDispose<List<Game>>((ref) async {
-  print('🔍 [DEBUG] publicGamesProvider: Fetching public games...');
-
   final repository = ref.watch(gamesRepositoryProvider);
   final result = await repository.getGames(
     filters: {'is_public': true, 'status': 'upcoming'},
@@ -312,13 +309,9 @@ final publicGamesProvider = FutureProvider.autoDispose<List<Game>>((ref) async {
 
   return result.fold(
     (failure) {
-      print('❌ [ERROR] publicGamesProvider: ${failure.message}');
       throw Exception(failure.message);
     },
     (games) {
-      print(
-        '✅ [DEBUG] publicGamesProvider: Loaded ${games.length} public games',
-      );
       // Sort by date (earliest first)
       games.sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
       return games;

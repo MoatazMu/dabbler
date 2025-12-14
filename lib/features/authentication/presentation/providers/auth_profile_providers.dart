@@ -105,18 +105,22 @@ final hasProfileProvider = FutureProvider<bool>((ref) async {
 
 /// Provides a profile by user ID
 /// Family provider - pass userId as parameter
-final profileByUserIdProvider = FutureProvider.family<Result<Profile, Failure>, String>((
-  ref,
-  userId,
-) async {
-  final service = ref.watch(authProfileServiceProvider);
-  return await service.getProfileByUserId(userId);
-});
+final profileByUserIdProvider =
+    FutureProvider.family<Result<Profile, Failure>, String>((
+      ref,
+      userId,
+    ) async {
+      final service = ref.watch(authProfileServiceProvider);
+      return await service.getProfileByUserId(userId);
+    });
 
 /// Provides a public profile by username
 /// Family provider - pass username as parameter
 final publicProfileByUsernameProvider =
-    FutureProvider.family<Result<Profile?, Failure>, String>((ref, username) async {
+    FutureProvider.family<Result<Profile?, Failure>, String>((
+      ref,
+      username,
+    ) async {
       final service = ref.watch(authProfileServiceProvider);
       return await service.getPublicProfileByUsername(username);
     });

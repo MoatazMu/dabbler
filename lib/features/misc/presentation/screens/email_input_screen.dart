@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import 'package:dabbler/features/authentication/presentation/providers/onboarding_data_provider.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
@@ -28,18 +29,15 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
   @override
   void initState() {
     super.initState();
-    debugPrint('📧 [DEBUG] EmailInputScreen: initState called');
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    debugPrint('📧 [DEBUG] EmailInputScreen: didChangeDependencies called');
   }
 
   @override
   void dispose() {
-    debugPrint('📧 [DEBUG] EmailInputScreen: dispose called');
     _emailController.dispose();
     super.dispose();
   }
@@ -65,8 +63,6 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
   Future<void> _handleSubmit() async {
     if (!_formKey.currentState!.validate()) return;
 
-    debugPrint('📧 [DEBUG] EmailInputScreen: _handleSubmit started');
-
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -74,23 +70,15 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
     });
 
     final email = _emailController.text.trim();
-    debugPrint('📧 [DEBUG] EmailInputScreen: Email: $email');
 
     try {
-      debugPrint('📧 [DEBUG] EmailInputScreen: Checking if user exists...');
-
       // Check if user exists in the system
       final authService = ref.read(authServiceProvider);
       final userExists = await authService.checkUserExistsByEmail(email);
 
-      debugPrint('📧 [DEBUG] EmailInputScreen: User exists: $userExists');
-
       if (mounted) {
         // Always use OTP for email, regardless of whether the user exists.
         // Password-based login remains available elsewhere but is not used here.
-        debugPrint(
-          '📧 [DEBUG] EmailInputScreen: Using OTP flow for email. userExists=$userExists',
-        );
 
         // Send OTP using unified method
         await authService.sendOtp(
@@ -109,7 +97,6 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
         );
       }
     } catch (e) {
-      debugPrint('❌ [DEBUG] EmailInputScreen: Error in _handleSubmit: $e');
       if (mounted) {
         setState(() {
           _errorMessage = 'An error occurred. Please try again.';
@@ -127,7 +114,6 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('📧 [DEBUG] EmailInputScreen: build called');
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -504,7 +490,6 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
           break;
       }
     } catch (e) {
-      debugPrint('❌ [DEBUG] EmailInputScreen: Google sign-in error: $e');
       if (mounted) {
         setState(() {
           _errorMessage = 'Google sign-in failed. Please try again.';
@@ -525,7 +510,6 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
       height: 56,
       child: ElevatedButton(
         onPressed: () {
-          debugPrint('📱 [DEBUG] EmailInputScreen: Phone button pressed');
           context.go(RoutePaths.phoneInput);
         },
         style: ElevatedButton.styleFrom(
@@ -566,8 +550,11 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
           ),
         ),
         GestureDetector(
-          onTap: () {
-            // TODO: Open Terms of Service
+          onTap: () async {
+            final url = Uri.parse('https://dabbler.app/terms');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            }
           },
           child: Text(
             'Terms of Service',
@@ -588,8 +575,11 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
           ),
         ),
         GestureDetector(
-          onTap: () {
-            // TODO: Open Privacy Policy
+          onTap: () async {
+            final url = Uri.parse('https://dabbler.app/privacy');
+            if (await canLaunchUrl(url)) {
+              await launchUrl(url, mode: LaunchMode.externalApplication);
+            }
           },
           child: Text(
             'Privacy Policy',

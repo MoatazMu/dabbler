@@ -22,11 +22,7 @@ class SocialOnboardingCompleteScreen extends StatelessWidget {
                 color: Colors.green.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.check,
-                size: 60,
-                color: Colors.green,
-              ),
+              child: const Icon(Icons.check, size: 60, color: Colors.green),
             ),
             const SizedBox(height: 32),
 

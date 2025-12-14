@@ -85,14 +85,16 @@ class ProfileRepositoryImpl implements domain.ProfileRepository {
   ) async {
     try {
       if (remoteDataSource is SupabaseProfileDataSource) {
-        final profiles =
-            await (remoteDataSource as SupabaseProfileDataSource)
-                .getAllProfiles(userId);
+        final profiles = await (remoteDataSource as SupabaseProfileDataSource)
+            .getAllProfiles(userId);
         return Right(profiles);
       }
       // Fallback: try to get player and organiser separately
       final playerResult = await getProfile(userId, profileType: 'player');
-      final organiserResult = await getProfile(userId, profileType: 'organiser');
+      final organiserResult = await getProfile(
+        userId,
+        profileType: 'organiser',
+      );
 
       final profiles = <UserProfile>[];
       playerResult.fold((_) => null, (profile) => profiles.add(profile));

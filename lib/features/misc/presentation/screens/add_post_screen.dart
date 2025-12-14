@@ -186,7 +186,10 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                   if (_blocklistHits > 0)
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       margin: const EdgeInsets.only(bottom: 16),
                       decoration: BoxDecoration(
                         color: Theme.of(context).colorScheme.errorContainer,
@@ -197,15 +200,20 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                           Icon(
                             Icons.warning_rounded,
                             size: 16,
-                            color: Theme.of(context).colorScheme.onErrorContainer,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onErrorContainer,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               'Your post contains inappropriate content ($_blocklistHits violation${_blocklistHits > 1 ? 's' : ''}). Please revise.',
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onErrorContainer,
-                              ),
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onErrorContainer,
+                                  ),
                             ),
                           ),
                         ],
@@ -290,11 +298,16 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                                 runSpacing: 8,
                                 children: vibes.map((v) {
                                   final id = v['id']?.toString() ?? '';
-                                  final label = v['label']?.toString() ?? v['key']?.toString() ?? 'Vibe';
+                                  final label =
+                                      v['label']?.toString() ??
+                                      v['key']?.toString() ??
+                                      'Vibe';
                                   final emoji = v['emoji']?.toString() ?? '';
                                   final selected = _selectedVibeId == id;
                                   return ChoiceChip(
-                                    label: Text('${emoji.isNotEmpty ? '$emoji ' : ''}$label'),
+                                    label: Text(
+                                      '${emoji.isNotEmpty ? '$emoji ' : ''}$label',
+                                    ),
                                     selected: selected,
                                     onSelected: (sel) {
                                       setState(() {

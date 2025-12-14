@@ -35,9 +35,6 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authService = AuthService();
       final currentUser = authService.getCurrentUser();
-      debugPrint(
-        '🔍 [DEBUG] SetUsernameScreen: Auth check - User: ${currentUser?.email ?? currentUser?.phone ?? "None"}',
-      );
     });
   }
 
@@ -144,19 +141,6 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
         );
       }
 
-      debugPrint(
-        '📋 [DEBUG] SetUsernameScreen: Completing onboarding for user',
-      );
-      debugPrint(
-        '📊 [DEBUG] identifier=${onboardingData.phone ?? onboardingData.email}, name=${onboardingData.displayName}',
-      );
-      debugPrint(
-        '📊 [DEBUG] username="$username" (length: ${username.length}), age=${onboardingData.age}, gender=${onboardingData.gender}',
-      );
-      debugPrint(
-        '📊 [DEBUG] username isEmpty: ${username.isEmpty}, isNotEmpty: ${username.isNotEmpty}',
-      );
-
       // Complete onboarding - updates profile, creates sport/organiser profile, syncs to auth.users
       await authService.completeOnboarding(
         displayName: onboardingData.displayName!,
@@ -167,10 +151,6 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
         preferredSport: onboardingData.preferredSport!,
         interests: onboardingData.interestsString,
         password: null, // Phone/Google users don't set password here
-      );
-
-      debugPrint(
-        '✅ [DEBUG] SetUsernameScreen: Onboarding completed successfully',
       );
 
       // Clear onboarding data
@@ -185,7 +165,6 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
         context.go(RoutePaths.welcome, extra: {'displayName': displayName});
       }
     } catch (e) {
-      debugPrint('❌ [DEBUG] SetUsernameScreen: Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),

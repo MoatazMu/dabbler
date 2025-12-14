@@ -450,11 +450,7 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.warning_amber,
-                size: 64,
-                color: context.colors.error,
-              ),
+              Icon(Icons.warning_amber, size: 64, color: context.colors.error),
               const SizedBox(height: 16),
               Text(
                 'Failed to load leaderboard',
@@ -661,7 +657,11 @@ class _LeaderboardScreenState extends ConsumerState<LeaderboardScreen>
         children: [
           Row(
             children: [
-              Icon(Icons.location_city, color: context.colors.primary, size: 20),
+              Icon(
+                Icons.location_city,
+                color: context.colors.primary,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Your Current Rank',

@@ -5,6 +5,8 @@ import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:dabbler/core/design_system/layouts/single_section_layout.dart';
+import 'package:dabbler/themes/material3_extensions.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -21,7 +23,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  final String _appVersion = '1.0.4';
+  final String _appVersion = '1.0.5';
 
   final List<SettingsSection> _allSections = [
     SettingsSection(
@@ -34,34 +36,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           route: '/settings/account',
           searchTerms: ['account', 'email', 'password', 'security', 'login'],
         ),
-        SettingsItem(
-          title: 'Privacy Settings',
-          subtitle: 'Control your data and visibility',
-          icon: Iconsax.shield_tick_copy,
-          route: '/settings/privacy',
-          searchTerms: ['privacy', 'visibility', 'data', 'sharing', 'profile'],
-        ),
+        // Release 2: Privacy Settings
+        // SettingsItem(
+        //   title: 'Privacy Settings',
+        //   subtitle: 'Control your data and visibility',
+        //   icon: Iconsax.shield_tick_copy,
+        //   route: '/settings/privacy',
+        //   searchTerms: ['privacy', 'visibility', 'data', 'sharing', 'profile'],
+        // ),
       ],
     ),
-    SettingsSection(
-      title: 'Preferences',
-      items: [
-        SettingsItem(
-          title: 'Game Preferences',
-          subtitle: 'Game types, duration, competition',
-          icon: Iconsax.game_copy,
-          route: '/preferences/games',
-          searchTerms: ['games', 'types', 'duration', 'competition', 'team'],
-        ),
-        SettingsItem(
-          title: 'Availability',
-          subtitle: 'Schedule and time preferences',
-          icon: Iconsax.calendar_copy,
-          route: '/preferences/availability',
-          searchTerms: ['availability', 'schedule', 'time', 'calendar'],
-        ),
-      ],
-    ),
+    // Release 2: Preferences section
+    // SettingsSection(
+    //   title: 'Preferences',
+    //   items: [
+    //     SettingsItem(
+    //       title: 'Game Preferences',
+    //       subtitle: 'Game types, duration, competition',
+    //       icon: Iconsax.game_copy,
+    //       route: '/preferences/games',
+    //       searchTerms: ['games', 'types', 'duration', 'competition', 'team'],
+    //     ),
+    //     SettingsItem(
+    //       title: 'Availability',
+    //       subtitle: 'Schedule and time preferences',
+    //       icon: Iconsax.calendar_copy,
+    //       route: '/preferences/availability',
+    //       searchTerms: ['availability', 'schedule', 'time', 'calendar'],
+    //     ),
+    //   ],
+    // ),
     SettingsSection(
       title: 'Display',
       items: [
@@ -79,41 +83,43 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           route: '/showcase',
           searchTerms: ['design', 'system', 'showcase', 'components', 'theme'],
         ),
-        SettingsItem(
-          title: 'Language',
-          subtitle: 'Choose your preferred language',
-          icon: Iconsax.global_copy,
-          route: '/settings/language',
-          searchTerms: ['language', 'locale', 'translate'],
-        ),
+        // Release 2: Language
+        // SettingsItem(
+        //   title: 'Language',
+        //   subtitle: 'Choose your preferred language',
+        //   icon: Iconsax.global_copy,
+        //   route: '/settings/language',
+        //   searchTerms: ['language', 'locale', 'translate'],
+        // ),
       ],
     ),
-    SettingsSection(
-      title: 'Help & Support',
-      items: [
-        SettingsItem(
-          title: 'Help Center',
-          subtitle: 'FAQs and tutorials',
-          icon: Iconsax.info_circle_copy,
-          route: '/help/center',
-          searchTerms: ['help', 'faq', 'support', 'tutorials'],
-        ),
-        SettingsItem(
-          title: 'Contact Support',
-          subtitle: 'Get help from our team',
-          icon: Iconsax.message_question_copy,
-          route: '/help/contact',
-          searchTerms: ['contact', 'support', 'help', 'team'],
-        ),
-        SettingsItem(
-          title: 'Report a Bug',
-          subtitle: 'Help us improve the app',
-          icon: Iconsax.danger_copy,
-          route: '/help/bug-report',
-          searchTerms: ['bug', 'report', 'issue', 'problem'],
-        ),
-      ],
-    ),
+    // Release 2: Help & Support section
+    // SettingsSection(
+    //   title: 'Help & Support',
+    //   items: [
+    //     SettingsItem(
+    //       title: 'Help Center',
+    //       subtitle: 'FAQs and tutorials',
+    //       icon: Iconsax.info_circle_copy,
+    //       route: '/help/center',
+    //       searchTerms: ['help', 'faq', 'support', 'tutorials'],
+    //     ),
+    //     SettingsItem(
+    //       title: 'Contact Support',
+    //       subtitle: 'Get help from our team',
+    //       icon: Iconsax.message_question_copy,
+    //       route: '/help/contact',
+    //       searchTerms: ['contact', 'support', 'help', 'team'],
+    //     ),
+    //     SettingsItem(
+    //       title: 'Report a Bug',
+    //       subtitle: 'Help us improve the app',
+    //       icon: Iconsax.danger_copy,
+    //       route: '/help/bug-report',
+    //       searchTerms: ['bug', 'report', 'issue', 'problem'],
+    //     ),
+    //   ],
+    // ),
     SettingsSection(
       title: 'About',
       items: [
@@ -174,39 +180,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // Header
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                  sliver: SliverToBoxAdapter(child: _buildHeader(context)),
-                ),
-                // Hero Section
-                SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                  sliver: SliverToBoxAdapter(child: _buildHeroCard(context)),
-                ),
-                // Search Bar
-                SliverToBoxAdapter(child: _buildSearchBar(context)),
-                // Settings Sections
-                ..._buildFilteredSections(context),
-                // Sign Out
-                SliverToBoxAdapter(child: _buildSignOutSection(context)),
-                // Version Info
-                SliverToBoxAdapter(child: _buildVersionInfo(context)),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-              ],
-            ),
+    return SingleSectionLayout(
+      category: 'profile',
+      scrollable: true,
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(context),
+              const SizedBox(height: 24),
+              _buildHeroCard(context),
+              _buildSearchBar(context),
+              ..._buildFilteredSectionsList(context),
+              _buildSignOutSection(context),
+              _buildVersionInfo(context),
+              const SizedBox(height: 20),
+            ],
           ),
         ),
       ),
@@ -223,12 +215,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           onPressed: () => context.pop(),
           icon: const Icon(Iconsax.arrow_left_copy),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
+            backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.0),
             foregroundColor: colorScheme.onSurface,
             minimumSize: const Size(48, 48),
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,12 +235,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             ],
           ),
         ),
-        const SizedBox(width: 16),
+        const SizedBox(width: 12),
         IconButton.filledTonal(
           onPressed: () => context.push('/help/center'),
           icon: const Icon(Iconsax.info_circle_copy),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
+            backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.0),
             foregroundColor: colorScheme.onSurface,
             minimumSize: const Size(48, 48),
           ),
@@ -267,7 +259,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF),
+        color: isDarkMode
+            ? Colors.white.withOpacity(0.1)
+            : Colors.white.withOpacity(0.6),
         borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
@@ -307,7 +301,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 12),
+      padding: const EdgeInsets.fromLTRB(0, 24, 0, 12),
       child: TextField(
         controller: _searchController,
         onChanged: (value) {
@@ -344,13 +338,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     );
   }
 
-  List<Widget> _buildFilteredSections(BuildContext context) {
+  List<Widget> _buildFilteredSectionsList(BuildContext context) {
     final filteredSections = _getFilteredSections();
 
     return filteredSections.map((section) {
-      return SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        sliver: SliverToBoxAdapter(child: _buildSection(context, section)),
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: _buildSection(context, section),
       );
     }).toList();
   }
@@ -382,7 +376,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 4, bottom: 12),
+          padding: const EdgeInsets.only(left: 0, bottom: 12),
           child: Text(
             section.title,
             style: textTheme.titleSmall?.copyWith(

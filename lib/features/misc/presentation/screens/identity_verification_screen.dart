@@ -134,7 +134,7 @@ class _IdentityVerificationScreenState
       final local = _normalizeToUaeLocal(input);
       if (local == null) {
         setState(() {
-          _errorMessage = 'Use UAE mobile number only or email';
+          _errorMessage = 'Please use your email address';
         });
         return;
       }
@@ -156,9 +156,6 @@ class _IdentityVerificationScreenState
       try {
         final authService = AuthService();
 
-        print(
-          '🔍 [DEBUG] IdentityVerificationScreen: Checking if user exists: $finalIdentifier',
-        );
         bool userExistsBeforeOtp = false;
         if (identifierType == IdentifierType.email) {
           userExistsBeforeOtp = await authService.checkUserExistsByEmail(
@@ -169,9 +166,6 @@ class _IdentityVerificationScreenState
             finalIdentifier,
           );
         }
-        print(
-          '🔍 [DEBUG] IdentityVerificationScreen: User exists: $userExistsBeforeOtp',
-        );
 
         // Send OTP using unified method
         await authService.sendOtp(
@@ -301,13 +295,13 @@ class _IdentityVerificationScreenState
                 ),
                 SizedBox(height: AppSpacing.sm),
                 // Subtitle
-                Text(
-                  'Enter your email or mobile number to get started',
-                  style: AppTypography.bodyLarge.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                // Text(
+                //   'Enter your email address to get started',
+                //   style: AppTypography.bodyLarge.copyWith(
+                //     color: Theme.of(context).colorScheme.onSurfaceVariant,
+                //   ),
+                //   textAlign: TextAlign.center,
+                // ),
               ],
             ),
 
@@ -323,7 +317,9 @@ class _IdentityVerificationScreenState
 
                 // Continue button
                 AppButton(
-                  onPressed: _isLoading ? null : _handleSubmit,
+                  onPressed: _isLoading || !_isValidEmail()
+                      ? null
+                      : _handleSubmit,
                   label: _isLoading ? 'Sending...' : 'Continue',
                   type: AppButtonType.filled,
                   size: AppButtonSize.lg,
@@ -445,34 +441,11 @@ class _IdentityVerificationScreenState
         children: [
           AppInputField(
             controller: _phoneController,
-            label: 'Email or phone number',
+            label: 'Email address',
+            hintText: 'Enter your email address',
             keyboardType: _currentIdentifierType == IdentifierType.email
                 ? TextInputType.emailAddress
                 : TextInputType.phone,
-            prefixWidget: _currentIdentifierType == IdentifierType.phone
-                ? Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const SizedBox(width: 16),
-                      const Text('🇦🇪', style: TextStyle(fontSize: 20)),
-                      const SizedBox(width: 8),
-                      Text(
-                        '+971',
-                        style: AppTypography.bodyLarge.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        height: 24,
-                        width: 1.5,
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                      const SizedBox(width: 12),
-                    ],
-                  )
-                : null,
             onChanged: (value) {
               _onPhoneChanged(value);
             },
@@ -505,7 +478,7 @@ class _IdentityVerificationScreenState
       if (_isValidUaeMobile(trimmed)) {
         return '';
       }
-      return 'Use UAE mobile number only or email';
+      return 'Please use your email address';
     } else {
       return AppValidators.validateEmail(trimmed) ?? '';
     }
@@ -545,6 +518,17 @@ class _IdentityVerificationScreenState
   bool _isValidUaeMobile(String input) {
     final local = _normalizeToUaeLocal(input);
     return local != null;
+  }
+
+  /// Check if current input is a valid email
+  bool _isValidEmail() {
+    final input = _phoneController.text.trim();
+    if (input.isEmpty) return false;
+
+    // Only accept email addresses (not phone numbers)
+    if (_isNumericLike(input)) return false;
+
+    return AppValidators.validateEmail(input) == null;
   }
 
   Widget _buildDivider() {
@@ -649,9 +633,6 @@ class _IdentityVerificationScreenState
           break;
       }
     } catch (e) {
-      debugPrint(
-        '❌ [DEBUG] IdentityVerificationScreen: Google sign-in error: $e',
-      );
       if (mounted) {
         setState(() {
           _errorMessage = 'Google sign-in failed. Please try again.';

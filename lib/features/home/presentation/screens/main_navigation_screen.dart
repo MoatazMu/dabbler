@@ -7,6 +7,10 @@ import 'package:dabbler/features/home/presentation/widgets/inline_post_composer.
 import 'package:dabbler/features/explore/presentation/screens/sports_screen.dart'
     show ExploreScreen;
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
+import 'package:dabbler/core/config/feature_flags.dart';
+import 'package:dabbler/core/services/app_lifecycle_manager.dart';
+import 'package:dabbler/features/rewards/controllers/check_in_controller.dart';
+import 'package:dabbler/features/rewards/presentation/widgets/early_bird_check_in_modal.dart';
 
 /// Main navigation screen with bottom nav bar
 class MainNavigationScreen extends ConsumerStatefulWidget {
@@ -20,6 +24,7 @@ class MainNavigationScreen extends ConsumerStatefulWidget {
 class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
+  bool _hasShownModalThisSession = false;
 
   // Only swipeable screens (Home and Sports, excluding Create)
   final List<Widget> _swipeableScreens = [
@@ -28,9 +33,127 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+
+    if (FeatureFlags.enableRewards) {
+      // Register lifecycle callback
+      AppLifecycleManager().onResume(_onAppResume);
+
+      // Check after first frame
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) _checkAndShowModal();
+        });
+      });
+    }
+  }
+
+  @override
   void dispose() {
+    if (FeatureFlags.enableRewards) {
+      AppLifecycleManager().offResume(_onAppResume);
+    }
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _onAppResume() {
+    _hasShownModalThisSession = false;
+    _checkAndShowModal();
+  }
+
+  Future<void> _checkAndShowModal() async {
+    if (!mounted || _hasShownModalThisSession) return;
+
+    try {
+      final controller = ref.read(checkInControllerProvider.notifier);
+      final shouldShow = await controller.shouldShowCheckInModal();
+
+      debugPrint('MainNavigationScreen: shouldShow=$shouldShow');
+
+      if (shouldShow && mounted) {
+        _hasShownModalThisSession = true;
+
+        final state = ref.read(checkInControllerProvider);
+        final status = state.valueOrNull;
+
+        debugPrint('MainNavigationScreen: status=$status');
+
+        final currentDay = status?.totalDaysCompleted ?? 0;
+        final streakCount = status?.streakCount ?? 0;
+        final daysRemaining = status?.daysRemaining ?? 14;
+        final isCompleted = status?.isCompleted ?? false;
+
+        EarlyBirdCheckInModal.show(
+          context,
+          currentDay: currentDay,
+          streakCount: streakCount,
+          daysRemaining: daysRemaining,
+          isCompleted: isCompleted,
+          onCheckIn: () async {
+            debugPrint('=== CHECK-IN BUTTON CLICKED ===');
+            debugPrint('User initiated check-in from modal');
+
+            final wasFirstToday = await controller.performCheckIn();
+
+            debugPrint('MainNavigationScreen: wasFirstToday=$wasFirstToday');
+            debugPrint('=== CHECK-IN COMPLETED ===');
+
+            if (!mounted) return;
+
+            // Always close the modal after check-in attempt
+            Navigator.of(context).pop();
+
+            if (wasFirstToday) {
+              final newStatus = ref.read(checkInControllerProvider).valueOrNull;
+              final completedDays = newStatus?.totalDaysCompleted ?? 1;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    completedDays >= 14
+                        ? '🎉 Congratulations! You earned the Early Bird badge!'
+                        : '✅ Checked in! Day $completedDays of 14',
+                  ),
+                  behavior: SnackBarBehavior.floating,
+                  duration: const Duration(seconds: 3),
+                ),
+              );
+
+              if (completedDays >= 14) {
+                await Future.delayed(const Duration(milliseconds: 500));
+                if (mounted) {
+                  final finalStatus = ref
+                      .read(checkInControllerProvider)
+                      .valueOrNull;
+                  EarlyBirdCheckInModal.show(
+                    context,
+                    currentDay: 14,
+                    streakCount: finalStatus?.streakCount ?? 14,
+                    daysRemaining: 0,
+                    isCompleted: true,
+                    onCheckIn: () {},
+                  );
+                }
+              }
+            } else {
+              // Already checked in today
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✅ Already checked in today!'),
+                  behavior: SnackBarBehavior.floating,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          },
+        );
+      }
+    } catch (e, stack) {
+      debugPrint('MainNavigationScreen check-in error: $e');
+      debugPrint('Stack: $stack');
+    }
   }
 
   void _onItemTapped(int index) {

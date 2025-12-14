@@ -1,17 +1,18 @@
 import "package:flutter/material.dart";
+import 'package:dabbler/core/design_system/design_system.dart';
 
 class RewardsCenterScreen extends StatelessWidget {
   const RewardsCenterScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SingleSectionLayout(
       appBar: AppBar(
         title: const Text("Rewards Center"),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: const Center(
+      child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

@@ -222,21 +222,6 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
           final currentUser = authService.getCurrentUser();
           if (currentUser != null && currentUser.email == normalizedEmail) {
             // User is already authenticated via OTP - just set password and complete onboarding
-            debugPrint(
-              '📋 [DEBUG] SetPasswordScreen: User already authenticated via OTP, completing onboarding',
-            );
-            debugPrint(
-              '📊 [DEBUG] email=$normalizedEmail, name=${onboardingData.displayName}, age=${onboardingData.age}',
-            );
-            debugPrint(
-              '📊 [DEBUG] gender=${onboardingData.gender}, intention=${onboardingData.intention}',
-            );
-            debugPrint(
-              '📊 [DEBUG] preferred_sport=${onboardingData.preferredSport}, interests=${onboardingData.interestsString}',
-            );
-            debugPrint(
-              '📊 [DEBUG] username=$username, profile_type=${onboardingData.profileType}',
-            );
 
             // Complete onboarding with password
             await authService.completeOnboarding(
@@ -252,9 +237,6 @@ class _SetPasswordScreenState extends ConsumerState<SetPasswordScreen> {
           } else {
             // User not authenticated - create account with password
             // This should not happen in the unified flow, but keep as fallback
-            debugPrint(
-              '⚠️ [DEBUG] SetPasswordScreen: User not authenticated, creating account',
-            );
 
             final signUpResponse = await authService.signUpWithEmailAndPassword(
               email: normalizedEmail,

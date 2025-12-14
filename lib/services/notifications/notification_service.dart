@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'notification_item.dart';
@@ -53,11 +52,9 @@ class NotificationService {
       }
 
       return null;
-    } on PostgrestException catch (e, stackTrace) {
-      debugPrint('enqueue_notification PostgrestException: $e\n$stackTrace');
+    } on PostgrestException catch (e) {
       throw Exception('Failed to enqueue notification: ${e.message}');
-    } catch (e, stackTrace) {
-      debugPrint('enqueue_notification failed: $e\n$stackTrace');
+    } catch (e) {
       throw Exception('Failed to enqueue notification: $e');
     }
   }
@@ -76,25 +73,18 @@ class NotificationService {
       await for (final rows in stream) {
         try {
           final items = rows
-              .map(
-                (row) => NotificationItem.fromMap(
-                  row,
-                ),
-              )
+              .map((row) => NotificationItem.fromMap(row))
               .toList(growable: false);
           yield items;
-        } catch (e, stackTrace) {
-          debugPrint('watchInbox mapping failed: $e\n$stackTrace');
+        } catch (e) {
           // On mapping error, emit an empty list but keep the stream alive.
           yield const <NotificationItem>[];
         }
       }
-    } on PostgrestException catch (e, stackTrace) {
-      debugPrint('watchInbox PostgrestException: $e\n$stackTrace');
+    } on PostgrestException catch (e) {
       // Surface a terminal error to the listener.
       throw Exception('Failed to stream notifications: ${e.message}');
-    } catch (e, stackTrace) {
-      debugPrint('watchInbox failed: $e\n$stackTrace');
+    } catch (e) {
       throw Exception('Failed to stream notifications: $e');
     }
   }
@@ -102,8 +92,9 @@ class NotificationService {
   /// Realtime unread count stream based on `v_unread_counts`.
   Stream<int> watchUnreadCount() async* {
     try {
-      final stream =
-          _client.from('v_unread_counts').stream(primaryKey: const ['user_id']);
+      final stream = _client
+          .from('v_unread_counts')
+          .stream(primaryKey: const ['user_id']);
 
       await for (final rows in stream) {
         try {
@@ -119,21 +110,18 @@ class NotificationService {
           final count = raw is int
               ? raw
               : raw is num
-                  ? raw.toInt()
-                  : 0;
+              ? raw.toInt()
+              : 0;
 
           yield count;
-        } catch (e, stackTrace) {
-          debugPrint('watchUnreadCount mapping failed: $e\n$stackTrace');
+        } catch (e) {
           // Emit 0 on mapping error but keep the stream alive.
           yield 0;
         }
       }
-    } on PostgrestException catch (e, stackTrace) {
-      debugPrint('watchUnreadCount PostgrestException: $e\n$stackTrace');
+    } on PostgrestException catch (e) {
       throw Exception('Failed to stream unread counts: ${e.message}');
-    } catch (e, stackTrace) {
-      debugPrint('watchUnreadCount failed: $e\n$stackTrace');
+    } catch (e) {
       throw Exception('Failed to stream unread counts: $e');
     }
   }
@@ -145,11 +133,9 @@ class NotificationService {
         'mark_notification_read',
         params: <String, dynamic>{'notification_id': notificationId},
       );
-    } on PostgrestException catch (e, stackTrace) {
-      debugPrint('markRead PostgrestException: $e\n$stackTrace');
+    } on PostgrestException catch (e) {
       throw Exception('Failed to mark notification as read: ${e.message}');
-    } catch (e, stackTrace) {
-      debugPrint('markRead failed: $e\n$stackTrace');
+    } catch (e) {
       throw Exception('Failed to mark notification as read: $e');
     }
   }
@@ -161,9 +147,7 @@ class NotificationService {
     try {
       final result = await _client.rpc(
         'mark_all_read_before',
-        params: <String, dynamic>{
-          'cutoff': cutoff.toUtc().toIso8601String(),
-        },
+        params: <String, dynamic>{'cutoff': cutoff.toUtc().toIso8601String()},
       );
 
       if (result is int) return result;
@@ -171,16 +155,10 @@ class NotificationService {
         return result['count'] as int;
       }
       return 0;
-    } on PostgrestException catch (e, stackTrace) {
-      debugPrint('markAllReadBefore PostgrestException: $e\n$stackTrace');
-      throw Exception(
-        'Failed to mark notifications as read: ${e.message}',
-      );
-    } catch (e, stackTrace) {
-      debugPrint('markAllReadBefore failed: $e\n$stackTrace');
+    } on PostgrestException catch (e) {
+      throw Exception('Failed to mark notifications as read: ${e.message}');
+    } catch (e) {
       throw Exception('Failed to mark notifications as read: $e');
     }
   }
 }
-
-

@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
 /// Centralized app color definitions.
-/// 
+///
 /// ⚠️ **DEPRECATED**: This class is deprecated in favor of Material 3 ColorScheme.
-/// 
+///
 /// **Migration:**
 /// - Use `Theme.of(context).colorScheme.*` instead
 /// - See `lib/core/design_system/MATERIAL3_MIGRATION_GUIDE.md` for details
-/// 
+///
 /// @deprecated Use Material 3 ColorScheme instead
-@Deprecated('Use Material 3 ColorScheme instead. See MATERIAL3_MIGRATION_GUIDE.md')
+@Deprecated(
+  'Use Material 3 ColorScheme instead. See MATERIAL3_MIGRATION_GUIDE.md',
+)
 class AppColors {
   static const Color textPrimary = Color(0xFF222222);
   static const Color textSecondary = Color(0xFF757575);

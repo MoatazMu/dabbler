@@ -57,11 +57,7 @@ class _SocialOnboardingPrivacyScreenState
             const SizedBox(height: 32),
 
             // Header
-            Icon(
-              Icons.shield,
-              size: 64,
-              color: Theme.of(context).primaryColor,
-            ),
+            Icon(Icons.shield, size: 64, color: Theme.of(context).primaryColor),
             const SizedBox(height: 24),
 
             Text(

@@ -23,4 +23,3 @@ class OrganiserProfile with _$OrganiserProfile {
   factory OrganiserProfile.fromJson(Map<String, dynamic> json) =>
       _$OrganiserProfileFromJson(json);
 }
-

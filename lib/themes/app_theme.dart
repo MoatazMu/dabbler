@@ -30,36 +30,102 @@ class CategoryColors {
 
 /// Material Design 3 theme implementation
 class AppTheme {
-  // Primary purple seed color for Material 3 ColorScheme generation
-  static const Color _primarySeed = Color(0xFF8B5CF6);
-
   // App-specific color tokens
   static const Color _successColor = Color(0xFF00A63E);
   static const Color _warningColor = Color(0xFFEC8F1E);
   static const Color _infoLinkColor = Color(0xFF155DFC);
 
-  /// Light Material Design 3 Theme
+  /// Light Material Design 3 Theme - Main category
   static ThemeData lightTheme = _buildTheme(
     brightness: Brightness.light,
-    seedColor: _primarySeed,
+    colorScheme: _mainLightColorScheme,
   );
 
-  /// Dark Material Design 3 Theme
+  /// Dark Material Design 3 Theme - Main category
   static ThemeData darkTheme = _buildTheme(
     brightness: Brightness.dark,
-    seedColor: _primarySeed,
+    colorScheme: _mainDarkColorScheme,
+  );
+
+  // Main Light Theme ColorScheme (from main-light-theme.json)
+  static const ColorScheme _mainLightColorScheme = ColorScheme(
+    brightness: Brightness.light,
+    primary: Color(0xFF7328CE),
+    onPrimary: Color(0xFFFFFFFF),
+    primaryContainer: Color(0xFFEADDFF),
+    onPrimaryContainer: Color(0xFF25005B),
+    secondary: Color(0xFFA4008F),
+    onSecondary: Color(0xFFFFFFFF),
+    secondaryContainer: Color(0xFFFFD7F1),
+    onSecondaryContainer: Color(0xFF3C0030),
+    tertiary: Color(0xFFFF3376),
+    onTertiary: Color(0xFFFFFFFF),
+    tertiaryContainer: Color(0xFFFFD9E1),
+    onTertiaryContainer: Color(0xFF3B0014),
+    error: Color(0xFFBA1A1A),
+    onError: Color(0xFFFFFFFF),
+    errorContainer: Color(0xFFFFDAD6),
+    onErrorContainer: Color(0xFF410002),
+    surface: Color(0xFFFEF7FF),
+    onSurface: Color(0xFF1D1B20),
+    surfaceContainerHighest: Color(0xFFE6E0E9),
+    surfaceContainerHigh: Color(0xFFECE6F0),
+    surfaceContainer: Color(0xFFF3EDF7),
+    surfaceContainerLow: Color(0xFFF7F2FA),
+    surfaceContainerLowest: Color(0xFFFFFFFF),
+    onSurfaceVariant: Color(0xFF49454F),
+    outline: Color(0xFF7A757F),
+    outlineVariant: Color(0xFFCBC4CF),
+    shadow: Color(0xFF000000),
+    scrim: Color(0xFF000000),
+    inverseSurface: Color(0xFF322F35),
+    onInverseSurface: Color(0xFFF5EFF7),
+    inversePrimary: Color(0xFFD0BCFF),
+    surfaceTint: Color(0xFF7328CE),
+  );
+
+  // Main Dark Theme ColorScheme (from main-dark-theme.json)
+  static const ColorScheme _mainDarkColorScheme = ColorScheme(
+    brightness: Brightness.dark,
+    primary: Color(0xFFC18FFF),
+    onPrimary: Color(0xFF3A0073),
+    primaryContainer: Color(0xFF5500A3),
+    onPrimaryContainer: Color(0xFFEADDFF),
+    secondary: Color(0xFFFF86DD),
+    onSecondary: Color(0xFF5A004A),
+    secondaryContainer: Color(0xFF7A0065),
+    onSecondaryContainer: Color(0xFFFFD7F1),
+    tertiary: Color(0xFFFF8FAF),
+    onTertiary: Color(0xFF640024),
+    tertiaryContainer: Color(0xFF8B003C),
+    onTertiaryContainer: Color(0xFFFFD9E1),
+    error: Color(0xFFFFB4AB),
+    onError: Color(0xFF690005),
+    errorContainer: Color(0xFF93000A),
+    onErrorContainer: Color(0xFFFFDAD6),
+    surface: Color(0xFF141218),
+    onSurface: Color(0xFFE6E0E9),
+    surfaceContainerHighest: Color(0xFF36343B),
+    surfaceContainerHigh: Color(0xFF2B2930),
+    surfaceContainer: Color(0xFF211F26),
+    surfaceContainerLow: Color(0xFF1D1B20),
+    surfaceContainerLowest: Color(0xFF0F0D13),
+    onSurfaceVariant: Color(0xFFCAC4CF),
+    outline: Color(0xFF938F99),
+    outlineVariant: Color(0xFF49454F),
+    shadow: Color(0xFF000000),
+    scrim: Color(0xFF000000),
+    inverseSurface: Color(0xFFE6E0E9),
+    onInverseSurface: Color(0xFF322F35),
+    inversePrimary: Color(0xFF7328CE),
+    surfaceTint: Color(0xFFC18FFF),
   );
 
   /// Build Material 3 theme with comprehensive tokens
   static ThemeData _buildTheme({
     required Brightness brightness,
-    required Color seedColor,
+    required ColorScheme colorScheme,
   }) {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
-      brightness: brightness,
-    );
-
     final textTheme = GoogleFonts.robotoTextTheme(
       brightness == Brightness.light
           ? ThemeData.light().textTheme

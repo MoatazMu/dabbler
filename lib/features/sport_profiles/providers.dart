@@ -20,8 +20,7 @@ final mySportProfilesStreamProvider =
       return ref.watch(sportProfilesRepositoryProvider).watchMySports();
     });
 
-final mySportProfilesProvider = FutureProvider<Result<List<SportProfile>, Failure>>((
-  ref,
-) async {
-  return ref.watch(sportProfilesRepositoryProvider).getMySports();
-});
+final mySportProfilesProvider =
+    FutureProvider<Result<List<SportProfile>, Failure>>((ref) async {
+      return ref.watch(sportProfilesRepositoryProvider).getMySports();
+    });

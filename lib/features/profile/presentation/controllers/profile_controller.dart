@@ -111,7 +111,10 @@ class ProfileController extends StateNotifier<ProfileState> {
     );
 
     try {
-      final profile = await _getProfileUseCase(userId, profileType: profileType);
+      final profile = await _getProfileUseCase(
+        userId,
+        profileType: profileType,
+      );
       if (profile != null) {
         await _updateProfileCompletion(profile);
         state = state.copyWith(

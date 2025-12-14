@@ -264,13 +264,10 @@ class GamesController extends StateNotifier<GamesState> {
   /// Subscribe to real-time game updates (stub for future implementation)
   void subscribeToUpdates() {
     // This would listen to game changes and update the state accordingly
-    print('Subscribing to real-time game updates...');
   }
 
   /// Unsubscribe from real-time updates
-  void unsubscribeFromUpdates() {
-    print('Unsubscribing from real-time game updates...');
-  }
+  void unsubscribeFromUpdates() {}
 
   /// Private helper methods
 

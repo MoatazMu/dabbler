@@ -49,15 +49,13 @@ class GameModel extends Game {
         // Calculate from game_roster array if provided
         final roster = json['game_roster'];
         if (roster is List) {
-          currentPlayers = roster
-              .where((p) {
-                if (p is! Map) return false;
-                final status = p['status']?.toString().toLowerCase();
-                // Database uses 'active' as the roster status for joined players
-                // Treat null as active for safety if status wasn't set
-                return status == null || status == 'active';
-              })
-              .length;
+          currentPlayers = roster.where((p) {
+            if (p is! Map) return false;
+            final status = p['status']?.toString().toLowerCase();
+            // Database uses 'active' as the roster status for joined players
+            // Treat null as active for safety if status wasn't set
+            return status == null || status == 'active';
+          }).length;
         } else if (roster is Map && roster.containsKey('count')) {
           // Handle count aggregation format
           currentPlayers = roster['count'] as int? ?? 0;
@@ -88,7 +86,9 @@ class GameModel extends Game {
         isPublic:
             (json['listing_visibility'] as String?) ==
             'public', // Map listing_visibility to isPublic
-        allowsWaitlist: json['allows_waitlist'] as bool? ?? false, // Default to false if not in DB
+        allowsWaitlist:
+            json['allows_waitlist'] as bool? ??
+            false, // Default to false if not in DB
         checkInEnabled: false, // Default - not in DB schema
         cancellationDeadline: null, // Not in DB schema
         createdAt: _parseDate(
@@ -99,19 +99,13 @@ class GameModel extends Game {
         ),
         joinPolicy: json['join_policy'] as String? ?? 'open',
       );
-    } catch (e, stackTrace) {
-      print('❌ [GameModel] fromJson: Failed to parse game data. Error: $e');
-      print('Stack trace: $stackTrace');
-      print('JSON data: $json');
+    } catch (e) {
       rethrow; // Re-throw after logging for debugging
     }
   }
 
   static DateTime _parseDate(dynamic dateData) {
     if (dateData == null) {
-      print(
-        '⚠️ [GameModel] _parseDate: null date, defaulting to DateTime.now()',
-      );
       return DateTime.now();
     }
 
@@ -126,9 +120,6 @@ class GameModel extends Game {
           return DateTime.parse('${dateData}T00:00:00.000Z');
         }
       } catch (e) {
-        print(
-          '⚠️ [GameModel] _parseDate: failed to parse "$dateData", error: $e. Defaulting to DateTime.now()',
-        );
         return DateTime.now();
       }
     }
@@ -137,9 +128,6 @@ class GameModel extends Game {
       return dateData;
     }
 
-    print(
-      '⚠️ [GameModel] _parseDate: unexpected type ${dateData.runtimeType}, defaulting to DateTime.now()',
-    );
     return DateTime.now();
   }
 
@@ -163,18 +151,12 @@ class GameModel extends Game {
             return GameStatus.completed;
           }
         } catch (e) {
-          print(
-            '⚠️ [GameModel] _parseGameStatusFromIsCancelled: failed to parse start_at "$startAt", error: $e',
-          );
           // If parsing fails, default to upcoming
         }
       }
 
       return GameStatus.upcoming;
     } catch (e) {
-      print(
-        '⚠️ [GameModel] _parseGameStatusFromIsCancelled: unexpected error: $e. Defaulting to upcoming',
-      );
       return GameStatus.upcoming;
     }
   }

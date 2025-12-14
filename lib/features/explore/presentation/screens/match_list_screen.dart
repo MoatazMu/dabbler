@@ -29,16 +29,10 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
 
     return publicGamesAsync.when(
       data: (allGames) {
-        print('🎮 [DEBUG] Public games loaded: ${allGames.length} games');
-
         // Filter by sport
         final sportFilteredGames = allGames.where((game) {
           return game.sport.toLowerCase() == widget.sport.toLowerCase();
         }).toList();
-
-        print(
-          '🎮 [DEBUG] After sport filter (${widget.sport}): ${sportFilteredGames.length} games',
-        );
 
         // Filter by search query if any
         final searchFilteredGames = widget.searchQuery.isEmpty
@@ -51,10 +45,6 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
                       widget.searchQuery.toLowerCase(),
                     );
               }).toList();
-
-        print(
-          '🎮 [DEBUG] After search filter: ${searchFilteredGames.length} games',
-        );
 
         if (searchFilteredGames.isEmpty) {
           return Center(
@@ -89,7 +79,6 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) {
-        print('❌ [ERROR] Failed to load public games: $error');
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

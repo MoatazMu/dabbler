@@ -159,10 +159,16 @@ abstract class GamesRepository {
 
   /// Gets the waitlist position for a player in a game
   /// Returns null if player is not on waitlist
-  Future<Either<Failure, int?>> getWaitlistPosition(String gameId, String userId);
+  Future<Either<Failure, int?>> getWaitlistPosition(
+    String gameId,
+    String userId,
+  );
 
   /// Checks if a user has a pending join request for a game
-  Future<Either<Failure, bool>> hasPendingJoinRequest(String gameId, String userId);
+  Future<Either<Failure, bool>> hasPendingJoinRequest(
+    String gameId,
+    String userId,
+  );
 
   /// Cancels a pending join request for a game
   Future<Either<Failure, bool>> cancelJoinRequest(String gameId, String userId);

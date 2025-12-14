@@ -13,6 +13,8 @@ final profilesRepositoryProvider = Provider<ProfilesRepository>((ref) {
   return ProfilesRepositoryImpl(svc);
 });
 
-final myProfileStreamProvider = StreamProvider<Result<Profile?, Failure>>((ref) {
+final myProfileStreamProvider = StreamProvider<Result<Profile?, Failure>>((
+  ref,
+) {
   return ref.watch(profilesRepositoryProvider).watchMyProfile();
 });

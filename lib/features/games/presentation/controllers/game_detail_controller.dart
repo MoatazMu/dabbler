@@ -375,24 +375,27 @@ class GameDetailController extends StateNotifier<GameDetailState> {
 
           // Set success message based on waitlist status or request status
           String? successMessage;
-          
+
           // Check if a request was created (for request join policy)
           final updatedStatus = state.joinStatus;
           if (updatedStatus == JoinGameStatus.requested) {
-            successMessage = 'Join request sent! The organizer will review your request.';
+            successMessage =
+                'Join request sent! The organizer will review your request.';
           } else if (joinResult.isOnWaitlist) {
             final positionText = joinResult.position != null
                 ? ' (Position #${joinResult.position})'
                 : '';
-            successMessage = 'Added to waitlist$positionText. You will be notified if a spot becomes available.';
+            successMessage =
+                'Added to waitlist$positionText. You will be notified if a spot becomes available.';
           } else {
             // For request policy, check if we just sent a request
             final game = state.game;
             if (game is GameModel && game.joinPolicy == 'request') {
-              successMessage = 'Join request sent! The organizer will review your request.';
+              successMessage =
+                  'Join request sent! The organizer will review your request.';
             } else {
-              successMessage = joinResult.message.isNotEmpty 
-                  ? joinResult.message 
+              successMessage = joinResult.message.isNotEmpty
+                  ? joinResult.message
                   : 'Successfully joined the game!';
             }
           }
@@ -446,14 +449,14 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     state = state.copyWith(isJoining: true, error: null);
 
     try {
-      final result = await _gamesRepository.cancelJoinRequest(gameId, currentUserId!);
+      final result = await _gamesRepository.cancelJoinRequest(
+        gameId,
+        currentUserId!,
+      );
 
       result.fold(
         (failure) {
-          state = state.copyWith(
-            isJoining: false,
-            error: failure.message,
-          );
+          state = state.copyWith(isJoining: false, error: failure.message);
         },
         (cancelled) async {
           // Always refresh status to update UI, even if request wasn't found
@@ -497,15 +500,16 @@ class GameDetailController extends StateNotifier<GameDetailState> {
 
     final game = state.game!;
     final alreadyJoined = state.players.any((p) => p.playerId == currentUserId);
-    
+
     // Check for pending join request
     bool alreadyRequested = false;
     try {
-      final hasRequest = await _gamesRepository.hasPendingJoinRequest(gameId, currentUserId!);
+      final hasRequest = await _gamesRepository.hasPendingJoinRequest(
+        gameId,
+        currentUserId!,
+      );
       alreadyRequested = hasRequest.fold((_) => false, (has) => has);
-    } catch (e) {
-      print('⚠️ [Controller] Error checking join request: $e');
-    }
+    } catch (e) {}
 
     // Determine if approval is required based on join_policy
     // GameModel has joinPolicy, but Game doesn't - check if it's GameModel
@@ -564,13 +568,15 @@ class GameDetailController extends StateNotifier<GameDetailState> {
     }
     // If can request, return canJoin but UI will check canRequest to show "Request to Join"
     if (decision.canRequest) {
-      return JoinGameStatus.canJoin; // UI will check canRequest to show "Request to Join"
+      return JoinGameStatus
+          .canJoin; // UI will check canRequest to show "Request to Join"
     }
     if (decision.canJoin) {
       return JoinGameStatus.canJoin;
     }
     if (decision.reason == JoinabilityReason.approvalRequired) {
-      return JoinGameStatus.canJoin; // UI will check canRequest to show "Request to Join"
+      return JoinGameStatus
+          .canJoin; // UI will check canRequest to show "Request to Join"
     }
     if (decision.canWaitlist ||
         decision.reason == JoinabilityReason.rosterFullWaitlistAvailable) {

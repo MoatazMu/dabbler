@@ -72,8 +72,6 @@ class _SocialSearchScreenState extends ConsumerState<SocialSearchScreen>
 
   void _performSearch(String query) {
     if (query.isEmpty) return;
-
-    print('Searching for: $query in ${_searchTabs[_tabController.index].key}');
   }
 
   void _clearSearch() {

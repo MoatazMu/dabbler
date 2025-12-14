@@ -234,7 +234,11 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
         children: [
           Row(
             children: [
-              Icon(Icons.location_city, size: 20, color: context.colors.primary),
+              Icon(
+                Icons.location_city,
+                size: 20,
+                color: context.colors.primary,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -257,10 +261,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                 ),
               ),
               IconButton(
-                icon: Icon(
-                  Icons.navigation,
-                  color: context.colors.primary,
-                ),
+                icon: Icon(Icons.navigation, color: context.colors.primary),
                 onPressed: () {},
               ),
             ],
@@ -696,9 +697,7 @@ class _MatchDetailScreenState extends State<MatchDetailScreen> {
                 variant: _isJoined
                     ? ButtonVariant.secondary
                     : ButtonVariant.primary,
-                leadingIcon: _isJoined
-                    ? Icons.person_remove
-                    : Icons.person_add,
+                leadingIcon: _isJoined ? Icons.person_remove : Icons.person_add,
                 isLoading: _isJoining,
               ),
             ),

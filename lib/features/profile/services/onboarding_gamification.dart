@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Gamification system for onboarding
@@ -21,7 +20,6 @@ class OnboardingGamification {
         (sum, item) => sum + (item['points'] as int),
       );
     } catch (e) {
-      debugPrint('Error getting user points: $e');
       return 0;
     }
   }
@@ -44,9 +42,7 @@ class OnboardingGamification {
 
       // Check for new badges
       await _checkAndAwardBadges(userId);
-    } catch (e) {
-      debugPrint('Error awarding points: $e');
-    }
+    } catch (e) {}
   }
 
   /// Get user's badges
@@ -60,7 +56,6 @@ class OnboardingGamification {
 
       return response.map<Badge>((item) => Badge.fromJson(item)).toList();
     } catch (e) {
-      debugPrint('Error getting user badges: $e');
       return [];
     }
   }
@@ -131,7 +126,6 @@ class OnboardingGamification {
 
       return newBadges;
     } catch (e) {
-      debugPrint('Error checking badges: $e');
       return [];
     }
   }
@@ -245,7 +239,6 @@ class OnboardingGamification {
 
       return ProfileStrengthCalculator.calculate(response).toDouble();
     } catch (e) {
-      debugPrint('Error calculating profile strength: $e');
       return 0.0;
     }
   }
@@ -268,7 +261,6 @@ class OnboardingGamification {
           ? suggestions.first
           : 'Complete your profile to get started!';
     } catch (e) {
-      debugPrint('Error getting next action: $e');
       return 'Complete your profile to get started!';
     }
   }

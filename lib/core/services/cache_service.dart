@@ -82,9 +82,6 @@ class AnalyticsService {
     Map<String, dynamic>? parameters,
   ]) async {
     // This would integrate with Firebase Analytics, Mixpanel, etc.
-    print(
-      'Analytics: $eventName ${parameters != null ? json.encode(parameters) : ''}',
-    );
   }
 
   /// Track an error
@@ -93,20 +90,13 @@ class AnalyticsService {
     Map<String, dynamic>? parameters,
   ]) async {
     // This would integrate with Crashlytics, Sentry, etc.
-    print(
-      'Analytics Error: $errorName ${parameters != null ? json.encode(parameters) : ''}',
-    );
   }
 
   /// Track screen view
   Future<void> trackScreenView(
     String screenName, [
     Map<String, dynamic>? parameters,
-  ]) async {
-    print(
-      'Analytics Screen: $screenName ${parameters != null ? json.encode(parameters) : ''}',
-    );
-  }
+  ]) async {}
 }
 
 /// Providers

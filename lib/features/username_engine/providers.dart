@@ -7,7 +7,6 @@ import 'package:dabbler/data/models/profile.dart';
 import '../../data/repositories/username_repository.dart';
 import '../../data/repositories/username_repository_impl.dart';
 
-
 final usernameRepositoryProvider = Provider.autoDispose<UsernameRepository>((
   ref,
 ) {
@@ -31,10 +30,10 @@ final profileByUsernameProvider = FutureProvider.autoDispose
 
 // search
 final usernameSearchProvider = FutureProvider.autoDispose
-    .family<Result<List<Profile>, Failure>, ({String query, int limit, int offset})>((
-      ref,
-      args,
-    ) {
+    .family<
+      Result<List<Profile>, Failure>,
+      ({String query, int limit, int offset})
+    >((ref, args) {
       final repo = ref.watch(usernameRepositoryProvider);
       return repo.search(
         query: args.query,

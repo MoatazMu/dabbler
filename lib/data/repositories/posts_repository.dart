@@ -4,7 +4,10 @@ import '../models/post.dart';
 
 abstract class PostsRepository {
   /// The user's home feed (recent, RLS-visible to the viewer).
-  Future<Result<List<Post>, Failure>> listRecent({int limit = 50, DateTime? before});
+  Future<Result<List<Post>, Failure>> listRecent({
+    int limit = 50,
+    DateTime? before,
+  });
 
   /// All posts authored by a specific user (still RLS-checked for viewer).
   Future<Result<List<Post>, Failure>> listByAuthor(

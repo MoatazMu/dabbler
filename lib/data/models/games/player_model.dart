@@ -72,21 +72,21 @@ class PlayerModel extends Player {
 
     if (statusData is String) {
       final statusLower = statusData.toLowerCase();
-      
+
       // Map database status values to PlayerStatus enum
       // Database uses 'active' for joined players, we determine waitlist separately
       if (statusLower == 'active') {
-        return PlayerStatus.confirmed; // Will be overridden by waitlist logic if needed
+        return PlayerStatus
+            .confirmed; // Will be overridden by waitlist logic if needed
       }
       if (statusLower == 'left' || statusLower == 'kicked') {
         return PlayerStatus.cancelled;
       }
-      
+
       // Try to match enum values directly
       try {
         return PlayerStatus.values.firstWhere(
-          (e) =>
-              e.toString().split('.').last.toLowerCase() == statusLower,
+          (e) => e.toString().split('.').last.toLowerCase() == statusLower,
           orElse: () => PlayerStatus.confirmed,
         );
       } catch (e) {

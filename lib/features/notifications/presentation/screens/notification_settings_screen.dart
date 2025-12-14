@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 
 class NotificationSettingsScreen extends StatefulWidget {
   const NotificationSettingsScreen({super.key});
@@ -48,7 +49,7 @@ class _NotificationSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SingleSectionLayout(
       appBar: AppBar(
         title: const Text('Notification Settings'),
         backgroundColor: Colors.transparent,
@@ -67,71 +68,69 @@ class _NotificationSettingsScreenState
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSectionHeader(
-              context,
-              'Notification Methods',
-              'Choose how you want to receive notifications',
-            ),
-            _buildNotificationMethodsSection(),
-            const SizedBox(height: 32),
+      scrollable: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(
+            context,
+            'Notification Methods',
+            'Choose how you want to receive notifications',
+          ),
+          _buildNotificationMethodsSection(),
+          const SizedBox(height: 32),
 
-            _buildSectionHeader(
-              context,
-              'Game Notifications',
-              'Stay updated about your games and activities',
-            ),
-            _buildGameNotificationsSection(),
-            const SizedBox(height: 32),
+          _buildSectionHeader(
+            context,
+            'Game Notifications',
+            'Stay updated about your games and activities',
+          ),
+          _buildGameNotificationsSection(),
+          const SizedBox(height: 32),
 
-            _buildSectionHeader(
-              context,
-              'Booking Notifications',
-              'Get alerts about your venue bookings',
-            ),
-            _buildBookingNotificationsSection(),
-            const SizedBox(height: 32),
+          _buildSectionHeader(
+            context,
+            'Booking Notifications',
+            'Get alerts about your venue bookings',
+          ),
+          _buildBookingNotificationsSection(),
+          const SizedBox(height: 32),
 
-            _buildSectionHeader(
-              context,
-              'Social Notifications',
-              'Connect with friends and teammates',
-            ),
-            _buildSocialNotificationsSection(),
-            const SizedBox(height: 32),
+          _buildSectionHeader(
+            context,
+            'Social Notifications',
+            'Connect with friends and teammates',
+          ),
+          _buildSocialNotificationsSection(),
+          const SizedBox(height: 32),
 
-            _buildSectionHeader(
-              context,
-              'Achievements & Rewards',
-              'Celebrate your progress and earn rewards',
-            ),
-            _buildAchievementsSection(),
-            const SizedBox(height: 32),
+          _buildSectionHeader(
+            context,
+            'Achievements & Rewards',
+            'Celebrate your progress and earn rewards',
+          ),
+          _buildAchievementsSection(),
+          const SizedBox(height: 32),
 
-            _buildSectionHeader(
-              context,
-              'System Notifications',
-              'Important app updates and alerts',
-            ),
-            _buildSystemNotificationsSection(),
-            const SizedBox(height: 32),
+          _buildSectionHeader(
+            context,
+            'System Notifications',
+            'Important app updates and alerts',
+          ),
+          _buildSystemNotificationsSection(),
+          const SizedBox(height: 32),
 
-            _buildSectionHeader(
-              context,
-              'Quiet Hours',
-              'Pause notifications during specified times',
-            ),
-            _buildQuietHoursSection(),
-            const SizedBox(height: 32),
+          _buildSectionHeader(
+            context,
+            'Quiet Hours',
+            'Pause notifications during specified times',
+          ),
+          _buildQuietHoursSection(),
+          const SizedBox(height: 32),
 
-            _buildTestNotificationButton(),
-            const SizedBox(height: 20),
-          ],
-        ),
+          _buildTestNotificationButton(),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }

@@ -51,9 +51,9 @@ class OrganiserProfileController extends StateNotifier<OrganiserProfileState> {
 
     try {
       final client = Supabase.instance.client;
-      
+
       String? resolvedProfileId = profileId;
-      
+
       // If profileId not provided, resolve the organiser profile.id for this auth user
       if (resolvedProfileId == null) {
         final profileRow = await client
@@ -64,10 +64,7 @@ class OrganiserProfileController extends StateNotifier<OrganiserProfileState> {
             .maybeSingle();
 
         if (profileRow == null) {
-          state = state.copyWith(
-            isLoading: false,
-            profiles: const [],
-          );
+          state = state.copyWith(isLoading: false, profiles: const []);
           return;
         }
 
@@ -81,9 +78,11 @@ class OrganiserProfileController extends StateNotifier<OrganiserProfileState> {
           .eq('profile_id', resolvedProfileId);
 
       final profiles = rows
-          .map((row) => OrganiserProfile.fromJson(
-                Map<String, dynamic>.from(row as Map),
-              ))
+          .map(
+            (row) => OrganiserProfile.fromJson(
+              Map<String, dynamic>.from(row as Map),
+            ),
+          )
           .toList();
 
       state = state.copyWith(
@@ -117,4 +116,3 @@ class OrganiserProfileController extends StateNotifier<OrganiserProfileState> {
     return 'An unexpected error occurred';
   }
 }
-

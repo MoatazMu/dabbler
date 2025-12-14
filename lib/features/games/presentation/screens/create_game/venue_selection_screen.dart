@@ -22,7 +22,8 @@ class VenueSelectionScreen extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<VenueSelectionScreen> createState() => _VenueSelectionScreenState();
+  ConsumerState<VenueSelectionScreen> createState() =>
+      _VenueSelectionScreenState();
 }
 
 class _VenueSelectionScreenState extends ConsumerState<VenueSelectionScreen> {
@@ -44,8 +45,8 @@ class _VenueSelectionScreenState extends ConsumerState<VenueSelectionScreen> {
         }
         // Check if any sport matches (case-insensitive)
         final sportLower = widget.sport!.toLowerCase();
-        final hasMatchingSport = sports.any((sport) => 
-          sport.toString().toLowerCase() == sportLower
+        final hasMatchingSport = sports.any(
+          (sport) => sport.toString().toLowerCase() == sportLower,
         );
         if (!hasMatchingSport) {
           return false;
@@ -93,7 +94,7 @@ class _VenueSelectionScreenState extends ConsumerState<VenueSelectionScreen> {
 
     try {
       final repository = ref.read(venuesRepositoryProvider);
-      
+
       // Build filters - pass sport filter to repository
       final filters = VenueFilters(
         sports: widget.sport != null ? [widget.sport!] : null,
@@ -106,14 +107,12 @@ class _VenueSelectionScreenState extends ConsumerState<VenueSelectionScreen> {
 
       result.fold(
         (failure) {
-          print('❌ [VENUE_SELECTION] Failed to load venues: ${failure.message}');
           setState(() {
             _venuesError = failure.message;
             _isLoadingVenues = false;
           });
         },
         (venues) {
-          print('✅ [VENUE_SELECTION] Loaded ${venues.length} venues');
           setState(() {
             _allVenues = venues.map((venue) {
               return {
@@ -138,9 +137,7 @@ class _VenueSelectionScreenState extends ConsumerState<VenueSelectionScreen> {
           });
         },
       );
-    } catch (e, stackTrace) {
-      print('❌ [VENUE_SELECTION] Exception loading venues: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       setState(() {
         _venuesError = 'Failed to load venues: $e';
         _isLoadingVenues = false;
@@ -457,7 +454,10 @@ class _VenueSelectionScreenState extends ConsumerState<VenueSelectionScreen> {
               const SizedBox(height: 12),
               Text(
                 'Failed to load venues',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Text(

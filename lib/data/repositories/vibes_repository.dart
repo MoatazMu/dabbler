@@ -11,7 +11,10 @@ abstract class VibesRepository {
   Future<Result<Map<String, int>, Failure>> countsForPost(String postId);
 
   /// Set/replace the author's vibe for a post (RLS allows only author/admin).
-  Future<Result<void, Failure>> setVibe({required String postId, required String vibe});
+  Future<Result<void, Failure>> setVibe({
+    required String postId,
+    required String vibe,
+  });
 
   /// Clear vibe for a post (author/admin only).
   Future<Result<void, Failure>> clearVibe(String postId);

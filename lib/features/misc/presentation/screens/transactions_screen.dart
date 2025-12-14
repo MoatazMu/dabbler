@@ -264,11 +264,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(4),
                 ),
-                child: Icon(
-                  Icons.trending_up,
-                  color: Colors.white,
-                  size: 12,
-                ),
+                child: Icon(Icons.trending_up, color: Colors.white, size: 12),
               ),
             ],
           ),

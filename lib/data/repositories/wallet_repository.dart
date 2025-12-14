@@ -14,5 +14,8 @@ abstract class WalletRepository {
   });
 
   /// Current user's payout history, newest first.
-  Future<Result<List<Payout>, Failure>> getPayouts({int limit = 50, int offset = 0});
+  Future<Result<List<Payout>, Failure>> getPayouts({
+    int limit = 50,
+    int offset = 0,
+  });
 }

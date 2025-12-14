@@ -19,7 +19,6 @@ class PostService {
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
       // Return empty list to avoid crashing UI
-      print('Error loading vibes for kind $kind: $e');
       return [];
     }
   }

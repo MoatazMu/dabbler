@@ -298,7 +298,6 @@ class UserService extends ChangeNotifier {
 
   /// Clear user data when starting a new registration
   Future<void> clearUserForNewRegistration() async {
-    print('🔄 [DEBUG] UserService: Clearing user data for new registration');
     await clearUserData();
   }
 }

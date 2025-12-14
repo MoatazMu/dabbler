@@ -9,7 +9,8 @@ class ActivityFeedState {
   final bool isLoadingMore;
   final String? error;
   final String currentPeriod; // 'all' | 'past' | 'upcoming' | 'present'
-  final String? currentCategory; // 'all' | 'game' | 'booking' | 'social' | 'payment' | 'reward'
+  final String?
+  currentCategory; // 'all' | 'game' | 'booking' | 'social' | 'payment' | 'reward'
   final DateTime? lastCursor; // For pagination
   final bool hasMore; // Whether there are more items to load
 
@@ -29,7 +30,7 @@ class ActivityFeedState {
     if (currentCategory == null || currentCategory == 'all') {
       return activities;
     }
-    
+
     // Map UI category names to subject_type values
     final categoryMap = {
       'Games': 'game',
@@ -38,13 +39,15 @@ class ActivityFeedState {
       'Payment': 'payment',
       'Rewards': 'reward',
     };
-    
+
     final subjectType = categoryMap[currentCategory];
     if (subjectType == null) {
       return activities;
     }
-    
-    return activities.where((activity) => activity.subjectType == subjectType).toList();
+
+    return activities
+        .where((activity) => activity.subjectType == subjectType)
+        .toList();
   }
 
   ActivityFeedState copyWith({
@@ -75,8 +78,7 @@ class ActivityFeedController extends StateNotifier<ActivityFeedState> {
   final ActivityFeedDatasource _datasource;
   static const int _pageSize = 50;
 
-  ActivityFeedController(this._datasource)
-      : super(ActivityFeedState());
+  ActivityFeedController(this._datasource) : super(ActivityFeedState());
 
   /// Loads the first page of activities for the given period.
   Future<void> loadActivities(String period) async {
@@ -98,16 +100,11 @@ class ActivityFeedController extends StateNotifier<ActivityFeedState> {
       state = state.copyWith(
         isLoading: false,
         activities: activities,
-        lastCursor: activities.isNotEmpty
-            ? activities.last.happenedAt
-            : null,
+        lastCursor: activities.isNotEmpty ? activities.last.happenedAt : null,
         hasMore: activities.length >= _pageSize,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoading: false, error: e.toString());
     }
   }
 
@@ -123,9 +120,7 @@ class ActivityFeedController extends StateNotifier<ActivityFeedState> {
   /// Loads the next page of activities using cursor-based pagination.
   Future<void> loadMore() async {
     // Don't load if already loading, no cursor, or no more items
-    if (state.isLoadingMore ||
-        state.lastCursor == null ||
-        !state.hasMore) {
+    if (state.isLoadingMore || state.lastCursor == null || !state.hasMore) {
       return;
     }
 
@@ -150,10 +145,7 @@ class ActivityFeedController extends StateNotifier<ActivityFeedState> {
         hasMore: hasMore,
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoadingMore: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoadingMore: false, error: e.toString());
     }
   }
 
@@ -167,4 +159,3 @@ class ActivityFeedController extends StateNotifier<ActivityFeedState> {
     await loadActivities(state.currentPeriod);
   }
 }
-

@@ -13,5 +13,7 @@ abstract class SchemaMetaRepository {
   Future<Result<String?, Failure>> getAppSchemaHash();
 
   /// Compares app vs DB; optional allowlist of accepted DB hashes.
-  Future<Result<bool, Failure>> isCompatible({List<String> acceptedDbHashes = const []});
+  Future<Result<bool, Failure>> isCompatible({
+    List<String> acceptedDbHashes = const [],
+  });
 }

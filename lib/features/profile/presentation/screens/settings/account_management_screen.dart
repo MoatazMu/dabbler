@@ -36,7 +36,7 @@ class _AccountManagementScreenState
   bool _isNewPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   String? _errorMessage;
-  
+
   final AuthService _authService = AuthService();
 
   @override
@@ -76,7 +76,7 @@ class _AccountManagementScreenState
       // Load real user email
       final userEmail = ref.read(currentUserEmailProvider);
       final currentEmail = userEmail ?? _authService.getCurrentUserEmail();
-      
+
       // Load 2FA status (if available)
       final user = _authService.getCurrentUser();
       final factors = user?.factors ?? [];
@@ -124,8 +124,8 @@ class _AccountManagementScreenState
                     ),
                     slivers: [
                       // Error message banner
-                      if (_errorMessage != null && 
-                          !_errorMessage!.contains('password') && 
+                      if (_errorMessage != null &&
+                          !_errorMessage!.contains('password') &&
                           !_errorMessage!.contains('email'))
                         SliverPadding(
                           padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
@@ -133,7 +133,9 @@ class _AccountManagementScreenState
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.errorContainer,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.errorContainer,
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -147,7 +149,9 @@ class _AccountManagementScreenState
                                     child: Text(
                                       _errorMessage!,
                                       style: TextStyle(
-                                        color: Theme.of(context).colorScheme.onErrorContainer,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onErrorContainer,
                                       ),
                                     ),
                                   ),
@@ -188,8 +192,9 @@ class _AccountManagementScreenState
                               _buildEmailSection(),
                               const SizedBox(height: 20),
                               _buildPasswordSection(),
-                              const SizedBox(height: 20),
-                              _buildSecuritySection(),
+                              // Release 2: Security Settings
+                              // const SizedBox(height: 20),
+                              // _buildSecuritySection(),
                               const SizedBox(height: 20),
                               _buildDangerZone(),
                             ],
@@ -459,77 +464,78 @@ class _AccountManagementScreenState
     );
   }
 
-  Widget _buildSecuritySection() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+  // Release 2: Security Settings section
+  // Widget _buildSecuritySection() {
+  //   final colorScheme = Theme.of(context).colorScheme;
+  //   final textTheme = Theme.of(context).textTheme;
 
-    return Card(
-      elevation: 0,
-      color: colorScheme.surfaceContainerHigh,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Security Settings',
-              style: textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 16),
-            SwitchListTile(
-              title: const Text('Two-Factor Authentication'),
-              subtitle: const Text(
-                'Add an extra layer of security to your account',
-              ),
-              value: _isTwoFactorEnabled,
-              onChanged: (value) {
-                setState(() {
-                  _isTwoFactorEnabled = value;
-                });
-                _toggleTwoFactor(value);
-              },
-              contentPadding: EdgeInsets.zero,
-            ),
-            const Divider(),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.devices_outlined, color: colorScheme.primary),
-              ),
-              title: const Text('Manage Devices'),
-              subtitle: const Text('View and manage logged-in devices'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: _manageDevices,
-            ),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer.withOpacity(0.5),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.history, color: colorScheme.primary),
-              ),
-              title: const Text('Login History'),
-              subtitle: const Text('View recent login activity'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: _viewLoginHistory,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //   return Card(
+  //     elevation: 0,
+  //     color: colorScheme.surfaceContainerHigh,
+  //     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(20),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text(
+  //             'Security Settings',
+  //             style: textTheme.titleMedium?.copyWith(
+  //               fontWeight: FontWeight.w700,
+  //               color: colorScheme.onSurface,
+  //             ),
+  //           ),
+  //           const SizedBox(height: 16),
+  //           SwitchListTile(
+  //             title: const Text('Two-Factor Authentication'),
+  //             subtitle: const Text(
+  //               'Add an extra layer of security to your account',
+  //             ),
+  //             value: _isTwoFactorEnabled,
+  //             onChanged: (value) {
+  //               setState(() {
+  //                 _isTwoFactorEnabled = value;
+  //               });
+  //               _toggleTwoFactor(value);
+  //             },
+  //             contentPadding: EdgeInsets.zero,
+  //           ),
+  //           const Divider(),
+  //           ListTile(
+  //             contentPadding: EdgeInsets.zero,
+  //             leading: Container(
+  //               padding: const EdgeInsets.all(10),
+  //               decoration: BoxDecoration(
+  //                 color: colorScheme.primaryContainer.withOpacity(0.5),
+  //                 borderRadius: BorderRadius.circular(12),
+  //               ),
+  //               child: Icon(Icons.devices_outlined, color: colorScheme.primary),
+  //             ),
+  //             title: const Text('Manage Devices'),
+  //             subtitle: const Text('View and manage logged-in devices'),
+  //             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+  //             onTap: _manageDevices,
+  //           ),
+  //           ListTile(
+  //             contentPadding: EdgeInsets.zero,
+  //             leading: Container(
+  //               padding: const EdgeInsets.all(10),
+  //               decoration: BoxDecoration(
+  //                 color: colorScheme.primaryContainer.withOpacity(0.5),
+  //                 borderRadius: BorderRadius.circular(12),
+  //               ),
+  //               child: Icon(Icons.history, color: colorScheme.primary),
+  //             ),
+  //             title: const Text('Login History'),
+  //             subtitle: const Text('View recent login activity'),
+  //             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+  //             onTap: _viewLoginHistory,
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildDangerZone() {
     final textTheme = Theme.of(context).textTheme;
@@ -620,12 +626,12 @@ class _AccountManagementScreenState
 
   Future<void> _updateEmail() async {
     final newEmail = _emailController.text.trim();
-    
+
     // Clear previous error messages
     setState(() {
       _errorMessage = null;
     });
-    
+
     if (newEmail.isEmpty) {
       setState(() {
         _errorMessage = 'email: Email cannot be empty';
@@ -664,10 +670,12 @@ class _AccountManagementScreenState
         setState(() {
           _isSaving = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Email update request sent. Please check your new email for verification.'),
+            content: Text(
+              'Email update request sent. Please check your new email for verification.',
+            ),
             backgroundColor: Colors.green,
           ),
         );
@@ -678,7 +686,7 @@ class _AccountManagementScreenState
           _isSaving = false;
           _errorMessage = 'email: Failed to update email: ${e.toString()}';
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to update email: $e'),
@@ -730,7 +738,8 @@ class _AccountManagementScreenState
 
     if (currentPassword == newPassword) {
       setState(() {
-        _errorMessage = 'password: New password must be different from current password';
+        _errorMessage =
+            'password: New password must be different from current password';
       });
       return;
     }
@@ -779,7 +788,8 @@ class _AccountManagementScreenState
       if (mounted) {
         setState(() {
           _isSaving = false;
-          _errorMessage = 'password: ${e.toString().replaceAll('Exception: ', '')}';
+          _errorMessage =
+              'password: ${e.toString().replaceAll('Exception: ', '')}';
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
@@ -825,7 +835,7 @@ class _AccountManagementScreenState
         setState(() {
           _isTwoFactorEnabled = false;
         });
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -840,7 +850,7 @@ class _AccountManagementScreenState
         setState(() {
           _isTwoFactorEnabled = !enabled; // Revert the toggle
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to update 2FA: $e'),
@@ -975,7 +985,7 @@ class _AccountManagementScreenState
 
                       try {
                         await _deleteAccount(passwordController.text);
-                        
+
                         if (context.mounted) {
                           passwordController.dispose();
                           confirmTextController.dispose();
@@ -985,7 +995,7 @@ class _AccountManagementScreenState
                         setDialogState(() {
                           isDeleting = false;
                         });
-                        
+
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -1039,12 +1049,11 @@ class _AccountManagementScreenState
       final profileDataSource = SupabaseProfileDataSource(
         Supabase.instance.client,
       );
-      
+
       try {
         await profileDataSource.deleteProfile(userId);
       } catch (e) {
         // Log but continue with auth deletion
-        print('Warning: Failed to delete profile data: $e');
       }
 
       // Delete auth user (requires admin API or RPC function)
@@ -1055,7 +1064,7 @@ class _AccountManagementScreenState
       if (mounted) {
         // Navigate to login screen
         context.go('/login');
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(

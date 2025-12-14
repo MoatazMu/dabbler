@@ -109,7 +109,9 @@ class SportProfile {
 
       // Map primary_position to preferredPositions array
       final primaryPosition = json['primary_position'] as String?;
-      final preferredPositions = primaryPosition != null ? [primaryPosition] : <String>[];
+      final preferredPositions = primaryPosition != null
+          ? [primaryPosition]
+          : <String>[];
 
       return SportProfile(
         sportId: sportKey,
@@ -119,9 +121,12 @@ class SportProfile {
         preferredPositions: preferredPositions,
         certifications: const [], // Not in simple schema
         achievements: const [], // Not in simple schema
-        isPrimarySport: false, // Not stored in database - would need to determine from preferred_sport in profiles table
+        isPrimarySport:
+            false, // Not stored in database - would need to determine from preferred_sport in profiles table
         lastPlayed: null, // Not stored in database
-        gamesPlayed: (json['matches_played'] as int?) ?? 0, // Database uses matches_played
+        gamesPlayed:
+            (json['matches_played'] as int?) ??
+            0, // Database uses matches_played
         averageRating: averageRating,
       );
     }
@@ -176,7 +181,7 @@ class SportProfile {
           return SkillLevel.beginner;
       }
     }
-    
+
     // Handle 1-10 scale (database standard)
     if (value >= 1 && value <= 10) {
       if (value <= 3) {
@@ -189,7 +194,7 @@ class SportProfile {
         return SkillLevel.expert;
       }
     }
-    
+
     // Default to beginner for invalid values
     return SkillLevel.beginner;
   }

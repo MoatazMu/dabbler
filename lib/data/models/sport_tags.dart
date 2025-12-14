@@ -69,12 +69,15 @@ const Map<String, String> sportTags = {
 /// Returns the tag if found, otherwise returns a formatted version of the sport key
 String getSportTag(String sportKey) {
   final normalizedKey = sportKey.toLowerCase().replaceAll(' ', '_');
-  return sportTags[normalizedKey] ?? 
-         normalizedKey.split('_').map((word) => 
-           word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1)
-         ).join(' ');
+  return sportTags[normalizedKey] ??
+      normalizedKey
+          .split('_')
+          .map(
+            (word) =>
+                word.isEmpty ? '' : word[0].toUpperCase() + word.substring(1),
+          )
+          .join(' ');
 }
 
 /// Get all available sport keys
 List<String> get allSportKeys => sportTags.keys.toList();
-

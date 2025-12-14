@@ -31,19 +31,14 @@ class AuthService {
   }) async {
     try {
       final normalizedEmail = _normalizeEmail(email);
-      print(
-        '🔐 [DEBUG] AuthService: Signing up user with email: $normalizedEmail',
-      );
 
       final response = await _supabase.auth.signUp(
         email: normalizedEmail,
         password: password,
       );
 
-      print('✅ [DEBUG] AuthService: Signup successful for: $normalizedEmail');
       return response;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Signup failed for $email: $e');
       throw Exception('Sign up failed: $e');
     }
   }
@@ -56,20 +51,14 @@ class AuthService {
     final normalizedEmail = _normalizeEmail(email);
 
     try {
-      print(
-        '🔐 [DEBUG] AuthService: Signing up user with email: $normalizedEmail',
-      );
-
       final response = await _supabase.auth.signUp(
         email: normalizedEmail,
         password: password,
         // NO metadata - we store everything in public.profiles
       );
 
-      print('✅ [DEBUG] AuthService: User signed up successfully');
       return response;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Sign up failed: $e');
       throw Exception(
         'Account creation failed. Please try again later or contact support.',
       );
@@ -88,8 +77,6 @@ class AuthService {
     String? interests,
   }) async {
     try {
-      print('👤 [DEBUG] AuthService: Creating profile for user: $userId');
-
       // Map intention to profile_type
       final profileType = intention == 'organise' ? 'organiser' : 'player';
 
@@ -101,7 +88,6 @@ class AuthService {
           .maybeSingle();
 
       if (existingProfile != null) {
-        print('✅ [DEBUG] AuthService: Profile already exists');
         return;
       }
 
@@ -109,7 +95,6 @@ class AuthService {
       await _supabase.auth.updateUser(
         UserAttributes(data: {'display_name': displayName}),
       );
-      print('✅ [DEBUG] AuthService: Updated display_name in auth.users');
 
       // Create profile with onboarding data
       final profileData = {
@@ -124,31 +109,12 @@ class AuthService {
         'interests': interests,
       };
 
-      print('📤 [DEBUG] AuthService: Inserting profile into public.profiles');
-      print('📋 [DEBUG] AuthService: Profile data:');
-      print('   user_id: $userId');
-      print('   display_name: "$displayName"');
-      print(
-        '   username: "$username" (isEmpty: ${username.isEmpty}, length: ${username.length})',
-      );
-      print('   age: $age');
-      print('   gender: ${gender.toLowerCase()}');
-      print('   intention: ${intention.toLowerCase()}');
-      print('   profile_type: $profileType');
-      print('   preferred_sport: ${preferredSport.toLowerCase()}');
-      print('   interests: $interests');
-
       // Insert profile and get the created row with id, profile_type, and preferred_sport
       final insertedProfile = await _supabase
           .from(SupabaseConfig.usersTable)
           .insert(profileData)
           .select('id, profile_type, preferred_sport')
           .single();
-
-      print('✅ [DEBUG] AuthService: Profile created successfully');
-      print(
-        '📋 [DEBUG] AuthService: Created profile id: ${insertedProfile['id']}',
-      );
 
       // Extract values from inserted profile
       final profileId = insertedProfile['id'] as String;
@@ -157,23 +123,9 @@ class AuthService {
           (insertedProfile['preferred_sport'] ?? preferredSport.toLowerCase())
               as String;
 
-      print('📋 [DEBUG] AuthService: Extracted values from inserted profile:');
-      print('   profile_id: $profileId');
-      print('   profile_type: "$insertedProfileType"');
-      print('   primary_sport: "$primarySport"');
-      print('   profile_type == "player": ${insertedProfileType == 'player'}');
-      print(
-        '   profile_type == "organiser": ${insertedProfileType == 'organiser'}',
-      );
-
       // Create child profile based on profile_type
       if (insertedProfileType == 'player') {
         // Create sport_profile for player
-        print('🏃 [DEBUG] AuthService: Creating sport_profile for player');
-        print('📋 [DEBUG] AuthService: Sport profile data:');
-        print('   profile_id: $profileId');
-        print('   sport: ${primarySport.toLowerCase()}');
-        print('   skill_level: 1');
         try {
           // Use 'sport' column (actual database column name)
           // Primary key is (profile_id, sport)
@@ -187,38 +139,13 @@ class AuthService {
               .insert(sportProfileData)
               .select()
               .single();
-          print('✅ [DEBUG] AuthService: Sport profile created successfully');
-          print(
-            '📋 [DEBUG] AuthService: Created sport profile: $sportProfileResult',
-          );
         } catch (e) {
-          print('❌ [DEBUG] AuthService: Failed to create sport profile');
-          print('❌ [DEBUG] AuthService: Error type: ${e.runtimeType}');
-          print('❌ [DEBUG] AuthService: Error details: $e');
-          if (e is PostgrestException) {
-            print('❌ [DEBUG] AuthService: Postgrest error code: ${e.code}');
-            print(
-              '❌ [DEBUG] AuthService: Postgrest error message: ${e.message}',
-            );
-            print(
-              '❌ [DEBUG] AuthService: Postgrest error details: ${e.details}',
-            );
-            print('❌ [DEBUG] AuthService: Postgrest error hint: ${e.hint}');
-          }
+          if (e is PostgrestException) {}
           // Don't rethrow - profile creation succeeded, sport profile is secondary
           // But log extensively so we can debug
-          print(
-            '⚠️ [DEBUG] AuthService: Continuing without sport profile - this should be investigated',
-          );
         }
       } else if (insertedProfileType == 'organiser') {
         // Create organiser_profile for organiser
-        print(
-          '🏢 [DEBUG] AuthService: Creating organiser_profile for organiser',
-        );
-        print('📋 [DEBUG] AuthService: Organiser profile data:');
-        print('   profile_id: $profileId');
-        print('   sport: ${primarySport.toLowerCase()}');
         try {
           final organiserProfileData = {
             'profile_id': profileId,
@@ -231,39 +158,13 @@ class AuthService {
               .insert(organiserProfileData)
               .select()
               .single();
-          print(
-            '✅ [DEBUG] AuthService: Organiser profile created successfully',
-          );
-          print(
-            '📋 [DEBUG] AuthService: Created organiser profile: $organiserProfileResult',
-          );
         } catch (e) {
-          print('❌ [DEBUG] AuthService: Failed to create organiser profile');
-          print('❌ [DEBUG] AuthService: Error type: ${e.runtimeType}');
-          print('❌ [DEBUG] AuthService: Error details: $e');
-          if (e is PostgrestException) {
-            print('❌ [DEBUG] AuthService: Postgrest error code: ${e.code}');
-            print(
-              '❌ [DEBUG] AuthService: Postgrest error message: ${e.message}',
-            );
-            print(
-              '❌ [DEBUG] AuthService: Postgrest error details: ${e.details}',
-            );
-            print('❌ [DEBUG] AuthService: Postgrest error hint: ${e.hint}');
-          }
+          if (e is PostgrestException) {}
           // Don't rethrow - profile creation succeeded, organiser profile is secondary
           // But log extensively so we can debug
-          print(
-            '⚠️ [DEBUG] AuthService: Continuing without organiser profile - this should be investigated',
-          );
         }
-      } else {
-        print(
-          '⚠️ [DEBUG] AuthService: Unknown profile_type: $insertedProfileType, skipping child profile creation',
-        );
-      }
+      } else {}
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Profile creation failed: $e');
       throw Exception('Failed to create user profile: ${e.toString()}');
     }
   }
@@ -275,30 +176,17 @@ class AuthService {
   }) async {
     try {
       final normalizedEmail = _normalizeEmail(email);
-      print(
-        '🔐 [DEBUG] AuthService: Signing in user with email: $normalizedEmail',
-      );
 
       final response = await _supabase.auth.signInWithPassword(
         email: normalizedEmail,
         password: password,
       );
 
-      print('✅ [DEBUG] AuthService: Signin successful for: $normalizedEmail');
-      print(
-        '🔐 [DEBUG] AuthService: User: ${response.user?.email}, Session: ${response.session != null ? 'Active' : 'None'}',
-      );
-
       // Verify the auth state immediately after signin
       final isAuth = _supabase.auth.currentUser != null;
-      print(
-        '🔐 [DEBUG] AuthService: Immediate auth check after signin: $isAuth',
-      );
 
       return response;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Signin failed for $email: $e');
-      print('❌ [DEBUG] AuthService: Error type: ${e.runtimeType}');
       throw Exception('Sign in failed: $e');
     }
   }
@@ -306,13 +194,8 @@ class AuthService {
   /// Sign in with phone (OTP) - Legacy method, use sendOtp instead
   Future<void> signInWithPhone({required String phone}) async {
     try {
-      print('📱 [DEBUG] AuthService: Sending OTP to phone: $phone');
-
       await _supabase.auth.signInWithOtp(phone: phone);
-
-      print('✅ [DEBUG] AuthService: OTP sent successfully to: $phone');
     } catch (e) {
-      print('❌ [DEBUG] AuthService: OTP send failed for $phone: $e');
       throw Exception('Phone sign in failed: $e');
     }
   }
@@ -323,26 +206,13 @@ class AuthService {
     required IdentifierType type,
   }) async {
     try {
-      print(
-        '📧📱 [DEBUG] AuthService: Sending OTP to ${type.name}: $identifier',
-      );
-
       if (type == IdentifierType.email) {
         final normalizedEmail = _normalizeEmail(identifier);
         await _supabase.auth.signInWithOtp(email: normalizedEmail);
-        print(
-          '✅ [DEBUG] AuthService: Email OTP sent successfully to: $normalizedEmail',
-        );
       } else {
         await _supabase.auth.signInWithOtp(phone: identifier);
-        print(
-          '✅ [DEBUG] AuthService: Phone OTP sent successfully to: $identifier',
-        );
       }
     } catch (e) {
-      print(
-        '❌ [DEBUG] AuthService: OTP send failed for ${type.name} $identifier: $e',
-      );
       throw Exception('Failed to send OTP: $e');
     }
   }
@@ -355,10 +225,6 @@ class AuthService {
     required String token,
   }) async {
     try {
-      print(
-        '🔐 [DEBUG] AuthService: Verifying OTP for ${type.name}: $identifier',
-      );
-
       AuthResponse response;
       if (type == IdentifierType.email) {
         final normalizedEmail = _normalizeEmail(identifier);
@@ -380,14 +246,8 @@ class AuthService {
         await ensureStubProfileForCurrentUser();
       }
 
-      print(
-        '✅ [DEBUG] AuthService: OTP verification successful for ${type.name}: $identifier',
-      );
       return response;
     } catch (e) {
-      print(
-        '❌ [DEBUG] AuthService: OTP verification failed for ${type.name} $identifier: $e',
-      );
       throw Exception('OTP verification failed: $e');
     }
   }
@@ -407,13 +267,8 @@ class AuthService {
   /// Sign out user
   Future<void> signOut() async {
     try {
-      print('🚪 [DEBUG] AuthService: Signing out user');
-
       await _supabase.auth.signOut();
-
-      print('✅ [DEBUG] AuthService: Signout successful');
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Signout failed: $e');
       throw Exception('Sign out failed: $e');
     }
   }
@@ -421,13 +276,8 @@ class AuthService {
   /// Update user password
   Future<void> updatePassword(String newPassword) async {
     try {
-      print('🔐 [DEBUG] AuthService: Updating password');
-
       await _supabase.auth.updateUser(UserAttributes(password: newPassword));
-
-      print('✅ [DEBUG] AuthService: Password updated successfully');
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Password update failed: $e');
       throw Exception('Password update failed: $e');
     }
   }
@@ -435,17 +285,11 @@ class AuthService {
   /// Send password reset email
   Future<void> sendPasswordResetEmail(String email) async {
     try {
-      print('📧 [DEBUG] AuthService: Sending password reset email to: $email');
       // Build deep link that opens the app to reset password screen
       final redirect =
           '${RoutePaths.deepLinkPrefix}${RoutePaths.resetPassword}';
       await _supabase.auth.resetPasswordForEmail(email, redirectTo: redirect);
-
-      print('✅ [DEBUG] AuthService: Password reset email sent to: $email');
     } catch (e) {
-      print(
-        '❌ [DEBUG] AuthService: Password reset email failed for $email: $e',
-      );
       throw Exception('Password reset email failed: $e');
     }
   }
@@ -453,8 +297,6 @@ class AuthService {
   /// Sign in with Google OAuth
   Future<bool> signInWithGoogle() async {
     try {
-      print('🔐 [DEBUG] AuthService: Initiating Google sign-in');
-
       // For mobile, use the app's custom scheme for OAuth callback
       // For web, use the current origin
       final redirectUrl = kIsWeb ? Uri.base.origin : 'dabbler://app';
@@ -465,11 +307,8 @@ class AuthService {
         authScreenLaunchMode: LaunchMode.externalApplication,
       );
 
-      print('✅ [DEBUG] AuthService: Google OAuth initiated: $launched');
-      print('📋 [DEBUG] AuthService: Redirect URL: $redirectUrl');
       return launched;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Google sign-in failed: $e');
       throw Exception('Google sign-in failed: $e');
     }
   }
@@ -478,27 +317,13 @@ class AuthService {
   /// This should be called AFTER OAuth completes (e.g., from auth state listener)
   Future<GoogleSignInResult> handleGoogleSignInFlow() async {
     try {
-      print(
-        '🔍 [DEBUG] AuthService: Starting Google sign-in flow orchestration',
-      );
-
       // Get the authenticated user (should be set after OAuth completes)
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        print(
-          '⚠️ [DEBUG] AuthService: No user found - OAuth may not have completed yet',
-        );
         return const GoogleSignInResultError(
           message: 'Please complete Google sign-in and try again.',
         );
       }
-
-      print('👤 [DEBUG] AuthService: Google user authenticated: ${user.email}');
-      print('📋 [DEBUG] AuthService: User ID: ${user.id}');
-      print('📋 [DEBUG] AuthService: User email: ${user.email}');
-      print('📋 [DEBUG] AuthService: User phone: ${user.phone}');
-      print('📋 [DEBUG] AuthService: User identities: ${user.identities}');
-      print('📋 [DEBUG] AuthService: User appMetadata: ${user.appMetadata}');
 
       // Step 3: Derive provider flags
       final email = user.email;
@@ -521,54 +346,32 @@ class AuthService {
               identities.any((identity) => identity.provider == 'google')) ||
           (user.appMetadata['provider'] == 'google');
 
-      print('📋 [DEBUG] AuthService: Provider flags:');
-      print('   hasGoogleProvider: $hasGoogleProvider');
-      print('   hasPhone: $hasPhone');
-      print('   email: $email');
-
       // Step 4: Query profile store by user_id (since profiles don't store email)
       final profile = await getUserProfile(fields: ['id', 'user_id']);
       final hasProfile = profile != null;
 
-      print('📋 [DEBUG] AuthService: Profile check:');
-      print('   hasProfile: $hasProfile');
-      if (hasProfile) {
-        print('   profile_id: ${profile['id']}');
-      }
+      if (hasProfile) {}
 
       // Step 5: Apply branching logic
       if (!hasProfile && !hasPhone) {
         // User A: New email, no phone - needs full onboarding flow
-        print(
-          '✅ [DEBUG] AuthService: Branch A - New Google user (email only) - routing to onboarding',
-        );
         return GoogleSignInResultGoToOnboarding(email: email);
       } else if (!hasProfile && hasPhone) {
         // User B: New email, has phone
-        print(
-          '✅ [DEBUG] AuthService: Branch B - New Google user (email + phone)',
-        );
         return GoogleSignInResultGoToPhoneOtp(phone: phoneValue, email: email);
       } else if (hasProfile && hasGoogleProvider) {
         // User C: Existing profile, already used Google
-        print('✅ [DEBUG] AuthService: Branch C - Existing Google user');
         return const GoogleSignInResultGoToHome();
       } else if (hasProfile && !hasGoogleProvider) {
         // User D: Existing profile, but not created via Google
-        print('✅ [DEBUG] AuthService: Branch D - Existing user (non-Google)');
         return GoogleSignInResultRequirePassword(email: email);
       } else {
         // Fallback: Should not reach here, but handle gracefully
-        print(
-          '⚠️ [DEBUG] AuthService: Unexpected branch - defaulting to error',
-        );
         return const GoogleSignInResultError(
           message: 'Unable to determine sign-in path. Please contact support.',
         );
       }
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Error in handleGoogleSignInFlow: $e');
-      print('❌ [DEBUG] AuthService: Error type: ${e.runtimeType}');
       return GoogleSignInResultError(
         message: 'Google sign-in failed: ${e.toString()}',
       );
@@ -593,7 +396,6 @@ class AuthService {
       // For now, return null if not the current user
       return null;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Error getting profile by email: $e');
       return null;
     }
   }
@@ -605,28 +407,24 @@ class AuthService {
   /// Get current authenticated user
   User? getCurrentUser() {
     final user = _supabase.auth.currentUser;
-    print('👤 [DEBUG] AuthService: Current user: ${user?.email ?? 'None'}');
     return user;
   }
 
   /// Check if user is authenticated
   bool isAuthenticated() {
     final authenticated = _supabase.auth.currentUser != null;
-    print('🔐 [DEBUG] AuthService: User authenticated: $authenticated');
     return authenticated;
   }
 
   /// Get current user ID
   String? getCurrentUserId() {
     final userId = _supabase.auth.currentUser?.id;
-    print('🆔 [DEBUG] AuthService: Current user ID: $userId');
     return userId;
   }
 
   /// Get current user email
   String? getCurrentUserEmail() {
     final email = _supabase.auth.currentUser?.email;
-    print('📧 [DEBUG] AuthService: Current user email: $email');
     return email;
   }
 
@@ -638,16 +436,12 @@ class AuthService {
   /// Uses a unified database function to query auth.users table
   Future<bool> checkUserExistsByEmail(String email) async {
     final normalizedEmail = _normalizeEmail(email);
-    print(
-      '🔍 [DEBUG] AuthService: Email check requested for: $normalizedEmail',
-    );
     return _checkUserExistsByIdentifier(normalizedEmail);
   }
 
   /// Check if a user exists by phone in auth.users
   /// Uses a unified database function to query auth.users table
   Future<bool> checkUserExistsByPhone(String phone) async {
-    print('🔍 [DEBUG] AuthService: Phone check requested for: $phone');
     return _checkUserExistsByIdentifier(phone);
   }
 
@@ -662,13 +456,9 @@ class AuthService {
       );
 
       final exists = response as bool;
-      print(
-        '✅ [DEBUG] AuthService: User ${exists ? "EXISTS" : "DOES NOT EXIST"} for identifier: $identifier',
-      );
 
       return exists;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Error checking user existence: $e');
       // On error, return false to allow flow to continue to onboarding
       return false;
     }
@@ -683,11 +473,9 @@ class AuthService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        print('❌ [DEBUG] AuthService: No authenticated user for profile fetch');
         return null;
       }
 
-      print('👤 [DEBUG] AuthService: Fetching profile for user: ${user.email}');
       final selectFields = (fields == null || fields.isEmpty)
           ? '*'
           : fields.join(',');
@@ -700,21 +488,11 @@ class AuthService {
           .maybeSingle();
 
       if (response == null) {
-        print(
-          '⚠️ [DEBUG] AuthService: No profile found in users table for user: ${user.email}',
-        );
-        print(
-          '❌ [DEBUG] AuthService: This should not happen - profile should be created during signup',
-        );
         return null;
       }
 
-      print(
-        '✅ [DEBUG] AuthService: Profile fetched successfully with display_name: "${response['display_name']}"',
-      );
       return response;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Error fetching user profile: $e');
       return null;
     }
   }
@@ -725,9 +503,6 @@ class AuthService {
     try {
       final user = _supabase.auth.currentUser;
       if (user == null) {
-        print(
-          '⚠️ [DEBUG] AuthService: No authenticated user for stub profile creation',
-        );
         return;
       }
 
@@ -739,9 +514,6 @@ class AuthService {
           .maybeSingle();
 
       if (existingProfile != null) {
-        print(
-          '✅ [DEBUG] AuthService: Profile already exists, skipping stub creation',
-        );
         return;
       }
 
@@ -760,11 +532,6 @@ class AuthService {
             )
           : 'Player';
 
-      print(
-        '📝 [DEBUG] AuthService: Creating stub profile for user: ${user.id}',
-      );
-      print('📋 [DEBUG] AuthService: Display name: "$safeDisplayName"');
-
       final stubProfileData = {
         'user_id': user.id,
         'display_name': safeDisplayName,
@@ -775,12 +542,7 @@ class AuthService {
       };
 
       await _supabase.from(SupabaseConfig.usersTable).insert(stubProfileData);
-
-      print(
-        '✅ [DEBUG] AuthService: Stub profile created successfully with onboard=false',
-      );
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Error creating stub profile: $e');
       // Don't throw - this is called after auth, we don't want to break the flow
       // The profile will be created during onboarding completion if needed
     }
@@ -804,26 +566,12 @@ class AuthService {
         throw Exception('User not authenticated');
       }
 
-      print(
-        '🎯 [DEBUG] AuthService: Completing onboarding for user: ${user.id}',
-      );
-      print('📋 [DEBUG] AuthService: Onboarding data:');
-      print('   display_name: "$displayName"');
-      print('   username: "$username"');
-      print('   age: $age');
-      print('   gender: $gender');
-      print('   intention: $intention');
-      print('   preferred_sport: $preferredSport');
-      print('   interests: $interests');
-
       // Map intention to profile_type
       final profileType = intention == 'organise' ? 'organiser' : 'player';
 
       // Update password if provided (for email users)
       if (password != null && password.isNotEmpty) {
-        print('🔐 [DEBUG] AuthService: Setting password for email user');
         await _supabase.auth.updateUser(UserAttributes(password: password));
-        print('✅ [DEBUG] AuthService: Password set successfully');
       }
 
       // Update auth.users metadata with key profile fields
@@ -835,7 +583,6 @@ class AuthService {
       };
 
       await _supabase.auth.updateUser(UserAttributes(data: userMetadata));
-      print('✅ [DEBUG] AuthService: Updated auth.users metadata');
 
       // Check if profile exists (should exist as stub from ensureStubProfileForCurrentUser)
       final existingProfile = await _supabase
@@ -848,7 +595,6 @@ class AuthService {
       if (existingProfile != null) {
         // Update existing profile
         profileId = existingProfile['id'] as String;
-        print('📝 [DEBUG] AuthService: Updating existing profile: $profileId');
 
         final updateData = {
           'display_name': displayName,
@@ -868,13 +614,8 @@ class AuthService {
             .from(SupabaseConfig.usersTable)
             .update(updateData)
             .eq('user_id', user.id);
-
-        print('✅ [DEBUG] AuthService: Profile updated successfully');
       } else {
         // Create new profile (fallback if stub wasn't created)
-        print(
-          '📝 [DEBUG] AuthService: Creating new profile (stub was missing)',
-        );
 
         final profileData = {
           'user_id': user.id,
@@ -899,15 +640,11 @@ class AuthService {
             .single();
 
         profileId = insertedProfile['id'] as String;
-        print(
-          '✅ [DEBUG] AuthService: Profile created successfully: $profileId',
-        );
       }
 
       // Create child profile based on profile_type
       if (profileType == 'player') {
         // Create sport_profile for player
-        print('🏃 [DEBUG] AuthService: Creating sport_profile for player');
         try {
           final sportProfileData = {
             'profile_id': profileId,
@@ -925,21 +662,12 @@ class AuthService {
 
           if (existingSportProfile == null) {
             await _supabase.from('sport_profiles').insert(sportProfileData);
-            print('✅ [DEBUG] AuthService: Sport profile created successfully');
-          } else {
-            print(
-              '✅ [DEBUG] AuthService: Sport profile already exists, skipping',
-            );
-          }
+          } else {}
         } catch (e) {
-          print('❌ [DEBUG] AuthService: Failed to create sport profile: $e');
           // Don't rethrow - profile update succeeded, sport profile is secondary
         }
       } else if (profileType == 'organiser') {
         // Create organiser_profile for organiser
-        print(
-          '🏢 [DEBUG] AuthService: Creating organiser_profile for organiser',
-        );
         try {
           final organiserProfileData = {
             'profile_id': profileId,
@@ -960,25 +688,12 @@ class AuthService {
             await _supabase
                 .from('organiser_profiles')
                 .insert(organiserProfileData);
-            print(
-              '✅ [DEBUG] AuthService: Organiser profile created successfully',
-            );
-          } else {
-            print(
-              '✅ [DEBUG] AuthService: Organiser profile already exists, skipping',
-            );
-          }
+          } else {}
         } catch (e) {
-          print(
-            '❌ [DEBUG] AuthService: Failed to create organiser profile: $e',
-          );
           // Don't rethrow - profile update succeeded, organiser profile is secondary
         }
       }
-
-      print('✅ [DEBUG] AuthService: Onboarding completed successfully');
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Onboarding completion failed: $e');
       throw Exception('Failed to complete onboarding: ${e.toString()}');
     }
   }
@@ -986,10 +701,6 @@ class AuthService {
   /// Check if username already exists in public.profiles
   Future<bool> checkUsernameExists(String username) async {
     try {
-      print(
-        '🔍 [DEBUG] AuthService: Checking username availability: $username',
-      );
-
       final result = await _supabase
           .from(SupabaseConfig.usersTable)
           .select('id')
@@ -997,15 +708,9 @@ class AuthService {
           .maybeSingle();
 
       final exists = result != null;
-      print(
-        exists
-            ? '❌ [DEBUG] AuthService: Username ALREADY EXISTS: $username'
-            : '✅ [DEBUG] AuthService: Username AVAILABLE: $username',
-      );
 
       return exists;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Error checking username: $e');
       return false; // On error, allow the username (validation will happen on insert)
     }
   }
@@ -1026,7 +731,6 @@ class AuthService {
           .inFilter('user_id', userIds);
       return (rows as List).cast<Map<String, dynamic>>();
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Batch profile fetch failed: $e');
       return [];
     }
   }
@@ -1053,12 +757,6 @@ class AuthService {
       final user = _supabase.auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      print('👤 [DEBUG] AuthService: Updating profile for user: ${user.email}');
-      print('📝 [DEBUG] AuthService: Display name to update: "$displayName"');
-      print(
-        '📝 [DEBUG] AuthService: Age: $age, Gender: $gender, Bio: "${bio?.substring(0, bio.length > 50 ? 50 : bio.length) ?? ''}"',
-      );
-
       // Prefer server-side RPC if available for consistent authorization/validation
       try {
         final response = await _supabase.rpc(
@@ -1082,7 +780,6 @@ class AuthService {
           },
         );
 
-        print('✅ [DEBUG] AuthService: Profile updated successfully via RPC');
         return response;
       } on PostgrestException catch (e) {
         // If RPC is missing (PGRST202) or not yet deployed, fallback to direct table update
@@ -1094,10 +791,6 @@ class AuthService {
         if (!isMissingRpc) {
           rethrow;
         }
-
-        print(
-          '⚠️ [DEBUG] AuthService: RPC update_user_profile not found. Falling back to direct update.',
-        );
 
         // Build updates map with only non-null values to avoid wiping existing data
         final Map<String, dynamic> updates = {
@@ -1155,13 +848,8 @@ class AuthService {
               : language.trim();
         }
 
-        print('📋 [DEBUG] AuthService: Updates map: $updates');
-
         if (updates.length <= 1) {
           // Only updated_at
-          print(
-            'ℹ️ [DEBUG] AuthService: No profile fields to update. Returning current profile.',
-          );
           final current = await _supabase
               .from(SupabaseConfig.usersTable)
               .select()
@@ -1178,9 +866,6 @@ class AuthService {
               .select()
               .single();
 
-          print(
-            '✅ [DEBUG] AuthService: Profile updated successfully via direct table update',
-          );
           return updated;
         } on PostgrestException catch (e2) {
           // Handle schema differences gracefully (e.g., full_name vs name, preferred_sports vs sports)
@@ -1189,10 +874,6 @@ class AuthService {
               e2.message.toLowerCase().contains('column') &&
                   e2.message.toLowerCase().contains('does not exist');
           if (!isMissingColumn) rethrow;
-
-          print(
-            '⚠️ [DEBUG] AuthService: Column mismatch on profiles table. Retrying with alternate column names.',
-          );
 
           final Map<String, dynamic> altUpdates = {};
           // Map name -> full_name if present
@@ -1242,14 +923,10 @@ class AuthService {
               .select()
               .single();
 
-          print(
-            '✅ [DEBUG] AuthService: Profile updated successfully via alternate column names',
-          );
           return updatedAlt;
         }
       }
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Profile update failed: $e');
       throw Exception('Profile update failed: $e');
     }
   }
@@ -1261,9 +938,6 @@ class AuthService {
   /// Get current session
   Session? getCurrentSession() {
     final session = _supabase.auth.currentSession;
-    print(
-      '🔐 [DEBUG] AuthService: Current session: ${session != null ? 'Active' : 'None'}',
-    );
     return session;
   }
 
@@ -1278,21 +952,16 @@ class AuthService {
     );
     final expired = now.isAfter(expiresAt);
 
-    print('⏰ [DEBUG] AuthService: Session expired: $expired');
     return expired;
   }
 
   /// Refresh session
   Future<AuthResponse?> refreshSession() async {
     try {
-      print('🔄 [DEBUG] AuthService: Refreshing session');
-
       final response = await _supabase.auth.refreshSession();
 
-      print('✅ [DEBUG] AuthService: Session refreshed successfully');
       return response;
     } catch (e) {
-      print('❌ [DEBUG] AuthService: Session refresh failed: $e');
       return null;
     }
   }

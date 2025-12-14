@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import '../../../../utils/enums/social_enums.dart';
@@ -280,7 +279,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       // await postRepository.toggleLike(postId);
     } catch (e) {
       // Handle error
-      debugPrint('Error toggling post like: $e');
     }
   }
 
@@ -304,7 +302,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       // await postRepository.toggleBookmark(postId);
     } catch (e) {
       // Handle error
-      debugPrint('Error toggling post bookmark: $e');
     }
   }
 
@@ -323,7 +320,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       // await postRepository.hidePost(postId);
     } catch (e) {
       // Handle error
-      debugPrint('Error hiding post: $e');
     }
   }
 
@@ -341,7 +337,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       if (!postExists) {
         // If post doesn't exist in current state, we could fetch it here
         // For now, just log that we're loading details
-        print('Loading details for post: $postId');
       }
     } catch (e) {
       state = state.copyWith(error: e.toString());
@@ -382,7 +377,6 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
       return true;
     } catch (e) {
       state = state.copyWith(error: e.toString());
-      debugPrint('Error adding comment: $e');
       return false;
     }
   }

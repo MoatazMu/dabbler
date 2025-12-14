@@ -1,10 +1,7 @@
 import 'package:dabbler/core/utils/validators.dart';
 
 /// Enum to represent identifier type
-enum IdentifierType {
-  email,
-  phone,
-}
+enum IdentifierType { email, phone }
 
 /// Result of identifier detection
 class IdentifierDetectionResult {
@@ -56,7 +53,7 @@ class IdentifierDetector {
   static String _normalizePhone(String phone) {
     // Remove all non-digit characters except +
     final cleaned = phone.replaceAll(RegExp(r'[^\d+]'), '');
-    
+
     // Ensure it starts with + if it doesn't already
     if (!cleaned.startsWith('+')) {
       // If it starts with 0, remove it and add default country code
@@ -66,14 +63,14 @@ class IdentifierDetector {
       // Otherwise, assume it's missing country code - add default
       return '+971$cleaned'; // Default to UAE
     }
-    
+
     return cleaned;
   }
 
   /// Validate identifier based on its detected type
   static String? validate(String input) {
     final result = detect(input);
-    
+
     switch (result.type) {
       case IdentifierType.email:
         return AppValidators.validateEmail(result.normalizedValue);
@@ -82,4 +79,3 @@ class IdentifierDetector {
     }
   }
 }
-

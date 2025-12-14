@@ -2,7 +2,6 @@ import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import '../models/joinability_rule.dart';
 
-
 /// Pure client-side joinability matrix.
 /// Server remains the source of truth (RLS / RPC can still deny).
 abstract class JoinabilityRepository {

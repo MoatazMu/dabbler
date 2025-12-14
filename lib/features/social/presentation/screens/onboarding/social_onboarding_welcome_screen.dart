@@ -36,11 +36,7 @@ class SocialOnboardingWelcomeScreen extends ConsumerWidget {
                   color: theme.primaryColor.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.group,
-                  size: 60,
-                  color: theme.primaryColor,
-                ),
+                child: Icon(Icons.group, size: 60, color: theme.primaryColor),
               ),
 
               const SizedBox(height: 32),

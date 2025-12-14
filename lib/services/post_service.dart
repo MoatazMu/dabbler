@@ -37,10 +37,10 @@ class PostService {
     String? venueId,
   }) async {
     final result = await supabase
-        .rpc('upsert_location_tag', params: {
-          '_label': label,
-          '_venue_id': venueId,
-        })
+        .rpc(
+          'upsert_location_tag',
+          params: {'_label': label, '_venue_id': venueId},
+        )
         .maybeSingle();
 
     if (result == null) return null;
@@ -94,20 +94,18 @@ class PostService {
 
     // 2) Attach vibes (post_vibes)
     if (vibeIds.isNotEmpty) {
-      final vibeRows = vibeIds.map((vibeId) => {
-            'post_id': postId,
-            'vibe_id': vibeId,
-          }).toList();
+      final vibeRows = vibeIds
+          .map((vibeId) => {'post_id': postId, 'vibe_id': vibeId})
+          .toList();
 
       await supabase.from('post_vibes').insert(vibeRows);
     }
 
     // 3) Mentions
     if (mentionProfileIds.isNotEmpty) {
-      final mentionRows = mentionProfileIds.map((pid) => {
-            'post_id': postId,
-            'mentioned_profile_id': pid,
-          }).toList();
+      final mentionRows = mentionProfileIds
+          .map((pid) => {'post_id': postId, 'mentioned_profile_id': pid})
+          .toList();
 
       await supabase.from('post_mentions').insert(mentionRows);
     }
@@ -115,4 +113,3 @@ class PostService {
     return postId;
   }
 }
-

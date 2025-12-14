@@ -423,11 +423,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.email,
-                    size: 16,
-                    color: context.colors.primary,
-                  ),
+                  Icon(Icons.email, size: 16, color: context.colors.primary),
                   const SizedBox(width: 12),
                   Text(
                     '$invitedPlayers invitation${invitedPlayers != 1 ? 's' : ''} will be sent',

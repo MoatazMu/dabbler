@@ -65,9 +65,6 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       _identifier = detection.normalizedValue;
     }
 
-    print(
-      '🔍 [DEBUG] OtpVerificationScreen: Initialized with identifier=${_identifierType.name}: $_identifier, userExistsBeforeOtp=${widget.userExistsBeforeOtp}',
-    );
     _startResendCountdown();
   }
 
@@ -147,10 +144,6 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     setState(() => _isLoading = true);
 
     try {
-      print(
-        '🔐 [DEBUG] OtpVerificationScreen: Verifying OTP for ${_identifierType.name}: $_identifier',
-      );
-
       final authService = AuthService();
       final response = await authService.verifyOtp(
         identifier: _identifier,
@@ -158,21 +151,11 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         token: otpCode,
       );
 
-      print('✅ [DEBUG] OtpVerificationScreen: OTP verification successful');
-
       // Verify session was created
       if (response.session != null) {
-        print('✅ [DEBUG] OtpVerificationScreen: Session created successfully');
-        print(
-          '👤 [DEBUG] OtpVerificationScreen: User ID: ${response.user?.id}',
-        );
-
         // Refresh auth state to ensure the session is recognized app-wide
         await ref.read(simpleAuthProvider.notifier).refreshAuthState();
-        print('✅ [DEBUG] OtpVerificationScreen: Auth state refreshed');
-      } else {
-        print('⚠️ [DEBUG] OtpVerificationScreen: No session in response');
-      }
+      } else {}
 
       if (mounted) {
         // Check if user needs to complete profile
@@ -207,22 +190,12 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           userProfile != null &&
           (userProfile['onboard'] == true || userProfile['onboard'] == 'true');
 
-      print(
-        '🔍 [DEBUG] OtpVerificationScreen: Profile check - onboard=$isOnboarded',
-      );
-
       if (isOnboarded) {
-        print(
-          '✅ [DEBUG] OtpVerificationScreen: User onboarded, redirecting to home',
-        );
         // User has completed onboarding - go to home
         if (mounted) {
           context.go(RoutePaths.home);
         }
       } else {
-        print(
-          '🆕 [DEBUG] OtpVerificationScreen: User not onboarded, redirecting to onboarding',
-        );
         // User needs to complete onboarding - initialize onboarding data
         if (_identifierType == IdentifierType.email) {
           ref.read(onboardingDataProvider.notifier).initWithEmail(_identifier);
@@ -243,7 +216,6 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         }
       }
     } catch (e) {
-      print('❌ [DEBUG] OtpVerificationScreen: Error during navigation: $e');
       // Final fallback - go to onboarding
       if (mounted) {
         if (_identifierType == IdentifierType.email) {

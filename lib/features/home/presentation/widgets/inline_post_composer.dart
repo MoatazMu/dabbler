@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/utils/enums/social_enums.dart';
 import 'package:dabbler/data/social/social_repository.dart';
 import 'package:dabbler/features/home/presentation/providers/home_providers.dart';
-import 'package:dabbler/features/social/providers/social_providers.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
+import 'package:dabbler/themes/material3_extensions.dart';
+import 'package:go_router/go_router.dart';
 
 final socialRepositoryProvider = Provider<SocialRepository>(
   (ref) => SocialRepository(),
 );
 
 enum ComposerMode { post, comment }
+
+enum CreationType { post, game }
 
 class InlinePostComposer extends ConsumerStatefulWidget {
   const InlinePostComposer({
@@ -40,11 +42,16 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
   List<Map<String, dynamic>> _availableVibes = [];
   bool _isLoadingVibes = false;
   final List<XFile> _selectedMedia = [];
+  CreationType _creationType = CreationType.post;
 
   @override
   void initState() {
     super.initState();
     _loadVibes();
+    // Auto-focus to open keyboard on Android
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
   }
 
   @override
@@ -55,710 +62,455 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
   }
 
   Future<void> _loadVibes() async {
-    setState(() => _isLoadingVibes = true);
+    setState(() {
+      _isLoadingVibes = true;
+    });
+
     try {
       final repo = ref.read(socialRepositoryProvider);
       final vibes = await repo.getVibesForKind(_selectedKind);
-      if (mounted) {
-        setState(() {
-          // Reorder so Neutral (if present) is first in the list.
-          final neutralVibes = vibes
-              .where((v) => (v['key'] as String?)?.toLowerCase() == 'neutral')
-              .toList();
-          final otherVibes = vibes
-              .where((v) => (v['key'] as String?)?.toLowerCase() != 'neutral')
-              .toList();
-          _availableVibes = [...neutralVibes, ...otherVibes];
-
-          // Ensure we always have a default vibe selected.
-          if (_availableVibes.isNotEmpty) {
-            final neutral = _availableVibes.firstWhere(
-              (v) => (v['key'] as String?)?.toLowerCase() == 'neutral',
-              orElse: () => _availableVibes.first,
-            );
-            _selectedVibeId = neutral['id'] ?? _availableVibes.first['id'];
-          }
-          _isLoadingVibes = false;
-        });
-      }
+      setState(() {
+        _availableVibes = vibes;
+        if (vibes.isNotEmpty) {
+          _selectedVibeId = vibes.first['id'];
+        }
+        _isLoadingVibes = false;
+      });
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoadingVibes = false);
-      }
+      print('Error loading vibes: $e');
+      setState(() {
+        _isLoadingVibes = false;
+      });
     }
   }
 
   void _onKindChanged(String kind) {
-    if (_selectedKind == kind) return;
     setState(() {
       _selectedKind = kind;
     });
-    _loadVibes();
   }
 
   Future<void> _handlePost() async {
-    final text = _textController.text.trim();
-    if (text.isEmpty) return;
+    if (_textController.text.isEmpty && _selectedMedia.isEmpty) return;
 
-    // Extra safety: do not allow posting without a vibe.
-    if (_selectedVibeId == null && _availableVibes.isNotEmpty) {
-      final neutral = _availableVibes.firstWhere(
-        (v) => (v['key'] as String?)?.toLowerCase() == 'neutral',
-        orElse: () => _availableVibes.first,
-      );
-      setState(() {
-        _selectedVibeId = neutral['id'] ?? _availableVibes.first['id'];
-      });
-    }
-
-    if (_selectedVibeId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please choose a vibe before posting.')),
-      );
-      return;
-    }
-
-    setState(() => _isPosting = true);
+    setState(() {
+      _isPosting = true;
+    });
 
     try {
       final repo = ref.read(socialRepositoryProvider);
 
-      Map<String, dynamic>? mediaJson;
-      if (_selectedMedia.isNotEmpty) {
-        // For now support a single image per post.
-        final file = _selectedMedia.first;
-        mediaJson = await repo.uploadPostMedia(file);
-      }
-
-      if (widget.mode == ComposerMode.post) {
+      if (widget.mode == ComposerMode.comment) {
+        // Handle comment creation
+        await repo.createComment(
+          postId: widget.parentPostId!,
+          body: _textController.text,
+        );
+      } else {
+        // Handle post creation
         await repo.createPost(
           kind: _selectedKind,
           visibility: PostVisibility.public,
-          body: text,
-          primaryVibeId: _selectedVibeId,
-          media: mediaJson,
-          // TODO: Add location, game support
+          body: _textController.text,
+          primaryVibeId: _selectedVibeId?.toString(),
+          // TODO: Upload media
         );
-
-        // Refresh the main feed when creating a post
-        ref.invalidate(latestFeedPostsProvider);
-      } else {
-        if (widget.parentPostId == null) {
-          throw Exception('parentPostId is required for comments');
-        }
-
-        await repo.createComment(
-          postId: widget.parentPostId!,
-          body: text,
-          media: mediaJson,
-        );
-
-        // Refresh thread comments after posting
-        ref.invalidate(postCommentsProvider(widget.parentPostId!));
-        ref.invalidate(postDetailsProvider(widget.parentPostId!));
       }
 
+      // Refresh posts
+      ref.invalidate(latestFeedPostsProvider);
+
+      // Clear form
+      _textController.clear();
+      setState(() {
+        _selectedMedia.clear();
+        _isPosting = false;
+      });
+
       if (mounted) {
-        _textController.clear();
-        _focusNode.unfocus();
-        setState(() {
-          _isPosting = false;
-          _selectedKind = 'moment'; // Reset to default
-          _selectedMedia.clear();
-        });
-
-        // Close the modal if in post mode
-        if (widget.mode == ComposerMode.post) {
-          Navigator.of(context).pop();
-        }
-
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Post shared successfully!')),
+          SnackBar(
+            content: Text(
+              widget.mode == ComposerMode.post
+                  ? 'Post created!'
+                  : 'Comment added!',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
       }
     } catch (e) {
+      print(
+        'Error creating ${widget.mode == ComposerMode.post ? "post" : "comment"}: $e',
+      );
+      setState(() {
+        _isPosting = false;
+      });
+
       if (mounted) {
-        setState(() => _isPosting = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to post: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to ${widget.mode == ComposerMode.post ? "post" : "comment"}. Try again.',
+            ),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
   }
 
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(source: source);
+      if (image != null) {
+        setState(() {
+          _selectedMedia.add(image);
+        });
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+    }
+  }
+
   void _showAttachmentOptions() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 32,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
+      showDragHandle: true,
+      builder: (context) {
+        return NavigationDrawer(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          elevation: 1,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 16, 16, 10),
+              child: Text(
+                'Add to your post',
+                style: Theme.of(context).textTheme.titleSmall,
               ),
-              _buildAttachmentOption(
-                icon: Iconsax.camera_copy,
-                label: 'Camera',
-                onTap: () async {
-                  Navigator.pop(context);
-                  final photo = await _imagePicker.pickImage(
-                    source: ImageSource.camera,
-                  );
-                  if (photo != null) {
-                    setState(() => _selectedMedia.add(photo));
-                  }
-                },
-              ),
-              _buildAttachmentOption(
-                icon: Iconsax.gallery_copy,
-                label: 'Gallery',
-                onTap: () async {
-                  Navigator.pop(context);
-                  final images = await _imagePicker.pickMultiImage();
-                  if (images.isNotEmpty) {
-                    setState(() => _selectedMedia.addAll(images));
-                  }
-                },
-              ),
-              _buildAttachmentOption(
-                icon: Iconsax.document_copy,
-                label: 'Files',
-                onTap: () {
-                  Navigator.pop(context);
-                  // TODO: Implement file picker
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
+            NavigationDrawerDestination(
+              icon: Icon(Iconsax.camera_copy),
+              label: Text('Camera'),
+            ),
+            NavigationDrawerDestination(
+              icon: Icon(Iconsax.gallery_copy),
+              label: Text('Gallery'),
+            ),
+            const SizedBox(height: 12),
+          ],
+          onDestinationSelected: (index) {
+            Navigator.pop(context);
+            if (index == 0) {
+              _pickImage(ImageSource.camera);
+            } else if (index == 1) {
+              _pickImage(ImageSource.gallery);
+            }
+          },
+        );
+      },
     );
   }
 
   void _showPostTypeOptions() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        child: SafeArea(
+      showDragHandle: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (context) {
+        return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                width: 32,
-                height: 4,
-                margin: const EdgeInsets.only(bottom: 20),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-                child: Text(
-                  'Choose your post type',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 10),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Choose post type',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                 ),
               ),
-              _buildPostTypeOption(
-                icon: Iconsax.gallery_copy,
-                label: 'Moment',
-                subtitle: 'Share a photo or video moment',
+              RadioListTile<String>(
                 value: 'moment',
+                groupValue: _selectedKind,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  _onKindChanged(value!);
+                },
+                title: Text('Moment'),
+                subtitle: Text('Share what\'s happening now'),
+                secondary: Icon(Iconsax.flash_1_copy),
               ),
-              _buildPostTypeOption(
-                icon: Iconsax.message_text_copy,
-                label: 'Dab',
-                subtitle: 'Quick thoughts and updates',
+              RadioListTile<String>(
                 value: 'dab',
+                groupValue: _selectedKind,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  _onKindChanged(value!);
+                },
+                title: Text('Dab'),
+                subtitle: Text('Celebrate an achievement'),
+                secondary: Icon(Iconsax.medal_copy),
               ),
-              _buildPostTypeOption(
-                icon: Iconsax.medal_star_copy,
-                label: 'Kick-in',
-                subtitle: 'Game-related content',
+              RadioListTile<String>(
                 value: 'kickin',
+                groupValue: _selectedKind,
+                onChanged: (value) {
+                  Navigator.pop(context);
+                  _onKindChanged(value!);
+                },
+                title: Text('Kick-in'),
+                subtitle: Text('Invite others to join'),
+                secondary: Icon(Iconsax.people_copy),
               ),
+              const SizedBox(height: 16),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   void _showVibeOptions() {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
-      backgroundColor: Colors.transparent,
+      showDragHandle: true,
       isScrollControlled: true,
-      builder: (context) => DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (context, scrollController) => Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              // Handle
-              Container(
-                width: 32,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              // Title
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Choose a vibe',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.6,
+          minChildSize: 0.4,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'How are you feeling?',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                  ],
+                  ),
                 ),
-              ),
-              // Vibes list
-              Expanded(
-                child: _isLoadingVibes
-                    ? const Center(child: CircularProgressIndicator())
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.only(
-                          left: 20,
-                          right: 20,
-                          bottom: 24,
+                const Divider(height: 1),
+                Expanded(
+                  child: _isLoadingVibes
+                      ? const Center(child: CircularProgressIndicator())
+                      : ListView.builder(
+                          controller: scrollController,
+                          itemCount: _availableVibes.length,
+                          itemBuilder: (context, index) {
+                            final vibe = _availableVibes[index];
+                            final vibeId = vibe['id'];
+                            final emoji = (vibe['emoji'] ?? '😊').toString();
+                            final label =
+                                (vibe['label_en'] ?? vibe['key'] ?? 'Unknown')
+                                    .toString();
+                            final isSelected = _selectedVibeId == vibeId;
+
+                            return CheckboxListTile(
+                              value: isSelected,
+                              onChanged: (value) {
+                                setState(() {
+                                  _selectedVibeId = vibeId;
+                                });
+                                Navigator.pop(context);
+                              },
+                              title: Text(label),
+                              secondary: Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Theme.of(
+                                          context,
+                                        ).colorScheme.primaryContainer
+                                      : Theme.of(
+                                          context,
+                                        ).colorScheme.surfaceContainerHigh,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 20),
+                                ),
+                              ),
+                            );
+                          },
                         ),
-                        itemCount: _availableVibes.length,
-                        itemBuilder: (context, index) {
-                          final vibe = _availableVibes[index];
-                          final id = vibe['id'];
-                          final label = vibe['label_en'] ?? vibe['key'];
-                          final emoji = vibe['emoji'] ?? '';
-                          final isSelected = _selectedVibeId == id;
-
-                          return _buildVibeOption(
-                            emoji: emoji,
-                            label: label,
-                            isSelected: isSelected,
-                            onTap: () {
-                              setState(() {
-                                _selectedVibeId = id;
-                              });
-                              Navigator.pop(context);
-                            },
-                          );
-                        },
-                      ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildVibeOption({
-    required String emoji,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? colorScheme.primaryContainer.withOpacity(0.3)
-              : null,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? colorScheme.primary
-                    : colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              alignment: Alignment.center,
-              child: Text(emoji, style: const TextStyle(fontSize: 24)),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                label,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (isSelected)
-              Icon(Iconsax.tick_circle_copy, color: colorScheme.primary),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAttachmentOption({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: colorScheme.onSurfaceVariant),
-            ),
-            const SizedBox(width: 16),
-            Text(
-              label,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPostTypeOption({
-    required IconData icon,
-    required String label,
-    required String subtitle,
-    required String value,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isSelected = _selectedKind == value;
-
-    return InkWell(
-      onTap: () {
-        Navigator.pop(context);
-        _onKindChanged(value);
+                const SizedBox(height: 16),
+              ],
+            );
+          },
+        );
       },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-        color: isSelected
-            ? colorScheme.primaryContainer.withOpacity(0.3)
-            : null,
-        child: Row(
-          children: [
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? colorScheme.primary
-                    : colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                icon,
-                color: isSelected
-                    ? colorScheme.onPrimary
-                    : colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    label,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (isSelected)
-              Icon(Iconsax.tick_circle_copy, color: colorScheme.primary),
-          ],
-        ),
-      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final tokens = context.colorTokens;
     final hasContent =
         _textController.text.isNotEmpty || _selectedMedia.isNotEmpty;
 
-    return Container(
-      margin: const EdgeInsets.all(0),
-      decoration: BoxDecoration(
-        color: tokens.header,
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Main input area
-          Container(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 48),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // First line: typing space
-                AppTextArea(
-                  controller: _textController,
-                  placeholder: "What's on your mind?",
-                  minLines: 1,
-                  maxLines: 5,
-                ),
-
-                const SizedBox(height: 12),
-
-                // Second line: controls
-                Row(
+    return Card(
+      elevation: 2,
+      shadowColor: colorScheme.shadow.withValues(alpha: 0.2),
+      color: colorScheme.surface,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Creation type toggle (Post vs Game)
+            if (widget.mode == ComposerMode.post)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Row(
                   children: [
-                    // Attachment button
-                    GestureDetector(
-                      onTap: _showAttachmentOptions,
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        alignment: Alignment.center,
-                        child: SvgPicture.asset(
-                          'assets/icons/add.svg',
-                          width: 18,
-                          height: 18,
-                          colorFilter: ColorFilter.mode(
-                            colorScheme.onSurfaceVariant,
-                            BlendMode.srcIn,
+                    Expanded(
+                      child: SegmentedButton<CreationType>(
+                        segments: [
+                          ButtonSegment<CreationType>(
+                            value: CreationType.post,
+                            label: Text('Create Post'),
+                            // icon: Icon(Iconsax.message_text_copy),
                           ),
+                          ButtonSegment<CreationType>(
+                            value: CreationType.game,
+                            label: Text('Create Game'),
+                            // icon: Icon(Iconsax.game_copy),
+                          ),
+                        ],
+                        selected: {_creationType},
+                        onSelectionChanged: (Set<CreationType> newSelection) {
+                          setState(() {
+                            _creationType = newSelection.first;
+                          });
+                        },
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.resolveWith((
+                            states,
+                          ) {
+                            if (states.contains(WidgetState.selected)) {
+                              return _creationType == CreationType.post
+                                  ? colorScheme.categorySocial
+                                  : colorScheme.categorySports;
+                            }
+                            return colorScheme.surfaceContainer;
+                          }),
+                          foregroundColor: WidgetStateProperty.resolveWith((
+                            states,
+                          ) {
+                            if (states.contains(WidgetState.selected)) {
+                              return colorScheme.onPrimary;
+                            }
+                            return colorScheme.onSurfaceVariant;
+                          }),
                         ),
                       ),
                     ),
-
-                    const SizedBox(width: 4),
-
-                    // Vibe pill (always visible, tap to change)
-                    InkWell(
-                      onTap: _showVibeOptions,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.secondaryContainer.withOpacity(
-                            0.5,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Builder(
-                          builder: (context) {
-                            final fallback = _availableVibes.isNotEmpty
-                                ? _availableVibes.first
-                                : null;
-                            final selected = _availableVibes.firstWhere(
-                              (v) => v['id'] == _selectedVibeId,
-                              orElse: () =>
-                                  fallback ??
-                                  {'emoji': '😊', 'label_en': 'Neutral'},
-                            );
-                            final emoji = (selected['emoji'] ?? '😊')
-                                .toString();
-                            final label =
-                                (selected['label_en'] ??
-                                        selected['key'] ??
-                                        'Neutral')
-                                    .toString();
-
-                            return Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  emoji,
-                                  style: const TextStyle(fontSize: 18),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  label,
-                                  style: AppTypography.labelMedium.copyWith(
-                                    color: colorScheme.onSecondaryContainer,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    // Post type pill (clickable)
-                    InkWell(
-                      onTap: _showPostTypeOptions,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primaryContainer.withOpacity(0.5),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          _selectedKind == 'moment'
-                              ? 'Moments'
-                              : _selectedKind == 'dab'
-                              ? 'Dab'
-                              : 'Kick-in',
-                          style: AppTypography.labelMedium.copyWith(
-                            color: colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const Spacer(),
-
-                    // Send/Post button
-                    if (hasContent)
-                      ConstrainedBox(
-                        constraints: const BoxConstraints(
-                          minWidth: 60,
-                          maxWidth: 100,
-                          minHeight: 36,
-                          maxHeight: 36,
-                        ),
-                        child: AppButton(
-                          onPressed: _isPosting ? null : _handlePost,
-                          label: _isPosting ? 'Posting...' : 'Post',
-                          type: AppButtonType.filled,
-                          size: AppButtonSize.sm,
-                        ),
-                      ),
                   ],
                 ),
-              ],
-            ),
-          ),
+              ),
 
-          // Media preview
-          if (_selectedMedia.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: SizedBox(
-                height: 80,
+            // Text input
+            TextFormField(
+              controller: _textController,
+              focusNode: _focusNode,
+              maxLines: null,
+              minLines: 1,
+              style: Theme.of(context).textTheme.bodyLarge,
+              decoration: InputDecoration(
+                hintText: widget.mode == ComposerMode.post
+                    ? "What's on your mind?"
+                    : 'Write a comment...',
+                filled: true,
+                fillColor: colorScheme.surfaceContainer,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(
+                    color: colorScheme.categorySocial,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              onChanged: (_) => setState(() {}),
+            ),
+
+            // Media preview
+            if (_selectedMedia.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              SizedBox(
+                height: 100,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: _selectedMedia.length,
                   itemBuilder: (context, index) {
                     return Container(
-                      width: 80,
+                      width: 100,
                       margin: const EdgeInsets.only(right: 8),
                       child: Stack(
                         children: [
+                          // Image container
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(12),
                             child: Container(
-                              color: colorScheme.surfaceContainerHighest,
-                              child: const Center(
-                                child: Icon(Iconsax.gallery_copy),
+                              color: colorScheme.surfaceContainer,
+                              child: Center(
+                                child: Icon(
+                                  Iconsax.gallery_copy,
+                                  color: colorScheme.onSurfaceVariant,
+                                  size: 32,
+                                ),
                               ),
                             ),
                           ),
+
+                          // Remove button
                           Positioned(
                             top: 4,
                             right: 4,
-                            child: GestureDetector(
-                              onTap: () {
+                            child: IconButton.filledTonal(
+                              onPressed: () {
                                 setState(() {
                                   _selectedMedia.removeAt(index);
                                 });
                               },
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Iconsax.close_circle_copy,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
+                              icon: const Icon(
+                                Iconsax.close_circle_copy,
+                                size: 16,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 28,
+                                minHeight: 28,
+                              ),
+                              style: IconButton.styleFrom(
+                                backgroundColor: colorScheme.errorContainer,
+                                foregroundColor: colorScheme.onErrorContainer,
                               ),
                             ),
                           ),
@@ -768,8 +520,154 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                   },
                 ),
               ),
+            ],
+
+            const SizedBox(height: 16),
+
+            // Controls row
+            Row(
+              children: [
+                // Show controls only for posts (not comments) and when creating posts
+                if (widget.mode == ComposerMode.post &&
+                    _creationType == CreationType.post) ...[
+                  // Attachment button
+                  IconButton.filledTonal(
+                    onPressed: _showAttachmentOptions,
+                    icon: const Icon(Iconsax.add_copy),
+                    tooltip: 'Add media',
+                    style: IconButton.styleFrom(
+                      backgroundColor: colorScheme.secondaryContainer,
+                      foregroundColor: colorScheme.onSecondaryContainer,
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  // Vibe chip
+                  FilterChip(
+                    label: Builder(
+                      builder: (context) {
+                        final fallback = _availableVibes.isNotEmpty
+                            ? _availableVibes.first
+                            : null;
+                        final selected = _availableVibes.firstWhere(
+                          (v) => v['id'] == _selectedVibeId,
+                          orElse: () =>
+                              fallback ??
+                              {'emoji': '😊', 'label_en': 'Neutral'},
+                        );
+                        final emoji = (selected['emoji'] ?? '😊').toString();
+                        final label =
+                            (selected['label_en'] ??
+                                    selected['key'] ??
+                                    'Neutral')
+                                .toString();
+
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(emoji, style: const TextStyle(fontSize: 16)),
+                            const SizedBox(width: 4),
+                            Text(label),
+                          ],
+                        );
+                      },
+                    ),
+                    onSelected: (_) => _showVibeOptions(),
+                    backgroundColor: colorScheme.tertiaryContainer,
+                    selectedColor: colorScheme.tertiaryContainer,
+                    labelStyle: AppTypography.labelLarge.copyWith(
+                      color: colorScheme.onTertiaryContainer,
+                    ),
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Post type chip
+                  FilterChip(
+                    label: Text(
+                      _selectedKind == 'moment'
+                          ? 'Moment'
+                          : _selectedKind == 'dab'
+                          ? 'Dab'
+                          : 'Kick-in',
+                    ),
+                    onSelected: (_) => _showPostTypeOptions(),
+                    backgroundColor: colorScheme.categorySocial.withValues(
+                      alpha: 0.2,
+                    ),
+                    selectedColor: colorScheme.categorySocial.withValues(
+                      alpha: 0.2,
+                    ),
+                    labelStyle: AppTypography.labelLarge.copyWith(
+                      color: colorScheme.categorySocial,
+                    ),
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ],
+
+                // Game creation button
+                if (widget.mode == ComposerMode.post &&
+                    _creationType == CreationType.game) ...[
+                  FilledButton.icon(
+                    onPressed: () {
+                      // Navigate to game creation screen
+                      Navigator.of(context).pop();
+                      context.push('/create-game');
+                    },
+                    icon: Icon(Iconsax.game_copy),
+                    label: Text('Create Game'),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: colorScheme.categorySports,
+                      foregroundColor: colorScheme.onPrimary,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                    ),
+                  ),
+                ],
+
+                const Spacer(),
+
+                // Post/Comment button
+                if (hasContent && _creationType == CreationType.post)
+                  IconButton.filled(
+                    onPressed: _isPosting ? null : _handlePost,
+                    icon: _isPosting
+                        ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colorScheme.onPrimary,
+                            ),
+                          )
+                        : Icon(
+                            widget.mode == ComposerMode.post
+                                ? Iconsax.send_2_copy
+                                : Iconsax.message_text_copy,
+                            size: 20,
+                          ),
+                    style: IconButton.styleFrom(
+                      backgroundColor: colorScheme.categorySocial,
+                      foregroundColor: colorScheme.onPrimary,
+                    ),
+                  ),
+              ],
             ),
-        ],
+          ],
+        ),
       ),
     );
   }

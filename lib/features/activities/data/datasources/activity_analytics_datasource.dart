@@ -27,25 +27,15 @@ class ActivityAnalyticsDatasource {
       // The response will be null/empty for void-returning functions
       final response = await _supabase.rpc(
         'rpc_track_event',
-        params: {
-          '_event_name': eventName,
-          '_properties': properties,
-        },
+        params: {'_event_name': eventName, '_properties': properties},
       );
-      
+
       // For void-returning RPCs, response might be null or empty
       // We don't need to process it, just ensure the call completed
-      if (kDebugMode && response != null) {
-        debugPrint('Analytics tracked: $eventName');
-      }
-    } catch (e, stackTrace) {
+      if (kDebugMode && response != null) {}
+    } catch (e) {
       // Log error for debugging but don't crash the app
-      if (kDebugMode) {
-        debugPrint('Analytics tracking failed: $e');
-        debugPrint('Event: $eventName');
-        debugPrint('Properties: $properties');
-        debugPrint('Stack trace: $stackTrace');
-      }
+      if (kDebugMode) {}
       // Silently ignore analytics errors - they should never crash the app
     }
   }
@@ -93,4 +83,3 @@ class ActivityAnalyticsDatasource {
     );
   }
 }
-

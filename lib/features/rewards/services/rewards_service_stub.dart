@@ -40,12 +40,10 @@ class RewardsService {
     String? source,
   }) async {
     // Do nothing - stub implementation
-    print('Stub: Awarded $points points to $userId for $reason');
   }
 
   Future<void> unlockAchievement(String userId, String achievementId) async {
     // Do nothing - stub implementation
-    print('Stub: Unlocked achievement $achievementId for $userId');
   }
 
   Future<List<PointsTransaction>> getTransactionHistory(

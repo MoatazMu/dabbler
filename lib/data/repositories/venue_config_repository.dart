@@ -10,10 +10,14 @@ abstract class VenueConfigRepository {
   });
 
   /// Get opening hours for a space.
-  Future<Result<List<OpeningHour>, Failure>> getOpeningHours(String venueSpaceId);
+  Future<Result<List<OpeningHour>, Failure>> getOpeningHours(
+    String venueSpaceId,
+  );
 
   /// Get active prices for a space.
-  Future<Result<List<SpacePrice>, Failure>> getActivePrices(String venueSpaceId);
+  Future<Result<List<SpacePrice>, Failure>> getActivePrices(
+    String venueSpaceId,
+  );
 
   /// Admin/Manager: create or update a space.
   Future<Result<VenueSpace, Failure>> upsertSpace(VenueSpace space);

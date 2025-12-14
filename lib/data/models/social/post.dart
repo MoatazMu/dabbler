@@ -9,6 +9,7 @@ class Post {
   final String authorId;
   final String authorName;
   final String authorAvatar;
+  final String? authorProfileId; // author_profile_id from posts table
   // Core content
   final String content;
   final List<String> mediaUrls;
@@ -23,6 +24,8 @@ class Post {
   // Game / location context (optional)
   final String? gameId;
   final String? cityName;
+  final String? venueId; // venue_id from posts table
+  final String? locationTagId; // location_tag_id from posts table
   // Per-user state
   final bool isLiked;
   final bool isBookmarked;
@@ -48,17 +51,36 @@ class Post {
   /// Primary vibe ID maps to `public.posts.primary_vibe_id` (nullable).
   final String? primaryVibeId;
 
+  /// Primary vibe full data (joined from vibes table via primary_vibe_id)
+  final Map<String, dynamic>? primaryVibe;
+
   /// Vibe emoji for display (joined from vibes table)
   final String? vibeEmoji;
 
   /// Vibe label for display (joined from vibes table)
   final String? vibeLabel;
 
+  /// All assigned vibes from post_vibes table (joined)
+  final List<Map<String, dynamic>> postVibes;
+
+  /// Reactions from post_reactions table (who reacted with which vibe)
+  final List<Map<String, dynamic>> reactions;
+
+  /// Mentions from post_mentions table (who was mentioned)
+  final List<Map<String, dynamic>> mentions;
+
+  /// Location tag data from location_tags table (joined)
+  final Map<String, dynamic>? locationTag;
+
+  /// Media metadata from posts.media jsonb
+  final List<Map<String, dynamic>> mediaMetadata;
+
   const Post({
     required this.id,
     required this.authorId,
     required this.authorName,
     required this.authorAvatar,
+    this.authorProfileId,
     required this.content,
     required this.mediaUrls,
     required this.createdAt,
@@ -69,6 +91,8 @@ class Post {
     required this.visibility,
     this.gameId,
     this.cityName,
+    this.venueId,
+    this.locationTagId,
     this.isLiked = false,
     this.isBookmarked = false,
     this.authorBio,
@@ -83,8 +107,14 @@ class Post {
     this.activityData,
     this.kind = 'moment',
     this.primaryVibeId,
+    this.primaryVibe,
     this.vibeEmoji,
     this.vibeLabel,
+    this.postVibes = const [],
+    this.reactions = const [],
+    this.mentions = const [],
+    this.locationTag,
+    this.mediaMetadata = const [],
   });
 
   @override

@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 
 /// Design System Colors
-/// 
+///
 /// ⚠️ **DEPRECATED**: This class is deprecated in favor of Material 3 ColorScheme.
-/// 
+///
 /// **Migration Guide:**
 /// - Use `Theme.of(context).colorScheme.*` instead of `AppColors.*`
 /// - Use `Theme.of(context).textTheme.*` instead of hardcoded text styles
 /// - See `lib/core/design_system/MATERIAL3_MIGRATION_GUIDE.md` for migration patterns
-/// 
+///
 /// This class is maintained for backward compatibility during migration.
 /// All new code should use Material 3 ColorScheme and TextTheme.
-/// 
+///
 /// @deprecated Use Material 3 ColorScheme instead
-@Deprecated('Use Material 3 ColorScheme instead. See MATERIAL3_MIGRATION_GUIDE.md')
+@Deprecated(
+  'Use Material 3 ColorScheme instead. See MATERIAL3_MIGRATION_GUIDE.md',
+)
 class AppColors {
   /// Helper method to get brightness from context
   static Brightness _getBrightness(BuildContext context) {

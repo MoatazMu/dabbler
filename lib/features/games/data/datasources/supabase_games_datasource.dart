@@ -38,9 +38,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
             try {
               final gameModel = GameModel.fromJson(record);
               _gameUpdatesController.add(gameModel);
-            } catch (e) {
-              print('Error parsing game update: $e');
-            }
+            } catch (e) {}
           }
         });
   }
@@ -84,7 +82,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       return response.length;
     } catch (e) {
-      print('⚠️ [Datasource] _getCurrentPlayerCount: Error: $e');
       return 0;
     }
   }
@@ -102,7 +99,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       return response != null;
     } catch (e) {
-      print('⚠️ [Datasource] _isPlayerInGame: Error: $e');
       return false;
     }
   }
@@ -111,18 +107,17 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   /// Returns null if venue_space_id is null or space not found
   Future<String?> _getVenueIdFromSpaceId(String? venueSpaceId) async {
     if (venueSpaceId == null) return null;
-    
+
     try {
       final response = await _supabaseClient
           .from('venue_spaces')
           .select('venue_id')
           .eq('id', venueSpaceId)
           .maybeSingle();
-      
+
       if (response == null) return null;
       return response['venue_id'] as String?;
     } catch (e) {
-      print('⚠️ [Datasource] _getVenueIdFromSpaceId: Error: $e');
       return null;
     }
   }
@@ -138,9 +133,9 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .select('capacity')
           .eq('id', gameId)
           .single();
-      
+
       final maxPlayers = gameResponse['capacity'] as int;
-      
+
       // Get the player's joined_at timestamp
       final playerResponse = await _supabaseClient
           .from('game_roster')
@@ -166,15 +161,14 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .lt('joined_at', playerJoinedAt);
 
       final position = playersBefore.length + 1;
-      
+
       // If position is greater than maxPlayers, they're on waitlist
       if (position > maxPlayers) {
         return position - maxPlayers; // Waitlist position (1-indexed)
       }
-      
+
       return null; // Not on waitlist, they're a confirmed player
     } catch (e) {
-      print('⚠️ [Datasource] _getWaitlistPosition: Error: $e');
       return null;
     }
   }
@@ -182,16 +176,12 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   @override
   Future<GameModel> createGame(Map<String, dynamic> gameData) async {
     try {
-      print('📤 [Datasource] Inserting game with data: $gameData');
-
       // Insert game
       final gameResponse = await _supabaseClient
           .from('games')
           .insert(gameData)
           .select()
           .single();
-
-      print('✅ [Datasource] Game inserted successfully: ${gameResponse['id']}');
 
       // Add organizer as first player
       await _supabaseClient.from('game_roster').insert({
@@ -203,16 +193,10 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         'joined_at': DateTime.now().toIso8601String(),
       });
 
-      print('✅ [Datasource] Organizer added to game_roster');
-
       return GameModel.fromJson(gameResponse);
     } on PostgrestException catch (e) {
-      print('❌ [Datasource] PostgrestException: ${e.message}');
-      print('❌ [Datasource] Error code: ${e.code}');
-      print('❌ [Datasource] Error details: ${e.details}');
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
-      print('❌ [Datasource] General exception: ${e.toString()}');
       throw GameServerException('Failed to create game: ${e.toString()}');
     }
   }
@@ -226,10 +210,8 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     bool ascending = true,
   }) async {
     try {
-      print('🔍 [DEBUG] getGames called with filters: $filters');
-
-      // MVP: Simplified query without venue join to avoid relationship errors
-      // TODO: Re-enable venue join once database relationship is fixed
+      // Query without venue join to avoid foreign key issues
+      // Venue data can be fetched separately if needed
       var query = _supabaseClient.from('games').select('*');
 
       // Apply basic filters
@@ -263,26 +245,20 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         }
       }
 
-      print('🔍 [DEBUG] Executing getGames query...');
       // Apply sorting and pagination
       // MVP Fix: Use 'start_at' instead of 'scheduled_date'
       final response = await query
           .order(sortBy ?? 'start_at', ascending: ascending)
           .range((page - 1) * limit, page * limit - 1);
 
-      print('🔍 [DEBUG] getGames response: ${response.length} games found');
-      if (response.isNotEmpty) {
-        print('🔍 [DEBUG] First public game: ${response.first}');
-      }
+      if (response.isNotEmpty) {}
 
       return response
           .map<GameModel>((json) => GameModel.fromJson(json))
           .toList();
     } on PostgrestException catch (e) {
-      print('❌ [ERROR] getGames PostgrestException: ${e.message}');
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
-      print('❌ [ERROR] getGames failed: $e');
       throw GameServerException('Failed to get games: ${e.toString()}');
     }
   }
@@ -291,14 +267,9 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   Future<bool> joinGame(String gameId, String playerId) async {
     String? joinPolicy; // Store for error handling
     try {
-      print('🔄 [Datasource] joinGame: gameId=$gameId, playerId=$playerId');
-
       // IDEMPOTENT CHECK: First check if player is already in the game
       final isAlreadyInGame = await _isPlayerInGame(gameId, playerId);
       if (isAlreadyInGame) {
-        print(
-          '✅ [Datasource] joinGame: Player already in game (idempotent success)',
-        );
         return true; // Already joined - idempotent success
       }
 
@@ -311,13 +282,11 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       final game = GameModel.fromJson(gameResponse);
       joinPolicy = gameResponse['join_policy'] as String?;
-      
+
       // Handle different join policies
       if (joinPolicy != null && joinPolicy == 'request') {
         // For "request" policy, create a join request instead of directly joining
-        print('🔄 [Datasource] joinGame: Game requires request policy, creating join request');
         final requestId = await requestToJoinGame(gameId, playerId);
-        print('✅ [Datasource] joinGame: Join request created with ID: $requestId');
         return true; // Return success - request was created
       } else if (joinPolicy != null && joinPolicy != 'open') {
         throw GameServerException(
@@ -333,7 +302,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       // Use model helper to avoid string parsing/timezone issues
       final gameDateTime = game.getScheduledStartDateTime();
       if (gameDateTime.isBefore(now)) {
-        print('❌ [Datasource] joinGame: Game already started');
         throw GameAlreadyStartedException(
           'Cannot join a game that has already started',
         );
@@ -345,18 +313,15 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       // Determine player status based on game capacity
       // Note: Database constraint only allows 'active', 'left', 'kicked'
       // All players are added with 'active' status, waitlist is determined by position
-      final String playerStatus = 'active'; // Database uses 'active' not 'confirmed'
-      
+      final String playerStatus =
+          'active'; // Database uses 'active' not 'confirmed'
+
       if (currentPlayerCount >= game.maxPlayers) {
         if (!game.allowsWaitlist) {
-          print(
-            '❌ [Datasource] joinGame: Game is full and waitlist not allowed',
-          );
           throw GameFullException('Game is full');
         }
         // Game is full but allows waitlist - player will be added as 'active'
         // but their position will determine if they're waitlisted
-        print('⚠️ [Datasource] joinGame: Game is full, adding as active (will be waitlisted by position)');
       }
 
       // Add player to game
@@ -369,20 +334,11 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         'joined_at': DateTime.now().toIso8601String(),
       });
 
-      print(
-        '✅ [Datasource] joinGame: Successfully joined game with status: $playerStatus',
-      );
       return true;
     } on PostgrestException catch (e) {
-      print(
-        '❌ [Datasource] joinGame: PostgrestException code=${e.code}, message=${e.message}',
-      );
       if (e.code == '23505') {
         // Unique violation - race condition, player got added between check and insert
         // This is still a success (idempotent)
-        print(
-          '✅ [Datasource] joinGame: Unique violation (race condition), treating as success',
-        );
         return true;
       }
       if (e.code == '23503') {
@@ -392,7 +348,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         );
       }
       // Handle RLS policy violations (permission denied)
-      if (e.message.contains('permission denied') || 
+      if (e.message.contains('permission denied') ||
           e.message.contains('new row violates row-level security policy')) {
         // Check join_policy - if not 'open', user needs to use different method
         if (joinPolicy != null && joinPolicy != 'open') {
@@ -412,7 +368,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       if (e is GameServerException) {
         rethrow;
       }
-      print('❌ [Datasource] joinGame: Unexpected error: $e');
       throw GameServerException('Failed to join game: ${e.toString()}');
     }
   }
@@ -420,8 +375,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   @override
   Future<bool> leaveGame(String gameId, String playerId) async {
     try {
-      print('🔄 [Datasource] leaveGame: gameId=$gameId, playerId=$playerId');
-
       // IDEMPOTENT CHECK: First check if player is in the game
       final existingPlayerResponse = await _supabaseClient
           .from('game_roster')
@@ -431,9 +384,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .maybeSingle();
 
       if (existingPlayerResponse == null) {
-        print(
-          '✅ [Datasource] leaveGame: Player not in game (idempotent success)',
-        );
         return true; // Not in game - idempotent success
       }
 
@@ -444,15 +394,10 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .eq('game_id', gameId)
           .eq('user_id', playerId);
 
-      print('✅ [Datasource] leaveGame: Successfully left game');
       return true;
     } on PostgrestException catch (e) {
-      print(
-        '❌ [Datasource] leaveGame: PostgrestException code=${e.code}, message=${e.message}',
-      );
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
-      print('❌ [Datasource] leaveGame: Unexpected error: $e');
       throw GameServerException('Failed to leave game: ${e.toString()}');
     }
   }
@@ -524,10 +469,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     int limit = 20,
   }) async {
     try {
-      print(
-        '🔍 [DEBUG] getMyGames called with userId: $userId, status: $status',
-      );
-
       // Get game IDs where user is either host OR joined as player
       // First, get games where user is host
       final hostedGamesQuery = _supabaseClient
@@ -556,7 +497,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       final allGameIds = {...hostedGameIds, ...joinedGameIds};
 
       if (allGameIds.isEmpty) {
-        print('🔍 [DEBUG] No games found for user');
         return [];
       }
 
@@ -581,16 +521,12 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         }
       }
 
-      print('🔍 [DEBUG] Executing query for ${allGameIds.length} game IDs...');
       // Use 'start_at' instead of legacy scheduled_date
       final response = await query
           .order('start_at', ascending: true)
           .range((page - 1) * limit, page * limit - 1);
 
-      print('🔍 [DEBUG] Query response: ${response.length} games found');
-      if (response.isNotEmpty) {
-        print('🔍 [DEBUG] First game: ${response.first}');
-      }
+      if (response.isNotEmpty) {}
 
       // For each game, compute current active player count from game_roster
       // and inject it as current_players so GameModel can map correctly.
@@ -607,15 +543,10 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
         games.add(GameModel.fromJson(jsonWithCount));
       }
 
-      print('🔍 [DEBUG] Parsed ${games.length} games successfully (with player counts)');
-
       return games;
     } on PostgrestException catch (e) {
-      print('❌ [ERROR] PostgrestException: ${e.message}, code: ${e.code}');
       throw GameServerException('Database error: ${e.message}');
-    } catch (e, stackTrace) {
-      print('❌ [ERROR] Failed to get user games: $e');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       throw GameServerException('Failed to get user games: ${e.toString()}');
     }
   }
@@ -1003,9 +934,7 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
         // Determine if player is waitlisted based on position
         final isWaitlisted = i >= capacity;
-        final playerStatus = isWaitlisted
-            ? 'waitlisted'
-            : 'confirmed';
+        final playerStatus = isWaitlisted ? 'waitlisted' : 'confirmed';
 
         // Handle profile data - it might be a list or single object
         Map<String, dynamic>? profile;
@@ -1025,7 +954,8 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           'status': playerStatus,
           'team_assignment': 'unassigned',
           'position': null,
-          'player_name': profile?['display_name'] as String? ?? 'Unknown Player',
+          'player_name':
+              profile?['display_name'] as String? ?? 'Unknown Player',
           'player_avatar': profile?['avatar_url'] as String?,
           'player_phone': null,
           'player_email': null,
@@ -1063,22 +993,44 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     int rating, {
     String? note,
   }) async {
-    // TODO: implement supabase.from('game_ratings').upsert(...) when backend table exists
-    // Stubbed for now to succeed without throwing
-    print(
-      '⭐ [Datasource] submitGameRating: gameId=$gameId, rating=$rating, note=$note (STUB)',
-    );
-    // Simulate brief delay
-    await Future.delayed(const Duration(milliseconds: 100));
-    // Success - no throw
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) throw Exception('User not authenticated');
+
+      await _supabaseClient.from('game_ratings').upsert({
+        'game_id': gameId,
+        'user_id': userId,
+        'rating': rating,
+        'note': note,
+        'updated_at': DateTime.now().toIso8601String(),
+      }, onConflict: 'game_id,user_id');
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
   Future<double> fetchMyAverageRating() async {
-    // TODO: implement supabase RPC or select avg(rating) when backend exists
-    // Stubbed for now to return 0.0
-    print('⭐ [Datasource] fetchMyAverageRating: returning 0.0 (STUB)');
-    return 0.0;
+    try {
+      final userId = _supabaseClient.auth.currentUser?.id;
+      if (userId == null) return 0.0;
+
+      final response = await _supabaseClient
+          .from('game_ratings')
+          .select('rating')
+          .eq('user_id', userId);
+
+      if (response.isEmpty) return 0.0;
+
+      final ratings = (response as List)
+          .map((r) => (r['rating'] as num).toDouble())
+          .toList();
+
+      final average = ratings.reduce((a, b) => a + b) / ratings.length;
+      return average;
+    } catch (e) {
+      return 0.0;
+    }
   }
 
   @override
@@ -1092,10 +1044,12 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   }
 
   @override
-  Future<String> requestToJoinGame(String gameId, String playerId, {String? message}) async {
+  Future<String> requestToJoinGame(
+    String gameId,
+    String playerId, {
+    String? message,
+  }) async {
     try {
-      print('🔄 [Datasource] requestToJoinGame: gameId=$gameId, playerId=$playerId');
-
       // Get profile_id from user_id
       final profileId = await _getProfileId(playerId);
 
@@ -1109,7 +1063,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .maybeSingle();
 
       if (existingRequest != null) {
-        print('⚠️ [Datasource] requestToJoinGame: Pending request already exists');
         return existingRequest['id'] as String;
       }
 
@@ -1126,12 +1079,10 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .single();
 
       final requestId = response['id'] as String;
-      print('✅ [Datasource] requestToJoinGame: Join request created with ID: $requestId');
       return requestId;
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
         // Unique violation - request already exists (race condition)
-        print('✅ [Datasource] requestToJoinGame: Request already exists (race condition)');
         final existingRequest = await _supabaseClient
             .from('game_join_requests')
             .select('id')
@@ -1145,7 +1096,9 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
       }
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
-      throw GameServerException('Failed to create join request: ${e.toString()}');
+      throw GameServerException(
+        'Failed to create join request: ${e.toString()}',
+      );
     }
   }
 
@@ -1162,7 +1115,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       return response != null;
     } catch (e) {
-      print('⚠️ [Datasource] hasPendingJoinRequest: Error: $e');
       return false;
     }
   }
@@ -1170,8 +1122,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
   @override
   Future<bool> cancelJoinRequest(String gameId, String userId) async {
     try {
-      print('🔄 [Datasource] cancelJoinRequest: gameId=$gameId, userId=$userId');
-
       // First check if a pending request exists
       final existingRequest = await _supabaseClient
           .from('game_join_requests')
@@ -1182,7 +1132,6 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
           .maybeSingle();
 
       if (existingRequest == null) {
-        print('⚠️ [Datasource] cancelJoinRequest: No pending request found (might have been processed already)');
         return false; // No request to cancel - idempotent success
       }
 
@@ -1201,20 +1150,17 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       // Check if any rows were updated
       final updated = (response as List).isNotEmpty;
-      
+
       if (updated) {
-        print('✅ [Datasource] cancelJoinRequest: Successfully cancelled join request');
-      } else {
-        print('⚠️ [Datasource] cancelJoinRequest: Request was not updated (might have been processed already)');
-      }
+      } else {}
 
       return updated;
     } on PostgrestException catch (e) {
-      print('❌ [Datasource] cancelJoinRequest: PostgrestException: ${e.message}, code: ${e.code}');
       throw GameServerException('Database error: ${e.message}');
     } catch (e) {
-      print('❌ [Datasource] cancelJoinRequest: Error: $e');
-      throw GameServerException('Failed to cancel join request: ${e.toString()}');
+      throw GameServerException(
+        'Failed to cancel join request: ${e.toString()}',
+      );
     }
   }
 

@@ -375,7 +375,6 @@ class ChatController extends StateNotifier<ChatState> {
   void reactToMessage(String messageId, String reaction) {
     // This would typically update the message with reactions
     // For now, just log the action
-    print('Reacting to message $messageId with $reaction');
   }
 
   /// Delete a message
@@ -390,7 +389,6 @@ class ChatController extends StateNotifier<ChatState> {
   void resendMessage(String messageId) {
     // This would typically retry sending a failed message
     // For now, just log the action
-    print('Resending message $messageId');
   }
 
   /// Search conversations

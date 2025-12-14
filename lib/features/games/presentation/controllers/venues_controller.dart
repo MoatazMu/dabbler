@@ -199,11 +199,9 @@ class VenuesController extends StateNotifier<VenuesState> {
   /// Load venues based on current filters and location
   Future<void> loadVenues() async {
     if (!_shouldRefresh()) {
-      print('⏭️ [CONTROLLER] Skipping refresh - data is fresh');
       return;
     }
 
-    print('🎮 [CONTROLLER] loadVenues called');
     state = state.copyWith(isLoading: true, error: null);
 
     try {
@@ -216,8 +214,6 @@ class VenuesController extends StateNotifier<VenuesState> {
         maxPrice: state.filters.maxPricePerHour,
         minRating: state.filters.minRating,
       );
-
-      print('🔧 [CONTROLLER] Applying filters: ${repoFilters.toJson()}');
 
       // Don't pass 'distance' to database - it's not a column, we calculate it client-side
       // Map 'name' enum to 'name_en' column in database
@@ -235,15 +231,12 @@ class VenuesController extends StateNotifier<VenuesState> {
 
       filteredResult.fold(
         (failure) {
-          print('❌ [CONTROLLER] Failed to load venues: ${failure.message}');
           state = state.copyWith(
             isLoading: false,
             error: 'Failed to load venues: ${failure.message}',
           );
         },
         (venues) {
-          print('✅ [CONTROLLER] Loaded ${venues.length} venues successfully');
-
           final venuesWithDistance = venues.map((venue) {
             final distance = state.hasLocation
                 ? _calculateDistance(
@@ -262,10 +255,6 @@ class VenuesController extends StateNotifier<VenuesState> {
             );
           }).toList();
 
-          print(
-            '📍 [CONTROLLER] Created ${venuesWithDistance.length} VenueWithDistance objects',
-          );
-
           state = state.copyWith(
             venues: venuesWithDistance,
             isLoading: false,
@@ -276,7 +265,6 @@ class VenuesController extends StateNotifier<VenuesState> {
         },
       );
     } catch (e) {
-      print('💥 [CONTROLLER] Exception in loadVenues: $e');
       state = state.copyWith(
         isLoading: false,
         error: 'Failed to load venues: $e',
@@ -387,7 +375,6 @@ class VenuesController extends StateNotifier<VenuesState> {
       // Mock implementation - randomly return availability
       return DateTime.now().millisecond % 3 != 0;
     } catch (e) {
-      print('Failed to check venue availability: $e');
       return false;
     }
   }

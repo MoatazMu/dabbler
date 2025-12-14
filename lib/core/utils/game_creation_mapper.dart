@@ -56,7 +56,8 @@ class GameCreationMapper {
     final skillInt = _parseSkillLevelToInt(model.skillLevel!);
 
     // Map participation mode to listing visibility
-    final listingVisibility = model.participationMode == ParticipationMode.public
+    final listingVisibility =
+        model.participationMode == ParticipationMode.public
         ? 'public'
         : 'private';
 
@@ -89,13 +90,13 @@ class GameCreationMapper {
       'join_policy': 'open', // Default join policy
       'allow_spectators': model.allowSpectators ?? false,
       'is_cancelled': false,
-      'allows_waitlist': model.allowWaitlist ?? false, // Optional, defaults to false
+      'allows_waitlist':
+          model.allowWaitlist ?? false, // Optional, defaults to false
       'rules': rules,
     };
 
     // Add optional fields only if provided by user
-    if (model.gameDescription != null &&
-        model.gameDescription!.isNotEmpty) {
+    if (model.gameDescription != null && model.gameDescription!.isNotEmpty) {
       gameData['description'] = model.gameDescription;
     }
 
@@ -127,4 +128,3 @@ class GameCreationMapper {
     }
   }
 }
-

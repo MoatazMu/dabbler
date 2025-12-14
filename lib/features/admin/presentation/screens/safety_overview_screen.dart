@@ -142,9 +142,8 @@ class SafetyOverviewScreen extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: LoadingWidget()),
-        error: (error, stack) => Center(
-          child: Text('Failed to check admin status: $error'),
-        ),
+        error: (error, stack) =>
+            Center(child: Text('Failed to check admin status: $error')),
       ),
     );
   }
@@ -221,9 +220,7 @@ class SafetyOverviewScreen extends ConsumerWidget {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(icon, color: color, size: 24),
-              ],
+              children: [Icon(icon, color: color, size: 24)],
             ),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,18 +267,48 @@ class SafetyOverviewScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            _buildInfoRow(theme, colorScheme, 'Last Updated', dateFormat.format(overview.asOf)),
-            _buildInfoRow(theme, colorScheme, 'Open Reports', '${overview.reportsOpen}'),
-            _buildInfoRow(theme, colorScheme, 'Active Enforcements', '${overview.activeEnforcements}'),
-            _buildInfoRow(theme, colorScheme, 'Active Takedowns', '${overview.takedownsActive}'),
-            _buildInfoRow(theme, colorScheme, 'Audits (24h)', '${overview.audits24h}'),
+            _buildInfoRow(
+              theme,
+              colorScheme,
+              'Last Updated',
+              dateFormat.format(overview.asOf),
+            ),
+            _buildInfoRow(
+              theme,
+              colorScheme,
+              'Open Reports',
+              '${overview.reportsOpen}',
+            ),
+            _buildInfoRow(
+              theme,
+              colorScheme,
+              'Active Enforcements',
+              '${overview.activeEnforcements}',
+            ),
+            _buildInfoRow(
+              theme,
+              colorScheme,
+              'Active Takedowns',
+              '${overview.takedownsActive}',
+            ),
+            _buildInfoRow(
+              theme,
+              colorScheme,
+              'Audits (24h)',
+              '${overview.audits24h}',
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildInfoRow(ThemeData theme, ColorScheme colorScheme, String label, String value) {
+  Widget _buildInfoRow(
+    ThemeData theme,
+    ColorScheme colorScheme,
+    String label,
+    String value,
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -304,4 +331,3 @@ class SafetyOverviewScreen extends ConsumerWidget {
     );
   }
 }
-

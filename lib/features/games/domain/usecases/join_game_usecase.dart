@@ -62,37 +62,36 @@ class JoinGameUseCase
       return joinResult.fold((failure) => Left(failure), (success) async {
         // Refresh game to get updated player count and status
         final updatedGameResult = await gamesRepository.getGame(params.gameId);
-        
-        return updatedGameResult.fold(
-          (failure) => Left(failure),
-          (updatedGame) async {
-            // Check if player is on waitlist by getting their waitlist position
-            // If position is not null, they are on waitlist
-            final positionResult = await gamesRepository.getWaitlistPosition(
-              params.gameId,
-              params.playerId,
-            );
-            
-            final waitlistPosition = positionResult.fold(
-              (failure) => null,
-              (position) => position,
-            );
-            
-            final isOnWaitlist = waitlistPosition != null;
 
-            // Send appropriate notifications
-            await _sendNotifications(updatedGame, params.playerId, isOnWaitlist);
+        return updatedGameResult.fold((failure) => Left(failure), (
+          updatedGame,
+        ) async {
+          // Check if player is on waitlist by getting their waitlist position
+          // If position is not null, they are on waitlist
+          final positionResult = await gamesRepository.getWaitlistPosition(
+            params.gameId,
+            params.playerId,
+          );
 
-            return Right(
-              JoinGameResult(
-                success: true,
-                isOnWaitlist: isOnWaitlist,
-                position: waitlistPosition,
-                message: _getJoinMessage(isOnWaitlist),
-              ),
-            );
-          },
-        );
+          final waitlistPosition = positionResult.fold(
+            (failure) => null,
+            (position) => position,
+          );
+
+          final isOnWaitlist = waitlistPosition != null;
+
+          // Send appropriate notifications
+          await _sendNotifications(updatedGame, params.playerId, isOnWaitlist);
+
+          return Right(
+            JoinGameResult(
+              success: true,
+              isOnWaitlist: isOnWaitlist,
+              position: waitlistPosition,
+              message: _getJoinMessage(isOnWaitlist),
+            ),
+          );
+        });
       });
     });
   }
@@ -127,7 +126,10 @@ class JoinGameUseCase
     String gameId,
     String playerId,
   ) async {
-    final isInGameResult = await gamesRepository.isPlayerInGame(gameId, playerId);
+    final isInGameResult = await gamesRepository.isPlayerInGame(
+      gameId,
+      playerId,
+    );
 
     return isInGameResult.fold(
       (failure) => null, // If we can't check, proceed anyway
@@ -162,7 +164,6 @@ class JoinGameUseCase
     }
   }
 
-
   /// Sends appropriate notifications based on join result
   Future<void> _sendNotifications(
     Game game,
@@ -189,43 +190,27 @@ class JoinGameUseCase
     } catch (e) {
       // Notification failures shouldn't prevent game joining
       // Log the error but continue
-      print('Failed to send join notifications: $e');
     }
   }
 
   /// Notification methods (stubs for now - would integrate with notification service)
   Future<void> _notifyPlayerAddedToWaitlist(Game game, String playerId) async {
     // Implementation would send push notification, email, or in-app notification
-    print(
-      'Notifying player $playerId: Added to waitlist for game ${game.title}',
-    );
   }
 
-  Future<void> _notifyPlayerJoinedGame(Game game, String playerId) async {
-    print('Notifying player $playerId: Successfully joined game ${game.title}');
-  }
+  Future<void> _notifyPlayerJoinedGame(Game game, String playerId) async {}
 
   Future<void> _notifyOrganizerOfWaitlistJoin(
     Game game,
     String playerId,
-  ) async {
-    print(
-      'Notifying organizer ${game.organizerId}: Player $playerId added to waitlist for ${game.title}',
-    );
-  }
+  ) async {}
 
-  Future<void> _notifyOrganizerOfPlayerJoin(Game game, String playerId) async {
-    print(
-      'Notifying organizer ${game.organizerId}: Player $playerId joined ${game.title}',
-    );
-  }
+  Future<void> _notifyOrganizerOfPlayerJoin(Game game, String playerId) async {}
 
   Future<void> _notifyOtherPlayersOfNewMember(
     Game game,
     String playerId,
-  ) async {
-    print('Notifying other players: New member $playerId joined ${game.title}');
-  }
+  ) async {}
 
   /// Gets appropriate join message
   String _getJoinMessage(bool isOnWaitlist) {

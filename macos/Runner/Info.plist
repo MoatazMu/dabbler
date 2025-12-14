@@ -28,5 +28,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Dabbler needs your location to show nearby games and venues</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Dabbler needs your location to show nearby games and venues</string>
 </dict>
 </plist>

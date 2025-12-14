@@ -50,9 +50,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           );
         });
       }
-    } catch (e) {
-      debugPrint('Failed to load stored onboarding data: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _saveOnboardingDataIfPresent() async {
@@ -66,9 +64,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         setState(() {
           _storedOnboardingData = widget.onboardingData;
         });
-      } catch (e) {
-        debugPrint('Failed to save onboarding data: $e');
-      }
+      } catch (e) {}
     }
   }
 
@@ -76,9 +72,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_onboardingDataKey);
-    } catch (e) {
-      debugPrint('Failed to clear stored onboarding data: $e');
-    }
+    } catch (e) {}
   }
 
   Map<String, dynamic>? get _onboardingData {
@@ -203,10 +197,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
         if (existingProfile == null) {
           final data = _onboardingData ?? const <String, dynamic>{};
 
-          debugPrint(
-            '📋 [DEBUG] EmailVerificationScreen: Creating profile with data: $data',
-          );
-
           final displayName =
               (data['displayName'] as String?) ??
               (user.email != null ? user.email!.split('@').first : 'Player');
@@ -224,17 +214,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               : null;
           final interestsString = interestsList?.whereType<String>().join(',');
 
-          debugPrint(
-            '📋 [DEBUG] EmailVerificationScreen: Profile creation params:',
-          );
-          debugPrint('   userId: ${user.id}');
-          debugPrint('   displayName: $displayName');
-          debugPrint('   username: $username');
-          debugPrint('   age: $age');
-          debugPrint('   gender: $gender');
-          debugPrint('   intention: $intention');
-          debugPrint('   preferredSport: $preferredSport');
-
           await authService.createProfile(
             userId: user.id,
             displayName: displayName,
@@ -246,17 +225,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
             interests: interestsString,
           );
 
-          debugPrint(
-            '✅ [DEBUG] EmailVerificationScreen: Profile created successfully',
-          );
-
           // Clear stored onboarding data after successful profile creation
           await _clearStoredOnboardingData();
-        } else {
-          debugPrint(
-            '✅ [DEBUG] EmailVerificationScreen: Profile already exists',
-          );
-        }
+        } else {}
 
         // Optionally mark profile as verified in public.profiles
         try {
@@ -267,15 +238,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 .eq('user_id', user.id);
           }
         } catch (e) {
-          debugPrint(
-            '⚠️ [DEBUG] EmailVerificationScreen: Failed to mark profile as verified: $e',
-          );
           // Non-critical: profile can remain unverified even if email is confirmed
         }
       } catch (e) {
-        debugPrint(
-          '❌ [DEBUG] EmailVerificationScreen: Profile creation failed: $e',
-        );
         setState(() {
           _errorMessage =
               'Email confirmed but failed to create your profile: $e';
@@ -288,7 +253,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
       // Email confirmed and profile created - navigate to home
       context.go(RoutePaths.home);
     } catch (e) {
-      debugPrint('❌ [DEBUG] EmailVerificationScreen: Error: $e');
       setState(() {
         _errorMessage = 'Failed to check email status: $e';
       });

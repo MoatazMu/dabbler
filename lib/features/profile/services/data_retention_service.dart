@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/core/config/supabase_config.dart';
@@ -237,16 +236,18 @@ class DataRetentionService {
     Map<String, dynamic> task,
   ) async {
     try {
-      // Get user email
+      // Get user email from auth
+      final user = _supabase.auth.currentUser;
+      final userEmail = user?.email ?? 'unknown@email.com';
+
+      // Get display name from profiles
       final userResponse = await _supabase
-          .from(SupabaseConfig.usersTable) // 'profiles' table
-          .select('display_name') // Note: email is in auth.users, not profiles
-          .eq('user_id', userId) // Match by user_id FK
+          .from(SupabaseConfig.usersTable)
+          .select('display_name')
+          .eq('user_id', userId)
           .single();
 
-      // Note: Email would need to be fetched from auth.users or current session
       final userName = userResponse['display_name'];
-      final userEmail = 'user@email.com'; // TODO: Fetch from auth.users
 
       // This would integrate with your email service (e.g., SendGrid, AWS SES, etc.)
       Logger.info(
@@ -254,12 +255,6 @@ class DataRetentionService {
       );
 
       // Placeholder for actual email sending
-      debugPrint('Cleanup Notification Email:');
-      debugPrint('To: $userEmail');
-      debugPrint('Name: $userName');
-      debugPrint('Subject: Data Cleanup Notification');
-      debugPrint('Data Type: $dataType');
-      debugPrint('Scheduled Date: ${task['scheduled_cleanup_date']}');
     } catch (e) {
       Logger.warning('$_logTag: Could not send cleanup notification', e);
     }

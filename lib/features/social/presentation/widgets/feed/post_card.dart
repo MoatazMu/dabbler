@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
 import 'package:dabbler/core/widgets/custom_avatar.dart';
-import 'package:dabbler/core/design_system/design_system.dart';
 
 /// A card widget for displaying social posts in the feed
 class PostCard extends StatefulWidget {
@@ -68,9 +67,6 @@ class _PostCardState extends State<PostCard> {
       if (widget.post.isLiked == _expectedLiked &&
           widget.post.likesCount == _expectedCount) {
         // Server confirmed our optimistic action
-        print(
-          '✨ [DEBUG] PostCard: Server confirmed! Clearing optimistic state for post ${widget.post.id}',
-        );
         if (mounted) {
           setState(() {
             _optimisticLiked = null;
@@ -80,11 +76,7 @@ class _PostCardState extends State<PostCard> {
             _isProcessing = false;
           });
         }
-      } else {
-        print(
-          '⚠️ [DEBUG] PostCard: State mismatch for post ${widget.post.id}: expected liked=$_expectedLiked count=$_expectedCount, got liked=${widget.post.isLiked} count=${widget.post.likesCount}',
-        );
-      }
+      } else {}
     }
   }
 
@@ -97,10 +89,6 @@ class _PostCardState extends State<PostCard> {
     final newCount = newLiked
         ? currentCount + 1
         : (currentCount > 0 ? currentCount - 1 : 0);
-
-    print(
-      '👆 [DEBUG] PostCard tap: postId=${widget.post.id}, currentLiked=$currentLiked->$newLiked, count=$currentCount->$newCount',
-    );
 
     setState(() {
       _isProcessing = true;
@@ -129,13 +117,19 @@ class _PostCardState extends State<PostCard> {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = context.colorTokens;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
+      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: tokens.stroke, width: 0)),
+        color: _getVibeColor(colorScheme).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(24),
+        // border: Border.all(
+        //   // color: _getVibeColor(colorScheme).withOpacity(0.3),
+        //   width: 2,
+        // ),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 0),
+      padding: const EdgeInsets.all(12),
       child: GestureDetector(
         onTap: widget.onPostTap,
         behavior: HitTestBehavior.opaque,
@@ -145,11 +139,8 @@ class _PostCardState extends State<PostCard> {
             // First Row: Avatar + Display Name and Time + Post type badge + Overflow menu
             _buildHeader(context),
 
-            // Second Row: Content + Media display
+            // Second Row: Content + Media display + Actions (all in card)
             _buildContent(context),
-
-            // Third Row: vibe pill + Like action + Comment action
-            _buildActions(context),
           ],
         ),
       ),
@@ -213,78 +204,20 @@ class _PostCardState extends State<PostCard> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _getPostTypeColor(colorScheme),
+                  color: _getVibeColor(colorScheme).withOpacity(0.3),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   _getPostTypeLabel(),
                   style: textTheme.bodySmall?.copyWith(
                     fontSize: 12,
-                    color: _getPostTypeTextColor(colorScheme),
+                    color: colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             ],
           ),
-        ),
-
-        // Overflow menu (delete for own posts, hide/report for others)
-        PopupMenuButton<String>(
-          padding: EdgeInsets.zero,
-          icon: Icon(
-            Iconsax.more_copy,
-            color: colorScheme.onSurfaceVariant,
-            size: 18,
-          ),
-          itemBuilder: (context) => [
-            if (_isOwnPost())
-              PopupMenuItem<String>(
-                value: 'delete',
-                child: Row(
-                  children: [
-                    Icon(
-                      Iconsax.trash_copy,
-                      size: 20,
-                      color: colorScheme.error,
-                    ),
-                    const SizedBox(width: 12),
-                    Text('Delete', style: TextStyle(color: colorScheme.error)),
-                  ],
-                ),
-              )
-            else ...[
-              const PopupMenuItem<String>(
-                value: 'hide',
-                child: Row(
-                  children: [
-                    Icon(Iconsax.eye_slash_copy, size: 20),
-                    SizedBox(width: 12),
-                    Text('Hide Post'),
-                  ],
-                ),
-              ),
-              const PopupMenuItem<String>(
-                value: 'report',
-                child: Row(
-                  children: [
-                    Icon(Iconsax.flag_copy, size: 20),
-                    SizedBox(width: 12),
-                    Text('Report'),
-                  ],
-                ),
-              ),
-            ],
-          ],
-          onSelected: (value) async {
-            if (value == 'delete') {
-              await _deletePost(context);
-            } else if (value == 'hide') {
-              await _hidePost(context);
-            } else if (value == 'report') {
-              await _reportPost(context);
-            }
-          },
         ),
       ],
     );
@@ -304,40 +237,12 @@ class _PostCardState extends State<PostCard> {
     }
   }
 
-  Color _getPostTypeColor(ColorScheme colorScheme) {
-    final kind = widget.post.kind.toLowerCase();
-    switch (kind) {
-      case 'moment':
-        return colorScheme.primaryContainer.withOpacity(0.3);
-      case 'dab':
-        return colorScheme.secondaryContainer.withOpacity(0.3);
-      case 'kickin':
-        return colorScheme.tertiaryContainer.withOpacity(0.3);
-      default:
-        return colorScheme.primaryContainer.withOpacity(0.3);
-    }
-  }
-
-  Color _getPostTypeTextColor(ColorScheme colorScheme) {
-    final kind = widget.post.kind.toLowerCase();
-    switch (kind) {
-      case 'moment':
-        return colorScheme.primary;
-      case 'dab':
-        return colorScheme.secondary;
-      case 'kickin':
-        return colorScheme.tertiary;
-      default:
-        return colorScheme.primary;
-    }
-  }
-
   Widget _buildContent(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+      padding: const EdgeInsets.only(top: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -361,11 +266,17 @@ class _PostCardState extends State<PostCard> {
                 ),
               ),
             ),
-            if (widget.post.mediaUrls.isNotEmpty) const SizedBox(height: 12),
+            const SizedBox(height: 6),
           ],
 
           // Media display
-          if (widget.post.mediaUrls.isNotEmpty) _buildMediaContent(context),
+          if (widget.post.mediaUrls.isNotEmpty) ...[
+            _buildMediaContent(context),
+            const SizedBox(height: 0),
+          ],
+
+          // Vibes and actions inline
+          _buildActions(context),
         ],
       ),
     );
@@ -455,16 +366,15 @@ class _PostCardState extends State<PostCard> {
     final textTheme = Theme.of(context).textTheme;
 
     return Padding(
-      padding: const EdgeInsets.only(top: 18),
+      padding: const EdgeInsets.only(top: 6),
       child: Row(
         children: [
-          // Primary vibe pill - display actual vibe data
-          if (widget.post.primaryVibeId != null &&
-              widget.post.vibeEmoji != null)
+          // Primary vibe pill
+          if (widget.post.vibeEmoji != null && widget.post.vibeLabel != null)
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
               decoration: BoxDecoration(
-                color: colorScheme.secondaryContainer.withOpacity(0.5),
+                color: _getVibeColor(colorScheme).withOpacity(0.3),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
@@ -472,7 +382,7 @@ class _PostCardState extends State<PostCard> {
                 children: [
                   Text(
                     widget.post.vibeEmoji ?? '😊',
-                    style: const TextStyle(fontSize: 18),
+                    style: const TextStyle(fontSize: 15),
                   ),
                   const SizedBox(width: 4),
                   Text(
@@ -494,7 +404,7 @@ class _PostCardState extends State<PostCard> {
             isActive: _displayLiked,
             onTap: _handleLikeTap,
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 12),
           // Comment action
           _buildActionButton(
             context: context,
@@ -502,6 +412,16 @@ class _PostCardState extends State<PostCard> {
             label: widget.post.commentsCount.toString(),
             isActive: false,
             onTap: widget.onComment,
+          ),
+          const SizedBox(width: 12),
+          // Actions menu
+          GestureDetector(
+            onTap: () => _showActionsDrawer(context),
+            child: Icon(
+              Iconsax.more_copy,
+              color: colorScheme.onSurfaceVariant,
+              size: 24,
+            ),
           ),
         ],
       ),
@@ -582,6 +502,56 @@ class _PostCardState extends State<PostCard> {
     } else {
       return 'now';
     }
+  }
+
+  void _showActionsDrawer(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => Container(
+        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_isOwnPost()) ...[
+              ListTile(
+                leading: Icon(Iconsax.trash_copy, color: colorScheme.error),
+                title: Text(
+                  'Delete',
+                  style: TextStyle(color: colorScheme.error),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  _deletePost(context);
+                },
+              ),
+            ] else ...[
+              ListTile(
+                leading: const Icon(Iconsax.eye_slash_copy),
+                title: const Text('Hide Post'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _hidePost(context);
+                },
+              ),
+              ListTile(
+                leading: const Icon(Iconsax.flag_copy),
+                title: const Text('Report'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _reportPost(context);
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   bool _isOwnPost() {
@@ -670,5 +640,25 @@ class _PostCardState extends State<PostCard> {
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to report: $e')));
     }
+  }
+
+  Color _getVibeColor(ColorScheme colorScheme) {
+    // Try to get color from primaryVibe data
+    if (widget.post.primaryVibe != null && widget.post.primaryVibe is Map) {
+      final primaryVibe = widget.post.primaryVibe!;
+      final colorHex = primaryVibe['color_hex'];
+      if (colorHex != null && colorHex is String && colorHex.isNotEmpty) {
+        try {
+          // Parse hex color (format: #RRGGBB or RRGGBB)
+          final hexColor = colorHex.replaceAll('#', '');
+          final colorValue = int.parse(hexColor, radix: 16);
+          return Color(0xFF000000 | colorValue);
+        } catch (e) {
+          // If parsing fails, fall through to default
+        }
+      }
+    }
+    // Fallback to secondaryContainer
+    return colorScheme.secondaryContainer;
   }
 }

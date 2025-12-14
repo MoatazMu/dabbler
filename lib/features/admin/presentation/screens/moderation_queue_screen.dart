@@ -6,7 +6,9 @@ import 'package:dabbler/core/widgets/loading_widget.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 /// Provider for moderation queue
-final moderationQueueProvider = FutureProvider<List<ModerationReportSummary>>((ref) async {
+final moderationQueueProvider = FutureProvider<List<ModerationReportSummary>>((
+  ref,
+) async {
   final service = ref.read(moderationServiceProvider);
   return await service.fetchOpenModQueue();
 });
@@ -25,7 +27,8 @@ class ModerationQueueScreen extends ConsumerStatefulWidget {
   const ModerationQueueScreen({super.key});
 
   @override
-  ConsumerState<ModerationQueueScreen> createState() => _ModerationQueueScreenState();
+  ConsumerState<ModerationQueueScreen> createState() =>
+      _ModerationQueueScreenState();
 }
 
 class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
@@ -130,7 +133,12 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
                   itemCount: reports.length,
                   itemBuilder: (context, index) {
                     final report = reports[index];
-                    return _buildReportCard(context, theme, colorScheme, report);
+                    return _buildReportCard(
+                      context,
+                      theme,
+                      colorScheme,
+                      report,
+                    );
                   },
                 ),
               );
@@ -178,9 +186,8 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
           );
         },
         loading: () => const Center(child: LoadingWidget()),
-        error: (error, stack) => Center(
-          child: Text('Failed to check admin status: $error'),
-        ),
+        error: (error, stack) =>
+            Center(child: Text('Failed to check admin status: $error')),
       ),
     );
   }
@@ -206,7 +213,10 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: statusColor.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(8),
@@ -258,7 +268,11 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   TextButton.icon(
-                    onPressed: () => _resolveReport(context, report.reportId, ReportStatus.dismissed),
+                    onPressed: () => _resolveReport(
+                      context,
+                      report.reportId,
+                      ReportStatus.dismissed,
+                    ),
                     icon: const Icon(Icons.close),
                     label: const Text('Dismiss'),
                   ),
@@ -294,7 +308,10 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
     }
   }
 
-  void _showReportDetails(BuildContext context, ModerationReportSummary report) {
+  void _showReportDetails(
+    BuildContext context,
+    ModerationReportSummary report,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -312,23 +329,29 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
                 Text(
                   'Report Details',
                   style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 24),
-                _buildDetailRow('Target Type', report.targetType.toPostgresString()),
+                _buildDetailRow(
+                  'Target Type',
+                  report.targetType.toPostgresString(),
+                ),
                 _buildDetailRow('Target ID', report.targetId),
                 _buildDetailRow('Reason', report.reason.toPostgresString()),
                 _buildDetailRow('Status', report.status.toPostgresString()),
                 _buildDetailRow('Report ID', report.reportId),
-                _buildDetailRow('Reported At', DateFormat('MMM dd, yyyy HH:mm').format(report.createdAt)),
+                _buildDetailRow(
+                  'Reported At',
+                  DateFormat('MMM dd, yyyy HH:mm').format(report.createdAt),
+                ),
                 if (report.details != null && report.details!.isNotEmpty) ...[
                   const SizedBox(height: 16),
                   Text(
                     'Details',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
@@ -355,23 +378,24 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
             child: Text(
               label,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
+            child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _resolveReport(BuildContext context, String reportId, ReportStatus status) async {
+  Future<void> _resolveReport(
+    BuildContext context,
+    String reportId,
+    ReportStatus status,
+  ) async {
     try {
       final service = ref.read(moderationServiceProvider);
       await service.adminResolveReport(
@@ -388,9 +412,9 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to resolve report: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to resolve report: $e')));
       }
     }
   }
@@ -409,13 +433,15 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
             const SizedBox(height: 16),
             const Text('Select an action:'),
             const SizedBox(height: 8),
-            ...ModAction.values.map((action) => ListTile(
-                  title: Text(_getActionLabel(action)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    _takeAction(context, report, action);
-                  },
-                )),
+            ...ModAction.values.map(
+              (action) => ListTile(
+                title: Text(_getActionLabel(action)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _takeAction(context, report, action);
+                },
+              ),
+            ),
           ],
         ),
         actions: [
@@ -469,17 +495,20 @@ class _ModerationQueueScreenState extends ConsumerState<ModerationQueueScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Action "${_getActionLabel(action)}" applied successfully')),
+          SnackBar(
+            content: Text(
+              'Action "${_getActionLabel(action)}" applied successfully',
+            ),
+          ),
         );
         ref.invalidate(moderationQueueProvider);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to take action: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to take action: $e')));
       }
     }
   }
 }
-

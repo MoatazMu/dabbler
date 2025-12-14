@@ -146,25 +146,16 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         final currentUser = _authService.getCurrentUser();
         email = currentUser?.email;
         phone = currentUser?.phone;
-        debugPrint(
-          '📧 [DEBUG] CreateUserInformation: No email/phone in route, getting from authenticated user: email=$email, phone=$phone',
-        );
       }
 
       if ((email == null || email.isEmpty) &&
           (phone == null || phone.isEmpty) &&
           mounted) {
-        debugPrint(
-          '❌ [DEBUG] CreateUserInformation: No email or phone provided, redirecting to phone input.',
-        );
         context.go(RoutePaths.phoneInput);
         return;
       }
 
       final identifier = email ?? phone ?? '';
-      debugPrint(
-        '📧 [DEBUG] CreateUserInformation: Initializing form for: $identifier',
-      );
 
       // Update widget.email/phone for use in the rest of the method
       // We'll use local variables email/phone instead of widget.email/phone
@@ -178,21 +169,12 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         final resolvedEmail = email ?? currentEmail;
         final resolvedPhone = phone ?? currentPhone;
 
-        debugPrint('🔍 [DEBUG] CreateUserInformation: Session check:');
-        debugPrint('  widget.email: ${widget.email}');
-        debugPrint('  widget.phone: ${widget.phone}');
-        debugPrint('  currentEmail: $currentEmail');
-        debugPrint('  currentPhone: $currentPhone');
-        debugPrint('  resolvedEmail: $resolvedEmail');
-        debugPrint('  resolvedPhone: $resolvedPhone');
-
         // Check if current session matches either email or phone
         bool matchesSession = false;
         if (resolvedEmail != null && currentEmail != null) {
           final normalizedCurrent = currentEmail.trim().toLowerCase();
           final normalizedTarget = resolvedEmail.trim().toLowerCase();
           matchesSession = normalizedCurrent == normalizedTarget;
-          debugPrint('  Email match check: $matchesSession');
         } else if (resolvedPhone != null) {
           // For phone users during onboarding after OTP verification,
           // normalize phone numbers by removing '+' prefix for comparison
@@ -200,20 +182,12 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
             final normalizedCurrent = currentPhone.replaceAll('+', '');
             final normalizedTarget = resolvedPhone.replaceAll('+', '');
             matchesSession = normalizedCurrent == normalizedTarget;
-            debugPrint(
-              '  Phone match check: $matchesSession ($normalizedCurrent == $normalizedTarget)',
-            );
           } else {
             // Phone user but currentPhone is null - likely just verified OTP
             // Trust the session for onboarding flow
             matchesSession = true;
-            debugPrint(
-              '  Phone user in onboarding - trusting session (currentPhone is null)',
-            );
           }
-        } else {
-          debugPrint('  No match possible - missing data');
-        }
+        } else {}
 
         if (matchesSession) {
           // Same user -> check if they have a profile
@@ -223,15 +197,9 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
           );
           if (existingProfile != null) {
             // User has profile -> treat as profile edit
-            print(
-              '✅ [DEBUG] CreateUserInformation: Authenticated user matches and has profile; loading existing data.',
-            );
             await _loadExistingUserData();
           } else {
             // User authenticated but no profile -> treat as new registration
-            print(
-              '🆕 [DEBUG] CreateUserInformation: Authenticated user but no profile; proceeding with new registration.',
-            );
             if (mounted) {
               setState(() {
                 _nameController.text = '';
@@ -243,20 +211,10 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
           }
         } else {
           // Different authenticated account than the email/phone we want to register.
-          print(
-            '⚠️ [DEBUG] CreateUserInformation: Authenticated session differs from registration. Signing out to start fresh.',
-          );
           try {
             await _authService.signOut();
-          } catch (e) {
-            print(
-              '❌ [DEBUG] CreateUserInformation: Error signing out mismatched user: $e',
-            );
-          }
+          } catch (e) {}
           // Proceed as fresh registration
-          print(
-            '🆕 [DEBUG] CreateUserInformation: Proceeding with empty form for new registration.',
-          );
           if (mounted) {
             setState(() {
               _nameController.text = '';
@@ -268,9 +226,6 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         }
       } else {
         // 4. This is the standard new user registration path.
-        print(
-          '🆕 [DEBUG] CreateUserInformation: New user, ensuring form is empty.',
-        );
         if (mounted) {
           setState(() {
             _nameController.text = '';
@@ -281,7 +236,6 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         }
       }
     } catch (e) {
-      print('❌ [DEBUG] CreateUserInformation: Error during initialization: $e');
       if (mounted) {
         setState(() {
           _isLoadingData = false;
@@ -311,7 +265,6 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       }
     } catch (e) {
       // Handle error silently - user will enter data manually
-      print('Error loading user data: $e');
       // Ensure fields are empty even if there's an error
       setState(() {
         _nameController.text = '';
@@ -407,11 +360,6 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
     setState(() => _isLoading = true);
 
     try {
-      print('👤 [DEBUG] CreateUserInformation: Collecting user information');
-      print(
-        '📋 [DEBUG] CreateUserInformation: Name: $name, Age: $ageValue, Gender: $_selectedGender',
-      );
-
       // Initialize or update onboarding data provider
       final onboardingNotifier = ref.read(onboardingDataProvider.notifier);
 
@@ -436,16 +384,11 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
         gender: _selectedGender,
       );
 
-      print(
-        '✅ [DEBUG] CreateUserInformation: User info stored in onboarding provider',
-      );
-
       // Navigate to intention selection screen
       if (mounted) {
         context.push(RoutePaths.intentSelection);
       }
     } catch (e) {
-      print('❌ [DEBUG] CreateUserInformation: Error in _handleSubmit: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

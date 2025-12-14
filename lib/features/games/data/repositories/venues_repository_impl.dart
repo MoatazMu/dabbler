@@ -75,8 +75,6 @@ class VenuesRepositoryImpl implements VenuesRepository {
     bool ascending = true,
   }) async {
     try {
-      print('🏛️ [REPO] getVenues called with filters: ${filters?.toJson()}');
-
       final cacheKey = _generateListCacheKey('venues', {
         'filters': filters?.toJson(),
         'page': page,
@@ -88,14 +86,12 @@ class VenuesRepositoryImpl implements VenuesRepository {
       // Check cache first
       if (_isListCacheValid(cacheKey)) {
         final cached = _listCache[cacheKey]!;
-        print('📦 [REPO] Returning ${cached.length} venues from cache');
         return Right(
           cached,
         ); // VenueModel extends Venue, so no conversion needed
       }
 
       // Fetch from remote
-      print('🌐 [REPO] Fetching venues from remote data source...');
       final venueModels = await remoteDataSource.getVenues(
         filters: filters?.toJson(),
         page: page,
@@ -103,8 +99,6 @@ class VenuesRepositoryImpl implements VenuesRepository {
         sortBy: sortBy,
         ascending: ascending,
       );
-
-      print('✅ [REPO] Successfully fetched ${venueModels.length} venues');
 
       // Update cache
       _listCache[cacheKey] = venueModels;
@@ -120,13 +114,10 @@ class VenuesRepositoryImpl implements VenuesRepository {
         venueModels,
       ); // VenueModel extends Venue, so no conversion needed
     } on VenueServerException catch (e) {
-      print('❌ [REPO] VenueServerException: ${e.message}');
       return Left(VenueServerFailure(e.message));
     } on VenueNotFoundException catch (e) {
-      print('❌ [REPO] VenueNotFoundException: ${e.message}');
       return Left(VenueNotFoundFailure(e.message));
     } catch (e) {
-      print('❌ [REPO] Unknown error: $e');
       return Left(UnknownFailure('Failed to get venues: ${e.toString()}'));
     }
   }

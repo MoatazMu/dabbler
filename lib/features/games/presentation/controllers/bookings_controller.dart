@@ -82,15 +82,12 @@ class BookingsController extends StateNotifier<BookingsState> {
       result.fold(
         (failure) {
           // Don't update error state for past bookings
-          print('Failed to load past bookings: ${failure.message}');
         },
         (bookings) {
           state = state.copyWith(pastBookings: bookings);
         },
       );
-    } catch (e) {
-      print('Failed to load past bookings: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> cancelBooking(String bookingId, String reason) async {

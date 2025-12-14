@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'analytics_constants.dart';
@@ -31,9 +30,7 @@ class AnalyticsStorage {
 
       final eventsJson = existingEvents.map((e) => e.toJson()).toList();
       await prefs.setString(_eventsKey, jsonEncode(eventsJson));
-    } catch (e) {
-      debugPrint('Error storing analytics event: $e');
-    }
+    } catch (e) {}
   }
 
   /// Retrieve stored analytics events
@@ -47,7 +44,6 @@ class AnalyticsStorage {
       final eventsJson = jsonDecode(eventsString) as List;
       return eventsJson.map((json) => AnalyticsEvent.fromJson(json)).toList();
     } catch (e) {
-      debugPrint('Error retrieving analytics events: $e');
       return [];
     }
   }
@@ -57,9 +53,7 @@ class AnalyticsStorage {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_eventsKey);
-    } catch (e) {
-      debugPrint('Error clearing analytics events: $e');
-    }
+    } catch (e) {}
   }
 
   /// Remove specific events (e.g., after partial upload)
@@ -76,9 +70,7 @@ class AnalyticsStorage {
       final prefs = await SharedPreferences.getInstance();
       final eventsJson = remainingEvents.map((e) => e.toJson()).toList();
       await prefs.setString(_eventsKey, jsonEncode(eventsJson));
-    } catch (e) {
-      debugPrint('Error removing analytics events: $e');
-    }
+    } catch (e) {}
   }
 
   /// Store current session
@@ -86,9 +78,7 @@ class AnalyticsStorage {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_sessionKey, jsonEncode(session.toJson()));
-    } catch (e) {
-      debugPrint('Error storing analytics session: $e');
-    }
+    } catch (e) {}
   }
 
   /// Retrieve current session
@@ -107,7 +97,6 @@ class AnalyticsStorage {
         properties: Map<String, dynamic>.from(sessionJson['properties'] ?? {}),
       );
     } catch (e) {
-      debugPrint('Error retrieving analytics session: $e');
       return null;
     }
   }
@@ -119,9 +108,7 @@ class AnalyticsStorage {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_userPropertiesKey, jsonEncode(properties));
-    } catch (e) {
-      debugPrint('Error storing user properties: $e');
-    }
+    } catch (e) {}
   }
 
   /// Retrieve user properties
@@ -134,7 +121,6 @@ class AnalyticsStorage {
 
       return Map<String, dynamic>.from(jsonDecode(propertiesString));
     } catch (e) {
-      debugPrint('Error retrieving user properties: $e');
       return {};
     }
   }
@@ -152,7 +138,6 @@ class AnalyticsStorage {
 
       return deviceId;
     } catch (e) {
-      debugPrint('Error getting device ID: $e');
       return const Uuid().v4();
     }
   }
@@ -165,9 +150,7 @@ class AnalyticsStorage {
       await prefs.remove(_sessionKey);
       await prefs.remove(_userPropertiesKey);
       // Keep device ID for continuity
-    } catch (e) {
-      debugPrint('Error clearing analytics data: $e');
-    }
+    } catch (e) {}
   }
 
   /// Get storage statistics
@@ -189,7 +172,6 @@ class AnalyticsStorage {
             : null,
       };
     } catch (e) {
-      debugPrint('Error getting storage stats: $e');
       return {};
     }
   }
@@ -369,8 +351,6 @@ class AnalyticsEventQueue {
 
       // Clear uploaded events
       await AnalyticsStorage.clearEvents();
-    } catch (e) {
-      debugPrint('Error uploading analytics events: $e');
     } finally {
       _isUploading = false;
     }
@@ -387,7 +367,6 @@ class AnalyticsEventQueue {
 
       // Simulate API call
       // In a real implementation, you would send this to your analytics service
-      debugPrint('Uploading ${batch.length} analytics events');
 
       // Add delay to simulate network call
       await Future.delayed(const Duration(milliseconds: 100));

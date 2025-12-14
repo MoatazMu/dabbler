@@ -20,6 +20,28 @@ class PushNotificationService {
     // On mobile: uses full Firebase implementation
     await impl.PushNotificationService.instance.init();
   }
+
+  /// Check if we should show the notification permission prompt
+  Future<bool> shouldShowNotificationPrompt() async {
+    return await impl.PushNotificationService.instance
+        .shouldShowNotificationPrompt();
+  }
+
+  /// Save user's notification permission preference
+  Future<void> saveNotificationPreference(String preference) async {
+    await impl.PushNotificationService.instance.saveNotificationPreference(
+      preference,
+    );
+  }
+
+  /// Check current permission status without requesting
+  Future<dynamic> checkPermissionStatus() async {
+    return await impl.PushNotificationService.instance.checkPermissionStatus();
+  }
+
+  /// Request notification permissions
+  Future<bool> requestNotificationPermission() async {
+    return await impl.PushNotificationService.instance
+        .requestNotificationPermission();
+  }
 }
-
-

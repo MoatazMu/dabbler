@@ -21,10 +21,10 @@ final displayNameAvailabilityProvider = FutureProvider.autoDispose
     });
 
 final displayNameSearchProvider = FutureProvider.autoDispose
-    .family<Result<List<Profile>, Failure>, ({String query, int limit, int offset})>((
-      ref,
-      args,
-    ) {
+    .family<
+      Result<List<Profile>, Failure>,
+      ({String query, int limit, int offset})
+    >((ref, args) {
       final repo = ref.watch(displayNameRepositoryProvider);
       return repo.search(
         query: args.query,
@@ -34,22 +34,21 @@ final displayNameSearchProvider = FutureProvider.autoDispose
     });
 
 final setDisplayNameForProfileProvider = FutureProvider.autoDispose
-    .family<Result<Profile, Failure>, ({String profileId, String displayName})>((
-      ref,
-      args,
-    ) {
-      final repo = ref.watch(displayNameRepositoryProvider);
-      return repo.setDisplayNameForProfile(
-        profileId: args.profileId,
-        displayName: args.displayName,
-      );
-    });
+    .family<Result<Profile, Failure>, ({String profileId, String displayName})>(
+      (ref, args) {
+        final repo = ref.watch(displayNameRepositoryProvider);
+        return repo.setDisplayNameForProfile(
+          profileId: args.profileId,
+          displayName: args.displayName,
+        );
+      },
+    );
 
 final setMyDisplayNameForTypeProvider = FutureProvider.autoDispose
-    .family<Result<Profile, Failure>, ({String profileType, String displayName})>((
-      ref,
-      args,
-    ) {
+    .family<
+      Result<Profile, Failure>,
+      ({String profileType, String displayName})
+    >((ref, args) {
       final repo = ref.watch(displayNameRepositoryProvider);
       return repo.setMyDisplayNameForType(
         profileType: args.profileType,

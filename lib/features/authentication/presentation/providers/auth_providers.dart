@@ -24,10 +24,6 @@ class RouterRefreshNotifier extends ChangeNotifier {
   RouterRefreshNotifier._internal();
 
   void notifyAuthStateChanged() {
-    print(
-      '🔄 [DEBUG] RouterRefreshNotifier: Notifying router of auth state change',
-    );
-    print('🔄 [DEBUG] RouterRefreshNotifier: Has listeners: $hasListeners');
     notifyListeners();
   }
 }
@@ -81,44 +77,27 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
   bool _isCheckingAuth = false;
 
   SimpleAuthNotifier(this._authService) : super(const SimpleAuthState()) {
-    print('🔐 [DEBUG] SimpleAuthNotifier: Constructor called');
     _setupAuthListener();
     Future.microtask(() async {
       await _checkAuthState();
     });
-    print('🔐 [DEBUG] SimpleAuthNotifier: Constructor completed');
   }
 
   Future<void> _checkAuthState() async {
     if (_isCheckingAuth) {
-      print(
-        '🔐 [DEBUG] SimpleAuthNotifier: _checkAuthState skipped (already running)',
-      );
       return;
     }
     _isCheckingAuth = true;
-    print('🔐 [DEBUG] SimpleAuthNotifier: _checkAuthState started');
-    print(
-      '🔐 [DEBUG] SimpleAuthNotifier: Current state before check - authenticated: ${state.isAuthenticated}',
-    );
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      print(
-        '🔐 [DEBUG] SimpleAuthNotifier: Calling _authService.isAuthenticated()',
-      );
       final isAuthenticated = _authService.isAuthenticated();
-      print('🔐 [DEBUG] SimpleAuthNotifier: Auth result: $isAuthenticated');
 
       // Also check if we have a current user for additional verification
       final currentUser = _authService.getCurrentUser();
-      print(
-        '🔐 [DEBUG] SimpleAuthNotifier: Current user: ${currentUser?.email ?? 'None'}',
-      );
 
       // Double check - if we have a user but isAuthenticated is false, something's wrong
       final finalAuthState = isAuthenticated && currentUser != null;
-      print('🔐 [DEBUG] SimpleAuthNotifier: Final auth state: $finalAuthState');
 
       final previousState = state.isAuthenticated;
       state = state.copyWith(
@@ -127,23 +106,12 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
         isGuest: false, // Clear guest mode when checking auth
         error: null,
       );
-      print(
-        '🔐 [DEBUG] SimpleAuthNotifier: State updated - was: $previousState, now: $finalAuthState',
-      );
 
       // Only notify router if auth state actually changed
       if (previousState != finalAuthState) {
-        print(
-          '🔐 [DEBUG] SimpleAuthNotifier: Auth state changed, notifying router...',
-        );
         routerRefreshNotifier.notifyAuthStateChanged();
-      } else {
-        print(
-          '🔐 [DEBUG] SimpleAuthNotifier: Auth state unchanged, not notifying router',
-        );
-      }
+      } else {}
     } catch (e) {
-      print('❌ [DEBUG] SimpleAuthNotifier: Error checking auth state: $e');
       state = state.copyWith(
         isLoading: false,
         isAuthenticated: false,
@@ -154,13 +122,11 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
   }
 
   void _setupAuthListener() {
-    print('🔐 [DEBUG] SimpleAuthNotifier: Setting up auth listener');
     _authSubscription?.cancel();
     _authSubscription = supa.Supabase.instance.client.auth.onAuthStateChange.listen((
       data,
     ) async {
       final event = data.event;
-      print('🔐 [DEBUG] SimpleAuthNotifier: Auth event received -> $event');
 
       if (event == supa.AuthChangeEvent.signedOut) {
         final wasAuthenticated = state.isAuthenticated;
@@ -177,9 +143,6 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
       // If the restored session is missing (e.g. app resumed) try a refresh once
       if (!state.isAuthenticated &&
           event == supa.AuthChangeEvent.initialSession) {
-        print(
-          '🔐 [DEBUG] SimpleAuthNotifier: Initial session missing, attempting refresh',
-        );
         await _authService.refreshSession();
         await _checkAuthState();
       }
@@ -188,20 +151,17 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
 
   // Initialize auth state when needed
   Future<void> initialize() async {
-    print('🔐 [DEBUG] SimpleAuthNotifier: initialize called');
     await _checkAuthState();
   }
 
   // Set guest mode
   Future<void> setGuestMode() async {
-    print('👤 [DEBUG] SimpleAuthNotifier: Setting guest mode');
     state = state.copyWith(
       isAuthenticated: false,
       isGuest: true,
       isLoading: false,
       error: null,
     );
-    print('👤 [DEBUG] SimpleAuthNotifier: Guest mode set successfully');
 
     // Notify router of auth state change
     RouterRefreshNotifier().notifyAuthStateChanged();
@@ -209,13 +169,10 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
 
   // Sign in as guest
   Future<void> signInAsGuest() async {
-    print('👤 [DEBUG] SimpleAuthNotifier: Signing in as guest');
     try {
       // Set guest mode without authentication
       await setGuestMode();
-      print('👤 [DEBUG] SimpleAuthNotifier: Guest sign in successful');
     } catch (e) {
-      print('❌ [DEBUG] SimpleAuthNotifier: Guest sign in failed: $e');
       state = state.copyWith(error: e.toString());
     }
   }
@@ -233,17 +190,11 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
   }
 
   Future<void> refreshAuthState() async {
-    print('🔐 [DEBUG] SimpleAuthNotifier: refreshAuthState called');
     await _checkAuthState();
   }
 
   // Handle successful login - force a state refresh
   Future<void> handleSuccessfulLogin() async {
-    print('🔐 [DEBUG] SimpleAuthNotifier: handleSuccessfulLogin called');
-    print(
-      '🔐 [DEBUG] SimpleAuthNotifier: State before login handling - authenticated: ${state.isAuthenticated}',
-    );
-
     // Add a small delay to ensure Supabase session is fully established
     await Future.delayed(const Duration(milliseconds: 100));
 
@@ -251,23 +202,12 @@ class SimpleAuthNotifier extends StateNotifier<SimpleAuthState> {
 
     // If still not authenticated after the check, there might be a session issue
     if (!state.isAuthenticated) {
-      print(
-        '⚠️ [DEBUG] SimpleAuthNotifier: Still not authenticated after login, retrying...',
-      );
       await Future.delayed(const Duration(milliseconds: 500));
       await _checkAuthState();
 
       // Final check - if still not authenticated, something is seriously wrong
-      if (!state.isAuthenticated) {
-        print(
-          '❌ [DEBUG] SimpleAuthNotifier: CRITICAL - Still not authenticated after retry!',
-        );
-      }
-    } else {
-      print(
-        '✅ [DEBUG] SimpleAuthNotifier: Login handling successful - now authenticated',
-      );
-    }
+      if (!state.isAuthenticated) {}
+    } else {}
   }
 
   @override

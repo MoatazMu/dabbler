@@ -5,19 +5,23 @@ import 'package:flutter/material.dart';
 /// This extension adds category colors (main, social, sports, activities, profile)
 /// to the Material 3 ColorScheme, allowing them to be accessed via theme.
 extension AppColorSchemeExtension on ColorScheme {
-  // Category colors for dark theme
-  static const Color _mainDark = Color(0xFF4A148C);
-  static const Color _socialDark = Color(0xFF023D99);
-  static const Color _sportsDark = Color(0xFF235826);
-  static const Color _activitiesDark = Color(0xFF9C2464);
-  static const Color _profileDark = Color(0xFFFCF8EA);
+  // Category colors for dark theme - from token files
+  static const Color _mainDark = Color(0xFFC18FFF); // Main dark primary
+  static const Color _socialDark = Color(0xFFA6DCFF); // Social dark primary
+  static const Color _sportsDark = Color(0xFF79FFC3); // Sports dark primary
+  static const Color _activitiesDark = Color(
+    0xFFFCDEE8,
+  ); // Activity dark primary
+  static const Color _profileDark = Color(0xFFFFF4CC); // Profile dark primary
 
-  // Category colors for light theme
-  static const Color _mainLight = Color(0xFFE0C7FF);
-  static const Color _socialLight = Color(0xFFD1EAFA);
-  static const Color _sportsLight = Color(0xFFB1FBDA);
-  static const Color _activitiesLight = Color(0xFFFCDEE8);
-  static const Color _profileLight = Color(0xFFEC8F1E);
+  // Category colors for light theme - from token files
+  static const Color _mainLight = Color(0xFF7328CE); // Main light primary
+  static const Color _socialLight = Color(0xFF3473D7); // Social light primary
+  static const Color _sportsLight = Color(0xFF348638); // Sports light primary
+  static const Color _activitiesLight = Color(
+    0xFFCF3989,
+  ); // Activity light primary
+  static const Color _profileLight = Color(0xFFF6AA4F); // Profile light primary
 
   /// Main category color (purple)
   Color get categoryMain =>

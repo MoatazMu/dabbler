@@ -221,7 +221,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 color: colorScheme.surfaceContainerLow,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: colorScheme.outlineVariant.withOpacity(0.5),
+                  color: _getVibeColor(post, colorScheme).withOpacity(0.3),
                   width: 1,
                 ),
               ),
@@ -860,10 +860,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     // Show report dialog
     showDialog(
       context: context,
-      builder: (context) => ReportDialog(
-        type: ReportType.comment,
-        commentId: commentId,
-      ),
+      builder: (context) =>
+          ReportDialog(type: ReportType.comment, commentId: commentId),
     );
   }
 
@@ -952,10 +950,8 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   void _reportPost() {
     showDialog(
       context: context,
-      builder: (context) => ReportDialog(
-        type: ReportType.post,
-        postId: widget.postId,
-      ),
+      builder: (context) =>
+          ReportDialog(type: ReportType.post, postId: widget.postId),
     );
   }
 
@@ -990,10 +986,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   Future<bool> _checkPostTakedown(String postId) async {
     try {
       final moderationService = ref.read(moderationServiceProvider);
-      return await moderationService.isContentTakedown(
-        ModTarget.post,
-        postId,
-      );
+      return await moderationService.isContentTakedown(ModTarget.post, postId);
     } catch (e) {
       // If check fails, assume not takedown to avoid blocking content
       return false;
@@ -1229,8 +1222,9 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
           child: const Text('Cancel'),
         ),
         TextButton(
-          onPressed:
-              (_selectedReason != null && !_isSubmitting) ? _submitReport : null,
+          onPressed: (_selectedReason != null && !_isSubmitting)
+              ? _submitReport
+              : null,
           child: _isSubmitting
               ? const SizedBox(
                   width: 16,
@@ -1281,18 +1275,14 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Report submitted successfully'),
-          ),
+          const SnackBar(content: Text('Report submitted successfully')),
         );
       }
     } catch (e) {
       if (mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to submit report: ${e.toString()}'),
-          ),
+          SnackBar(content: Text('Failed to submit report: ${e.toString()}')),
         );
       }
     } finally {
@@ -1314,4 +1304,25 @@ class _AuthorData {
   final bool isVerified;
 
   _AuthorData({required this.name, this.avatar, this.isVerified = false});
+}
+
+/// Helper function to get vibe color from post data
+Color _getVibeColor(dynamic post, ColorScheme colorScheme) {
+  // Try to get color from primaryVibe data
+  if (post.primaryVibe != null && post.primaryVibe is Map) {
+    final primaryVibe = post.primaryVibe as Map<String, dynamic>;
+    final colorHex = primaryVibe['color_hex'];
+    if (colorHex != null && colorHex is String && colorHex.isNotEmpty) {
+      try {
+        // Parse hex color (format: #RRGGBB or RRGGBB)
+        final hexColor = colorHex.replaceAll('#', '');
+        final colorValue = int.parse(hexColor, radix: 16);
+        return Color(0xFF000000 | colorValue);
+      } catch (e) {
+        // If parsing fails, fall through to default
+      }
+    }
+  }
+  // Fallback to secondaryContainer
+  return colorScheme.secondaryContainer;
 }

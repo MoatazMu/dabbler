@@ -8,7 +8,7 @@ import 'package:dabbler/services/sport_profile_service.dart';
 /// Game completion integration with rewards system
 class GameCompletionRewardsHandler {
   GameCompletionRewardsHandler({SportProfileService? sportProfileService})
-      : _sportProfileService = sportProfileService ?? SportProfileService();
+    : _sportProfileService = sportProfileService ?? SportProfileService();
 
   final SportProfileService _sportProfileService;
 
@@ -37,7 +37,9 @@ class GameCompletionRewardsHandler {
         gameStats: gameStats,
       );
 
-      final profiles = await _sportProfileService.getSportProfilesForUser(userId);
+      final profiles = await _sportProfileService.getSportProfilesForUser(
+        userId,
+      );
       if (profiles.isEmpty) {
         Logger.warning(
           '$_logTag: No sport profiles found for userId=$userId when recording match outcome',
@@ -104,7 +106,8 @@ class GameCompletionRewardsHandler {
   }
 
   int? _extractPerformanceRating(Map<String, dynamic> stats) {
-    final dynamic raw = stats['performance_rating'] ??
+    final dynamic raw =
+        stats['performance_rating'] ??
         stats['performanceRating'] ??
         stats['player_rating'] ??
         stats['rating'];
@@ -120,10 +123,7 @@ class GameCompletionRewardsHandler {
     return null;
   }
 
-  int? _extractReliabilityDelta(
-    Map<String, dynamic> stats,
-    bool isWinner,
-  ) {
+  int? _extractReliabilityDelta(Map<String, dynamic> stats, bool isWinner) {
     final dynamic raw = stats['reliability_delta'] ?? stats['reliabilityDelta'];
     if (raw is int) {
       return raw;

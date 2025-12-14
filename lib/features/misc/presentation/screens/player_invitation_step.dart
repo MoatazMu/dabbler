@@ -82,7 +82,8 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep>
               // Client-side filter: include if primary_sport matches or is null
               if (selectedSport != null) {
                 final primarySport = profile['primary_sport'] as String?;
-                return primarySport == null || primarySport.toLowerCase() == selectedSport.toLowerCase();
+                return primarySport == null ||
+                    primarySport.toLowerCase() == selectedSport.toLowerCase();
               }
               return true;
             })
@@ -99,7 +100,8 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep>
 
         setState(() {
           _recentTeammates = players;
-          _contacts = []; // Contacts would come from a contacts/connections table
+          _contacts =
+              []; // Contacts would come from a contacts/connections table
           _isLoadingContacts = false;
         });
       } else {
@@ -110,7 +112,6 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep>
         });
       }
     } catch (e) {
-      print('❌ Error loading players: $e');
       setState(() {
         _contacts = [];
         _recentTeammates = [];
@@ -161,7 +162,8 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep>
             // Include if primary_sport matches or is null
             if (selectedSport != null) {
               final primarySport = profile['primary_sport'] as String?;
-              return primarySport == null || primarySport.toLowerCase() == selectedSport.toLowerCase();
+              return primarySport == null ||
+                  primarySport.toLowerCase() == selectedSport.toLowerCase();
             }
             return true;
           })
@@ -183,7 +185,6 @@ class _PlayerInvitationStepState extends State<PlayerInvitationStep>
         });
       }
     } catch (e) {
-      print('❌ Error searching players: $e');
       if (mounted) {
         setState(() {
           _searchResults = [];

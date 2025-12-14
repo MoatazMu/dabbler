@@ -9,7 +9,6 @@ import '../models/venue.dart';
 import 'base_repository.dart';
 import 'geo_repository.dart';
 
-
 @immutable
 class GeoRepositoryImpl extends BaseRepository implements GeoRepository {
   const GeoRepositoryImpl(super.svc);

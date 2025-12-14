@@ -321,7 +321,7 @@ class SettingsScreen extends ConsumerWidget {
         Icons.info_outline,
         () {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('ℹ️ App Version: 1.0.0 Beta')),
+            const SnackBar(content: Text('ℹ️ App Version: 1.0.5 Beta')),
           );
         },
       ),

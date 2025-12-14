@@ -16,17 +16,15 @@ final notificationServiceProvider = Provider<NotificationService>((ref) {
 });
 
 /// Stream of the current user's inbox notifications from `v_notifications`.
-final inboxStreamProvider = StreamProvider.autoDispose<List<NotificationItem>>(
-  (ref) {
-    final service = ref.watch(notificationServiceProvider);
-    return service.watchInbox();
-  },
-);
+final inboxStreamProvider = StreamProvider.autoDispose<List<NotificationItem>>((
+  ref,
+) {
+  final service = ref.watch(notificationServiceProvider);
+  return service.watchInbox();
+});
 
 /// Stream of the current user's unread notification count from `v_unread_counts`.
 final unreadCountProvider = StreamProvider.autoDispose<int>((ref) {
   final service = ref.watch(notificationServiceProvider);
   return service.watchUnreadCount();
 });
-
-

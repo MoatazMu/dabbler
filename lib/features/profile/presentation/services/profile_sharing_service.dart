@@ -25,15 +25,12 @@ class ProfileSharingService {
           customMessage ??
           'Check out $userName\'s profile on Dabbler! $profileLink';
 
-      debugPrint('Would share: $message');
-
       await _trackSharingEvent('profile_shared', {
         'userId': userId,
         'userName': userName,
         'method': 'system_share',
       });
     } catch (e) {
-      debugPrint('$_logTag: Error sharing profile: $e');
       rethrow;
     }
   }
@@ -64,8 +61,6 @@ class ProfileSharingService {
         'userName': userName,
       });
     } catch (e) {
-      debugPrint('$_logTag: Error copying profile link: $e');
-
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -126,7 +121,6 @@ class ProfileSharingService {
         ),
       );
     } catch (e) {
-      debugPrint('$_logTag: Error generating QR code: $e');
       return Container(
         width: size,
         height: size,
@@ -203,9 +197,7 @@ class ProfileSharingService {
         'userId': userId,
         'userName': userName,
       });
-    } catch (e) {
-      debugPrint('$_logTag: Error showing QR code dialog: $e');
-    }
+    } catch (e) {}
   }
 
   /// Share profile to specific social media platform
@@ -245,9 +237,7 @@ class ProfileSharingService {
           break;
       }
 
-      if (shareUrl.isNotEmpty) {
-        debugPrint('$_logTag: Would open URL: $shareUrl');
-      }
+      if (shareUrl.isNotEmpty) {}
 
       await _trackSharingEvent('social_media_share', {
         'userId': userId,
@@ -255,7 +245,6 @@ class ProfileSharingService {
         'platform': platform.toString(),
       });
     } catch (e) {
-      debugPrint('$_logTag: Error sharing to social media: $e');
       rethrow;
     }
   }
@@ -290,7 +279,6 @@ class ProfileSharingService {
           'profile:sports': sports.join(', '),
       };
     } catch (e) {
-      debugPrint('$_logTag: Error generating preview metadata: $e');
       return {};
     }
   }
@@ -307,9 +295,7 @@ class ProfileSharingService {
         'referrer': referrer,
         'userAgent': userAgent,
       });
-    } catch (e) {
-      debugPrint('$_logTag: Error tracking shared link click: $e');
-    }
+    } catch (e) {}
   }
 
   /// Private helper methods
@@ -318,11 +304,7 @@ class ProfileSharingService {
     String event,
     Map<String, dynamic> parameters,
   ) async {
-    try {
-      debugPrint('$_logTag: Sharing event: $event, params: $parameters');
-    } catch (e) {
-      debugPrint('$_logTag: Error tracking sharing event: $e');
-    }
+    try {} catch (e) {}
   }
 }
 

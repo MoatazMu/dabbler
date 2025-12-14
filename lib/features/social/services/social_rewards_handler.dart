@@ -10,27 +10,21 @@ class SocialRewardsHandler {
     required String interactionType,
     required String targetUserId,
     Map<String, dynamic>? metadata,
-  }) async {
-    print('Track social interaction: $interactionType by $userId');
-  }
+  }) async {}
 
   /// Track achievement sharing
   Future<void> trackAchievementShare({
     required String userId,
     required Achievement achievement,
     required String shareMethod,
-  }) async {
-    print('Track achievement share: ${achievement.name} by $userId');
-  }
+  }) async {}
 
   /// Track leaderboard interactions
   Future<void> trackLeaderboardInteraction({
     required String userId,
     required String interactionType,
     int? pointsEarned,
-  }) async {
-    print('Track leaderboard interaction: $interactionType by $userId');
-  }
+  }) async {}
 
   /// Handle achievement-related post interactions
   Future<void> handleAchievementPostInteraction({
@@ -38,9 +32,7 @@ class SocialRewardsHandler {
     required String postId,
     required String interactionType,
     required String achievementId,
-  }) async {
-    print('Handle achievement post interaction');
-  }
+  }) async {}
 
   /// Handle friend-related activities
   Future<void> handleFriendActivity({
@@ -48,14 +40,13 @@ class SocialRewardsHandler {
     required String friendUserId,
     required String activityType,
     Map<String, dynamic>? metadata,
-  }) async {
-    print('Handle friend activity: $activityType');
-  }
+  }) async {}
 
   /// Update friend leaderboards
-  Future<void> updateFriendLeaderboards(String userId, int pointsEarned) async {
-    print('Update friend leaderboards for $userId');
-  }
+  Future<void> updateFriendLeaderboards(
+    String userId,
+    int pointsEarned,
+  ) async {}
 
   /// Get achievement progress for social activities
   Future<List<dynamic>> getAchievementProgress(String userId) async {

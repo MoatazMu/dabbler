@@ -599,7 +599,6 @@ class SupabaseBookingsDataSource implements BookingsDataSource {
       await _supabaseClient.rpc('send_booking_reminders');
       return true;
     } catch (e) {
-      print('Failed to send booking reminders: $e');
       return false;
     }
   }

@@ -93,11 +93,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
                 sliver: SliverToBoxAdapter(
-                  child: _buildHeaderSection(
-                    venue,
-                    colorScheme,
-                    textTheme,
-                  ),
+                  child: _buildHeaderSection(venue, colorScheme, textTheme),
                 ),
               ),
               SliverPadding(
@@ -233,8 +229,9 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     TextTheme textTheme,
   ) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final heroColor =
-        isDarkMode ? const Color(0xFF4A148C) : const Color(0xFFE0C7FF);
+    final heroColor = isDarkMode
+        ? const Color(0xFF4A148C)
+        : const Color(0xFFE0C7FF);
     final textColor = isDarkMode ? Colors.white : Colors.black87;
     final isOpen = _venueData['isOpen'] as bool;
     final statusColor = isOpen
@@ -700,9 +697,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainerHigh,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(
-          top: BorderSide(color: colorScheme.outlineVariant),
-        ),
+        border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
       ),
       child: SafeArea(
         top: false,

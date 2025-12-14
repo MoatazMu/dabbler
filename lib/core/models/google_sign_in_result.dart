@@ -7,9 +7,7 @@ sealed class GoogleSignInResult {
 class GoogleSignInResultGoToOnboarding extends GoogleSignInResult {
   final String email;
 
-  const GoogleSignInResultGoToOnboarding({
-    required this.email,
-  });
+  const GoogleSignInResultGoToOnboarding({required this.email});
 }
 
 /// New Google user with email only - needs username onboarding (deprecated - use GoToOnboarding)
@@ -52,4 +50,3 @@ class GoogleSignInResultError extends GoogleSignInResult {
 
   const GoogleSignInResultError({required this.message});
 }
-

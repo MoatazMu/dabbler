@@ -61,25 +61,14 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
 
   Future<void> _loadExistingUserData() async {
     try {
-      print('🎯 [DEBUG] IntentSelectionScreen: Loading onboarding data');
-
       // Check if we have data in onboarding provider
       final onboardingData = ref.read(onboardingDataProvider);
       if (onboardingData?.intention != null &&
           onboardingData!.intention!.isNotEmpty) {
-        print(
-          '✅ [DEBUG] IntentSelectionScreen: Found intention: ${onboardingData.intention}',
-        );
         setState(() {
           _selectedIntent = onboardingData.intention;
         });
-      } else {
-        print(
-          '🆕 [DEBUG] IntentSelectionScreen: No existing intention, starting fresh',
-        );
-      }
-    } catch (e) {
-      print('❌ [DEBUG] IntentSelectionScreen: Error loading data: $e');
+      } else {}
     } finally {
       if (mounted) {
         setState(() {
@@ -109,23 +98,14 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
     setState(() => _isLoading = true);
 
     try {
-      print(
-        '🎯 [DEBUG] IntentSelectionScreen: Storing intention: $_selectedIntent',
-      );
-
       // Store intention in onboarding provider
       ref.read(onboardingDataProvider.notifier).setIntention(_selectedIntent!);
-
-      print(
-        '✅ [DEBUG] IntentSelectionScreen: Intention stored, navigating to sports selection',
-      );
 
       if (mounted) {
         // Navigate to sports selection screen
         context.push(RoutePaths.sportsSelection);
       }
     } catch (e) {
-      print('❌ [DEBUG] IntentSelectionScreen: Error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),

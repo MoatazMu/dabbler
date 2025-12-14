@@ -13,6 +13,7 @@ import 'package:dabbler/data/models/profile/sports_profile.dart';
 import 'package:dabbler/data/models/profile/organiser_profile.dart';
 import 'package:dabbler/data/models/profile/profile_statistics.dart';
 import 'package:dabbler/features/profile/presentation/widgets/profile_rewards_widget.dart';
+import 'package:dabbler/features/profile/presentation/widgets/profile_check_in_widget.dart';
 import '../../widgets/profile/player_sport_profile_header.dart';
 import '../../../../../utils/constants/route_constants.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -1446,94 +1447,144 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildSportCard(BuildContext context, SportProfile sport) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      width: 180,
-      padding: const EdgeInsets.all(20),
+      width: 160,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
-          width: 1,
-        ),
+        color: isDark
+            ? colorScheme.surface.withValues(alpha: 0.4)
+            : colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Icon and primary badge
           Row(
             children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: colorScheme.categoryProfile.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  _getSportIcon(sport.sportName),
-                  color: colorScheme.categoryProfile,
-                  size: 24,
-                ),
+              Icon(
+                _getSportIcon(sport.sportName),
+                color: colorScheme.categoryProfile,
+                size: 28,
               ),
               const Spacer(),
               if (sport.isPrimarySport)
-                Icon(
-                  Iconsax.star_copy,
-                  size: 20,
-                  color: colorScheme.categoryProfile,
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.categoryProfile.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Icon(
+                    Iconsax.star_copy,
+                    size: 12,
+                    color: colorScheme.categoryProfile,
+                  ),
                 ),
             ],
           ),
           const SizedBox(height: 16),
+          // Sport name
           Text(
             sport.sportName,
             style: textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: colorScheme.onSurface,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
-          Text(
-            getSportTag(sport.sportId),
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 2),
+          // Skill level
           Text(
             _getSkillLevelText(sport.skillLevel),
-            style: textTheme.bodySmall?.copyWith(
+            style: textTheme.labelSmall?.copyWith(
               color: _getSkillLevelColor(context, sport.skillLevel),
               fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 12),
-          Text(
-            '${sport.yearsPlaying} ${sport.yearsPlaying == 1 ? 'year' : 'years'}',
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
+          const Spacer(),
+          // Stats divider
+          Container(
+            height: 1,
+            margin: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  colorScheme.outlineVariant.withValues(alpha: 0.0),
+                  colorScheme.outlineVariant.withValues(alpha: 0.3),
+                  colorScheme.outlineVariant.withValues(alpha: 0.0),
+                ],
+              ),
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 4),
-          Text(
-            '${sport.gamesPlayed} games • '
-            '${sport.averageRating.toStringAsFixed(1)} ★',
-            style: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          // Stats
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${sport.gamesPlayed}',
+                    style: textTheme.labelLarge?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                  Text(
+                    'games',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+              Container(
+                width: 1,
+                height: 24,
+                color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        sport.averageRating.toStringAsFixed(1),
+                        style: textTheme.labelLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(width: 2),
+                      Icon(
+                        Iconsax.star_copy,
+                        size: 10,
+                        color: colorScheme.categoryProfile,
+                      ),
+                    ],
+                  ),
+                  Text(
+                    'rating',
+                    style: textTheme.labelSmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -1807,6 +1858,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Check-in widget
+          const ProfileCheckInWidget(),
+          const SizedBox(height: 16),
           ProfileRewardsWidget(userId: userProfile.id),
           const SizedBox(height: 16),
           Align(

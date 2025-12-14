@@ -349,7 +349,9 @@ class _DetailedMessageStatusIndicatorState
                         ? Icon(
                             Icons.person,
                             size: widget.size * 0.6,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                           )
                         : null,
                   ),

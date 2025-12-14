@@ -25,7 +25,9 @@ final notificationsStreamProvider =
 
 /// One-shot fetch (e.g., for pull-to-refresh).
 final notificationsLatestProvider =
-    FutureProvider.autoDispose<Result<List<AppNotification>, Failure>>((ref) async {
+    FutureProvider.autoDispose<Result<List<AppNotification>, Failure>>((
+      ref,
+    ) async {
       final repo = ref.read(notificationsRepositoryProvider);
       return repo.getLatest(limit: 50);
     });

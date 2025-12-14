@@ -358,21 +358,15 @@ class ImageValidationResult {
 /// Create some basic classes for dependencies that don't exist yet
 class Logger {
   static void info(String message, [dynamic error]) {
-    if (kDebugMode) {
-      print('[INFO] $message${error != null ? ' - $error' : ''}');
-    }
+    if (kDebugMode) {}
   }
 
   static void error(String message, [dynamic error]) {
-    if (kDebugMode) {
-      print('[ERROR] $message${error != null ? ' - $error' : ''}');
-    }
+    if (kDebugMode) {}
   }
 
   static void warning(String message, [dynamic error]) {
-    if (kDebugMode) {
-      print('[WARNING] $message${error != null ? ' - $error' : ''}');
-    }
+    if (kDebugMode) {}
   }
 }
 

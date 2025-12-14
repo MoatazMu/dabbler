@@ -430,10 +430,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
 
       _isInitialized = true;
       notifyListeners();
-
-      debugPrint('RewardsAnalyticsService initialized for user: $userId');
     } catch (e) {
-      debugPrint('Error initializing RewardsAnalyticsService: $e');
       rethrow;
     }
   }
@@ -524,7 +521,6 @@ class RewardsAnalyticsService extends ChangeNotifier {
 
       return metrics;
     } catch (e) {
-      debugPrint('Error getting user behavior metrics: $e');
       rethrow;
     }
   }
@@ -542,7 +538,6 @@ class RewardsAnalyticsService extends ChangeNotifier {
 
       return metrics;
     } catch (e) {
-      debugPrint('Error getting engagement metrics: $e');
       rethrow;
     }
   }
@@ -588,7 +583,6 @@ class RewardsAnalyticsService extends ChangeNotifier {
 
       return report;
     } catch (e) {
-      debugPrint('Error generating report: $e');
       rethrow;
     }
   }
@@ -749,10 +743,6 @@ class RewardsAnalyticsService extends ChangeNotifier {
       for (final event in batch) {
         await _processAnalyticsEvent(event);
       }
-
-      debugPrint('Processed ${batch.length} analytics events');
-    } catch (e) {
-      debugPrint('Error processing event batch: $e');
     } finally {
       _isProcessingEvents = false;
     }
@@ -761,9 +751,6 @@ class RewardsAnalyticsService extends ChangeNotifier {
   Future<void> _processAnalyticsEvent(AnalyticsEvent event) async {
     // This would typically send the event to an external analytics service
     // For now, we'll just store it locally for testing
-    debugPrint(
-      'Processing analytics event: ${event.eventName} for user: ${event.userId}',
-    );
   }
 
   Future<UserBehaviorMetrics> _calculateBehaviorMetrics(String userId) async {
@@ -955,9 +942,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
           queueList.map((data) => AnalyticsEvent.fromMap(data)).toList(),
         );
       }
-    } catch (e) {
-      debugPrint('Error loading offline queue: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _saveOfflineQueue() async {
@@ -967,9 +952,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
         'analytics_offline_queue_$_currentUserId',
         jsonEncode(queueData),
       );
-    } catch (e) {
-      debugPrint('Error saving offline queue: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _syncOfflineQueue() async {
@@ -984,11 +967,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
       }
 
       await _saveOfflineQueue();
-
-      debugPrint('Synced ${eventsToSync.length} offline analytics events');
-    } catch (e) {
-      debugPrint('Error syncing offline queue: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _loadCachedData() async {
@@ -1009,7 +988,7 @@ class RewardsAnalyticsService extends ChangeNotifier {
           ? DateTime.now().difference(_sessionStartTime!).inMilliseconds
           : 0,
       'platform': 'mobile',
-      'appVersion': '1.0.0',
+      'appVersion': '1.0.5',
       'timestamp': DateTime.now().toIso8601String(),
     };
   }

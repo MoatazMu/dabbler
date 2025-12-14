@@ -207,47 +207,33 @@ class CancelGameUseCase
           game.scheduledDate,
         );
 
-        await bookingsResult.fold(
-          (failure) async {
-            print(
-              'Could not retrieve bookings for cancellation: ${failure.message}',
-            );
-          },
-          (bookings) async {
-            // Find bookings related to this game
-            for (final booking in bookings) {
-              if (booking.gameId == game.id ||
-                  (booking.bookedBy == game.organizerId &&
-                      booking.bookingDate == game.scheduledDate)) {
-                // Cancel the booking
-                final cancelResult = await bookingsRepository.cancelBooking(
-                  booking.id,
-                  'Game cancelled: ${params.reason}',
-                );
+        await bookingsResult.fold((failure) async {}, (bookings) async {
+          // Find bookings related to this game
+          for (final booking in bookings) {
+            if (booking.gameId == game.id ||
+                (booking.bookedBy == game.organizerId &&
+                    booking.bookingDate == game.scheduledDate)) {
+              // Cancel the booking
+              final cancelResult = await bookingsRepository.cancelBooking(
+                booking.id,
+                'Game cancelled: ${params.reason}',
+              );
 
-                await cancelResult.fold(
-                  (failure) async {
-                    print(
-                      'Failed to cancel booking ${booking.id}: ${failure.message}',
-                    );
-                  },
-                  (success) async {
-                    // Process refund if needed
-                    if (params.processRefunds && booking.totalAmount > 0) {
-                      refunds.add(
-                        RefundInfo(
-                          bookingId: booking.id,
-                          amount: booking.totalAmount,
-                          status: 'processed',
-                        ),
-                      );
-                    }
-                  },
-                );
-              }
+              await cancelResult.fold((failure) async {}, (success) async {
+                // Process refund if needed
+                if (params.processRefunds && booking.totalAmount > 0) {
+                  refunds.add(
+                    RefundInfo(
+                      bookingId: booking.id,
+                      amount: booking.totalAmount,
+                      status: 'processed',
+                    ),
+                  );
+                }
+              });
             }
-          },
-        );
+          }
+        });
       }
 
       return Right(refunds);
@@ -266,9 +252,7 @@ class CancelGameUseCase
       for (final playerId in playerIds) {
         await _sendPlayerNotification(playerId, game, params);
       }
-    } catch (e) {
-      print('Failed to notify some players: $e');
-    }
+    } catch (e) {}
   }
 
   /// Sends cancellation notification to a specific player
@@ -286,8 +270,6 @@ class CancelGameUseCase
           '${game.scheduledDate.day}/${game.scheduledDate.month} '
           'has been cancelled. Reason: ${params.reason}';
 
-      print('Sending notification to player $playerId: $message');
-
       // In a real implementation:
       // await notificationService.sendNotification(
       //   userId: playerId,
@@ -295,9 +277,7 @@ class CancelGameUseCase
       //   message: message,
       //   type: NotificationType.gameCancellation,
       // );
-    } catch (e) {
-      print('Failed to notify player $playerId: $e');
-    }
+    } catch (e) {}
   }
 
   /// Sends additional cancellation notifications (email, etc.)
@@ -311,9 +291,7 @@ class CancelGameUseCase
 
       // Update game status in external systems if needed
       await _updateExternalSystems(game, params);
-    } catch (e) {
-      print('Failed to send additional notifications: $e');
-    }
+    } catch (e) {}
   }
 
   /// Sends email notifications (stub)
@@ -322,7 +300,6 @@ class CancelGameUseCase
     CancelGameParams params,
   ) async {
     // This would integrate with email service
-    print('Sending email notifications for cancelled game: ${game.title}');
   }
 
   /// Updates external systems about the cancellation (stub)
@@ -331,7 +308,6 @@ class CancelGameUseCase
     CancelGameParams params,
   ) async {
     // This could update calendar systems, social media, etc.
-    print('Updating external systems for cancelled game: ${game.title}');
   }
 
   /// Gets appropriate cancellation message

@@ -178,7 +178,6 @@ class RewardsService extends ChangeNotifier {
         'timestamp': DateTime.now().toIso8601String(),
       });
     } catch (e) {
-      debugPrint('Error initializing RewardsService: $e');
       rethrow;
     }
   }
@@ -259,7 +258,6 @@ class RewardsService extends ChangeNotifier {
 
       return transaction;
     } catch (e) {
-      debugPrint('Error awarding points: $e');
       _analyticsService.trackError('points_award_failed', e.toString(), {
         'userId': userId,
         'points': points,
@@ -313,7 +311,6 @@ class RewardsService extends ChangeNotifier {
 
       return transaction;
     } catch (e) {
-      debugPrint('Error spending points: $e');
       rethrow;
     }
   }
@@ -387,7 +384,6 @@ class RewardsService extends ChangeNotifier {
 
       return achievement;
     } catch (e) {
-      debugPrint('Error unlocking achievement: $e');
       _analyticsService.trackError('achievement_unlock_failed', e.toString(), {
         'userId': userId,
         'achievementId': achievementId,
@@ -418,7 +414,6 @@ class RewardsService extends ChangeNotifier {
       _setCachedData(cacheKey, points, _defaultCacheTtl);
       return points.toInt();
     } catch (e) {
-      debugPrint('Error getting user points: $e');
       return 0;
     }
   }
@@ -435,13 +430,11 @@ class RewardsService extends ChangeNotifier {
     try {
       final result = await _repository.getUserProgress(userId);
       final progress = result.fold((failure) {
-        debugPrint('Error getting user progress: ${failure.message}');
         return null;
       }, (progressList) => progressList.isNotEmpty ? progressList.first : null);
       _setCachedData(cacheKey, progress, _defaultCacheTtl);
       return progress;
     } catch (e) {
-      debugPrint('Error getting user progress: $e');
       return null;
     }
   }
@@ -458,13 +451,11 @@ class RewardsService extends ChangeNotifier {
     try {
       final result = await _repository.getUserBadges(userId);
       final badges = result.fold((failure) {
-        debugPrint('Error getting user badges: ${failure.message}');
         return <Badge>[];
       }, (badges) => badges);
       _setCachedData(cacheKey, badges, _longCacheTtl);
       return badges;
     } catch (e) {
-      debugPrint('Error getting user badges: $e');
       return <Badge>[];
     }
   }
@@ -482,11 +473,9 @@ class RewardsService extends ChangeNotifier {
         offset: offset,
       );
       return result.fold((failure) {
-        debugPrint('Error getting transaction history: ${failure.message}');
         return <PointTransaction>[];
       }, (transactions) => transactions);
     } catch (e) {
-      debugPrint('Error getting transaction history: $e');
       return <PointTransaction>[];
     }
   }
@@ -533,7 +522,6 @@ class RewardsService extends ChangeNotifier {
       // Track event analytics
       _analyticsService.trackRewardsEvent(event);
     } catch (e) {
-      debugPrint('Error handling event ${event.type}: $e');
       _analyticsService.trackError(
         'event_processing_failed',
         e.toString(),
@@ -633,9 +621,7 @@ class RewardsService extends ChangeNotifier {
         getUserProgress(_currentUserId!).then((_) => null),
         getUserBadges(_currentUserId!).then((_) => null),
       ]);
-    } catch (e) {
-      debugPrint('Error loading initial data: $e');
-    }
+    } catch (e) {}
   }
 
   int _calculatePointsWithMultipliers(
@@ -844,13 +830,7 @@ class RewardsService extends ChangeNotifier {
     String sport,
     int points,
   ) async {
-    try {
-      debugPrint(
-        'Updated leaderboard for user $userId in $sport with $points points',
-      );
-    } catch (e) {
-      debugPrint('Error updating leaderboard position: $e');
-    }
+    try {} catch (e) {}
   }
 
   /// Update sport-specific leaderboard
@@ -859,24 +839,12 @@ class RewardsService extends ChangeNotifier {
     String sport,
     int points,
   ) async {
-    try {
-      debugPrint(
-        'Updated sport leaderboard for user $userId in $sport with $points points',
-      );
-    } catch (e) {
-      debugPrint('Error updating sport leaderboard: $e');
-    }
+    try {} catch (e) {}
   }
 
   /// Update friends leaderboard
   Future<void> updateFriendsLeaderboard(String userId, int points) async {
-    try {
-      debugPrint(
-        'Updated friends leaderboard for user $userId with $points points',
-      );
-    } catch (e) {
-      debugPrint('Error updating friends leaderboard: $e');
-    }
+    try {} catch (e) {}
   }
 
   /// Get user's current tier
@@ -885,7 +853,6 @@ class RewardsService extends ChangeNotifier {
       // For now return bronze tier
       return BadgeTier.bronze;
     } catch (e) {
-      debugPrint('Error getting user tier: $e');
       return BadgeTier.bronze;
     }
   }
@@ -896,7 +863,6 @@ class RewardsService extends ChangeNotifier {
       final currentPoints = await getUserPoints(userId);
       return BadgeTier.fromPoints(currentPoints + 1);
     } catch (e) {
-      debugPrint('Error calculating next tier: $e');
       return null;
     }
   }

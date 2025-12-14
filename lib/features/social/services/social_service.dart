@@ -26,13 +26,9 @@ class SocialService {
       final timeToExpiry = expiresAt.difference(now);
 
       if (timeToExpiry.inMinutes < 5) {
-        print('🔄 [DEBUG] SocialService: Session expiring soon, refreshing...');
         await _authService.refreshSession();
-        print('✅ [DEBUG] SocialService: Session refreshed successfully');
       }
-    } catch (e) {
-      print('⚠️ [DEBUG] SocialService: Session refresh failed: $e');
-    }
+    } catch (e) {}
   }
 
   /// Create a new post
@@ -141,7 +137,9 @@ class SocialService {
       // Query posts using actual database schema, join vibe data
       final postsResponse = await _supabase
           .from('posts')
-          .select('*, vibe:vibes!primary_vibe_id(emoji, label_en, key)')
+          .select(
+            '*, vibe:vibes!primary_vibe_id(emoji, label_en, key, color_hex)',
+          )
           .eq('visibility', 'public')
           .eq('is_deleted', false)
           .eq('is_hidden_admin', false)
@@ -260,7 +258,9 @@ class SocialService {
       // Query posts using actual database schema
       final postsResponse = await _supabase
           .from('posts')
-          .select('*')
+          .select(
+            '*, vibe:vibes!primary_vibe_id(emoji, label_en, key, color_hex)',
+          )
           .eq('author_user_id', userId) // Use correct field name
           .eq('is_deleted', false)
           .eq('is_hidden_admin', false)
@@ -384,10 +384,14 @@ class SocialService {
       // Parse postId to int if it's a string from URL
       final postIdInt = int.tryParse(postId) ?? postId;
 
-      // Fetch the post row
+      // Fetch the post with joins (excluding location_tags as it's often null)
       final post = await _supabase
           .from('posts')
-          .select('*')
+          .select('''
+            *,
+            profiles!author_profile_id(id, user_id, display_name, avatar_url, verified),
+            vibes!primary_vibe_id(id, key, label_en, label_ar, emoji, color_hex, gradient, urgency_level, type, usage)
+          ''')
           .eq('id', postIdInt)
           .eq('is_deleted', false)
           .eq('is_hidden_admin', false)
@@ -399,8 +403,96 @@ class SocialService {
 
       final authorId = post['author_user_id'] as String;
 
-      // Fetch author profile
-      final profileResponse = await _supabase
+      // Fetch location_tags separately if location_tag_id is not null
+      Map<String, dynamic>? locationTagData;
+      if (post['location_tag_id'] != null) {
+        try {
+          locationTagData = await _supabase
+              .from('location_tags')
+              .select(
+                'id, name, address, city, country, latitude, longitude, place_id, meta',
+              )
+              .eq('id', post['location_tag_id'])
+              .maybeSingle();
+        } catch (e) {}
+      }
+
+      // Fetch post_vibes (all vibes assigned to this post)
+      // Note: FK relationship missing, so we fetch vibes separately
+      List<Map<String, dynamic>> postVibes = [];
+      try {
+        final vibesData = await _supabase
+            .from('post_vibes')
+            .select('vibe_id, assigned_at')
+            .eq('post_id', postIdInt);
+
+        // Fetch vibe details for each vibe_id
+        if (vibesData.isNotEmpty) {
+          final vibeIds = (vibesData as List).map((v) => v['vibe_id']).toList();
+          final vibes = await _supabase
+              .from('vibes')
+              .select('id, key, label_en, label_ar, emoji, color_hex, type')
+              .inFilter('id', vibeIds);
+
+          // Merge vibe data back into post_vibes
+          final vibeMap = {for (var v in vibes) v['id']: v};
+          postVibes = (vibesData as List).map((pv) {
+            final vibe = vibeMap[pv['vibe_id']];
+            return Map<String, dynamic>.from({...pv, 'vibes': vibe});
+          }).toList();
+        }
+      } catch (e) {}
+
+      // Fetch post_reactions (user reactions with their profiles)
+      // Note: FK relationship missing for vibes, column is created_at not reacted_at
+      List<Map<String, dynamic>> postReactions = [];
+      try {
+        final reactionsData = await _supabase
+            .from('post_reactions')
+            .select('''
+              vibe_id, created_at,
+              profiles!actor_profile_id(id, user_id, display_name, avatar_url, verified)
+            ''')
+            .eq('post_id', postIdInt)
+            .order('created_at', ascending: false);
+
+        // Fetch vibe details for each vibe_id
+        if (reactionsData.isNotEmpty) {
+          final vibeIds = (reactionsData as List)
+              .map((r) => r['vibe_id'])
+              .toList();
+          final vibes = await _supabase
+              .from('vibes')
+              .select('id, key, label_en, emoji, color_hex')
+              .inFilter('id', vibeIds);
+
+          // Merge vibe data back into reactions
+          final vibeMap = {for (var v in vibes) v['id']: v};
+          postReactions = (reactionsData as List).map((r) {
+            final vibe = vibeMap[r['vibe_id']];
+            return Map<String, dynamic>.from({...r, 'vibes': vibe});
+          }).toList();
+        } else {
+          postReactions = List<Map<String, dynamic>>.from(reactionsData);
+        }
+      } catch (e) {}
+
+      // Fetch post_mentions (mentioned users)
+      List<Map<String, dynamic>> postMentions = [];
+      try {
+        final mentionsData = await _supabase
+            .from('post_mentions')
+            .select('''
+              mentioned_profile_id,
+              profiles!mentioned_profile_id(id, user_id, display_name, username, avatar_url, verified)
+            ''')
+            .eq('post_id', postIdInt);
+        postMentions = List<Map<String, dynamic>>.from(mentionsData);
+      } catch (e) {}
+
+      // Fetch author profile separately if not in join
+      Map<String, dynamic>? profileResponse = post['profiles'];
+      profileResponse ??= await _supabase
           .from('profiles')
           .select('user_id, display_name, avatar_url, verified')
           .eq('user_id', authorId)
@@ -460,11 +552,20 @@ class SocialService {
       final enriched = {
         'id': post['id'],
         'author_id': post['author_user_id'],
+        'author_profile_id': post['author_profile_id'],
         'content': post['body'] ?? '',
         'media_urls': mediaUrls,
+        'media': mediaData, // Include full media metadata
         'visibility': post['visibility'],
         'kind': post['kind'],
         'primary_vibe_id': post['primary_vibe_id'],
+        'vibes': post['vibes'], // Primary vibe from join
+        'post_vibes': postVibes, // All assigned vibes
+        'reactions': postReactions, // User reactions
+        'mentions': postMentions, // Mentioned users
+        'location_tag': locationTagData, // Location data fetched separately
+        'location_tag_id': post['location_tag_id'],
+        'venue_id': post['venue_id'],
         'created_at': post['created_at'],
         'updated_at': post['updated_at'],
         'likes_count': post['like_count'] ?? 0,
@@ -475,7 +576,8 @@ class SocialService {
         'is_liked': isLiked, // Set is_liked based on user's like status
         'profiles': profileResponse != null
             ? {
-                'id': profileResponse['user_id'],
+                'id': profileResponse['user_id'] ?? profileResponse['id'],
+                'user_id': profileResponse['user_id'],
                 'display_name': profileResponse['display_name'],
                 'avatar_url': profileResponse['avatar_url'],
                 'verified': profileResponse['verified'],
@@ -521,22 +623,16 @@ class SocialService {
           .eq('user_id', user.id);
 
       final isCurrentlyLiked = existingLikes.isNotEmpty;
-      print(
-        '💡 [DEBUG] toggleLike: postId=$postId, userId=${user.id}, isCurrentlyLiked=$isCurrentlyLiked, foundLikes=${existingLikes.length}',
-      );
 
       if (isCurrentlyLiked) {
         // Unlike: Remove the like (trigger will decrement like_count automatically)
-        print('💔 [DEBUG] Unliking post $postId');
         await _supabase
             .from('post_likes')
             .delete()
             .eq('post_id', postId)
             .eq('user_id', user.id);
-        print('✅ [DEBUG] Unlike completed for post $postId');
       } else {
         // Like: Add the like (trigger will increment like_count automatically)
-        print('❤️ [DEBUG] Liking post $postId');
         await _supabase.from('post_likes').insert({
           'post_id': postId,
           'user_id': user.id,
@@ -544,10 +640,28 @@ class SocialService {
               profileId, // Required: use profile_id per social model spec
           'created_at': DateTime.now().toIso8601String(),
         });
-        print('✅ [DEBUG] Like completed for post $postId');
       }
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
+    }
+  }
+
+  /// Get post likes with user details
+  Future<List<dynamic>> getPostLikes(String postId) async {
+    try {
+      await _ensureValidSession();
+
+      final likes = await _supabase
+          .from('post_likes')
+          .select(
+            'user_id, created_at, profiles!post_likes_profile_id_fkey(display_name, avatar_url)',
+          )
+          .eq('post_id', postId)
+          .order('created_at', ascending: false);
+
+      return likes;
+    } catch (e) {
+      throw Exception('Failed to fetch post likes: $e');
     }
   }
 
@@ -761,18 +875,42 @@ class SocialService {
       // Parse postId to int if it's a string from URL
       final postIdInt = int.tryParse(postId) ?? postId;
 
-      // Fetch all comments for the post (including replies)
+      // Fetch all comments for the post (including replies) with joins
       final allComments = await _supabase
           .from('post_comments')
-          .select(
-            '*, profiles:author_profile_id(user_id, display_name, avatar_url, verified)',
-          )
+          .select('''
+            *,
+            profiles!author_profile_id(id, user_id, display_name, avatar_url, verified)
+          ''')
           .eq('post_id', postIdInt)
           .eq('is_deleted', false)
           .eq('is_hidden_admin', false)
           .order('created_at', ascending: true);
 
       final commentsList = List<Map<String, dynamic>>.from(allComments);
+
+      // Fetch comment mentions for all comments
+      final Map<String, List<Map<String, dynamic>>> commentMentionsMap = {};
+      if (commentsList.isNotEmpty) {
+        final commentIds = commentsList.map((c) => c['id']).toList();
+        try {
+          final mentionsData = await _supabase
+              .from('comment_mentions')
+              .select('''
+                comment_id, mentioned_profile_id,
+                profiles!mentioned_profile_id(id, user_id, display_name, username, avatar_url, verified)
+              ''')
+              .inFilter('comment_id', commentIds);
+
+          for (var mention in mentionsData) {
+            final commentId = mention['comment_id'].toString();
+            if (!commentMentionsMap.containsKey(commentId)) {
+              commentMentionsMap[commentId] = [];
+            }
+            commentMentionsMap[commentId]!.add(mention);
+          }
+        } catch (e) {}
+      }
 
       // Fetch current user's liked comment IDs
       final user = _supabase.auth.currentUser;
@@ -789,11 +927,16 @@ class SocialService {
         likedCommentIds.addAll(likedComments.map((like) => like['comment_id']));
       }
 
-      // Add like information to each comment
+      // Add like information and mentions to each comment
       for (final comment in commentsList) {
         final commentId = comment['id'];
         comment['is_liked'] = likedCommentIds.contains(commentId);
         comment['likes_count'] = comment['like_count'] ?? 0;
+        comment['author_profile_id'] = comment['author_profile_id'];
+
+        // Add mentions for this comment
+        final commentIdStr = commentId.toString();
+        comment['comment_mentions'] = commentMentionsMap[commentIdStr] ?? [];
       }
 
       // Build nested structure: separate top-level comments from replies

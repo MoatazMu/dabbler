@@ -622,7 +622,6 @@ class NotificationsController extends ChangeNotifier {
         }
       },
       onError: (error) {
-        print('Realtime error: $error');
       },
     );
   }
@@ -647,7 +646,6 @@ class NotificationsController extends ChangeNotifier {
         _cursor = newItems.last.cursor;
       }
     } catch (e) {
-      print('Failed to load notifications: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -666,7 +664,6 @@ class NotificationsController extends ChangeNotifier {
       await _repo.markRead(notificationId: notificationId);
       // Update will come via realtime subscription
     } catch (e) {
-      print('Failed to mark as read: $e');
     }
   }
 
@@ -675,7 +672,6 @@ class NotificationsController extends ChangeNotifier {
       await _repo.markAllReadForUser(userId: _userId);
       // Updates will come via realtime subscription
     } catch (e) {
-      print('Failed to mark all as read: $e');
     }
   }
 

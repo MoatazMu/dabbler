@@ -55,8 +55,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       final timeLabel = raw['timeLabel'] as String?;
       final sport = raw['sport'] as String?;
 
-      final parsedDate =
-          dateString != null ? DateTime.tryParse(dateString) : null;
+      final parsedDate = dateString != null
+          ? DateTime.tryParse(dateString)
+          : null;
 
       if (bookingId == null ||
           venueName == null ||
@@ -264,7 +265,9 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
                           color: context.colors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: context.colors.primary.withValues(alpha: 0.2),
+                            color: context.colors.primary.withValues(
+                              alpha: 0.2,
+                            ),
                             width: 1,
                           ),
                         ),
@@ -403,11 +406,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       decoration: BoxDecoration(
         color: context.surfaceContainerHigh,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(
-          top: BorderSide(
-            color: context.colors.outlineVariant,
-          ),
-        ),
+        border: Border(top: BorderSide(color: context.colors.outlineVariant)),
       ),
       child: SafeArea(
         top: false,
@@ -517,7 +516,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
 
   Future<void> _handleNextPressed() async {
     final state = _viewModel.state;
-    
+
     // Check if we can proceed - if not, show helpful message
     if (!state.canProceedToNextStep) {
       final missingFields = state.getMissingRequiredFields();
@@ -552,7 +551,7 @@ class _CreateGameScreenState extends State<CreateGameScreen> {
       }
       return;
     }
-    
+
     if (state.currentStep == GameCreationStep.reviewAndConfirm) {
       final success = await _viewModel.createGame();
       if (success && mounted) {

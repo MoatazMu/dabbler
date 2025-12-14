@@ -52,7 +52,6 @@ class _ProfileRewardsWidgetState extends State<ProfileRewardsWidget> {
         });
       }
     } catch (e) {
-      print('Error loading rewards data: $e');
       // Use mock data on error
       if (mounted) {
         setState(() {

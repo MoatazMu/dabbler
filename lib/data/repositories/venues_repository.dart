@@ -3,7 +3,6 @@ import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/data/models/venue.dart';
 import 'package:dabbler/data/models/venue_space.dart';
 
-
 abstract class VenuesRepository {
   /// Public venues listing relying on the `venues_public_read` policy.
   Future<Result<List<Venue>, Failure>> listVenues({

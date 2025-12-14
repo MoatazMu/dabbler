@@ -161,9 +161,7 @@ class ContactSupportScreen extends StatelessWidget {
 
   void _showComingSoon(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Support actions are coming soon.'),
-      ),
+      const SnackBar(content: Text('Support actions are coming soon.')),
     );
   }
 }
@@ -220,10 +218,7 @@ class _SupportActionRow extends StatelessWidget {
               ],
             ),
           ),
-          Icon(
-            Icons.chevron_right,
-            color: colorScheme.onSurfaceVariant,
-          ),
+          Icon(Icons.chevron_right, color: colorScheme.onSurfaceVariant),
         ],
       ),
     );

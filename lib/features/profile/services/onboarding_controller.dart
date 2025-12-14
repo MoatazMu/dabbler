@@ -65,7 +65,6 @@ class OnboardingController extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error loading onboarding progress: $e');
       _progress = OnboardingProgress.initial();
     }
   }
@@ -102,9 +101,7 @@ class OnboardingController extends ChangeNotifier {
       }
 
       notifyListeners();
-    } catch (e) {
-      debugPrint('Error saving onboarding progress: $e');
-    }
+    } catch (e) {}
   }
 
   /// Load A/B testing variant
@@ -119,7 +116,6 @@ class OnboardingController extends ChangeNotifier {
         await prefs.setString(_variantKey, _currentVariant!);
       }
     } catch (e) {
-      debugPrint('Error loading A/B variant: $e');
       _currentVariant = 'control';
     }
   }
@@ -147,7 +143,6 @@ class OnboardingController extends ChangeNotifier {
         await _saveSession();
       }
     } catch (e) {
-      debugPrint('Error loading session: $e');
       _sessionStarted = DateTime.now();
     }
   }
@@ -162,9 +157,7 @@ class OnboardingController extends ChangeNotifier {
         _sessionKey,
         jsonEncode({'started': _sessionStarted!.toIso8601String()}),
       );
-    } catch (e) {
-      debugPrint('Error saving session: $e');
-    }
+    } catch (e) {}
   }
 
   /// Load analytics data
@@ -176,9 +169,7 @@ class OnboardingController extends ChangeNotifier {
       if (analyticsJson != null) {
         _analytics = jsonDecode(analyticsJson);
       }
-    } catch (e) {
-      debugPrint('Error loading analytics: $e');
-    }
+    } catch (e) {}
   }
 
   /// Save analytics data
@@ -196,9 +187,7 @@ class OnboardingController extends ChangeNotifier {
           'created_at': DateTime.now().toIso8601String(),
         });
       }
-    } catch (e) {
-      debugPrint('Error saving analytics: $e');
-    }
+    } catch (e) {}
   }
 
   /// Start time tracking
@@ -243,9 +232,7 @@ class OnboardingController extends ChangeNotifier {
           _progress!.currentStep = stepNumber;
         }
       }
-    } catch (e) {
-      debugPrint('Error syncing with backend: $e');
-    }
+    } catch (e) {}
   }
 
   /// Start onboarding flow
@@ -327,9 +314,7 @@ class OnboardingController extends ChangeNotifier {
           'created_at': DateTime.now().toIso8601String(),
         });
       }
-    } catch (e) {
-      debugPrint('Error awarding completion bonus: $e');
-    }
+    } catch (e) {}
   }
 
   /// Reset onboarding (for testing)

@@ -25,7 +25,7 @@ class AppCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     // Material 3 Card uses elevation 0 and surface containers
     final effectivePadding = padding ?? const EdgeInsets.all(16);
     final effectiveBorderRadius = borderRadius ?? BorderRadius.circular(12);
@@ -78,7 +78,7 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Padding(
       padding: padding ?? const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -108,10 +108,7 @@ class SectionHeader extends StatelessWidget {
               ],
             ),
           ),
-          if (action != null) ...[
-            const SizedBox(width: 12),
-            action!,
-          ],
+          if (action != null) ...[const SizedBox(width: 12), action!],
         ],
       ),
     );
@@ -137,7 +134,7 @@ class EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
@@ -150,11 +147,7 @@ class EmptyState extends StatelessWidget {
                 color: colorScheme.surfaceContainerHighest,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                icon,
-                size: 48,
-                color: colorScheme.onSurfaceVariant,
-              ),
+              child: Icon(icon, size: 48, color: colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 20),
             Text(
@@ -175,10 +168,7 @@ class EmptyState extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
             ],
-            if (action != null) ...[
-              const SizedBox(height: 20),
-              action!,
-            ],
+            if (action != null) ...[const SizedBox(height: 20), action!],
           ],
         ),
       ),

@@ -143,9 +143,7 @@ class ModerationReport {
     return ModerationReport(
       id: json['id'] as String,
       reporterUserId: json['reporter_user_id'] as String,
-      targetType: ModTarget.fromPostgresString(
-        json['target_type'] as String,
-      ),
+      targetType: ModTarget.fromPostgresString(json['target_type'] as String),
       targetId: json['target_id'] as String,
       targetUserId: json['target_user_id'] as String?,
       reason: ReportReason.fromPostgresString(json['reason'] as String),
@@ -154,9 +152,7 @@ class ModerationReport {
       duplicateOf: json['duplicate_of'] as String?,
       contentSnapshot: json['content_snapshot'] == null
           ? null
-          : Map<String, dynamic>.from(
-              json['content_snapshot'] as Map,
-            ),
+          : Map<String, dynamic>.from(json['content_snapshot'] as Map),
       createdAt: DateTime.parse(json['created_at'] as String),
       reviewedBy: json['reviewed_by'] as String?,
       reviewedAt: json['reviewed_at'] == null
@@ -217,9 +213,7 @@ class ModerationActionModel {
       id: json['id'] as String,
       action: ModAction.fromPostgresString(json['action'] as String),
       actorUserId: json['actor_user_id'] as String?,
-      targetType: ModTarget.fromPostgresString(
-        json['target_type'] as String,
-      ),
+      targetType: ModTarget.fromPostgresString(json['target_type'] as String),
       targetId: json['target_id'] as String,
       targetUserId: json['target_user_id'] as String?,
       reason: json['reason'] as String?,
@@ -310,9 +304,7 @@ class ModerationReportSummary {
       status: ReportStatus.fromPostgresString(json['status'] as String),
       reason: ReportReason.fromPostgresString(json['reason'] as String),
       createdAt: DateTime.parse(json['created_at'] as String),
-      targetType: ModTarget.fromPostgresString(
-        json['target_type'] as String,
-      ),
+      targetType: ModTarget.fromPostgresString(json['target_type'] as String),
       targetId: json['target_id'] as String,
       targetUserId: json['target_user_id'] as String?,
       reporterUsername: json['reporter_username'] as String?,
@@ -401,9 +393,7 @@ class AuditEvent {
       id: json['id'] as String,
       actorUserId: json['actor_user_id'] as String?,
       action: json['action'] as String,
-      targetType: ModTarget.fromPostgresString(
-        json['target_type'] as String,
-      ),
+      targetType: ModTarget.fromPostgresString(json['target_type'] as String),
       targetId: json['target_id'] as String?,
       targetUserId: json['target_user_id'] as String?,
       meta: json['meta'] == null
@@ -447,7 +437,7 @@ class ModerationServiceException implements Exception {
 
 class ModerationService {
   ModerationService({SupabaseClient? supabase})
-      : _supabase = supabase ?? Supabase.instance.client;
+    : _supabase = supabase ?? Supabase.instance.client;
 
   final SupabaseClient _supabase;
 
@@ -481,9 +471,7 @@ class ModerationService {
         },
       );
 
-      final data = Map<String, dynamic>.from(
-        response as Map<dynamic, dynamic>,
-      );
+      final data = Map<String, dynamic>.from(response as Map<dynamic, dynamic>);
 
       Logger.debug('$_logTag: Report submitted successfully');
       return ModerationReport.fromJson(data);
@@ -501,10 +489,7 @@ class ModerationService {
         '$_logTag: Unexpected error submitting report for target=$target targetId=$targetId',
         e,
       );
-      throw ModerationServiceException(
-        'Failed to submit report',
-        cause: e,
-      );
+      throw ModerationServiceException('Failed to submit report', cause: e);
     }
   }
 
@@ -531,14 +516,10 @@ class ModerationService {
       // RPC returns a table, so we get the first row
       final rows = response as List;
       if (rows.isEmpty) {
-        throw ModerationServiceException(
-          'Cooldown check returned no results',
-        );
+        throw ModerationServiceException('Cooldown check returned no results');
       }
 
-      final data = Map<String, dynamic>.from(
-        rows[0] as Map<dynamic, dynamic>,
-      );
+      final data = Map<String, dynamic>.from(rows[0] as Map<dynamic, dynamic>);
 
       Logger.debug(
         '$_logTag: Cooldown check completed - allowed=${data['allowed']} remaining=${data['remaining']}',
@@ -546,10 +527,7 @@ class ModerationService {
 
       return CooldownResult.fromJson(data);
     } on PostgrestException catch (e) {
-      Logger.error(
-        '$_logTag: Failed to check cooldown for key=$key',
-        e,
-      );
+      Logger.error('$_logTag: Failed to check cooldown for key=$key', e);
       throw ModerationServiceException(
         'Failed to check cooldown: ${e.message}',
         cause: e,
@@ -559,18 +537,12 @@ class ModerationService {
         '$_logTag: Unexpected error checking cooldown for key=$key',
         e,
       );
-      throw ModerationServiceException(
-        'Failed to check cooldown',
-        cause: e,
-      );
+      throw ModerationServiceException('Failed to check cooldown', cause: e);
     }
   }
 
   /// Check if content hits blocklist via `content_hits_blocklist` RPC
-  Future<int> contentHitsBlocklist(
-    String text, {
-    String locale = 'any',
-  }) async {
+  Future<int> contentHitsBlocklist(String text, {String locale = 'any'}) async {
     try {
       Logger.debug(
         '$_logTag: Checking blocklist for text length=${text.length} locale=$locale',
@@ -578,10 +550,7 @@ class ModerationService {
 
       final response = await _supabase.rpc(
         'content_hits_blocklist',
-        params: {
-          'p_text': text,
-          'p_locale': locale,
-        },
+        params: {'p_text': text, 'p_locale': locale},
       );
 
       final hits = response as int;
@@ -589,23 +558,14 @@ class ModerationService {
       Logger.debug('$_logTag: Blocklist check completed - hits=$hits');
       return hits;
     } on PostgrestException catch (e) {
-      Logger.error(
-        '$_logTag: Failed to check blocklist for text',
-        e,
-      );
+      Logger.error('$_logTag: Failed to check blocklist for text', e);
       throw ModerationServiceException(
         'Failed to check blocklist: ${e.message}',
         cause: e,
       );
     } catch (e) {
-      Logger.error(
-        '$_logTag: Unexpected error checking blocklist',
-        e,
-      );
-      throw ModerationServiceException(
-        'Failed to check blocklist',
-        cause: e,
-      );
+      Logger.error('$_logTag: Unexpected error checking blocklist', e);
+      throw ModerationServiceException('Failed to check blocklist', cause: e);
     }
   }
 
@@ -647,9 +607,7 @@ class ModerationService {
   /// Check if user is shadowbanned via `is_user_shadowbanned` RPC
   Future<bool> isUserShadowbanned(String userId) async {
     try {
-      Logger.debug(
-        '$_logTag: Checking if user is shadowbanned userId=$userId',
-      );
+      Logger.debug('$_logTag: Checking if user is shadowbanned userId=$userId');
 
       final response = await _supabase.rpc(
         'is_user_shadowbanned',
@@ -697,9 +655,7 @@ class ModerationService {
 
       final frozen = response as bool;
 
-      Logger.debug(
-        '$_logTag: Profile frozen check completed - frozen=$frozen',
-      );
+      Logger.debug('$_logTag: Profile frozen check completed - frozen=$frozen');
       return frozen;
     } on PostgrestException catch (e) {
       Logger.error(
@@ -723,10 +679,7 @@ class ModerationService {
   }
 
   /// Check if content is takedown via `is_takedown` RPC
-  Future<bool> isContentTakedown(
-    ModTarget target,
-    String targetId,
-  ) async {
+  Future<bool> isContentTakedown(ModTarget target, String targetId) async {
     try {
       Logger.debug(
         '$_logTag: Checking if content is takedown target=$target targetId=$targetId',
@@ -742,9 +695,7 @@ class ModerationService {
 
       final takedown = response as bool;
 
-      Logger.debug(
-        '$_logTag: Takedown check completed - takedown=$takedown',
-      );
+      Logger.debug('$_logTag: Takedown check completed - takedown=$takedown');
       return takedown;
     } on PostgrestException catch (e) {
       Logger.error(
@@ -793,17 +744,12 @@ class ModerationService {
         },
       );
 
-      final data = Map<String, dynamic>.from(
-        response as Map<dynamic, dynamic>,
-      );
+      final data = Map<String, dynamic>.from(response as Map<dynamic, dynamic>);
 
       Logger.debug('$_logTag: Report resolved successfully');
       return ModerationReport.fromJson(data);
     } on PostgrestException catch (e) {
-      Logger.error(
-        '$_logTag: Failed to resolve report reportId=$reportId',
-        e,
-      );
+      Logger.error('$_logTag: Failed to resolve report reportId=$reportId', e);
       throw ModerationServiceException(
         'Failed to resolve report: ${e.message}',
         cause: e,
@@ -813,10 +759,7 @@ class ModerationService {
         '$_logTag: Unexpected error resolving report reportId=$reportId',
         e,
       );
-      throw ModerationServiceException(
-        'Failed to resolve report',
-        cause: e,
-      );
+      throw ModerationServiceException('Failed to resolve report', cause: e);
     }
   }
 
@@ -843,15 +786,12 @@ class ModerationService {
           'p_target_id': targetId,
           if (targetUserId != null) 'p_target_user_id': targetUserId,
           if (reason != null) 'p_reason': reason,
-          if (expiresAt != null)
-            'p_expires_at': expiresAt.toIso8601String(),
+          if (expiresAt != null) 'p_expires_at': expiresAt.toIso8601String(),
           if (meta != null) 'p_meta': meta,
         },
       );
 
-      final data = Map<String, dynamic>.from(
-        response as Map<dynamic, dynamic>,
-      );
+      final data = Map<String, dynamic>.from(response as Map<dynamic, dynamic>);
 
       Logger.debug('$_logTag: Action taken successfully');
       return ModerationActionModel.fromJson(data);
@@ -869,10 +809,7 @@ class ModerationService {
         '$_logTag: Unexpected error taking action action=$action targetType=$targetType targetId=$targetId',
         e,
       );
-      throw ModerationServiceException(
-        'Failed to take action',
-        cause: e,
-      );
+      throw ModerationServiceException('Failed to take action', cause: e);
     }
   }
 
@@ -888,9 +825,8 @@ class ModerationService {
 
       final rows = (response as List)
           .map(
-            (dynamic item) => Map<String, dynamic>.from(
-              item as Map<dynamic, dynamic>,
-            ),
+            (dynamic item) =>
+                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
           )
           .map(ModerationReportSummary.fromJson)
           .toList();
@@ -900,10 +836,7 @@ class ModerationService {
       );
       return rows;
     } on PostgrestException catch (e) {
-      Logger.error(
-        '$_logTag: Failed to fetch open moderation queue',
-        e,
-      );
+      Logger.error('$_logTag: Failed to fetch open moderation queue', e);
       throw ModerationServiceException(
         'Failed to fetch moderation queue: ${e.message}',
         cause: e,
@@ -932,31 +865,21 @@ class ModerationService {
           .maybeSingle();
 
       if (response == null) {
-        throw ModerationServiceException(
-          'Safety overview not found',
-        );
+        throw ModerationServiceException('Safety overview not found');
       }
 
-      final data = Map<String, dynamic>.from(
-        response as Map<dynamic, dynamic>,
-      );
+      final data = Map<String, dynamic>.from(response as Map<dynamic, dynamic>);
 
       Logger.debug('$_logTag: Safety overview fetched successfully');
       return SafetyOverview.fromJson(data);
     } on PostgrestException catch (e) {
-      Logger.error(
-        '$_logTag: Failed to fetch safety overview',
-        e,
-      );
+      Logger.error('$_logTag: Failed to fetch safety overview', e);
       throw ModerationServiceException(
         'Failed to fetch safety overview: ${e.message}',
         cause: e,
       );
     } catch (e) {
-      Logger.error(
-        '$_logTag: Unexpected error fetching safety overview',
-        e,
-      );
+      Logger.error('$_logTag: Unexpected error fetching safety overview', e);
       throw ModerationServiceException(
         'Failed to fetch safety overview',
         cause: e,
@@ -990,13 +913,12 @@ class ModerationService {
 
       final auditId = response as String;
 
-      Logger.debug('$_logTag: Audit event logged successfully auditId=$auditId');
+      Logger.debug(
+        '$_logTag: Audit event logged successfully auditId=$auditId',
+      );
       return auditId;
     } on PostgrestException catch (e) {
-      Logger.error(
-        '$_logTag: Failed to log audit event action=$action',
-        e,
-      );
+      Logger.error('$_logTag: Failed to log audit event action=$action', e);
       throw ModerationServiceException(
         'Failed to log audit event: ${e.message}',
         cause: e,
@@ -1006,10 +928,7 @@ class ModerationService {
         '$_logTag: Unexpected error logging audit event action=$action',
         e,
       );
-      throw ModerationServiceException(
-        'Failed to log audit event',
-        cause: e,
-      );
+      throw ModerationServiceException('Failed to log audit event', cause: e);
     }
   }
 
@@ -1031,31 +950,22 @@ class ModerationService {
 
       final rows = (response as List)
           .map(
-            (dynamic item) => Map<String, dynamic>.from(
-              item as Map<dynamic, dynamic>,
-            ),
+            (dynamic item) =>
+                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
           )
           .map(AuditEvent.fromJson)
           .toList();
 
-      Logger.debug(
-        '$_logTag: Fetched ${rows.length} audit events',
-      );
+      Logger.debug('$_logTag: Fetched ${rows.length} audit events');
       return rows;
     } on PostgrestException catch (e) {
-      Logger.error(
-        '$_logTag: Failed to fetch audit events',
-        e,
-      );
+      Logger.error('$_logTag: Failed to fetch audit events', e);
       throw ModerationServiceException(
         'Failed to fetch audit events: ${e.message}',
         cause: e,
       );
     } catch (e) {
-      Logger.error(
-        '$_logTag: Unexpected error fetching audit events',
-        e,
-      );
+      Logger.error('$_logTag: Unexpected error fetching audit events', e);
       throw ModerationServiceException(
         'Failed to fetch audit events',
         cause: e,
@@ -1073,4 +983,3 @@ final moderationServiceProvider = Provider<ModerationService>((ref) {
   final client = Supabase.instance.client;
   return ModerationService(supabase: client);
 });
-

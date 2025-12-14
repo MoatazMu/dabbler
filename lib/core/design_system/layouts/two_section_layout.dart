@@ -163,7 +163,12 @@ class TwoSectionLayout extends StatelessWidget {
                     ),
                     child: Container(
                       width: double.infinity,
-                      padding: bottomPadding ?? const EdgeInsets.all(24),
+                      padding:
+                          bottomPadding ??
+                          const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 24,
+                          ),
                       clipBehavior: Clip.antiAlias,
                       decoration: ShapeDecoration(
                         // Use category-specific colors with opacity

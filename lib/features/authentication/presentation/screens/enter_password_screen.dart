@@ -52,32 +52,20 @@ class _EnterPasswordScreenState extends ConsumerState<EnterPasswordScreen> {
       );
 
       if (result.user != null) {
-        print(
-          '🔐 [DEBUG] EnterPasswordScreen: Login successful, user: ${result.user?.email}',
-        );
-
         // Handle successful login with the new method
-        print('🔐 [DEBUG] EnterPasswordScreen: Handling successful login...');
         await ref.read(simpleAuthProvider.notifier).handleSuccessfulLogin();
 
         // Check if auth state was updated properly
         final authState = ref.read(simpleAuthProvider);
-        print(
-          '🔐 [DEBUG] EnterPasswordScreen: Auth state after refresh - authenticated: ${authState.isAuthenticated}, loading: ${authState.isLoading}',
-        );
 
         // Let GoRouter redirect based on updated auth state; do not navigate manually
         return;
       } else {
-        print('❌ [DEBUG] EnterPasswordScreen: Login failed - no user returned');
         setState(() {
           _errorMessage = 'Invalid email or password';
         });
       }
     } catch (e) {
-      print('❌ [DEBUG] EnterPasswordScreen: Exception during login: $e');
-      print('❌ [DEBUG] EnterPasswordScreen: Exception type: ${e.runtimeType}');
-
       final errText = e.toString().toLowerCase();
       final isInvalidCreds =
           errText.contains('invalid login credentials') ||

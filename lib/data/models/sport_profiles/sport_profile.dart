@@ -43,66 +43,75 @@ class SportProfile {
 
   factory SportProfile.fromJson(Map<String, dynamic> json) {
     return SportProfile(
-      profileId: json['profile_id'] as String? ?? json['profileId'] as String? ?? '',
-      sportKey: json['sport'] as String? ?? json['sport_key'] as String? ?? json['sportKey'] as String? ?? '',
+      profileId:
+          json['profile_id'] as String? ?? json['profileId'] as String? ?? '',
+      sportKey:
+          json['sport'] as String? ??
+          json['sport_key'] as String? ??
+          json['sportKey'] as String? ??
+          '',
       attributes: _readMap(json['attributes'] ?? json['profile_attributes']),
       overallLevel: _readDouble(json['overall_level'] ?? json['overallLevel']),
       xpTotal: _readDouble(json['xp_total'] ?? json['xpTotal']),
       xpLevel: _readDouble(json['xp_level'] ?? json['xpLevel']),
       xpNextLevel: _readDouble(json['xp_next_level'] ?? json['xpNextLevel']),
-      matchesPlayed:
-          _readInt(json['matches_played'] ?? json['matchesPlayed']),
-      primaryPosition:
-          _readString(json['primary_position'] ?? json['primaryPosition']),
-      secondaryPositions:
-          _readList(json['secondary_positions'] ?? json['secondaryPositions']),
+      matchesPlayed: _readInt(json['matches_played'] ?? json['matchesPlayed']),
+      primaryPosition: _readString(
+        json['primary_position'] ?? json['primaryPosition'],
+      ),
+      secondaryPositions: _readList(
+        json['secondary_positions'] ?? json['secondaryPositions'],
+      ),
       playstyle: _readString(json['playstyle']),
       formScore: _readDouble(json['form_score'] ?? json['formScore']),
       formTrend: _readString(json['form_trend'] ?? json['formTrend']),
-      last5Matches:
-          _readList(json['last5_matches'] ?? json['last_5_matches']),
-      attendanceRate:
-          _readDouble(json['attendance_rate'] ?? json['attendanceRate']),
-      cancellationRate:
-          _readDouble(json['cancellation_rate'] ?? json['cancellationRate']),
-      punctualityScore:
-          _readDouble(json['punctuality_score'] ?? json['punctualityScore']),
-      teamworkScore:
-          _readDouble(json['teamwork_score'] ?? json['teamworkScore']),
+      last5Matches: _readList(json['last5_matches'] ?? json['last_5_matches']),
+      attendanceRate: _readDouble(
+        json['attendance_rate'] ?? json['attendanceRate'],
+      ),
+      cancellationRate: _readDouble(
+        json['cancellation_rate'] ?? json['cancellationRate'],
+      ),
+      punctualityScore: _readDouble(
+        json['punctuality_score'] ?? json['punctualityScore'],
+      ),
+      teamworkScore: _readDouble(
+        json['teamwork_score'] ?? json['teamworkScore'],
+      ),
       ratingCount: _readInt(json['rating_count'] ?? json['ratingCount']),
       ratingTotal: _readDouble(json['rating_total'] ?? json['ratingTotal']),
-      reliabilityScore:
-          _readDouble(json['reliability_score'] ?? json['reliabilityScore']),
+      reliabilityScore: _readDouble(
+        json['reliability_score'] ?? json['reliabilityScore'],
+      ),
       verificationStatus: _readString(
         json['verification_status'] ?? json['verificationStatus'],
       ),
       verifiedBy: _readOptionalString(
         json['verified_by'] ?? json['verifiedBy'],
       ),
-      verificationMedia:
-          _readList(json['verification_media'] ?? json['verificationMedia']),
-      verificationNote:
-          _readString(json['verification_note'] ?? json['verificationNote']),
-      verificationDate:
-          _readDate(json['verification_date'] ?? json['verificationDate']),
+      verificationMedia: _readList(
+        json['verification_media'] ?? json['verificationMedia'],
+      ),
+      verificationNote: _readString(
+        json['verification_note'] ?? json['verificationNote'],
+      ),
+      verificationDate: _readDate(
+        json['verification_date'] ?? json['verificationDate'],
+      ),
       performanceHighlights: _readList(
         json['performance_highlights'] ?? json['performanceHighlights'],
       ),
-      mlLastVector:
-          _readList(json['ml_last_vector'] ?? json['mlLastVector']),
-      mlAvgVector:
-          _readList(json['ml_avg_vector'] ?? json['mlAvgVector']),
-      mlVectorCount:
-          _readInt(json['ml_vector_count'] ?? json['mlVectorCount']),
-      heatmapJson:
-          _readMap(json['heatmap_json'] ?? json['heatmapJson']),
+      mlLastVector: _readList(json['ml_last_vector'] ?? json['mlLastVector']),
+      mlAvgVector: _readList(json['ml_avg_vector'] ?? json['mlAvgVector']),
+      mlVectorCount: _readInt(json['ml_vector_count'] ?? json['mlVectorCount']),
+      heatmapJson: _readMap(json['heatmap_json'] ?? json['heatmapJson']),
       movementIntensity: _readDouble(
         json['movement_intensity'] ?? json['movementIntensity'],
       ),
-      staminaScore:
-          _readDouble(json['stamina_score'] ?? json['staminaScore']),
-      preferredVenues:
-          _readList(json['preferred_venues'] ?? json['preferredVenues']),
+      staminaScore: _readDouble(json['stamina_score'] ?? json['staminaScore']),
+      preferredVenues: _readList(
+        json['preferred_venues'] ?? json['preferredVenues'],
+      ),
       performanceByVenue: _readMap(
         json['performance_by_venue'] ?? json['performanceByVenue'],
       ),
@@ -254,8 +263,9 @@ Map<String, dynamic> _readMap(dynamic value) {
     return Map<String, dynamic>.from(value);
   }
   if (value is Map) {
-    return value.map((dynamic key, dynamic value) =>
-        MapEntry(key.toString(), value));
+    return value.map(
+      (dynamic key, dynamic value) => MapEntry(key.toString(), value),
+    );
   }
   return <String, dynamic>{};
 }

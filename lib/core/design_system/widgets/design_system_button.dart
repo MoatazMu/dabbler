@@ -39,9 +39,7 @@ class DesignSystemButton extends StatelessWidget {
         padding: _padding,
         minimumSize: Size.fromHeight(_height),
         textStyle: _textStyle.copyWith(color: onPrimary),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(100),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100)),
         overlayColor: onPrimary.withValues(alpha: 0.08),
       ),
       child: _buildContent(onPrimary),
@@ -71,12 +69,7 @@ class DesignSystemButton extends StatelessWidget {
           Icon(leadingIcon, size: _iconSize),
           const SizedBox(width: 8),
         ],
-        Flexible(
-          child: Text(
-            label,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
+        Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
         if (trailingIcon != null) ...[
           const SizedBox(width: 8),
           Icon(trailingIcon, size: _iconSize),
@@ -114,7 +107,9 @@ class DesignSystemButton extends StatelessWidget {
       case DesignSystemButtonSize.medium:
         return AppTypography.bodyLarge.copyWith(fontWeight: FontWeight.w600);
       case DesignSystemButtonSize.large:
-        return AppTypography.headingMedium.copyWith(fontWeight: FontWeight.w700);
+        return AppTypography.headingMedium.copyWith(
+          fontWeight: FontWeight.w700,
+        );
     }
   }
 

@@ -2,7 +2,6 @@ import 'package:dabbler/core/fp/result.dart';
 import 'package:dabbler/core/fp/failure.dart';
 import '../models/profile.dart';
 
-
 /// Username operations over the `profiles` table (citext unique).
 ///
 /// RLS expectations:

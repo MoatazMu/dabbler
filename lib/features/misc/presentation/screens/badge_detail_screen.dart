@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:dabbler/core/design_system/design_system.dart';
 
 class BadgeDetailScreen extends StatelessWidget {
   final String badgeId;
@@ -7,13 +8,13 @@ class BadgeDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SingleSectionLayout(
       appBar: AppBar(
         title: const Text("Badge Details"),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Center(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

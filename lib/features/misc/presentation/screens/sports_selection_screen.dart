@@ -33,31 +33,16 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
 
   Future<void> _loadExistingUserData() async {
     try {
-      debugPrint(
-        '🏃 [DEBUG] SportsSelectionScreen: Loading existing user data',
-      );
-
       // Check if we have onboarding data from previous steps
       final onboardingData = ref.read(onboardingDataProvider);
       if (onboardingData?.preferredSport != null) {
-        debugPrint(
-          '✅ [DEBUG] SportsSelectionScreen: Found preferred sport: ${onboardingData!.preferredSport}',
-        );
         setState(() {
-          _preferredSport = onboardingData.preferredSport;
-          if (onboardingData.interests != null) {
-            _interests.addAll(onboardingData.interests!);
+          _preferredSport = onboardingData?.preferredSport;
+          if (onboardingData?.interests != null) {
+            _interests.addAll(onboardingData!.interests!);
           }
         });
-      } else {
-        debugPrint(
-          '🆕 [DEBUG] SportsSelectionScreen: No existing sports data, starting fresh',
-        );
-      }
-    } catch (e) {
-      debugPrint(
-        '❌ [DEBUG] SportsSelectionScreen: Error loading existing data: $e',
-      );
+      } else {}
     } finally {
       if (mounted) {
         setState(() {
@@ -115,14 +100,6 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
     setState(() => _isLoading = true);
 
     try {
-      debugPrint('🏃 [DEBUG] SportsSelectionScreen: Saving sports preferences');
-      debugPrint(
-        '📋 [DEBUG] SportsSelectionScreen: Preferred sport: $_preferredSport',
-      );
-      debugPrint(
-        '📋 [DEBUG] SportsSelectionScreen: Interests: ${_interests.toList()}',
-      );
-
       // Save to OnboardingData provider
       ref
           .read(onboardingDataProvider.notifier)
@@ -131,21 +108,11 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
             interests: _interests.isNotEmpty ? _interests.toList() : null,
           );
 
-      debugPrint(
-        '✅ [DEBUG] SportsSelectionScreen: Sports preferences saved successfully',
-      );
-
       // Navigate to SetUsername for all users (passwordless flow)
       if (mounted) {
-        debugPrint(
-          '✅ [DEBUG] SportsSelectionScreen: Navigating to SetUsernameScreen (passwordless flow for all users)',
-        );
         context.push(RoutePaths.setUsername);
       }
     } catch (e) {
-      debugPrint(
-        '❌ [DEBUG] SportsSelectionScreen: Error saving sports preferences: $e',
-      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),

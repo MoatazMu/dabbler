@@ -347,10 +347,7 @@ class ProgressTrackingService extends ChangeNotifier {
 
       _isInitialized = true;
       notifyListeners();
-
-      debugPrint('ProgressTrackingService initialized for user: $userId');
     } catch (e) {
-      debugPrint('Error initializing ProgressTrackingService: $e');
       rethrow;
     }
   }
@@ -380,8 +377,6 @@ class ProgressTrackingService extends ChangeNotifier {
 
       notifyListeners();
     } catch (e) {
-      debugPrint('Error tracking event: $e');
-
       // Fallback to offline queue
       _offlineQueue.add(event);
       await _saveOfflineQueue();
@@ -416,7 +411,6 @@ class ProgressTrackingService extends ChangeNotifier {
 
       return goals;
     } catch (e) {
-      debugPrint('Error getting daily goals: $e');
       return _dailyGoalsCache[cacheKey] ?? [];
     }
   }
@@ -433,7 +427,6 @@ class ProgressTrackingService extends ChangeNotifier {
 
       return streaks;
     } catch (e) {
-      debugPrint('Error getting streaks: $e');
       return {};
     }
   }
@@ -482,9 +475,7 @@ class ProgressTrackingService extends ChangeNotifier {
       }
 
       notifyListeners();
-    } catch (e) {
-      debugPrint('Error updating daily goal progress: $e');
-    }
+    } catch (e) {}
   }
 
   /// Update streak
@@ -564,9 +555,7 @@ class ProgressTrackingService extends ChangeNotifier {
       }
 
       notifyListeners();
-    } catch (e) {
-      debugPrint('Error updating streak: $e');
-    }
+    } catch (e) {}
   }
 
   /// Check achievement progress
@@ -574,17 +563,13 @@ class ProgressTrackingService extends ChangeNotifier {
     try {
       final achievementsResult = await _repository.getAllAchievements();
 
-      achievementsResult.fold(
-        (failure) =>
-            debugPrint('Error getting achievements: ${failure.message}'),
-        (achievements) async {
-          for (final achievement in achievements) {
-            await _checkSingleAchievementProgress(userId, achievement);
-          }
-        },
-      );
+      achievementsResult.fold((failure) => null, (achievements) async {
+        for (final achievement in achievements) {
+          await _checkSingleAchievementProgress(userId, achievement);
+        }
+      });
     } catch (e) {
-      debugPrint('Error checking achievement progress: $e');
+      // Silently handle error
     }
   }
 
@@ -696,8 +681,6 @@ class ProgressTrackingService extends ChangeNotifier {
       _eventQueue.removeRange(0, math.min(_batchSize, _eventQueue.length));
 
       await _processBatch(batch);
-    } catch (e) {
-      debugPrint('Error processing event batch: $e');
     } finally {
       _isProcessingEvents = false;
     }
@@ -708,8 +691,6 @@ class ProgressTrackingService extends ChangeNotifier {
       try {
         await _processEvent(event);
       } catch (e) {
-        debugPrint('Error processing event ${event.id}: $e');
-
         // Retry logic
         if (event.retryCount < _maxRetries) {
           final retryEvent = event.copyWith(retryCount: event.retryCount + 1);
@@ -884,11 +865,7 @@ class ProgressTrackingService extends ChangeNotifier {
         // Update progress cache
         _achievementProgress[progressKey] = newProgress;
       }
-    } catch (e) {
-      debugPrint(
-        'Error checking achievement progress for ${achievement.id}: $e',
-      );
-    }
+    } catch (e) {}
   }
 
   Future<Map<String, double>> _calculateAchievementProgress(
@@ -968,11 +945,7 @@ class ProgressTrackingService extends ChangeNotifier {
       }
 
       await _saveOfflineQueue();
-
-      debugPrint('Synced ${eventsToSync.length} offline events');
-    } catch (e) {
-      debugPrint('Error syncing offline queue: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _loadOfflineQueue() async {
@@ -984,9 +957,7 @@ class ProgressTrackingService extends ChangeNotifier {
           queueList.map((data) => ProgressEvent.fromMap(data)).toList(),
         );
       }
-    } catch (e) {
-      debugPrint('Error loading offline queue: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _saveOfflineQueue() async {
@@ -996,9 +967,7 @@ class ProgressTrackingService extends ChangeNotifier {
         'offline_queue_$_currentUserId',
         jsonEncode(queueData),
       );
-    } catch (e) {
-      debugPrint('Error saving offline queue: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _loadCachedData() async {
@@ -1022,9 +991,7 @@ class ProgressTrackingService extends ChangeNotifier {
           _streaksCache[entry.key] = StreakData.fromMap(entry.value);
         }
       }
-    } catch (e) {
-      debugPrint('Error loading cached data: $e');
-    }
+    } catch (e) {}
   }
 
   Future<List<DailyGoal>> _fetchDailyGoals(String userId, DateTime date) async {
@@ -1112,7 +1079,6 @@ class ProgressTrackingService extends ChangeNotifier {
       // For now return a stub value
       return 0;
     } catch (e) {
-      debugPrint('Error getting sport games count: $e');
       return 0;
     }
   }
@@ -1123,7 +1089,6 @@ class ProgressTrackingService extends ChangeNotifier {
       // For now return a stub value
       return 0;
     } catch (e) {
-      debugPrint('Error getting current win streak: $e');
       return 0;
     }
   }

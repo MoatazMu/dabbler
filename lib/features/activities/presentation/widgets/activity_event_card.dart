@@ -10,11 +10,7 @@ class ActivityEventCard extends StatelessWidget {
   final ActivityFeedEvent event;
   final VoidCallback? onTap;
 
-  const ActivityEventCard({
-    super.key,
-    required this.event,
-    this.onTap,
-  });
+  const ActivityEventCard({super.key, required this.event, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +21,7 @@ class ActivityEventCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: colorScheme.outline.withOpacity(0.1),
-          width: 1,
-        ),
+        side: BorderSide(color: colorScheme.outline.withOpacity(0.1), width: 1),
       ),
       child: InkWell(
         onTap: onTap,
@@ -105,9 +98,7 @@ class ActivityEventCard extends StatelessWidget {
 
     return Text(
       title,
-      style: textTheme.titleMedium?.copyWith(
-        fontWeight: FontWeight.w600,
-      ),
+      style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
     );
   }
 
@@ -122,9 +113,7 @@ class ActivityEventCard extends StatelessWidget {
 
     return Text(
       subtitle,
-      style: textTheme.bodySmall?.copyWith(
-        color: colorScheme.onSurfaceVariant,
-      ),
+      style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
     );
   }
 
@@ -160,11 +149,7 @@ class ActivityEventCard extends StatelessWidget {
 
     return Row(
       children: [
-        Icon(
-          Icons.access_time,
-          size: 14,
-          color: colorScheme.onSurfaceVariant,
-        ),
+        Icon(Icons.access_time, size: 14, color: colorScheme.onSurfaceVariant),
         const SizedBox(width: 6),
         Text(
           formattedDate,
@@ -185,7 +170,8 @@ class ActivityEventCard extends StatelessWidget {
       return 'You joined a game';
     } else if (event.subjectType == 'game' && event.verb == 'left') {
       return 'You left a game';
-    } else if (event.subjectType == 'payment' && event.verb == 'payment_succeeded') {
+    } else if (event.subjectType == 'payment' &&
+        event.verb == 'payment_succeeded') {
       return 'Payment successful';
     } else if (event.subjectType == 'reward' && event.verb == 'earned') {
       return 'Reward earned';
@@ -234,4 +220,3 @@ class ActivityEventCard extends StatelessWidget {
     }
   }
 }
-

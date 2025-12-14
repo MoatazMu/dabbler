@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 
 class InvitePlayersScreen extends StatelessWidget {
   const InvitePlayersScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SingleSectionLayout(
       appBar: AppBar(
         title: const Text('Invite Players'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: const Center(
+      child: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [

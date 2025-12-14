@@ -65,9 +65,6 @@ class UploadAvatarUseCase {
         );
         if (deleteResult.isLeft) {
           // Log warning but continue with upload
-          print(
-            'Warning: Failed to delete current avatar: ${deleteResult.leftOrNull()}',
-          );
         }
       }
 
@@ -78,7 +75,6 @@ class UploadAvatarUseCase {
         params.imageFile,
         onProgress: (progress) {
           // Progress callback can be used for UI updates
-          print('Upload progress: ${(progress * 100).toStringAsFixed(1)}%');
         },
       );
 

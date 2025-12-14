@@ -96,7 +96,6 @@ class AuthProfileService {
     final profileResult = await getMyProfile();
 
     return profileResult.fold((failure) {
-      print('⚠️ [DEBUG] AuthProfileService: Failed to load profile: $failure');
       return null;
     }, (profile) => AuthenticatedUserWithProfile(user: user, profile: profile));
   }

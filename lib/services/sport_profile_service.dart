@@ -17,7 +17,7 @@ class SportProfileServiceException implements Exception {
 
 class SportProfileService {
   SportProfileService({SupabaseClient? supabase})
-      : _supabase = supabase ?? Supabase.instance.client;
+    : _supabase = supabase ?? Supabase.instance.client;
 
   final SupabaseClient _supabase;
 
@@ -44,22 +44,26 @@ class SportProfileService {
       }
 
       return SportProfile.fromJson(
-        Map<String, dynamic>.from(
-          response as Map<dynamic, dynamic>,
-        ),
+        Map<String, dynamic>.from(response as Map<dynamic, dynamic>),
       );
     } on PostgrestException catch (e) {
       Logger.error(
         '$_logTag: Failed to fetch sport profile for profileId=$profileId sportKey=$sportKey',
         e,
       );
-      throw SportProfileServiceException('Failed to fetch sport profile', cause: e);
+      throw SportProfileServiceException(
+        'Failed to fetch sport profile',
+        cause: e,
+      );
     } catch (e) {
       Logger.error(
         '$_logTag: Unexpected error fetching sport profile for profileId=$profileId sportKey=$sportKey',
         e,
       );
-      throw SportProfileServiceException('Failed to fetch sport profile', cause: e);
+      throw SportProfileServiceException(
+        'Failed to fetch sport profile',
+        cause: e,
+      );
     }
   }
 
@@ -72,9 +76,7 @@ class SportProfileService {
           .eq('user_id', userId);
 
       if (profilesResponse.isEmpty) {
-        Logger.debug(
-          '$_logTag: No profiles found for userId=$userId',
-        );
+        Logger.debug('$_logTag: No profiles found for userId=$userId');
         return [];
       }
 
@@ -95,9 +97,8 @@ class SportProfileService {
 
       final data = (response as List)
           .map(
-            (dynamic item) => Map<String, dynamic>.from(
-              item as Map<dynamic, dynamic>,
-            ),
+            (dynamic item) =>
+                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
           )
           .map(SportProfile.fromJson)
           .toList();
@@ -108,13 +109,19 @@ class SportProfileService {
         '$_logTag: Failed to fetch sport profiles for userId=$userId',
         e,
       );
-      throw SportProfileServiceException('Failed to fetch sport profiles', cause: e);
+      throw SportProfileServiceException(
+        'Failed to fetch sport profiles',
+        cause: e,
+      );
     } catch (e) {
       Logger.error(
         '$_logTag: Unexpected error fetching sport profiles for userId=$userId',
         e,
       );
-      throw SportProfileServiceException('Failed to fetch sport profiles', cause: e);
+      throw SportProfileServiceException(
+        'Failed to fetch sport profiles',
+        cause: e,
+      );
     }
   }
 
@@ -136,9 +143,8 @@ class SportProfileService {
 
       return (response as List)
           .map(
-            (dynamic item) => Map<String, dynamic>.from(
-              item as Map<dynamic, dynamic>,
-            ),
+            (dynamic item) =>
+                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
           )
           .map(SportProfileEvent.fromJson)
           .toList();
@@ -147,13 +153,19 @@ class SportProfileService {
         '$_logTag: Failed to fetch sport profile events for profileId=$profileId sportKey=$sportKey',
         e,
       );
-      throw SportProfileServiceException('Failed to fetch sport profile events', cause: e);
+      throw SportProfileServiceException(
+        'Failed to fetch sport profile events',
+        cause: e,
+      );
     } catch (e) {
       Logger.error(
         '$_logTag: Unexpected error fetching sport profile events for profileId=$profileId sportKey=$sportKey',
         e,
       );
-      throw SportProfileServiceException('Failed to fetch sport profile events', cause: e);
+      throw SportProfileServiceException(
+        'Failed to fetch sport profile events',
+        cause: e,
+      );
     }
   }
 
@@ -171,15 +183,12 @@ class SportProfileService {
 
       final rows = (response as List)
           .map(
-            (dynamic item) => Map<String, dynamic>.from(
-              item as Map<dynamic, dynamic>,
-            ),
+            (dynamic item) =>
+                Map<String, dynamic>.from(item as Map<dynamic, dynamic>),
           )
           .map((map) => map['badge'])
           .whereType<Map<dynamic, dynamic>>()
-          .map(
-            (badge) => Map<String, dynamic>.from(badge),
-          )
+          .map((badge) => Map<String, dynamic>.from(badge))
           .map(SportProfileBadge.fromJson)
           .toList();
 
@@ -189,13 +198,19 @@ class SportProfileService {
         '$_logTag: Failed to fetch player badges for profileId=$profileId sportKey=$sportKey',
         e,
       );
-      throw SportProfileServiceException('Failed to fetch sport profile badges', cause: e);
+      throw SportProfileServiceException(
+        'Failed to fetch sport profile badges',
+        cause: e,
+      );
     } catch (e) {
       Logger.error(
         '$_logTag: Unexpected error fetching player badges for profileId=$profileId sportKey=$sportKey',
         e,
       );
-      throw SportProfileServiceException('Failed to fetch sport profile badges', cause: e);
+      throw SportProfileServiceException(
+        'Failed to fetch sport profile badges',
+        cause: e,
+      );
     }
   }
 
@@ -217,19 +232,26 @@ class SportProfileService {
       }
 
       return SportProfileTier.fromJson(
-        Map<String, dynamic>.from(
-          response as Map<dynamic, dynamic>,
-        ),
+        Map<String, dynamic>.from(response as Map<dynamic, dynamic>),
       );
     } on PostgrestException catch (e) {
-      Logger.error('$_logTag: Failed to fetch sport profile tier for tierId=$tierId', e);
-      throw SportProfileServiceException('Failed to fetch sport profile tier', cause: e);
+      Logger.error(
+        '$_logTag: Failed to fetch sport profile tier for tierId=$tierId',
+        e,
+      );
+      throw SportProfileServiceException(
+        'Failed to fetch sport profile tier',
+        cause: e,
+      );
     } catch (e) {
       Logger.error(
         '$_logTag: Unexpected error fetching sport profile tier for tierId=$tierId',
         e,
       );
-      throw SportProfileServiceException('Failed to fetch sport profile tier', cause: e);
+      throw SportProfileServiceException(
+        'Failed to fetch sport profile tier',
+        cause: e,
+      );
     }
   }
 
@@ -315,13 +337,19 @@ class SportProfileService {
         '$_logTag: Failed to apply match outcome for profileId=$profileId sportKey=$sportKey',
         e,
       );
-      throw SportProfileServiceException('Failed to update sport profile after match', cause: e);
+      throw SportProfileServiceException(
+        'Failed to update sport profile after match',
+        cause: e,
+      );
     } catch (e) {
       Logger.error(
         '$_logTag: Unexpected error applying match outcome for profileId=$profileId sportKey=$sportKey',
         e,
       );
-      throw SportProfileServiceException('Failed to update sport profile after match', cause: e);
+      throw SportProfileServiceException(
+        'Failed to update sport profile after match',
+        cause: e,
+      );
     }
   }
 }
@@ -392,7 +420,10 @@ List<double>? _extractVectorValues(Map<String, dynamic>? mlVector) {
   }
 
   final dynamic raw =
-      mlVector['values'] ?? mlVector['vector'] ?? mlVector['embedding'] ?? mlVector['data'];
+      mlVector['values'] ??
+      mlVector['vector'] ??
+      mlVector['embedding'] ??
+      mlVector['data'];
   if (raw is! List) {
     return null;
   }

@@ -14,12 +14,15 @@ class SportProfileEvent {
   factory SportProfileEvent.fromJson(Map<String, dynamic> json) {
     return SportProfileEvent(
       id: json['id'] as String? ?? json['event_id'] as String? ?? '',
-      profileId: json['profile_id'] as String? ?? json['profileId'] as String? ?? '',
-      sportKey: json['sport_key'] as String? ?? json['sportKey'] as String? ?? '',
-      eventType: json['event_type'] as String? ?? json['eventType'] as String? ?? '',
-      eventData:
-          _readMap(json['event_data'] ?? json['eventData']),
-      createdAt: _readDate(json['created_at'] ?? json['createdAt']) ??
+      profileId:
+          json['profile_id'] as String? ?? json['profileId'] as String? ?? '',
+      sportKey:
+          json['sport_key'] as String? ?? json['sportKey'] as String? ?? '',
+      eventType:
+          json['event_type'] as String? ?? json['eventType'] as String? ?? '',
+      eventData: _readMap(json['event_data'] ?? json['eventData']),
+      createdAt:
+          _readDate(json['created_at'] ?? json['createdAt']) ??
           DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
@@ -51,8 +54,9 @@ Map<String, dynamic> _readMap(dynamic value) {
     return Map<String, dynamic>.from(value);
   }
   if (value is Map) {
-    return value.map((dynamic key, dynamic value) =>
-        MapEntry(key.toString(), value));
+    return value.map(
+      (dynamic key, dynamic value) => MapEntry(key.toString(), value),
+    );
   }
   return const <String, dynamic>{};
 }

@@ -97,7 +97,10 @@ class _CommentInputState extends ConsumerState<CommentInput> {
             if (_blocklistHits > 0)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 color: theme.colorScheme.errorContainer,
                 child: Row(
                   children: [
@@ -122,83 +125,83 @@ class _CommentInputState extends ConsumerState<CommentInput> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-              // Avatar
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: theme.colorScheme.primaryContainer,
-                child: Icon(
-                  Icons.person,
-                  size: 20,
-                  color: theme.colorScheme.onPrimaryContainer,
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              // Text input
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(
-                      color: theme.colorScheme.outline.withOpacity(0.2),
+                  // Avatar
+                  CircleAvatar(
+                    radius: 18,
+                    backgroundColor: theme.colorScheme.primaryContainer,
+                    child: Icon(
+                      Icons.person,
+                      size: 20,
+                      color: theme.colorScheme.onPrimaryContainer,
                     ),
                   ),
-                  child: TextField(
-                    controller: widget.controller,
-                    focusNode: widget.focusNode,
-                    onChanged: widget.onChanged,
-                    onSubmitted: (_) => _submitComment(),
-                    maxLines: null,
-                    textInputAction: TextInputAction.send,
-                    decoration: InputDecoration(
-                      hintText: widget.hintText,
-                      hintStyle: theme.textTheme.bodyMedium?.copyWith(
+
+                  const SizedBox(width: 12),
+
+                  // Text input
+                  Expanded(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color: theme.colorScheme.outline.withOpacity(0.2),
+                        ),
+                      ),
+                      child: TextField(
+                        controller: widget.controller,
+                        focusNode: widget.focusNode,
+                        onChanged: widget.onChanged,
+                        onSubmitted: (_) => _submitComment(),
+                        maxLines: null,
+                        textInputAction: TextInputAction.send,
+                        decoration: InputDecoration(
+                          hintText: widget.hintText,
+                          hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                          suffixIcon: _hasText
+                              ? IconButton(
+                                  onPressed: _submitComment,
+                                  icon: widget.isSubmitting
+                                      ? SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  theme.colorScheme.primary,
+                                                ),
+                                          ),
+                                        )
+                                      : Icon(
+                                          Icons.send,
+                                          color: theme.colorScheme.primary,
+                                        ),
+                                )
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Emoji button
+                  if (!_hasText) ...[
+                    const SizedBox(width: 8),
+                    IconButton(
+                      onPressed: () {},
+                      icon: Icon(
+                        Icons.emoji_emotions_outlined,
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
-                      border: InputBorder.none,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                      suffixIcon: _hasText
-                          ? IconButton(
-                              onPressed: _submitComment,
-                              icon: widget.isSubmitting
-                                  ? SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        valueColor:
-                                            AlwaysStoppedAnimation<Color>(
-                                              theme.colorScheme.primary,
-                                            ),
-                                      ),
-                                    )
-                                  : Icon(
-                                      Icons.send,
-                                      color: theme.colorScheme.primary,
-                                    ),
-                            )
-                          : null,
                     ),
-                  ),
-                ),
-              ),
-
-              // Emoji button
-              if (!_hasText) ...[
-                const SizedBox(width: 8),
-                IconButton(
-                  onPressed: () {},
-                  icon: Icon(
-                    Icons.emoji_emotions_outlined,
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
+                  ],
                 ],
               ),
             ),

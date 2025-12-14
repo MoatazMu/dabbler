@@ -66,4 +66,3 @@ class ActivityFeedEvent {
     return 'ActivityFeedEvent(id: $id, subjectType: $subjectType, verb: $verb, timeBucket: $timeBucket)';
   }
 }
-

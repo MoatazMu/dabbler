@@ -22,6 +22,10 @@ import 'package:dabbler/features/social/presentation/widgets/feed/post_card.dart
 import 'package:dabbler/features/social/services/social_service.dart';
 import 'package:dabbler/core/widgets/custom_avatar.dart';
 import 'package:dabbler/themes/material3_extensions.dart';
+import 'package:dabbler/services/notifications/push_notification_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:dabbler/features/home/presentation/widgets/notification_permission_drawer.dart';
+import 'package:flutter/foundation.dart' show defaultTargetPlatform;
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {
@@ -34,11 +38,80 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final AuthService _authService = AuthService();
   Map<String, dynamic>? _userProfile;
+  String _selectedPostFilter = 'all'; // all, moment, dab, kickin
 
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
+    _checkNotificationPermission();
+  }
+
+  Future<void> _checkNotificationPermission() async {
+    // Only check on mobile platforms
+    if (!defaultTargetPlatform.toString().contains('android') &&
+        !defaultTargetPlatform.toString().contains('iOS')) {
+      return;
+    }
+
+    final notificationService = PushNotificationService.instance;
+    final shouldShow = await notificationService.shouldShowNotificationPrompt();
+
+    if (!shouldShow || !mounted) return;
+
+    final status = await notificationService.checkPermissionStatus();
+
+    // Only show drawer if permission is not already granted
+    if (status != AuthorizationStatus.authorized &&
+        status != AuthorizationStatus.provisional) {
+      // Wait for first frame to ensure context is available
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showNotificationDrawer();
+        }
+      });
+    }
+  }
+
+  void _showNotificationDrawer() {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: true,
+      enableDrag: true,
+      showDragHandle: true,
+      builder: (context) {
+        return NotificationPermissionDrawer(
+          onEnableNotifications: () async {
+            Navigator.pop(context);
+            final notificationService = PushNotificationService.instance;
+            await notificationService.saveNotificationPreference('allow');
+            final granted = await notificationService
+                .requestNotificationPermission();
+            if (mounted && granted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Notifications enabled!'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            }
+          },
+          onRemindLater: () async {
+            Navigator.pop(context);
+            final notificationService = PushNotificationService.instance;
+            await notificationService.saveNotificationPreference(
+              'remind_later',
+            );
+          },
+          onNoThanks: () async {
+            Navigator.pop(context);
+            final notificationService = PushNotificationService.instance;
+            await notificationService.saveNotificationPreference('never');
+          },
+        );
+      },
+    );
   }
 
   Future<void> _loadUserProfile() async {
@@ -49,22 +122,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _userProfile = profile;
         });
       }
-    } catch (e) {
-      print('Error loading user profile: $e');
-    }
+    } catch (e) {}
   }
 
   bool _shouldShowCreateGame() {
     final profileState = ref.watch(profileControllerProvider);
     final profileType = profileState.profile?.profileType;
-
-    print('🔍 [DEBUG] _shouldShowCreateGame - profileType: $profileType');
-    print(
-      '🔍 [DEBUG] enablePlayerGameCreation: ${FeatureFlags.enablePlayerGameCreation}',
-    );
-    print(
-      '🔍 [DEBUG] enableOrganiserGameCreation: ${FeatureFlags.enableOrganiserGameCreation}',
-    );
 
     if (profileType == 'player') {
       return FeatureFlags.enablePlayerGameCreation;
@@ -190,26 +253,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             style: AppTypography.displaySmall.copyWith(
               color: tokens.titleOnHead,
             ),
-          )
-        else
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Complete your profile',
-                style: AppTypography.titleMedium.copyWith(
-                  color: tokens.titleOnHead,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
-              const SizedBox(height: 8),
-              AppButton.primary(
-                label: 'Update now',
-                onPressed: () => context.go(RoutePaths.profile),
-                size: AppButtonSize.sm,
-              ),
-            ],
           ),
+        // else
+        //   Column(
+        //     crossAxisAlignment: CrossAxisAlignment.start,
+        //     children: [
+        //       Text(
+        //         'Complete your profile',
+        //         style: AppTypography.titleMedium.copyWith(
+        //           color: tokens.titleOnHead,
+        //           fontStyle: FontStyle.italic,
+        //         ),
+        //       ),
+        //       const SizedBox(height: 8),
+        //       AppButton.primary(
+        //         label: 'Update now',
+        //         onPressed: () => context.go(RoutePaths.profile),
+        //         size: AppButtonSize.sm,
+        //       ),
+        //     ],
+        //   ),
       ],
     );
   }
@@ -229,19 +292,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          const SizedBox(height: 24),
-          _buildGreetingSection(displayName),
+          // const SizedBox(height: 24),
+          // _buildGreetingSection(displayName),
           Padding(
-            padding: const EdgeInsets.only(top: 16),
+            padding: const EdgeInsets.only(top: 12),
             child: _buildUpcomingGameSection(),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 16),
+            padding: const EdgeInsets.only(top: 0),
             child: ThoughtsInput(
-              onTap: () {
-                // TODO: Navigate to create post screen
-              },
+              onTap: () => context.push('/social-create-post'),
             ),
+          ),
+          // Post filters
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: _buildPostFilters(),
           ),
         ],
       ),
@@ -360,10 +426,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         Padding(
           padding: const EdgeInsets.only(top: 16),
           child: ThoughtsInput(
-            onTap: () {
-              // TODO: Navigate to create post screen
-              // For now, you can use PostService to create posts
-            },
+            onTap: () => context.push('/social-create-post'),
           ),
         ),
       ],
@@ -432,25 +495,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       : displayPlayers.length,
                   itemBuilder: (context, index) {
                     final player = displayPlayers[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: Column(
-                        children: [
-                          player['sport_key'] != null
-                              ? AppAvatar.withSportBadge(
-                                  imageUrl: player['avatar_url'],
-                                  fallbackText: player['display_name'],
-                                  size: 52,
-                                  sportEmoji: _getSportEmoji(
-                                    player['sport_key'],
+                    return GestureDetector(
+                      onTap: () {
+                        if (player['user_id'] != null) {
+                          context.go(
+                            '${RoutePaths.userProfile}/${player['user_id']}',
+                          );
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Column(
+                          children: [
+                            player['sport_key'] != null
+                                ? AppAvatar.withSportBadge(
+                                    imageUrl: player['avatar_url'],
+                                    fallbackText: player['display_name'],
+                                    size: 52,
+                                    sportEmoji: _getSportEmoji(
+                                      player['sport_key'],
+                                    ),
+                                  )
+                                : AppAvatar(
+                                    imageUrl: player['avatar_url'],
+                                    fallbackText: player['display_name'],
+                                    size: 52,
                                   ),
-                                )
-                              : AppAvatar(
-                                  imageUrl: player['avatar_url'],
-                                  fallbackText: player['display_name'],
-                                  size: 52,
-                                ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -463,12 +535,116 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildPostFilters() {
+    final postsAsync = ref.watch(latestFeedPostsProvider);
+
+    return postsAsync.when(
+      data: (posts) {
+        if (posts.isEmpty) return const SizedBox.shrink();
+
+        return Container(
+          padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildFilterChip(
+                  label: 'Most recent',
+                  value: 'all',
+                  count: posts.length,
+                ),
+                _buildFilterChip(
+                  label: 'Moments',
+                  value: 'moment',
+                  count: posts
+                      .where((p) => p.kind.toLowerCase() == 'moment')
+                      .length,
+                ),
+                _buildFilterChip(
+                  label: 'Dabs',
+                  value: 'dab',
+                  count: posts
+                      .where((p) => p.kind.toLowerCase() == 'dab')
+                      .length,
+                ),
+                _buildFilterChip(
+                  label: 'Kick-ins',
+                  value: 'kickin',
+                  count: posts
+                      .where((p) => p.kind.toLowerCase() == 'kickin')
+                      .length,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildFilterChip({
+    required String label,
+    required String value,
+    required int count,
+  }) {
+    final textTheme = Theme.of(context).textTheme;
+    final tokens = context.colorTokens;
+    final isSelected = _selectedPostFilter == value;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _selectedPostFilter = value;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? tokens.button : tokens.btnBase,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: textTheme.labelMedium?.copyWith(
+            color: isSelected ? tokens.onBtn : tokens.neutralOpacity,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getFilterLabel() {
+    switch (_selectedPostFilter) {
+      case 'moment':
+        return 'Moments';
+      case 'dab':
+        return 'Dabs';
+      case 'kickin':
+        return 'Kick-ins';
+      default:
+        return '';
+    }
+  }
+
   Widget _buildSocialFeedSection() {
     final tokens = context.colorTokens;
     final postsAsync = ref.watch(latestFeedPostsProvider);
 
     return postsAsync.when(
       data: (posts) {
+        // Filter posts based on selected filter
+        final filteredPosts = _selectedPostFilter == 'all'
+            ? posts
+            : posts
+                  .where(
+                    (post) => post.kind.toLowerCase() == _selectedPostFilter,
+                  )
+                  .toList();
+
         if (posts.isEmpty) {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -524,10 +700,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 0),
-              child: Column(
-                children: posts
+            // Posts list
+            if (filteredPosts.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(24),
+                child: Center(
+                  child: Text(
+                    'No ${_getFilterLabel()} posts yet',
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: tokens.neutralOpacity,
+                    ),
+                  ),
+                ),
+              )
+            else
+              Column(
+                children: filteredPosts
                     .map(
                       (post) => PostCard(
                         post: post,
@@ -542,13 +730,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           pathParameters: {'postId': post.id},
                         ),
                         onProfileTap: () {
-                          // TODO: Navigate to profile
+                          context.go(
+                            '${RoutePaths.userProfile}/${post.authorId}',
+                          );
                         },
                       ),
                     )
                     .toList(),
               ),
-            ),
           ],
         );
       },
@@ -628,20 +817,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _handleLikePost(String postId) async {
     try {
-      print('🎯 [DEBUG] HomeScreen: Starting toggleLike for post $postId');
       final socialService = SocialService();
       await socialService.toggleLike(postId);
 
-      print('⏳ [DEBUG] HomeScreen: Waiting for DB trigger to complete...');
       // Wait for database trigger to update like_count
       await Future.delayed(const Duration(milliseconds: 400));
 
-      print('🔄 [DEBUG] HomeScreen: Refreshing feed posts provider');
       // Refresh posts to show updated like count
       if (mounted) {
         ref.invalidate(latestFeedPostsProvider);
       }
-      print('✅ [DEBUG] HomeScreen: Feed refresh complete');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -803,13 +988,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final timeToExpiry = expiresAt.difference(now);
 
       if (timeToExpiry.inMinutes < 5) {
-        print('🔄 [DEBUG] HomeScreen: Session expiring soon, refreshing...');
         await _authService.refreshSession();
-        print('✅ [DEBUG] HomeScreen: Session refreshed successfully');
       }
-    } catch (e) {
-      print('⚠️ [DEBUG] HomeScreen: Session refresh failed: $e');
-    }
+    } catch (e) {}
   }
 
   Future<List<Map<String, dynamic>>> _fetchRecentPlayers() async {
@@ -836,7 +1017,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         };
       }).toList();
     } catch (e) {
-      print('Error fetching newly joined users: $e');
       return [];
     }
   }
@@ -861,7 +1041,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final upcomingGames = games.where(_isGameInFuture).take(2).toList();
       return upcomingGames;
     } catch (e) {
-      print('Error fetching recent games: $e');
       return [];
     }
   }
@@ -940,37 +1119,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return gamesAsync.when(
       data: (games) {
         if (games.isEmpty) {
-          // Show action cards when no upcoming games
-          final showCreateGame = _shouldShowCreateGame();
-          final showJoinGame = _shouldShowJoinGame();
-
-          if (!showCreateGame && !showJoinGame) {
-            return const SizedBox.shrink();
-          }
-
-          return Row(
-            children: [
-              if (showCreateGame)
-                Expanded(
-                  child: AppActionCard(
-                    emoji: '➕',
-                    title: 'Create Game',
-                    subtitle: 'Start a new match',
-                    onTap: () => context.go(RoutePaths.createGame),
-                  ),
-                ),
-              if (showCreateGame && showJoinGame) const SizedBox(width: 12),
-              if (showJoinGame)
-                Expanded(
-                  child: AppActionCard(
-                    emoji: '🔍',
-                    title: 'Join Game',
-                    subtitle: 'Find nearby games',
-                    onTap: () => context.go(RoutePaths.sports),
-                  ),
-                ),
-            ],
-          );
+          // Hide section when no upcoming games
+          return const SizedBox.shrink();
         }
 
         // Show collapsible reminder cards (Apple Wallet style)
@@ -989,7 +1139,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         );
       },
       error: (error, stack) {
-        print('Error loading upcoming games: $error');
         return const SizedBox.shrink();
       },
     );

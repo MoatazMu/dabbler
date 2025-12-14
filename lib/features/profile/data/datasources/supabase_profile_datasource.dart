@@ -32,10 +32,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
               includeSports: includeSports,
               profileType: profileType,
             )
-          : await _preferPlayerProfile(
-              userId,
-              includeSports: includeSports,
-            );
+          : await _preferPlayerProfile(userId, includeSports: includeSports);
 
       if (response == null) {
         throw const DataNotFoundException(message: 'Profile not found');
@@ -130,10 +127,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
     String? profileType,
   }) async {
     // Build select query - fetch profile first
-    var query = _client
-        .from(_usersTable)
-        .select('*')
-        .eq('user_id', userId);
+    var query = _client.from(_usersTable).select('*').eq('user_id', userId);
 
     if (profileType != null) {
       query = query.eq('profile_type', profileType);
@@ -189,14 +183,12 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
 
       // Supabase select always returns a List
       profile['sport_profiles'] = sportProfilesResponse as List;
-    } on PostgrestException catch (e) {
+    } on PostgrestException {
       // Log the error for debugging but don't fail the profile fetch
-      print('⚠️ [SupabaseProfileDataSource] Failed to fetch sport_profiles for profile_id=$profileId: ${e.message}');
       profile['sport_profiles'] = [];
     } catch (e) {
       // If we can't get sport profiles, set empty list
       // This is not critical as UserProfile handles empty sport_profiles
-      print('⚠️ [SupabaseProfileDataSource] Unexpected error fetching sport_profiles for profile_id=$profileId: $e');
       profile['sport_profiles'] = [];
     }
   }
@@ -816,9 +808,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
     String sortBy = 'relevance',
   }) async {
     try {
-      dynamic searchQuery = _client
-          .from(_usersTable)
-          .select('*');
+      dynamic searchQuery = _client.from(_usersTable).select('*');
 
       // Apply filters
       if (query != null && query.isNotEmpty) {
@@ -921,10 +911,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
           .map((sp) => sp.sportId)
           .toList();
 
-      dynamic query = _client
-          .from(_usersTable)
-          .select('*')
-          .neq('id', userId);
+      dynamic query = _client.from(_usersTable).select('*').neq('id', userId);
 
       if (userProfile.city != null || userProfile.country != null) {
         if (userProfile.city != null) {
@@ -943,7 +930,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
       query = query.limit(limit * 2); // Get more to filter and rank
 
       final response = await query;
-      
+
       // Enrich each profile with sport_profiles
       final profilesList = <Map<String, dynamic>>[];
       for (final json in response) {
@@ -954,7 +941,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
         );
         profilesList.add(profileJson);
       }
-      
+
       final profiles = profilesList
           .map<UserProfile>((json) => UserProfile.fromJson(json))
           .toList();
@@ -1268,7 +1255,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
       final profiles = <String, UserProfile>{};
       for (final json in response) {
         final profileJson = Map<String, dynamic>.from(json);
-        
+
         // Enrich with sport_profiles if requested
         if (includeSports) {
           await _enrichWithSportProfiles(
@@ -1276,7 +1263,7 @@ class SupabaseProfileDataSource implements ProfileRemoteDataSource {
             profileJson['id'] as String,
           );
         }
-        
+
         final profile = UserProfile.fromJson(profileJson);
         profiles[profile.id] = profile;
       }

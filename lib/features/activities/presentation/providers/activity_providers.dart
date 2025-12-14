@@ -18,14 +18,13 @@ final activityFeedDatasourceProvider = Provider<ActivityFeedDatasource>((ref) {
 /// Provides the ActivityAnalyticsDatasource.
 final activityAnalyticsDatasourceProvider =
     Provider<ActivityAnalyticsDatasource>((ref) {
-  final supabase = ref.watch(supabaseClientProvider);
-  return ActivityAnalyticsDatasource(supabase);
-});
+      final supabase = ref.watch(supabaseClientProvider);
+      return ActivityAnalyticsDatasource(supabase);
+    });
 
 /// Provides the ActivityFeedController.
 final activityFeedControllerProvider =
     StateNotifierProvider<ActivityFeedController, ActivityFeedState>((ref) {
-  final datasource = ref.watch(activityFeedDatasourceProvider);
-  return ActivityFeedController(datasource);
-});
-
+      final datasource = ref.watch(activityFeedDatasourceProvider);
+      return ActivityFeedController(datasource);
+    });

@@ -7,6 +7,7 @@ import '../../../data/repositories/feed_repository.dart';
 import '../../../data/repositories/feed_repository_impl.dart';
 import '../../../features/misc/data/datasources/supabase_remote_data_source.dart';
 import 'package:dabbler/core/fp/result.dart';
+import '../services/social_service.dart';
 
 // =============================================================================
 // REPOSITORY PROVIDERS - Core Data Layer
@@ -217,12 +218,11 @@ final socialFeedProvider = FutureProvider.autoDispose((ref) async {
   );
 });
 
-/// Get posts by specific user (placeholder - returns empty until user-specific feed is implemented)
+/// Get posts by specific user
 final userPostsProvider = FutureProvider.family
     .autoDispose<List<dynamic>, String>((ref, userId) async {
-      // TODO: Implement user-specific posts when available in repository
-      // For now, return empty list
-      return [];
+      final socialService = SocialService();
+      return await socialService.getUserPosts(userId: userId);
     });
 
 // =============================================================================

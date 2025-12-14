@@ -20,12 +20,11 @@ final squadsRepositoryProvider = Provider.autoDispose<SquadsRepository>((ref) {
 });
 
 // My owned squads
-final myOwnedSquadsProvider = FutureProvider.autoDispose<Result<List<Squad>, Failure>>((
-  ref,
-) {
-  final repo = ref.watch(squadsRepositoryProvider);
-  return repo.listMyOwnedSquads();
-});
+final myOwnedSquadsProvider =
+    FutureProvider.autoDispose<Result<List<Squad>, Failure>>((ref) {
+      final repo = ref.watch(squadsRepositoryProvider);
+      return repo.listMyOwnedSquads();
+    });
 
 // Squad by id
 final squadByIdProvider = FutureProvider.autoDispose
@@ -82,7 +81,10 @@ final activeLinkTokensProvider = FutureProvider.autoDispose
 
 // Views (maps)
 final squadCardsProvider = FutureProvider.autoDispose
-    .family<Result<List<Map<String, dynamic>>, Failure>, SquadCardsArgs>((ref, args) {
+    .family<Result<List<Map<String, dynamic>>, Failure>, SquadCardsArgs>((
+      ref,
+      args,
+    ) {
       final repo = ref.watch(squadsRepositoryProvider);
       return repo.squadCards(
         squadId: args.squadId,
@@ -92,7 +94,10 @@ final squadCardsProvider = FutureProvider.autoDispose
     });
 
 final squadDetailViewProvider = FutureProvider.autoDispose
-    .family<Result<List<Map<String, dynamic>>, Failure>, String>((ref, squadId) {
+    .family<Result<List<Map<String, dynamic>>, Failure>, String>((
+      ref,
+      squadId,
+    ) {
       final repo = ref.watch(squadsRepositoryProvider);
       return repo.squadDetail(squadId);
     });

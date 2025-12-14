@@ -11,6 +11,7 @@ class PostModel extends Post {
     required super.authorId,
     required super.authorName,
     required super.authorAvatar,
+    super.authorProfileId,
     required super.content,
     required super.mediaUrls,
     required super.createdAt,
@@ -21,6 +22,8 @@ class PostModel extends Post {
     required super.visibility,
     super.gameId,
     super.cityName,
+    super.venueId,
+    super.locationTagId,
     super.isLiked,
     super.isBookmarked,
     super.authorBio,
@@ -35,8 +38,14 @@ class PostModel extends Post {
     super.activityData,
     super.kind,
     super.primaryVibeId,
+    super.primaryVibe,
     super.vibeEmoji,
     super.vibeLabel,
+    super.postVibes,
+    super.reactions,
+    super.mentions,
+    super.locationTag,
+    super.mediaMetadata,
   });
 
   /// Create PostModel from Supabase JSON response
@@ -143,22 +152,81 @@ class PostModel extends Post {
     // Map primary vibe ID if present.
     final String? primaryVibeId = json['primary_vibe_id']?.toString();
 
-    // Parse vibe data if joined
+    // Parse primary vibe data if joined
+    Map<String, dynamic>? primaryVibe;
     String? vibeEmoji;
     String? vibeLabel;
     if (json['vibe'] != null && json['vibe'] is Map) {
-      final vibeData = json['vibe'] as Map<String, dynamic>;
-      vibeEmoji = vibeData['emoji']?.toString();
+      primaryVibe = json['vibe'] as Map<String, dynamic>;
+      vibeEmoji = primaryVibe['emoji']?.toString();
       vibeLabel =
-          vibeData['label_en']?.toString() ?? vibeData['key']?.toString();
+          primaryVibe['label']?.toString() ??
+          primaryVibe['label_en']?.toString() ??
+          primaryVibe['key']?.toString();
+    } else if (json['vibes'] != null && json['vibes'] is Map) {
+      primaryVibe = json['vibes'] as Map<String, dynamic>;
+      vibeEmoji = primaryVibe['emoji']?.toString();
+      vibeLabel =
+          primaryVibe['label']?.toString() ??
+          primaryVibe['label_en']?.toString() ??
+          primaryVibe['key']?.toString();
     } else if (json['vibe_emoji'] != null) {
       vibeEmoji = json['vibe_emoji']?.toString();
       vibeLabel = json['vibe_label']?.toString();
+      // No full vibe data available, just emoji and label
+    }
+
+    // Parse post_vibes (all assigned vibes)
+    List<Map<String, dynamic>> postVibes = [];
+    if (json['post_vibes'] != null && json['post_vibes'] is List) {
+      postVibes = (json['post_vibes'] as List)
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
+    }
+
+    // Parse post_reactions
+    List<Map<String, dynamic>> reactions = [];
+    if (json['post_reactions'] != null && json['post_reactions'] is List) {
+      reactions = (json['post_reactions'] as List)
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
+    }
+
+    // Parse post_mentions
+    List<Map<String, dynamic>> mentions = [];
+    if (json['post_mentions'] != null && json['post_mentions'] is List) {
+      mentions = (json['post_mentions'] as List)
+          .map((e) => e as Map<String, dynamic>)
+          .toList();
+    }
+
+    // Parse location_tag (joined)
+    Map<String, dynamic>? locationTag;
+    if (json['location_tag'] != null && json['location_tag'] is Map) {
+      locationTag = json['location_tag'] as Map<String, dynamic>;
+    } else if (json['location_tags'] != null && json['location_tags'] is Map) {
+      locationTag = json['location_tags'] as Map<String, dynamic>;
+    }
+
+    // Parse media metadata (from posts.media jsonb array)
+    List<Map<String, dynamic>> mediaMetadata = [];
+    if (json['media'] != null && json['media'] is List) {
+      mediaMetadata = (json['media'] as List)
+          .map(
+            (e) =>
+                e is Map ? Map<String, dynamic>.from(e) : <String, dynamic>{},
+          )
+          .where((e) => e.isNotEmpty)
+          .toList();
+    } else if (json['media'] is Map) {
+      mediaMetadata = [Map<String, dynamic>.from(json['media'])];
     }
 
     return PostModel(
       id: json['id']?.toString() ?? '',
-      authorId: json['author_id'] ?? json['user_id'] ?? '',
+      authorId:
+          json['author_id'] ?? json['user_id'] ?? json['author_user_id'] ?? '',
+      authorProfileId: json['author_profile_id']?.toString(),
       authorName:
           authorData['display_name'] ??
           authorData['username'] ??
@@ -176,8 +244,10 @@ class PostModel extends Post {
       ),
       sharesCount: _parseInt(json['shares_count'] ?? json['share_count'] ?? 0),
       visibility: visibility,
-      gameId: json['game_id'],
-      cityName: json['location_name'],
+      gameId: json['game_id']?.toString(),
+      cityName: json['location_name']?.toString(),
+      venueId: json['venue_id']?.toString(),
+      locationTagId: json['location_tag_id']?.toString(),
       isLiked: json['is_liked'] == true || json['user_has_liked'] == true,
       isBookmarked:
           json['is_bookmarked'] == true || json['user_has_bookmarked'] == true,
@@ -191,16 +261,22 @@ class PostModel extends Post {
       editedAt: json['edited_at'] != null
           ? _parseDateTime(json['edited_at'])
           : null,
-      replyToPostId: json['reply_to_post_id'],
-      shareOriginalId: json['share_original_id'],
-      activityType: json['activity_type'],
+      replyToPostId: json['reply_to_post_id']?.toString(),
+      shareOriginalId: json['share_original_id']?.toString(),
+      activityType: json['activity_type']?.toString(),
       activityData: json['activity_data'] != null
           ? Map<String, dynamic>.from(json['activity_data'])
           : null,
       kind: kind,
       primaryVibeId: primaryVibeId,
+      primaryVibe: primaryVibe,
       vibeEmoji: vibeEmoji,
       vibeLabel: vibeLabel,
+      postVibes: postVibes,
+      reactions: reactions,
+      mentions: mentions,
+      locationTag: locationTag,
+      mediaMetadata: mediaMetadata,
     );
   }
 

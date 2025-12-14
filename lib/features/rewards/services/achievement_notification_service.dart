@@ -171,12 +171,7 @@ class AchievementNotificationService extends ChangeNotifier {
 
       _isInitialized = true;
       notifyListeners();
-
-      debugPrint(
-        'AchievementNotificationService initialized for user: $userId',
-      );
     } catch (e) {
-      debugPrint('Error initializing AchievementNotificationService: $e');
       rethrow;
     }
   }
@@ -584,9 +579,7 @@ class AchievementNotificationService extends ChangeNotifier {
       }
 
       await _audioPlayer.play(AssetSource(soundFile));
-    } catch (e) {
-      debugPrint('Error playing sound effect: $e');
-    }
+    } catch (e) {}
   }
 
   Future<void> _triggerVibration(VibrationPattern pattern) async {
@@ -626,9 +619,7 @@ class AchievementNotificationService extends ChangeNotifier {
           await HapticFeedback.mediumImpact();
           break;
       }
-    } catch (e) {
-      debugPrint('Error triggering vibration: $e');
-    }
+    } catch (e) {}
   }
 
   ConfettiConfig _getConfettiConfigForAchievement(Achievement achievement) {

@@ -71,9 +71,9 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
 
     try {
       final client = Supabase.instance.client;
-      
+
       String? resolvedProfileId = profileId;
-      
+
       // If profileId not provided, resolve the player profile.id for this auth user
       if (resolvedProfileId == null) {
         final profileRow = await client
@@ -99,14 +99,18 @@ class SportsProfileController extends StateNotifier<SportsProfileState> {
       // Select columns that actually exist in the sport_profiles table
       // Note: Database uses matches_played (not games_played), primary_position (not preferred_positions)
       // average_rating can be calculated from rating_total/rating_count if needed
-      final List<dynamic> rows = await client.from('sport_profiles').select(
-        'sport, skill_level, matches_played, primary_position, rating_total, rating_count, profile_id',
-      ).eq('profile_id', resolvedProfileId);
+      final List<dynamic> rows = await client
+          .from('sport_profiles')
+          .select(
+            'sport, skill_level, matches_played, primary_position, rating_total, rating_count, profile_id',
+          )
+          .eq('profile_id', resolvedProfileId);
 
       final profiles = rows
-          .map((row) => SportProfile.fromJson(
-                Map<String, dynamic>.from(row as Map),
-              ))
+          .map(
+            (row) =>
+                SportProfile.fromJson(Map<String, dynamic>.from(row as Map)),
+          )
           .toList();
 
       // Achievements are not modeled in simple schema; keep empty by default

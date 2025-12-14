@@ -35,8 +35,7 @@ class VenueModel extends Venue {
           json['name_en'] as String? ??
           json['name'] as String? ??
           'Unnamed Venue';
-      print('🏟️ [DEBUG] Parsing venue: $name');
-      
+
       // Extract sports from venue_spaces join
       final List<String> sports = [];
       if (json['venue_spaces'] != null) {
@@ -55,7 +54,7 @@ class VenueModel extends Venue {
           }
         }
       }
-      
+
       // Extract rating from venue_rating_aggregate join
       double rating = 0.0;
       int totalRatings = 0;
@@ -79,9 +78,7 @@ class VenueModel extends Venue {
       if (totalRatings == 0 && json['total_ratings'] != null) {
         totalRatings = json['total_ratings'] as int? ?? 0;
       }
-      
-      print('🏟️ [VENUE_MODEL] Rating: $rating, TotalRatings: $totalRatings');
-      
+
       // Extract amenities from venue_amenities join or amenities array
       List<String> amenitiesList = [];
       if (json['venue_amenities'] != null) {
@@ -91,8 +88,9 @@ class VenueModel extends Venue {
               .map((item) {
                 if (item is Map<String, dynamic>) {
                   // Prefer amenity_key, fallback to value
-                  final amenity = item['amenity_key'] as String? ?? 
-                         item['value'] as String?;
+                  final amenity =
+                      item['amenity_key'] as String? ??
+                      item['value'] as String?;
                   if (amenity != null && amenity.isNotEmpty) {
                     return amenity;
                   }
@@ -110,9 +108,7 @@ class VenueModel extends Venue {
           amenitiesList = parsed;
         }
       }
-      
-      print('🏟️ [VENUE_MODEL] Amenities count: ${amenitiesList.length}, Sports count: ${sports.length}');
-      
+
       // Extract opening hours from venue_opening_hours join
       String openingTime = '09:00';
       String closingTime = '18:00';
@@ -122,9 +118,10 @@ class VenueModel extends Venue {
           // Use first day's hours as default, or find today's weekday
           final today = DateTime.now().weekday % 7; // Convert to 0-6 (Sun-Sat)
           final todayHours = hours.firstWhere(
-            (h) => h is Map<String, dynamic> && 
-                   (h['weekday'] as int?) == today &&
-                   (h['is_open'] as bool?) == true,
+            (h) =>
+                h is Map<String, dynamic> &&
+                (h['weekday'] as int?) == today &&
+                (h['is_open'] as bool?) == true,
             orElse: () => hours.first,
           );
           if (todayHours is Map<String, dynamic>) {
@@ -133,7 +130,7 @@ class VenueModel extends Venue {
           }
         }
       }
-      
+
       return VenueModel(
         id: json['id'] as String,
         name: name,
@@ -169,15 +166,14 @@ class VenueModel extends Venue {
         totalRatings: totalRatings,
         pricePerHour: (json['price_per_hour'] as num?)?.toDouble() ?? 0.0,
         currency: json['currency'] as String? ?? 'AED',
-        supportedSports: sports.isNotEmpty ? sports : ['Football', 'Padel'], // Default sports
+        supportedSports: sports.isNotEmpty
+            ? sports
+            : ['Football', 'Padel'], // Default sports
         amenities: amenitiesList,
         createdAt: DateTime.parse(json['created_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
       );
-    } catch (e, stackTrace) {
-      print('❌ [ERROR] Failed to parse venue: $e');
-      print('JSON: $json');
-      print('Stack trace: $stackTrace');
+    } catch (e) {
       rethrow;
     }
   }

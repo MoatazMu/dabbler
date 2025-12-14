@@ -37,9 +37,10 @@ class ActivityFeedDatasource {
       // RPC returns a list of maps
       if (response is List) {
         return response
-            .map((item) => ActivityFeedEvent.fromJson(
-                  item as Map<String, dynamic>,
-                ))
+            .map(
+              (item) =>
+                  ActivityFeedEvent.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
       }
 
@@ -50,4 +51,3 @@ class ActivityFeedDatasource {
     }
   }
 }
-

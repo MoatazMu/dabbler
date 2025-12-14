@@ -1172,9 +1172,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
     ).showSnackBar(const SnackBar(content: Text('Opening directions...')));
   }
 
-  void _viewAllPlayers() {
-    print('Viewing all players');
-  }
+  void _viewAllPlayers() {}
 
   void _viewVenue() {
     Navigator.pushNamed(context, '/venues/detail', arguments: 'venue-id');
@@ -1393,10 +1391,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
   Future<bool> _checkGameTakedown(String gameId) async {
     try {
       final moderationService = ModerationService();
-      return await moderationService.isContentTakedown(
-        ModTarget.game,
-        gameId,
-      );
+      return await moderationService.isContentTakedown(ModTarget.game, gameId);
     } catch (e) {
       // If check fails, assume not takedown to avoid blocking content
       return false;

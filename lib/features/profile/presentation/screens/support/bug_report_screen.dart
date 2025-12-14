@@ -364,7 +364,7 @@ class _BugReportScreenState extends ConsumerState<BugReportScreen>
                     ),
                     const SizedBox(height: 8),
                     Text('• Platform: ${_getPlatformName()}'),
-                    const Text('• App Version: 1.0.0'),
+                    const Text('• App Version: 1.0.5'),
                     const Text('• Flutter Version: 3.x.x'),
                     Text(
                       '• Screen Resolution: ${MediaQuery.of(context).size.width.toInt()}x${MediaQuery.of(context).size.height.toInt()}',

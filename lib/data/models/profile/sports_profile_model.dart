@@ -47,7 +47,7 @@ class SportProfileModel {
     if (json.containsKey('sport_key')) {
       final sportKey = json['sport_key'] as String;
       final skillLevelInt = json['skill_level'] as int? ?? 0;
-      
+
       final sportProfile = SportProfile(
         sportId: sportKey,
         sportName: _getSportNameFromKey(sportKey),
@@ -64,7 +64,9 @@ class SportProfileModel {
 
       return SportProfileModel(
         id: '', // Simple schema doesn't have id
-        userId: json['profile_id'] as String? ?? '', // Use profile_id as userId for compatibility
+        userId:
+            json['profile_id'] as String? ??
+            '', // Use profile_id as userId for compatibility
         sportProfile: sportProfile,
         isPublic: true,
         isActive: true,
@@ -72,11 +74,13 @@ class SportProfileModel {
         updatedAt: DateTime.now(),
       );
     }
-    
+
     // Handle full schema (backward compatibility)
     final sportProfile = SportProfile(
-      sportId: json['sport_id'] as String? ?? json['sport_key'] as String? ?? '',
-      sportName: (json['sport_name'] as String?) ??
+      sportId:
+          json['sport_id'] as String? ?? json['sport_key'] as String? ?? '',
+      sportName:
+          (json['sport_name'] as String?) ??
           (json.containsKey('sport') ? _extractSportName(json) : null) ??
           _getSportNameFromKey(json['sport_key'] as String? ?? ''),
       skillLevel: _parseSkillLevel(json['skill_level']),
@@ -106,7 +110,7 @@ class SportProfileModel {
           : DateTime.now(),
     );
   }
-  
+
   /// Get sport display name from sport_key
   static String _getSportNameFromKey(String sportKey) {
     final key = sportKey.toLowerCase();
@@ -142,7 +146,7 @@ class SportProfileModel {
       case 'padel':
         return 'Padel';
       default:
-        return sportKey.isEmpty 
+        return sportKey.isEmpty
             ? 'Unknown Sport'
             : '${sportKey[0].toUpperCase()}${sportKey.substring(1)}';
     }

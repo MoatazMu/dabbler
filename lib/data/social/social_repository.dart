@@ -238,7 +238,6 @@ class SocialRepository {
         await _client.from('post_vibes').insert(rows);
       } catch (e) {
         // post_vibes table may not exist yet, continue without it
-        print('Warning: Could not insert extra vibes: $e');
       }
     }
 
@@ -251,7 +250,6 @@ class SocialRepository {
         await _client.from('post_mentions').insert(rows);
       } catch (e) {
         // post_mentions table may not exist yet, continue without it
-        print('Warning: Could not insert mentions: $e');
       }
     }
 

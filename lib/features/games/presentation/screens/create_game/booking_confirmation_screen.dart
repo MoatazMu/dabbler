@@ -734,7 +734,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
       // Use viewmodel if provided, otherwise fallback to callback
       if (widget.viewModel != null) {
         final success = await widget.viewModel!.createGame();
-        
+
         if (mounted) {
           if (success) {
             // Call callback if provided

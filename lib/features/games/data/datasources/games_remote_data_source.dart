@@ -190,7 +190,11 @@ abstract class GamesRemoteDataSource {
 
   /// Requests to join a game (for games with "request" join policy)
   /// Returns the join request ID on success
-  Future<String> requestToJoinGame(String gameId, String playerId, {String? message});
+  Future<String> requestToJoinGame(
+    String gameId,
+    String playerId, {
+    String? message,
+  });
 
   /// Checks if a user has a pending join request for a game
   Future<bool> hasPendingJoinRequest(String gameId, String userId);

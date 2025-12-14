@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppConstants {
   // App Info
   static const String appName = 'Dabbler Player';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '1.0.5';
   static const String appBuildNumber = '1';
 
   // API Constants
