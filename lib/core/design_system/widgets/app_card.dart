@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Standard card widget using Material Design 3
+/// Use native Material 3 Card instead
+/// Card.filled() - filled card with surface color
+/// Card.outlined() - outlined card with border
+/// Card.elevated() - card with elevation (deprecated use)
+@Deprecated('Use native Material 3 Card: Card.filled(), Card.outlined()')
 class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsets? padding;
@@ -19,6 +23,7 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Redirect to native Card
     if (backgroundColor != null || elevation != null) {
       return Card(
         color: backgroundColor,
@@ -43,48 +48,8 @@ class AppCard extends StatelessWidget {
   }
 }
 
-/// Button-style card (like category buttons)
-class AppButtonCard extends StatelessWidget {
-  final String emoji;
-  final String label;
-  final VoidCallback onTap;
-
-  const AppButtonCard({
-    super.key,
-    required this.emoji,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
-    return Card.filled(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(emoji, style: const TextStyle(fontSize: 18)),
-              const SizedBox(width: 8),
-              Text(
-                label,
-                style: textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// Action card with title and subtitle
+/// Use native Material 3 Card.filled() with ListTile instead
+@Deprecated('Use Card.filled() with ListTile.leading/title/subtitle')
 class AppActionCard extends StatelessWidget {
   final String emoji;
   final String title;

@@ -1,5 +1,4 @@
 import 'package:fpdart/fpdart.dart';
-
 import 'package:dabbler/core/fp/failure.dart';
 import '../../../../utils/enums/social_enums.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
@@ -8,6 +7,14 @@ import 'package:dabbler/data/models/social/reaction_model.dart';
 
 /// Abstract repository for posts and social feed operations
 abstract class PostsRepository {
+  /// Get posts by a specific profile (authorProfileId)
+  Future<Either<Failure, List<PostModel>>> getUserPostsByProfileId(
+    String profileId, {
+    int page = 1,
+    int limit = 20,
+    PostVisibility? visibility,
+  });
+
   /// Get social feed with pagination and filtering
   Future<Either<Failure, SocialFeedModel>> getSocialFeed({
     FeedType feedType = FeedType.home,

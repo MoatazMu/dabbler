@@ -95,7 +95,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       ),
                     ),
 
-                    SizedBox(height: AppSpacing.lg),
+                    SizedBox(height: 16.0),
 
                     // Dabbler text logo
                     Center(
@@ -110,7 +110,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       ),
                     ),
 
-                    SizedBox(height: AppSpacing.xl),
+                    SizedBox(height: 24.0),
 
                     // Success Icon with pulse animation
                     AnimatedBuilder(
@@ -139,37 +139,39 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       },
                     ),
 
-                    SizedBox(height: AppSpacing.xl),
+                    SizedBox(height: 24.0),
 
                     // Welcome Message
                     Text(
                       'Welcome to Dabbler!',
-                      style: AppTypography.headlineLarge.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: Theme.of(context).textTheme.headlineLarge
+                          ?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                          ),
                       textAlign: TextAlign.center,
                     ),
 
-                    SizedBox(height: AppSpacing.md),
+                    SizedBox(height: 12.0),
 
                     // Personalized greeting
                     Text(
                       'Hi ${widget.displayName}! 👋',
-                      style: AppTypography.headlineSmall.copyWith(
-                        color: const Color(0xFFC18FFF),
-                        fontWeight: FontWeight.w500,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: const Color(0xFFC18FFF),
+                            fontWeight: FontWeight.w500,
+                          ),
                       textAlign: TextAlign.center,
                     ),
 
-                    SizedBox(height: AppSpacing.md),
+                    SizedBox(height: 12.0),
 
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
                       child: Text(
                         'Your account has been created successfully.\nGet ready to discover amazing sports experiences!',
-                        style: AppTypography.bodyLarge.copyWith(
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Colors.white.withOpacity(0.9),
                         ),
                         textAlign: TextAlign.center,
@@ -190,27 +192,28 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                       ),
                     ),
 
-                    SizedBox(height: AppSpacing.md),
+                    SizedBox(height: 12.0),
 
                     Text(
                       'Taking you to your home screen...',
-                      style: AppTypography.bodyMedium.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withOpacity(0.7),
                       ),
                       textAlign: TextAlign.center,
                     ),
 
-                    SizedBox(height: AppSpacing.md),
+                    SizedBox(height: 12.0),
 
                     // Skip button
-                    AppButton(
+                    TextButton(
                       onPressed: () => context.go('/home'),
-                      label: 'Continue to Home',
-                      type: AppButtonType.ghost,
-                      size: AppButtonSize.lg,
+                      style: TextButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 56),
+                      ),
+                      child: const Text('Continue to Home'),
                     ),
 
-                    SizedBox(height: AppSpacing.xl),
+                    SizedBox(height: 24.0),
                   ],
                 ),
               ),

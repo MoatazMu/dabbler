@@ -198,7 +198,7 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
             // Header Container
             Column(
               children: [
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
                 // Dabbler logo
                 Center(
                   child: SvgPicture.asset(
@@ -211,7 +211,7 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: AppSpacing.md),
+                SizedBox(height: 12.0),
                 // Dabbler text logo
                 Center(
                   child: SvgPicture.asset(
@@ -224,24 +224,24 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: AppSpacing.lg),
+                SizedBox(height: 16.0),
                 // Onboarding Progress
                 const OnboardingProgress(currentStep: 4),
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
                 // Title
                 Text(
                   'Choose Your Username',
-                  style: AppTypography.headlineMedium.copyWith(
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: AppSpacing.sm),
+                SizedBox(height: 8.0),
                 // Subtitle
                 if (identifier.isNotEmpty)
                   Text(
                     identifier,
-                    style: AppTypography.bodyLarge.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurface.withOpacity(0.9),
@@ -262,33 +262,37 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
                   // Username Field
                   // Text(
                   //   'Username',
-                  //   style: AppTypography.titleMedium.copyWith(
+                  //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   //     fontWeight: FontWeight.w600,
                   //     color: Colors.white,
                   //   ),
                   // ),
-                  SizedBox(height: AppSpacing.sm),
-                  AppInputField(
+                  SizedBox(height: 8.0),
+                  TextFormField(
                     controller: _usernameController,
-                    label: 'Username',
-                    hintText: 'Choose a unique username',
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      hintText: 'Choose a unique username',
+                      suffixIcon: _isCheckingUsername
+                          ? const Padding(
+                              padding: EdgeInsets.all(12.0),
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : _usernameError == null &&
+                                _usernameController.text.isNotEmpty
+                          ? const Icon(
+                              Iconsax.tick_circle_copy,
+                              color: Colors.green,
+                            )
+                          : null,
+                    ),
                     onChanged: _checkUsernameAvailability,
-                    suffixIcon: _isCheckingUsername
-                        ? const Padding(
-                            padding: EdgeInsets.all(12.0),
-                            child: SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          )
-                        : _usernameError == null &&
-                              _usernameController.text.isNotEmpty
-                        ? const Icon(
-                            Iconsax.tick_circle_copy,
-                            color: Colors.green,
-                          )
-                        : null,
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
                         return 'Username is required';
@@ -307,22 +311,23 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
                       padding: const EdgeInsets.only(top: 8.0),
                       child: Text(
                         _usernameError!,
-                        style: AppTypography.bodySmall.copyWith(
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: const Color(0xFFD32F2F),
                         ),
                       ),
                     ),
 
-                  SizedBox(height: AppSpacing.xl),
+                  SizedBox(height: 24.0),
 
                   // Submit Button
-                  AppButton(
+                  FilledButton(
                     onPressed: _isLoading ? null : _handleSubmit,
-                    label: _isLoading ? 'Completing...' : 'Complete',
-                    type: AppButtonType.filled,
-                    size: AppButtonSize.lg,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 56),
+                    ),
+                    child: Text(_isLoading ? 'Completing...' : 'Complete'),
                   ),
-                  SizedBox(height: AppSpacing.xl),
+                  SizedBox(height: 24.0),
                 ],
               ),
             ),

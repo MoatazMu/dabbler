@@ -211,39 +211,39 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
       children: [
         // Email input field
         _buildEmailInput(),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: 16.0),
 
         // Continue with Email button
         _buildContinueButton(),
 
-        SizedBox(height: AppSpacing.xl),
+        SizedBox(height: 24.0),
 
         // Divider with "or"
         _buildDivider(),
 
-        SizedBox(height: AppSpacing.xl),
+        SizedBox(height: 24.0),
 
         // Continue with Google button
         _buildGoogleButton(),
 
-        SizedBox(height: AppSpacing.md),
+        SizedBox(height: 12.0),
 
         // Continue with Phone button
         _buildPhoneButton(),
 
-        SizedBox(height: AppSpacing.xxl),
+        SizedBox(height: 32.0),
 
         // Terms and privacy
         _buildTermsText(),
 
         // Error/Success messages
         if (_errorMessage != null) ...[
-          SizedBox(height: AppSpacing.lg),
+          SizedBox(height: 16.0),
           Container(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: EdgeInsets.all(12.0),
             decoration: BoxDecoration(
               color: AppColors.error.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.sm),
+              borderRadius: BorderRadius.circular(8.0),
               border: Border.all(color: AppColors.error.withOpacity(0.3)),
             ),
             child: Text(
@@ -254,12 +254,12 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
         ],
 
         if (_successMessage != null) ...[
-          SizedBox(height: AppSpacing.lg),
+          SizedBox(height: 16.0),
           Container(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: EdgeInsets.all(12.0),
             decoration: BoxDecoration(
               color: AppColors.success.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(AppSpacing.sm),
+              borderRadius: BorderRadius.circular(8.0),
               border: Border.all(color: AppColors.success.withOpacity(0.3)),
             ),
             child: Text(
@@ -274,10 +274,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
 
   Widget _buildEmailInput() {
     return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.lg,
-        vertical: AppSpacing.xs,
-      ),
+      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       decoration: BoxDecoration(
         color: AppColors.cardColor(context),
         borderRadius: BorderRadius.circular(AppSpacing.cardBorderRadius),
@@ -321,7 +318,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
           foregroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+            borderRadius: BorderRadius.circular(12.0),
           ),
         ),
         child: _isLoading
@@ -337,7 +334,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('📧', style: TextStyle(fontSize: 18)),
-                  SizedBox(width: AppSpacing.sm),
+                  SizedBox(width: 8.0),
                   Text(
                     'Continue with Email',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
@@ -353,7 +350,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
       children: [
         Expanded(child: Container(height: 1, color: AppColors.borderDark)),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          padding: EdgeInsets.symmetric(horizontal: 16.0),
           child: Text(
             'or',
             style: TextStyle(
@@ -379,7 +376,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
           backgroundColor: AppColors.categoryBgMain(context),
           foregroundColor: Theme.of(context).colorScheme.onSurface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+            borderRadius: BorderRadius.circular(12.0),
           ),
         ),
         child: _isLoading
@@ -400,7 +397,7 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
                     'G',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
-                  SizedBox(width: AppSpacing.sm),
+                  SizedBox(width: 8.0),
                   Text(
                     'Continue with Google',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
@@ -517,14 +514,14 @@ class _EmailInputScreenState extends ConsumerState<EmailInputScreen> {
           backgroundColor: AppColors.categoryBgMain(context),
           foregroundColor: Theme.of(context).colorScheme.onSurface,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSpacing.buttonBorderRadius),
+            borderRadius: BorderRadius.circular(12.0),
           ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.phone, size: 18),
-            SizedBox(width: AppSpacing.sm),
+            SizedBox(width: 8.0),
             Text(
               'Continue with Phone',
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),

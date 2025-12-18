@@ -58,22 +58,58 @@ class ExampleScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: AppButtonCard(
-                  emoji: '📚',
-                  label: 'Option 1',
-                  onTap: () {
-                    // Handle tap
-                  },
+                child: Card.filled(
+                  child: InkWell(
+                    onTap: () {
+                      // Handle tap
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('📚', style: const TextStyle(fontSize: 18)),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Option 1',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: AppButtonCard(
-                  emoji: '🏆',
-                  label: 'Option 2',
-                  onTap: () {
-                    // Handle tap
-                  },
+                child: Card.filled(
+                  child: InkWell(
+                    onTap: () {
+                      // Handle tap
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 14,
+                        horizontal: 16,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('🏆', style: const TextStyle(fontSize: 18)),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Option 2',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],

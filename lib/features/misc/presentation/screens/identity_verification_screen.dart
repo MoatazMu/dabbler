@@ -257,7 +257,7 @@ class _IdentityVerificationScreenState
             // Header Container: Logo, Title
             Column(
               children: [
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
                 // Dabbler logo
                 Center(
                   child: SvgPicture.asset(
@@ -270,7 +270,7 @@ class _IdentityVerificationScreenState
                     ),
                   ),
                 ),
-                SizedBox(height: AppSpacing.md),
+                SizedBox(height: 12.0),
                 // Dabbler text logo
                 Center(
                   child: SvgPicture.asset(
@@ -283,21 +283,21 @@ class _IdentityVerificationScreenState
                     ),
                   ),
                 ),
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
                 // Title
                 Text(
                   'Identity verification',
-                  style: AppTypography.headlineMedium.copyWith(
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w700,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: AppSpacing.sm),
+                SizedBox(height: 8.0),
                 // Subtitle
                 // Text(
                 //   'Enter your email address to get started',
-                //   style: AppTypography.bodyLarge.copyWith(
+                //   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 //     color: Theme.of(context).colorScheme.onSurfaceVariant,
                 //   ),
                 //   textAlign: TextAlign.center,
@@ -313,49 +313,51 @@ class _IdentityVerificationScreenState
               children: [
                 // Phone input field
                 _buildPhoneInput(),
-                SizedBox(height: AppSpacing.md),
+                SizedBox(height: 12.0),
 
                 // Continue button
-                AppButton(
+                FilledButton(
                   onPressed: _isLoading || !_isValidEmail()
                       ? null
                       : _handleSubmit,
-                  label: _isLoading ? 'Sending...' : 'Continue',
-                  type: AppButtonType.filled,
-                  size: AppButtonSize.lg,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 56),
+                  ),
+                  child: Text(_isLoading ? 'Sending...' : 'Continue'),
                 ),
 
-                SizedBox(height: AppSpacing.lg),
+                SizedBox(height: 16.0),
 
                 // Divider with "or"
                 _buildDivider(),
 
-                SizedBox(height: AppSpacing.lg),
+                SizedBox(height: 16.0),
 
                 // Continue with Google button
-                AppButton(
+                OutlinedButton.icon(
                   onPressed: _isLoading ? null : _handleGoogleSignIn,
-                  label: 'Continue with Google',
-                  type: AppButtonType.outline,
-                  size: AppButtonSize.lg,
-                  leftIcon: const Text(
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 56),
+                  ),
+                  icon: const Text(
                     'G',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
                   ),
+                  label: const Text('Continue with Google'),
                 ),
 
                 // Error/Success messages
                 if (_errorMessage != null) ...[
-                  SizedBox(height: AppSpacing.md),
+                  SizedBox(height: 12.0),
                   _buildErrorMessage(),
                 ],
 
                 if (_successMessage != null) ...[
-                  SizedBox(height: AppSpacing.md),
+                  SizedBox(height: 12.0),
                   _buildSuccessMessage(),
                 ],
 
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
 
                 // Terms text at bottom
                 _buildTermsText(),
@@ -371,7 +373,7 @@ class _IdentityVerificationScreenState
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: isDark
             ? colorScheme.error.withValues(alpha: 0.15)
@@ -386,11 +388,11 @@ class _IdentityVerificationScreenState
             color: isDark ? colorScheme.error : colorScheme.onErrorContainer,
             size: 20,
           ),
-          SizedBox(width: AppSpacing.sm),
+          SizedBox(width: 8.0),
           Expanded(
             child: Text(
               _errorMessage!,
-              style: AppTypography.bodyMedium.copyWith(
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: isDark
                     ? colorScheme.error
                     : colorScheme.onErrorContainer,
@@ -409,7 +411,7 @@ class _IdentityVerificationScreenState
         ? const Color(0xFF4CAF50)
         : const Color(0xFF2E7D32);
     return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
+      padding: EdgeInsets.all(12.0),
       decoration: BoxDecoration(
         color: isDark
             ? successColor.withValues(alpha: 0.15)
@@ -420,11 +422,13 @@ class _IdentityVerificationScreenState
       child: Row(
         children: [
           Icon(Iconsax.tick_circle_copy, color: successColor, size: 20),
-          SizedBox(width: AppSpacing.sm),
+          SizedBox(width: 8.0),
           Expanded(
             child: Text(
               _successMessage!,
-              style: AppTypography.bodyMedium.copyWith(color: successColor),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: successColor),
             ),
           ),
         ],
@@ -452,10 +456,10 @@ class _IdentityVerificationScreenState
           ),
           if (_formKey.currentState?.validate() == false &&
               _phoneController.text.isNotEmpty) ...[
-            SizedBox(height: AppSpacing.xs),
+            SizedBox(height: 4.0),
             Text(
               _getValidationError(_phoneController.text),
-              style: AppTypography.bodySmall.copyWith(
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.error,
               ),
             ),
@@ -539,10 +543,10 @@ class _IdentityVerificationScreenState
           child: Divider(color: colorScheme.outlineVariant, thickness: 1),
         ),
         Padding(
-          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          padding: EdgeInsets.symmetric(horizontal: 12.0),
           child: Text(
             'or',
-            style: AppTypography.bodyMedium.copyWith(
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
           ),
@@ -652,13 +656,13 @@ class _IdentityVerificationScreenState
     return Text.rich(
       TextSpan(
         text: 'By continuing, you agree to our ',
-        style: AppTypography.bodySmall.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
+        style: Theme.of(
+          context,
+        ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
         children: [
           TextSpan(
             text: 'Terms of Service',
-            style: AppTypography.bodySmall.copyWith(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: colorScheme.primary,
               decoration: TextDecoration.underline,
             ),
@@ -666,7 +670,7 @@ class _IdentityVerificationScreenState
           const TextSpan(text: ' and '),
           TextSpan(
             text: 'Privacy Policy',
-            style: AppTypography.bodySmall.copyWith(
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: colorScheme.primary,
               decoration: TextDecoration.underline,
             ),

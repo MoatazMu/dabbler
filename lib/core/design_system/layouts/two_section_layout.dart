@@ -69,9 +69,7 @@ class TwoSectionLayout extends StatelessWidget {
             ? colorScheme.categorySports.withValues(alpha: 0.32)
             : colorScheme.categorySports.withValues(alpha: 0.18);
       case 'social':
-        return isDark
-            ? colorScheme.categorySocial.withValues(alpha: 0.32)
-            : colorScheme.categorySocial.withValues(alpha: 0.18);
+        return colorScheme.surface;
       case 'activities':
         return isDark
             ? colorScheme.categoryActivities.withValues(alpha: 0.32)

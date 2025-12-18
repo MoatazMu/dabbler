@@ -2,11 +2,11 @@
   "sportsLight": {
     "primary": "#348638",
     "onPrimary": "#FFFFFF",
-    "primaryContainer": "#B6F2B5",
+    "primaryContainer": "#79FFC3",
     "onPrimaryContainer": "#002108",
     "secondary": "#6CBD6A",
     "onSecondary": "#003911",
-    "secondaryContainer": "#B7F2AF",
+    "secondaryContainer": "#E5FFF4",
     "onSecondaryContainer": "#002204",
     "tertiary": "#0050B6",
     "onTertiary": "#FFFFFF",

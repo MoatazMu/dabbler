@@ -206,27 +206,30 @@ class CompactCheckInProgressIndicator extends StatelessWidget {
     final effectiveIncompleteColor =
         incompleteColor ?? theme.colorScheme.surfaceContainerHighest;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: List.generate(totalDays, (index) {
-        final isCompleted = index < completedDays;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(totalDays, (index) {
+          final isCompleted = index < completedDays;
 
-        return Padding(
-          padding: EdgeInsets.only(right: index < totalDays - 1 ? 4 : 0),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-            width: 16,
-            height: 16,
-            decoration: BoxDecoration(
-              color: isCompleted
-                  ? effectiveSegmentColor
-                  : effectiveIncompleteColor,
-              shape: BoxShape.circle,
+          return Padding(
+            padding: EdgeInsets.only(right: index < totalDays - 1 ? 4 : 0),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                color: isCompleted
+                    ? effectiveSegmentColor
+                    : effectiveIncompleteColor,
+                shape: BoxShape.circle,
+              ),
             ),
-          ),
-        );
-      }),
+          );
+        }),
+      ),
     );
   }
 }

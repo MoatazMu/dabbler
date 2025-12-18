@@ -6,7 +6,6 @@ import 'package:dabbler/data/social/social_repository.dart';
 import 'package:dabbler/features/home/presentation/providers/home_providers.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
-import 'package:dabbler/themes/material3_extensions.dart';
 import 'package:go_router/go_router.dart';
 
 final socialRepositoryProvider = Provider<SocialRepository>(

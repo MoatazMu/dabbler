@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:dabbler/core/design_system/widgets/app_search_input.dart';
 import 'package:dabbler/core/services/location_service.dart';
 import 'package:dabbler/core/constants/uae_locations.dart';
 import 'package:dabbler/themes/material3_extensions.dart';
@@ -109,6 +108,7 @@ class _ManualLocationDrawerState extends State<ManualLocationDrawer> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.8,
@@ -206,10 +206,52 @@ class _ManualLocationDrawerState extends State<ManualLocationDrawer> {
                     const SizedBox(height: 16),
 
                     // Search input
-                    AppSearchInput(
-                      controller: _searchController,
-                      hintText: 'Search locations...',
-                      lightStyle: false,
+                    SizedBox(
+                      height: 56,
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: isDark
+                              ? colorScheme.surfaceContainerHighest
+                              : colorScheme.surfaceContainerHigh,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.outlineVariant,
+                              width: 1.5,
+                            ),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.outlineVariant,
+                              width: 1.5,
+                            ),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide(
+                              color: colorScheme.primary,
+                              width: 2,
+                            ),
+                          ),
+                          hintText: 'Search locations...',
+                          hintStyle: TextStyle(
+                            fontSize: 15,
+                            color: colorScheme.onSurfaceVariant,
+                          ),
+                          suffixIcon: Icon(
+                            Icons.search,
+                            color: colorScheme.onSurfaceVariant,
+                            size: 24,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                 ),

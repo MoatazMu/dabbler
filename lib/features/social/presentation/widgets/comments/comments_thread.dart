@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:dabbler/core/widgets/custom_avatar.dart';
 import '../../providers/social_providers.dart';
 
 class CommentsThread extends ConsumerWidget {
@@ -44,10 +43,14 @@ class CommentsThread extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Comment author avatar
-              AppAvatar(
-                imageUrl: comment.author.avatar,
-                fallbackText: comment.author.name,
-                size: nestingLevel > 0 ? 28 : 32,
+              CircleAvatar(
+                radius: nestingLevel > 0 ? 14 : 16,
+                backgroundImage: comment.author.avatar.isNotEmpty
+                    ? NetworkImage(comment.author.avatar)
+                    : null,
+                child: comment.author.avatar.isEmpty
+                    ? Text(comment.author.name.substring(0, 1).toUpperCase())
+                    : null,
               ),
 
               const SizedBox(width: 12),

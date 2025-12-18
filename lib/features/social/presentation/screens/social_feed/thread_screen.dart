@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/core/widgets/loading_widget.dart';
-import 'package:dabbler/core/widgets/custom_avatar.dart';
 import 'package:dabbler/features/social/providers/social_providers.dart';
 import 'package:dabbler/features/social/presentation/widgets/comments/comments_thread.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
@@ -174,10 +173,14 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                 // Avatar
                 GestureDetector(
                   onTap: () => _navigateToProfile(post.authorId),
-                  child: AppAvatar(
-                    imageUrl: post.authorAvatar,
-                    fallbackText: post.authorName,
-                    size: 48,
+                  child: CircleAvatar(
+                    radius: 24,
+                    backgroundImage: post.authorAvatar.isNotEmpty
+                        ? NetworkImage(post.authorAvatar)
+                        : null,
+                    child: post.authorAvatar.isEmpty
+                        ? Text(post.authorName.substring(0, 1).toUpperCase())
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -1259,10 +1262,14 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                     final userAvatar = user?['avatar_url'];
 
                     return ListTile(
-                      leading: AppAvatar(
-                        imageUrl: userAvatar,
-                        fallbackText: userName,
-                        size: 40,
+                      leading: CircleAvatar(
+                        radius: 20,
+                        backgroundImage: userAvatar != null
+                            ? NetworkImage(userAvatar)
+                            : null,
+                        child: userAvatar == null
+                            ? Text(userName.substring(0, 1).toUpperCase())
+                            : null,
                       ),
                       title: Text(
                         userName,

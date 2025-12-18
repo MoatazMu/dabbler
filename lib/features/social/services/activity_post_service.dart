@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import '../../../utils/enums/social_enums.dart';
 import '../domain/repositories/posts_repository.dart';
+import 'package:dabbler/data/repositories/posts_repository_impl.dart';
+import 'package:dabbler/features/misc/data/datasources/supabase_remote_data_source.dart';
 
 /// Service for creating and managing unified activity posts
 /// All user actions (comments, ratings, game creation, etc.) become activity posts
@@ -212,7 +214,7 @@ final activityPostServiceProvider = Provider<ActivityPostService>((ref) {
   return ActivityPostService(postRepository);
 });
 
-/// Placeholder for posts repository provider - should be defined in the repository layer
 final postsRepositoryProvider = Provider<PostsRepository>((ref) {
-  throw UnimplementedError('PostsRepository provider not implemented');
+  final supabaseService = ref.watch(supabaseServiceProvider);
+  return PostsRepositoryImpl(supabaseService) as PostsRepository;
 });

@@ -441,7 +441,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       children: [
         Text(
           'Birth Date',
-          style: AppTypography.bodyMedium.copyWith(
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w500,
             color: Theme.of(context).colorScheme.onSurface,
             fontSize: 15,
@@ -478,7 +478,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                 Expanded(
                   child: Text(
                     ageText,
-                    style: AppTypography.bodyLarge.copyWith(
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: _selectedBirthDate != null
                           ? Theme.of(context).colorScheme.onSurface
                           : Theme.of(
@@ -551,7 +551,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
       children: [
         Text(
           'Gender',
-          style: AppTypography.bodyMedium.copyWith(
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
             fontWeight: FontWeight.w500,
             color: Theme.of(context).colorScheme.onSurface,
             fontSize: 15,
@@ -605,7 +605,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
             Expanded(
               child: Text(
                 AppHelpers.capitalize(gender),
-                style: AppTypography.bodyLarge.copyWith(
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: isSelected
                       ? Theme.of(context).colorScheme.primary
                       : Theme.of(context).colorScheme.onSurface,
@@ -651,7 +651,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
             // Header Container: Logo, Title, and Stepper
             Column(
               children: [
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
                 // Logo
                 Center(
                   child: SvgPicture.asset(
@@ -664,7 +664,7 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                     ),
                   ),
                 ),
-                SizedBox(height: AppSpacing.md),
+                SizedBox(height: 12.0),
                 Center(
                   child: SvgPicture.asset(
                     'assets/images/dabbler_text_logo.svg',
@@ -676,22 +676,22 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                     ),
                   ),
                 ),
-                SizedBox(height: AppSpacing.lg),
+                SizedBox(height: 16.0),
                 // Onboarding Progress
                 const OnboardingProgress(currentStep: 1),
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
                 // Header
                 Text(
                   'We would like to know you',
-                  style: AppTypography.headlineMedium.copyWith(
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: AppSpacing.sm),
+                SizedBox(height: 8.0),
                 Text(
                   'Tell us a bit about yourself',
-                  style: AppTypography.bodyLarge.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(
                       context,
                     ).colorScheme.onSurface.withOpacity(0.8),
@@ -710,34 +710,39 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Name Input
-                  AppInputField(
+                  TextFormField(
                     controller: _nameController,
-                    label: 'Display Name',
-                    hintText: 'Choose a name',
+                    decoration: const InputDecoration(
+                      labelText: 'Display Name',
+                      hintText: 'Choose a name',
+                    ),
                     validator: AppValidators.validateName,
                   ),
-                  SizedBox(height: AppSpacing.md),
+                  SizedBox(height: 12.0),
 
                   // Birth Date Picker
                   _buildBirthDatePicker(context),
-                  SizedBox(height: AppSpacing.md),
+                  SizedBox(height: 12.0),
 
                   // Gender Selection
                   _buildGenderSelect(context),
-                  SizedBox(height: AppSpacing.xl),
+                  SizedBox(height: 24.0),
 
                   // Continue Button
-                  AppButton(
+                  FilledButton(
                     onPressed: (_isLoading || !_areAllFieldsValid())
                         ? null
                         : _handleSubmit,
-                    label: _isLoading
-                        ? 'Continuing...'
-                        : _areAllFieldsValid()
-                        ? 'Continue'
-                        : 'Fill all fields to continue',
-                    type: AppButtonType.filled,
-                    size: AppButtonSize.lg,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 56),
+                    ),
+                    child: Text(
+                      _isLoading
+                          ? 'Continuing...'
+                          : _areAllFieldsValid()
+                          ? 'Continue'
+                          : 'Fill all fields to continue',
+                    ),
                   ),
                 ],
               ),

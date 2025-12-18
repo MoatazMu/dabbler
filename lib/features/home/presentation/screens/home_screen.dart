@@ -20,8 +20,6 @@ import 'package:dabbler/widgets/thoughts_input.dart';
 import 'package:dabbler/data/models/games/game.dart';
 import 'package:dabbler/features/social/presentation/widgets/feed/post_card.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
-import 'package:dabbler/core/widgets/custom_avatar.dart';
-import 'package:dabbler/themes/material3_extensions.dart';
 import 'package:dabbler/services/notifications/push_notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:dabbler/features/home/presentation/widgets/notification_permission_drawer.dart';
@@ -238,21 +236,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildGreetingSection(String? displayName) {
-    final tokens = context.colorTokens;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           '${_getGreeting()},',
-          style: AppTypography.titleMedium.copyWith(color: tokens.titleOnHead),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
         ),
         if (displayName != null)
           Text(
             '$displayName!',
-            style: AppTypography.displaySmall.copyWith(
-              color: tokens.titleOnHead,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.displaySmall?.copyWith(color: colorScheme.onSurface),
           ),
         // else
         //   Column(
@@ -260,8 +260,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         //     children: [
         //       Text(
         //         'Complete your profile',
-        //         style: AppTypography.titleMedium.copyWith(
-        //           color: tokens.titleOnHead,
+        //         style: Theme.of(context).textTheme.titleMedium?.copyWith(
+        //           color: colorScheme.onSurface,
         //           fontStyle: FontStyle.italic,
         //         ),
         //       ),
@@ -315,19 +315,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildQuickAccessSection(),
-          Padding(
-            padding: const EdgeInsets.only(top: 0),
-            child: _buildNewlyJoinedSection(),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: 0),
-            child: _buildActivitiesButton(),
-          ),
+          _buildNewlyJoinedSection(),
           // Main Social Feed - Primary feature
-          Padding(
-            padding: const EdgeInsets.only(top: 0),
-            child: _buildSocialFeedSection(),
-          ),
+          _buildSocialFeedSection(),
           // Padding(
           //   padding: const EdgeInsets.only(top: 36),
           //   child: _buildRecentGamesSection(),
@@ -339,7 +329,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildHeroSection(String? displayName) {
-    final tokens = context.colorTokens;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Column(
       children: [
@@ -352,15 +342,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 children: [
                   Text(
                     '${_getGreeting()},',
-                    style: AppTypography.titleMedium.copyWith(
-                      color: tokens.titleOnHead,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface,
                     ),
                   ),
                   if (displayName != null)
                     Text(
                       '$displayName!',
-                      style: AppTypography.displaySmall.copyWith(
-                        color: tokens.titleOnHead,
+                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                        color: colorScheme.onSurface,
                       ),
                     )
                   else
@@ -369,16 +359,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       children: [
                         Text(
                           'Complete your profile',
-                          style: AppTypography.titleMedium.copyWith(
-                            color: tokens.titleOnHead,
-                            fontStyle: FontStyle.italic,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
+                                color: colorScheme.onSurface,
+                                fontStyle: FontStyle.italic,
+                              ),
                         ),
                         const SizedBox(height: 8),
-                        AppButton.primary(
-                          label: 'Update now',
+                        FilledButton(
                           onPressed: () => context.go(RoutePaths.profile),
-                          size: AppButtonSize.sm,
+                          child: const Text('Update now'),
                         ),
                       ],
                     ),
@@ -400,7 +390,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         width: 24,
                         height: 24,
                         colorFilter: ColorFilter.mode(
-                          tokens.titleOnHead,
+                          colorScheme.onSurface,
                           BlendMode.srcIn,
                         ),
                       ),
@@ -434,28 +424,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildQuickAccessSection() {
-    return Column(
-      children: [
-        // Only show Create Game button for organisers with permission
-        if (_shouldShowCreateGame())
-          SizedBox(
-            width: double.infinity,
-            child: AppButtonCard(
-              emoji: '⚽',
-              label: 'Create Game',
-              onTap: () => context.push(RoutePaths.createGame),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildActivitiesButton() {
     return const SizedBox.shrink();
   }
 
   Widget _buildNewlyJoinedSection() {
-    final tokens = context.colorTokens;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _fetchRecentPlayers(),
@@ -480,53 +453,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               'Newly joined',
-              style: AppTypography.titleMedium.copyWith(
-                color: tokens.titleOnSec,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 75),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: displayPlayers.length > 6
-                      ? 6
-                      : displayPlayers.length,
-                  itemBuilder: (context, index) {
-                    final player = displayPlayers[index];
-                    return GestureDetector(
-                      onTap: () {
-                        if (player['user_id'] != null) {
-                          context.go(
-                            '${RoutePaths.userProfile}/${player['user_id']}',
-                          );
-                        }
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: Column(
-                          children: [
-                            player['sport_key'] != null
-                                ? AppAvatar.withSportBadge(
-                                    imageUrl: player['avatar_url'],
-                                    fallbackText: player['display_name'],
-                                    size: 52,
-                                    sportEmoji: _getSportEmoji(
-                                      player['sport_key'],
-                                    ),
-                                  )
-                                : AppAvatar(
-                                    imageUrl: player['avatar_url'],
-                                    fallbackText: player['display_name'],
-                                    size: 52,
-                                  ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+
+            const SizedBox(height: 6),
+
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 44),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: displayPlayers.length > 6
+                    ? 6
+                    : displayPlayers.length,
+                itemBuilder: (context, index) {
+                  final player = displayPlayers[index];
+                  return GestureDetector(
+                    onTap: () {
+                      if (player['user_id'] != null) {
+                        context.go(
+                          '${RoutePaths.userProfile}/${player['user_id']}',
+                        );
+                      }
+                    },
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundImage:
+                          player['avatar_url'] != null &&
+                              (player['avatar_url'] as String).isNotEmpty
+                          ? NetworkImage(player['avatar_url'])
+                          : null,
+                      child:
+                          player['avatar_url'] == null ||
+                              (player['avatar_url'] as String).isEmpty
+                          ? Text(
+                              (player['display_name'] ?? 'U')
+                                  .substring(0, 1)
+                                  .toUpperCase(),
+                            )
+                          : null,
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -590,7 +559,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required int count,
   }) {
     final textTheme = Theme.of(context).textTheme;
-    final tokens = context.colorTokens;
+    final colorScheme = Theme.of(context).colorScheme;
     final isSelected = _selectedPostFilter == value;
 
     return GestureDetector(
@@ -603,13 +572,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         margin: const EdgeInsets.only(right: 8),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? tokens.button : tokens.btnBase,
+          color: isSelected
+              ? colorScheme.primary
+              : colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: textTheme.labelMedium?.copyWith(
-            color: isSelected ? tokens.onBtn : tokens.neutralOpacity,
+            color: isSelected ? colorScheme.onPrimary : colorScheme.outline,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -631,7 +602,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildSocialFeedSection() {
-    final tokens = context.colorTokens;
+    final colorScheme = Theme.of(context).colorScheme;
     final postsAsync = ref.watch(latestFeedPostsProvider);
 
     return postsAsync.when(
@@ -651,8 +622,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Text(
                 'Feed',
-                style: AppTypography.titleLarge.copyWith(
-                  color: tokens.titleOnSec,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               Padding(
@@ -669,24 +640,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           width: 48,
                           height: 48,
                           colorFilter: ColorFilter.mode(
-                            tokens.neutralOpacity,
+                            colorScheme.outline,
                             BlendMode.srcIn,
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'No posts yet',
-                          style: AppTypography.titleMedium.copyWith(
-                            color: tokens.titleOnSec,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           'Be the first to share something with the community.',
                           textAlign: TextAlign.center,
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: tokens.neutralOpacity,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: colorScheme.outline),
                         ),
                       ],
                     ),
@@ -707,8 +676,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Center(
                   child: Text(
                     'No ${_getFilterLabel()} posts yet',
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: tokens.neutralOpacity,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.outline,
                     ),
                   ),
                 ),
@@ -746,7 +715,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           Text(
             'Feed',
-            style: AppTypography.titleLarge.copyWith(color: tokens.titleOnSec),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -765,7 +736,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           Text(
             'Feed',
-            style: AppTypography.titleLarge.copyWith(color: tokens.titleOnSec),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           Padding(
             padding: const EdgeInsets.only(top: 12),
@@ -778,15 +751,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     Text(
                       'Unable to load posts',
-                      style: AppTypography.titleMedium.copyWith(
-                        color: tokens.titleOnSec,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       'Please check your connection and try again.',
-                      style: AppTypography.bodyMedium.copyWith(
-                        color: tokens.neutralOpacity,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.outline,
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -847,7 +820,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildRecentGamesSection() {
-    final tokens = context.colorTokens;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return FutureBuilder<List<Map<String, dynamic>>>(
       future: _fetchRecentGames(),
@@ -863,8 +836,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Text(
               'Recent Games',
-              style: AppTypography.titleLarge.copyWith(
-                color: tokens.titleOnSec,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
             Padding(
@@ -880,7 +853,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildRecentGameItem(Map<String, dynamic> game) {
-    final tokens = context.colorTokens;
+    final colorScheme = Theme.of(context).colorScheme;
 
     final sport = game['sport'] ?? 'Football';
     final format = game['format'] ?? 'Futsal';
@@ -923,8 +896,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Expanded(
                     child: Text(
                       title,
-                      style: AppTypography.titleMedium.copyWith(
-                        color: tokens.titleOnSec,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -933,8 +906,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(width: 8),
                   Text(
                     '$currentPlayers/$maxPlayers',
-                    style: AppTypography.labelSmall.copyWith(
-                      color: tokens.neutralOpacity,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: colorScheme.outline,
                     ),
                   ),
                 ],
@@ -946,8 +919,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Expanded(
                     child: Text(
                       '$sport • $format • $date at $time',
-                      style: AppTypography.bodySmall.copyWith(
-                        color: tokens.neutralOpacity,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.outline,
                       ),
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
@@ -957,8 +930,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Flexible(
                     child: Text(
                       location,
-                      style: AppTypography.bodySmall.copyWith(
-                        color: tokens.neutralOpacity,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colorScheme.outline,
                       ),
                       textAlign: TextAlign.right,
                       overflow: TextOverflow.ellipsis,
@@ -1308,7 +1281,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = context.colorTokens;
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Card(
       elevation: 0,
@@ -1322,7 +1295,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: tokens.section,
+                color: colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(20),
               ),
             ),
@@ -1335,7 +1308,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
                     height: 16,
                     width: 120,
                     decoration: BoxDecoration(
-                      color: tokens.section,
+                      color: colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -1344,7 +1317,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
                     height: 12,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: tokens.section,
+                      color: colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),
@@ -1353,7 +1326,7 @@ class _FeedLoadingPlaceholder extends StatelessWidget {
                     height: 12,
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: tokens.section,
+                      color: colorScheme.surfaceContainer,
                       borderRadius: BorderRadius.circular(6),
                     ),
                   ),

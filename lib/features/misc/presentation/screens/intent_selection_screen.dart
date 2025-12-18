@@ -138,7 +138,7 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                   // Header Container
                   Column(
                     children: [
-                      SizedBox(height: AppSpacing.xl),
+                      SizedBox(height: 24.0),
                       // Dabbler logo
                       Center(
                         child: SvgPicture.asset(
@@ -151,7 +151,7 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: AppSpacing.md),
+                      SizedBox(height: 12.0),
                       // Dabbler text logo
                       Center(
                         child: SvgPicture.asset(
@@ -164,23 +164,24 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(height: AppSpacing.lg),
+                      SizedBox(height: 16.0),
                       // Onboarding Progress
                       const OnboardingProgress(currentStep: 2),
-                      SizedBox(height: AppSpacing.xl),
+                      SizedBox(height: 24.0),
                       // Title
                       Text(
                         'What is your main goal?',
-                        style: AppTypography.headlineMedium.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
                         textAlign: TextAlign.center,
                       ),
-                      SizedBox(height: AppSpacing.sm),
+                      SizedBox(height: 8.0),
                       // Subtitle
                       Text(
                         'Choose how you want to use Dabbler',
-                        style: AppTypography.bodyLarge.copyWith(
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: Theme.of(
                             context,
                           ).colorScheme.onSurface.withOpacity(0.8),
@@ -236,16 +237,19 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                                                 .onSurface
                                                 .withOpacity(0.7),
                                     ),
-                                    SizedBox(width: AppSpacing.md),
+                                    SizedBox(width: 12.0),
                                     Expanded(
                                       child: Text(
                                         option['title']!,
-                                        style: AppTypography.bodyLarge.copyWith(
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge
+                                            ?.copyWith(
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                       ),
                                     ),
                                     if (isSelected)
@@ -264,29 +268,31 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                         );
                       }),
 
-                      SizedBox(height: AppSpacing.xl),
+                      SizedBox(height: 24.0),
 
                       // Continue Button
-                      AppButton(
+                      FilledButton(
                         onPressed: (_isLoading || _selectedIntent == null)
                             ? null
                             : _handleSubmit,
-                        label: _isLoading ? 'Continuing...' : 'Continue',
-                        type: AppButtonType.filled,
-                        size: AppButtonSize.lg,
+                        style: FilledButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 56),
+                        ),
+                        child: Text(_isLoading ? 'Continuing...' : 'Continue'),
                       ),
 
-                      SizedBox(height: AppSpacing.md),
+                      SizedBox(height: 12.0),
 
                       // Back Button
-                      AppButton(
+                      TextButton(
                         onPressed: () => context.pop(),
-                        label: 'Back',
-                        type: AppButtonType.ghost,
-                        size: AppButtonSize.lg,
+                        style: TextButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 56),
+                        ),
+                        child: const Text('Back'),
                       ),
 
-                      SizedBox(height: AppSpacing.xl),
+                      SizedBox(height: 24.0),
                     ],
                   ),
                 ],

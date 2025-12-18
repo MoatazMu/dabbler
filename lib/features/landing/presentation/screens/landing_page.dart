@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
-import 'package:dabbler/core/design_system/design_system.dart';
 
 /// Landing page shown before login/signup
 /// Features a user testimonial and value proposition
@@ -60,7 +59,7 @@ class LandingPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           // User testimonial card
-                          _buildUserCard(),
+                          _buildUserCard(context),
 
                           const SizedBox(height: 48),
 
@@ -69,9 +68,8 @@ class LandingPage extends StatelessWidget {
                           // Main headline
                           Text(
                             'I promised myself I\'d play at least twice a week but, between work and life finding a game feels harder than a 90-minute run.',
-                            style: AppTypography.displayLarge.copyWith(
-                              color: Colors.white,
-                            ),
+                            style: Theme.of(context).textTheme.displayLarge
+                                ?.copyWith(color: Colors.white),
                           ),
 
                           const SizedBox(height: 48),
@@ -85,23 +83,25 @@ class LandingPage extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
                     child: Text(
                       'Dabbler connects players, captains, and venues so you can stop searching and start playing',
-                      style: AppTypography.headlineSmall.copyWith(
-                        color: Colors.white.withOpacity(0.95),
-                        fontWeight: FontWeight.w400,
-                      ),
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
+                            color: Colors.white.withOpacity(0.95),
+                            fontWeight: FontWeight.w400,
+                          ),
                     ),
                   ),
 
                   // Continue button
                   Padding(
                     padding: const EdgeInsets.only(bottom: 60),
-                    child: AppButton(
+                    child: FilledButton(
                       onPressed: () => context.go(RoutePaths.phoneInput),
-                      label: 'Continue',
-                      type: AppButtonType.filled,
-                      size: AppButtonSize.lg,
-                      backgroundColor: Colors.white,
-                      foregroundColor: colorScheme.primary,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: colorScheme.primary,
+                        minimumSize: const Size(double.infinity, 56),
+                      ),
+                      child: const Text('Continue'),
                     ),
                   ),
                 ],
@@ -113,7 +113,7 @@ class LandingPage extends StatelessWidget {
     );
   }
 
-  Widget _buildUserCard() {
+  Widget _buildUserCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(0, 60, 0, 0),
       decoration: BoxDecoration(
@@ -149,21 +149,20 @@ class LandingPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Badge with emoji
-                AppLabel(
-                  text: 'Determined',
-                  size: AppLabelSize.defaultSize,
-                  leftIcon: const Text('💪', style: TextStyle(fontSize: 15)),
+                Chip(
+                  avatar: const Text('💪', style: TextStyle(fontSize: 15)),
+                  label: const Text('Determined'),
                   backgroundColor: Colors.white,
-                  foregroundColor: const Color(0xFF7327CE),
+                  labelStyle: const TextStyle(color: Color(0xFF7327CE)),
                 ),
                 const SizedBox(height: 12),
 
                 // Name
                 Text(
                   'Noor',
-                  style: AppTypography.headlineSmall.copyWith(
-                    color: Colors.white,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.headlineSmall?.copyWith(color: Colors.white),
                 ),
               ],
             ),

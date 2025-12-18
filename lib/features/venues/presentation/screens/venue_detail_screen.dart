@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/features/venues/providers.dart';
-import 'package:dabbler/core/design_system/design_system.dart';
 
 class VenueDetailScreen extends ConsumerStatefulWidget {
   final String venueId;
@@ -316,7 +315,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           children: [
             // Price Card
             Expanded(
-              child: AppCard(
+              child: Card(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -352,7 +351,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
             // Rating Card
             if (FeatureFlags.venuesBooking)
               Expanded(
-                child: AppCard(
+                child: Card(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -384,7 +383,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
         const SizedBox(height: 12),
 
         // Contact Card
-        AppCard(
+        Card(
           child: Row(
             children: [
               Container(
@@ -445,7 +444,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        AppCard(
+        Card(
           child: Text(
             venue.description.isEmpty
                 ? 'No description available'
@@ -476,7 +475,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        AppCard(
+        Card(
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -532,7 +531,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        AppCard(
+        Card(
           child: Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -589,7 +588,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        AppCard(
+        Card(
           child: Row(
             children: [
               Container(
@@ -644,7 +643,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        AppCard(
+        Card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: rules.asMap().entries.map((entry) {

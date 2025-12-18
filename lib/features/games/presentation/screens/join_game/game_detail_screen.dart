@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../providers/games_providers.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
-import 'package:dabbler/core/design_system/design_system.dart';
 import '../../controllers/game_detail_controller.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
@@ -353,7 +352,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
     return Column(
       children: [
         // Location Card
-        AppCard(
+        Card(
           child: Row(
             children: [
               Container(
@@ -405,7 +404,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
           children: [
             // Price Card
             Expanded(
-              child: AppCard(
+              child: Card(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -442,7 +441,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
 
             // Players Card
             Expanded(
-              child: AppCard(
+              child: Card(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -493,7 +492,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        AppCard(
+        Card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -567,7 +566,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        AppCard(
+        Card(
           child: Column(
             children: [
               ...List.generate(
@@ -694,7 +693,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        AppCard(
+        Card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -942,7 +941,7 @@ class _GameDetailScreenState extends ConsumerState<GameDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        AppCard(
+        Card(
           child: Row(
             children: [
               CircleAvatar(

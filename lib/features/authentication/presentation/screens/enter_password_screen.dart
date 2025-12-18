@@ -209,26 +209,20 @@ class _EnterPasswordScreenState extends ConsumerState<EnterPasswordScreen> {
               filled: true,
               fillColor: AppColors.cardColor(context),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(
-                  AppSpacing.buttonBorderRadius,
-                ),
+                borderRadius: BorderRadius.circular(12.0),
                 borderSide: BorderSide(color: AppColors.borderDark),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(
-                  AppSpacing.buttonBorderRadius,
-                ),
+                borderRadius: BorderRadius.circular(12.0),
                 borderSide: BorderSide(color: AppColors.borderDark),
               ),
               focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(
-                  AppSpacing.buttonBorderRadius,
-                ),
+                borderRadius: BorderRadius.circular(12.0),
                 borderSide: BorderSide(color: AppColors.primaryPurple),
               ),
               contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.md,
+                horizontal: 12.0,
+                vertical: 12.0,
               ),
               suffixIcon: IconButton(
                 icon: Icon(
@@ -243,7 +237,7 @@ class _EnterPasswordScreenState extends ConsumerState<EnterPasswordScreen> {
             textInputAction: TextInputAction.done,
             onFieldSubmitted: (_) => _signIn(),
           ),
-          SizedBox(height: AppSpacing.sm),
+          SizedBox(height: 8.0),
 
           // Forgot Password Link
           Align(
@@ -264,7 +258,7 @@ class _EnterPasswordScreenState extends ConsumerState<EnterPasswordScreen> {
               ),
             ),
           ),
-          SizedBox(height: AppSpacing.xl),
+          SizedBox(height: 24.0),
 
           // Login Button
           SizedBox(
@@ -277,9 +271,7 @@ class _EnterPasswordScreenState extends ConsumerState<EnterPasswordScreen> {
                 foregroundColor: AppColors.buttonForeground,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    AppSpacing.buttonBorderRadius,
-                  ),
+                  borderRadius: BorderRadius.circular(12.0),
                 ),
               ),
               child: _isLoading
@@ -302,7 +294,7 @@ class _EnterPasswordScreenState extends ConsumerState<EnterPasswordScreen> {
                     ),
             ),
           ),
-          SizedBox(height: AppSpacing.lg),
+          SizedBox(height: 16.0),
 
           // Change Email Link
           TextButton(
@@ -320,14 +312,12 @@ class _EnterPasswordScreenState extends ConsumerState<EnterPasswordScreen> {
 
           // Error Message
           if (_errorMessage != null) ...[
-            SizedBox(height: AppSpacing.lg),
+            SizedBox(height: 16.0),
             Container(
-              padding: EdgeInsets.all(AppSpacing.md),
+              padding: EdgeInsets.all(12.0),
               decoration: BoxDecoration(
                 color: AppColors.errorBackground,
-                borderRadius: BorderRadius.circular(
-                  AppSpacing.buttonBorderRadius,
-                ),
+                borderRadius: BorderRadius.circular(12.0),
               ),
               child: Text(
                 _errorMessage == 'invalid_credentials'

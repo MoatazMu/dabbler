@@ -6,8 +6,6 @@ import 'package:dabbler/features/profile/presentation/providers/profile_provider
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:dabbler/features/explore/presentation/screens/sports_history_screen.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
-import 'package:dabbler/core/design_system/widgets/app_card.dart';
-import 'package:dabbler/core/design_system/widgets/app_search_input.dart';
 import 'package:dabbler/core/design_system/ds.dart';
 import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -285,58 +283,60 @@ class VenueCard extends StatelessWidget {
   Widget _buildSkeletonCard(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: AppCard(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Skeleton icon
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Skeleton icon
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
+              const SizedBox(width: 16),
 
-            // Skeleton content
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Skeleton title
-                  DS.skeleton(height: 18, width: 150),
-                  const SizedBox(height: 8),
+              // Skeleton content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Skeleton title
+                    DS.skeleton(height: 18, width: 150),
+                    const SizedBox(height: 8),
 
-                  // Skeleton location
-                  DS.skeleton(height: 14, width: 120),
-                  const SizedBox(height: 10),
+                    // Skeleton location
+                    DS.skeleton(height: 14, width: 120),
+                    const SizedBox(height: 10),
 
-                  // Skeleton chips
-                  Row(
-                    children: [
-                      DS.skeleton(height: 24, width: 60),
-                      const SizedBox(width: 6),
-                      DS.skeleton(height: 24, width: 50),
-                    ],
-                  ),
-                ],
+                    // Skeleton chips
+                    Row(
+                      children: [
+                        DS.skeleton(height: 24, width: 60),
+                        const SizedBox(width: 6),
+                        DS.skeleton(height: 24, width: 50),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
 
-            // Skeleton arrow
-            const SizedBox(width: 8),
-            Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                shape: BoxShape.circle,
+              // Skeleton arrow
+              const SizedBox(width: 8),
+              Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -1365,11 +1365,49 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     return Row(
       children: [
         Expanded(
-          child: AppSearchInput(
-            controller: _searchController,
-            hintText: 'Search games and venues',
-            lightStyle: true,
-            onChanged: _onSearchChanged,
+          child: SizedBox(
+            height: 56,
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(fontSize: 15, color: Colors.white),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.black.withValues(alpha: 0.2),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: Colors.white.withValues(alpha: 0.5),
+                    width: 2,
+                  ),
+                ),
+                hintText: 'Search games and venues',
+                hintStyle: TextStyle(
+                  fontSize: 15,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+                suffixIcon: Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: Icon(
+                    Iconsax.search_normal_copy,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    size: 24,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              onChanged: _onSearchChanged,
+            ),
           ),
         ),
         const SizedBox(width: 12),

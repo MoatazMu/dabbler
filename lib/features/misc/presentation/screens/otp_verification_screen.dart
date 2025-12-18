@@ -283,7 +283,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             // Header Container
             Column(
               children: [
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
                 // Dabbler logo
                 Center(
                   child: SvgPicture.asset(
@@ -296,7 +296,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: AppSpacing.md),
+                SizedBox(height: 12.0),
                 // Dabbler text logo
                 Center(
                   child: SvgPicture.asset(
@@ -309,33 +309,33 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                     ),
                   ),
                 ),
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
                 // Title
                 Text(
                   _identifierType == IdentifierType.email
                       ? 'Verify Your Email'
                       : 'Verify Your Phone',
-                  style: AppTypography.headlineMedium.copyWith(
+                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: AppSpacing.sm),
+                SizedBox(height: 8.0),
                 // Subtitle
                 Text(
                   _identifierType == IdentifierType.email
                       ? 'We\'ve sent a 6-digit code to your email'
                       : 'We\'ve sent a 6-digit code to',
-                  style: AppTypography.bodyLarge.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: AppSpacing.md),
+                SizedBox(height: 12.0),
                 // Identifier
                 Text(
                   _identifier,
-                  style: AppTypography.bodyLarge.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                   textAlign: TextAlign.center,
@@ -352,13 +352,13 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                 // Instructions text
                 Text(
                   'Enter the 6-digit code',
-                  style: AppTypography.bodyLarge.copyWith(
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w500,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: AppSpacing.lg),
+                SizedBox(height: 16.0),
 
                 // OTP Input Fields
                 Row(
@@ -425,32 +425,33 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                     );
                   }),
                 ),
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
 
                 // Verify Button
-                AppButton(
+                FilledButton(
                   onPressed: _isLoading ? null : _handleSubmit,
-                  label: _isLoading ? 'Verifying...' : 'Verify',
-                  type: AppButtonType.filled,
-                  size: AppButtonSize.lg,
+                  style: FilledButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 56),
+                  ),
+                  child: Text(_isLoading ? 'Verifying...' : 'Verify'),
                 ),
 
-                SizedBox(height: AppSpacing.lg),
+                SizedBox(height: 16.0),
 
                 // Resend OTP
                 Column(
                   children: [
                     Text(
                       'Didn\'t receive the code?',
-                      style: AppTypography.bodyMedium.copyWith(
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
-                    SizedBox(height: AppSpacing.xs),
+                    SizedBox(height: 4.0),
                     if (_resendCountdown > 0)
                       Text(
                         'Resend in $_resendCountdown s',
-                        style: AppTypography.bodyMedium.copyWith(
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       )
@@ -459,28 +460,32 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                         onTap: _isResending ? null : _handleResend,
                         child: Text(
                           _isResending ? 'Sending...' : 'Resend',
-                          style: AppTypography.bodyMedium.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.underline,
-                          ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.primary,
+                                fontWeight: FontWeight.w600,
+                                decoration: TextDecoration.underline,
+                              ),
                         ),
                       ),
                   ],
                 ),
 
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
 
                 // Change identifier button
-                AppButton(
+                TextButton(
                   onPressed: () => context.go(RoutePaths.phoneInput),
-                  label: _identifierType == IdentifierType.email
-                      ? 'Change Email'
-                      : 'Change Phone Number',
-                  type: AppButtonType.ghost,
-                  size: AppButtonSize.lg,
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(double.infinity, 56),
+                  ),
+                  child: Text(
+                    _identifierType == IdentifierType.email
+                        ? 'Change Email'
+                        : 'Change Phone Number',
+                  ),
                 ),
-                SizedBox(height: AppSpacing.xl),
+                SizedBox(height: 24.0),
               ],
             ),
           ],

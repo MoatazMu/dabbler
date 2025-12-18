@@ -1,3 +1,6 @@
+import 'package:fpdart/fpdart.dart';
+import 'package:dabbler/data/models/social/post_model.dart';
+import '../../../../utils/enums/social_enums.dart';
 import 'package:meta/meta.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -10,6 +13,22 @@ import 'posts_repository.dart';
 
 @immutable
 class PostsRepositoryImpl extends BaseRepository implements PostsRepository {
+  Future<Either<Failure, List<PostModel>>> getUserPostsByProfileId(
+    String profileId, {
+    int page = 1,
+    int limit = 20,
+    PostVisibility? visibility,
+  }) async {
+    try {
+      var q = _db.from(_table).select().eq('author_profile_id', profileId);
+      final rows = await q.order('created_at', ascending: false).limit(limit);
+      final posts = rows.map((m) => PostModel.fromJson(asMap(m))).toList();
+      return Either.right(posts);
+    } catch (e) {
+      return Either.left(Failure(message: e.toString()));
+    }
+  }
+
   const PostsRepositoryImpl(super.svc);
 
   SupabaseClient get _db => svc.client;

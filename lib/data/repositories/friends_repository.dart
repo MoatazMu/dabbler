@@ -35,4 +35,13 @@ abstract class FriendsRepository {
 
   /// Optional helper calling `rpc_unblock_user`.
   Future<Result<void, Failure>> unblockUser(String peerUserId);
+
+  /// Get friendship status with a user
+  Future<Result<String, Failure>> getFriendshipStatus(String peerUserId);
+
+  /// Get friendship status as stream with real-time updates
+  Stream<Result<String, Failure>> getFriendshipStatusStream(String peerUserId);
+
+  /// Get list of friends
+  Future<Result<List<Map<String, dynamic>>, Failure>> getFriends();
 }

@@ -147,32 +147,24 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             filled: true,
             fillColor: AppColors.cardColor(context),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(
-                AppSpacing.buttonBorderRadius,
-              ),
+              borderRadius: BorderRadius.circular(12.0),
               borderSide: BorderSide(color: AppColors.borderDark),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(
-                AppSpacing.buttonBorderRadius,
-              ),
+              borderRadius: BorderRadius.circular(12.0),
               borderSide: BorderSide(color: AppColors.borderDark),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(
-                AppSpacing.buttonBorderRadius,
-              ),
+              borderRadius: BorderRadius.circular(12.0),
               borderSide: BorderSide(color: AppColors.primaryPurple, width: 2),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(
-                AppSpacing.buttonBorderRadius,
-              ),
+              borderRadius: BorderRadius.circular(12.0),
               borderSide: BorderSide(color: Colors.red),
             ),
             contentPadding: EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.md,
+              horizontal: 12.0,
+              vertical: 12.0,
             ),
             errorText: _error,
             errorStyle: TextStyle(
@@ -183,7 +175,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           ),
           onSubmitted: (_) => _submit(context),
         ),
-        SizedBox(height: AppSpacing.xl),
+        SizedBox(height: 24.0),
 
         // Send Reset Link Button
         SizedBox(
@@ -196,9 +188,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               foregroundColor: AppColors.buttonForeground,
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                  AppSpacing.buttonBorderRadius,
-                ),
+                borderRadius: BorderRadius.circular(12.0),
               ),
             ),
             child: _isLoading
@@ -218,17 +208,15 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   ),
           ),
         ),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: 16.0),
 
         // Success Message
         if (_sent)
           Container(
-            padding: EdgeInsets.all(AppSpacing.md),
+            padding: EdgeInsets.all(12.0),
             decoration: BoxDecoration(
               color: AppColors.infoBackground,
-              borderRadius: BorderRadius.circular(
-                AppSpacing.buttonBorderRadius,
-              ),
+              borderRadius: BorderRadius.circular(12.0),
               border: Border.all(color: AppColors.infoBorder),
             ),
             child: Row(
@@ -239,7 +227,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   color: AppColors.primaryPurple,
                   size: 20,
                 ),
-                SizedBox(width: AppSpacing.sm),
+                SizedBox(width: 8.0),
                 Expanded(
                   child: Text(
                     'Reset link sent! Check your email inbox and spam folder for instructions to reset your password.',
@@ -253,7 +241,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               ],
             ),
           ),
-        SizedBox(height: AppSpacing.xl),
+        SizedBox(height: 24.0),
 
         // Back to Sign In
         TextButton(

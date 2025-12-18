@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dabbler/core/fp/failure.dart';
 import 'package:dabbler/core/fp/result.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -19,7 +21,10 @@ class FriendsRepositoryImpl implements FriendsRepository {
   @override
   Future<Result<void, Failure>> sendFriendRequest(String peerUserId) async {
     try {
-      await _db.rpc('rpc_friend_request_send', params: {'p_peer': peerUserId});
+      await _db.rpc(
+        'rpc_friend_request_send',
+        params: {'p_peer_profile_id': peerUserId},
+      );
       return Ok(null);
     } catch (error) {
       return Err(svc.mapPostgrestError(error));
@@ -32,7 +37,7 @@ class FriendsRepositoryImpl implements FriendsRepository {
     try {
       await _db.rpc(
         'rpc_friend_request_accept',
-        params: {'p_peer': peerUserId},
+        params: {'p_peer_profile_id': peerUserId},
       );
       return Ok(null);
     } catch (error) {
@@ -46,7 +51,7 @@ class FriendsRepositoryImpl implements FriendsRepository {
     try {
       await _db.rpc(
         'rpc_friend_request_reject',
-        params: {'p_peer': peerUserId},
+        params: {'p_peer_profile_id': peerUserId},
       );
       return Ok(null);
     } catch (error) {
@@ -58,7 +63,10 @@ class FriendsRepositoryImpl implements FriendsRepository {
   @override
   Future<Result<void, Failure>> removeFriend(String peerUserId) async {
     try {
-      await _db.rpc('rpc_friend_remove', params: {'p_peer': peerUserId});
+      await _db.rpc(
+        'rpc_friend_remove',
+        params: {'p_peer_profile_id': peerUserId},
+      );
       return Ok(null);
     } on PostgrestException catch (error) {
       if ((error.code == '42883') ||
@@ -67,7 +75,10 @@ class FriendsRepositoryImpl implements FriendsRepository {
               ) ??
               false)) {
         try {
-          await _db.rpc('rpc_friend_unfriend', params: {'p_peer': peerUserId});
+          await _db.rpc(
+            'rpc_friend_unfriend',
+            params: {'p_peer_profile_id': peerUserId},
+          );
           return Ok(null);
         } catch (fallbackError) {
           return Err(svc.mapPostgrestError(fallbackError));
@@ -157,7 +168,10 @@ class FriendsRepositoryImpl implements FriendsRepository {
   @override
   Future<Result<void, Failure>> blockUser(String peerUserId) async {
     try {
-      await _db.rpc('rpc_block_user', params: {'target_user': peerUserId});
+      await _db.rpc(
+        'rpc_block_user',
+        params: {'p_peer_profile_id': peerUserId},
+      );
       return Ok(null);
     } on PostgrestException catch (error) {
       final details = (error.details as String?)?.toLowerCase() ?? '';
@@ -166,10 +180,7 @@ class FriendsRepositoryImpl implements FriendsRepository {
           details.contains('ambiguous') ||
           details.contains('function rpc_block_user')) {
         try {
-          await _db.rpc(
-            'rpc_block_user',
-            params: {'p_peer': peerUserId, 'p_block': true},
-          );
+          await _db.rpc('rpc_block_user', params: {'target_user': peerUserId});
           return Ok(null);
         } catch (fallbackError) {
           return Err(svc.mapPostgrestError(fallbackError));
@@ -185,9 +196,94 @@ class FriendsRepositoryImpl implements FriendsRepository {
   @override
   Future<Result<void, Failure>> unblockUser(String peerUserId) async {
     try {
-      await _db.rpc('rpc_unblock_user', params: {'target_user': peerUserId});
+      await _db.rpc(
+        'rpc_unblock_user',
+        params: {'p_peer_profile_id': peerUserId},
+      );
       return Ok(null);
     } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
+  }
+
+  /// Get friendship status with a user
+  @override
+  Future<Result<String, Failure>> getFriendshipStatus(String peerUserId) async {
+    try {
+      final status = await _db.rpc(
+        'rpc_get_friendship_status',
+        params: {'p_peer_profile_id': peerUserId},
+      );
+      return Ok(status as String);
+    } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
+  }
+
+  /// Get friendship status as stream with Supabase realtime
+  @override
+  Stream<Result<String, Failure>> getFriendshipStatusStream(
+    String peerUserId,
+  ) async* {
+    final currentUserId = _db.auth.currentUser?.id;
+    if (currentUserId == null) {
+      yield Err(const ServerFailure(message: 'User not authenticated'));
+      return;
+    }
+
+    final controller = StreamController<Result<String, Failure>>();
+
+    // Emit initial status
+    final initialStatus = await getFriendshipStatus(peerUserId);
+    controller.add(initialStatus);
+
+    // Create unique channel name
+    final channelName = 'friendship_$currentUserId\_$peerUserId';
+
+    // Subscribe to realtime changes
+    final subscription = _db
+        .channel(channelName)
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'friendships',
+          callback: (payload) async {
+            // Refetch status on any change
+            final newStatus = await getFriendshipStatus(peerUserId);
+            if (!controller.isClosed) {
+              controller.add(newStatus);
+            }
+          },
+        )
+        .subscribe();
+
+    // Handle cleanup
+    controller.onCancel = () async {
+      await _db.removeChannel(subscription);
+      await controller.close();
+    };
+
+    yield* controller.stream;
+  }
+
+  /// Get list of friends
+  @override
+  Future<Result<List<Map<String, dynamic>>, Failure>> getFriends() async {
+    try {
+      print('DEBUG: Calling rpc_get_friends...');
+      final rows = await _db.rpc('rpc_get_friends');
+      print('DEBUG: RPC returned: $rows');
+      if (rows is List) {
+        final friends = rows
+            .map((dynamic row) => Map<String, dynamic>.from(row as Map))
+            .toList(growable: false);
+        print('DEBUG: Mapped ${friends.length} friends');
+        return Ok(friends);
+      }
+      print('DEBUG: Unexpected payload type: ${rows.runtimeType}');
+      return Err(const ServerFailure(message: 'Unexpected friends payload'));
+    } catch (error) {
+      print('DEBUG: Error in getFriends: $error');
       return Err(svc.mapPostgrestError(error));
     }
   }

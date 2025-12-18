@@ -146,7 +146,7 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                     // Header Container
                     Column(
                       children: [
-                        SizedBox(height: AppSpacing.xl),
+                        SizedBox(height: 24.0),
                         // Dabbler logo
                         Center(
                           child: SvgPicture.asset(
@@ -159,7 +159,7 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(height: AppSpacing.md),
+                        SizedBox(height: 12.0),
                         // Dabbler text logo
                         Center(
                           child: SvgPicture.asset(
@@ -172,27 +172,29 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                             ),
                           ),
                         ),
-                        SizedBox(height: AppSpacing.lg),
+                        SizedBox(height: 16.0),
                         // Onboarding Progress
                         const OnboardingProgress(currentStep: 3),
-                        SizedBox(height: AppSpacing.xl),
+                        SizedBox(height: 24.0),
                         // Title
                         Text(
                           'Choose Your Sports',
-                          style: AppTypography.headlineMedium.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                          style: Theme.of(context).textTheme.headlineMedium
+                              ?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                           textAlign: TextAlign.center,
                         ),
-                        SizedBox(height: AppSpacing.sm),
+                        SizedBox(height: 8.0),
                         // Subtitle
                         Text(
                           'Select your preferred sport and additional interests',
-                          style: AppTypography.bodyLarge.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.9),
-                          ),
+                          style: Theme.of(context).textTheme.bodyLarge
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.9),
+                              ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -209,9 +211,12 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                           children: [
                             Text(
                               'Preferred Sport',
-                              style: AppTypography.titleLarge.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
                             ),
                             const SizedBox(width: 8),
                             Container(
@@ -225,27 +230,29 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                               ),
                               child: Text(
                                 'Required',
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: Colors.red,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Colors.red,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                               ),
                             ),
                           ],
                         ),
 
-                        SizedBox(height: AppSpacing.xs),
+                        SizedBox(height: 4.0),
 
                         Text(
                           'Choose your main sport',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.7),
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.7),
+                              ),
                         ),
 
-                        SizedBox(height: AppSpacing.md),
+                        SizedBox(height: 12.0),
 
                         // Preferred Sport Grid
                         GridView.builder(
@@ -310,12 +317,15 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                                       const SizedBox(height: 8),
                                       Text(
                                         AppHelpers.getSportDisplayName(sport),
-                                        style: AppTypography.bodySmall.copyWith(
-                                          fontWeight: FontWeight.normal,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                        ),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.normal,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
+                                            ),
                                         textAlign: TextAlign.center,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
@@ -338,16 +348,19 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                           },
                         ),
 
-                        SizedBox(height: AppSpacing.xxl),
+                        SizedBox(height: 32.0),
 
                         // Interests Section
                         Row(
                           children: [
                             Text(
                               'Additional Interests',
-                              style: AppTypography.titleLarge.copyWith(
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface,
+                                  ),
                             ),
                             const SizedBox(width: 8),
                             Container(
@@ -361,27 +374,29 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                               ),
                               child: Text(
                                 'Optional',
-                                style: AppTypography.bodySmall.copyWith(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: Theme.of(context).textTheme.bodySmall
+                                    ?.copyWith(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                               ),
                             ),
                           ],
                         ),
 
-                        SizedBox(height: AppSpacing.xs),
+                        SizedBox(height: 4.0),
 
                         Text(
                           'Select up to 3 additional sports (${_interests.length}/3)',
-                          style: AppTypography.bodySmall.copyWith(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withOpacity(0.7),
-                          ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurface.withOpacity(0.7),
+                              ),
                         ),
 
-                        SizedBox(height: AppSpacing.md),
+                        SizedBox(height: 12.0),
 
                         // Interests Chips
                         Wrap(
@@ -399,16 +414,19 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                               child: FilterChip(
                                 label: Text(
                                   AppHelpers.getSportDisplayName(sport),
-                                  style: AppTypography.bodyMedium.copyWith(
-                                    color: isSelected
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.normal,
-                                  ),
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: isSelected
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : Theme.of(
+                                                context,
+                                              ).colorScheme.onSurface,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.normal,
+                                      ),
                                 ),
                                 avatar: Icon(
                                   AppHelpers.getSportIcon(sport),
@@ -444,29 +462,33 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                           }).toList(),
                         ),
 
-                        SizedBox(height: AppSpacing.xl),
+                        SizedBox(height: 24.0),
 
                         // Continue Button
-                        AppButton(
+                        FilledButton(
                           onPressed: (_isLoading || _preferredSport == null)
                               ? null
                               : _handleSubmit,
-                          label: _isLoading ? 'Continuing...' : 'Continue',
-                          type: AppButtonType.filled,
-                          size: AppButtonSize.lg,
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 56),
+                          ),
+                          child: Text(
+                            _isLoading ? 'Continuing...' : 'Continue',
+                          ),
                         ),
 
-                        SizedBox(height: AppSpacing.md),
+                        SizedBox(height: 12.0),
 
                         // Back Button
-                        AppButton(
+                        TextButton(
                           onPressed: () => context.pop(),
-                          label: 'Back',
-                          type: AppButtonType.ghost,
-                          size: AppButtonSize.lg,
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 56),
+                          ),
+                          child: const Text('Back'),
                         ),
 
-                        SizedBox(height: AppSpacing.xl),
+                        SizedBox(height: 24.0),
                       ],
                     ),
                   ],

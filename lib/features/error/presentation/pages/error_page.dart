@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../../widgets/app_button.dart';
-import '../../../../core/config/design_system/design_tokens/spacing.dart';
-import '../../../../core/config/design_system/design_tokens/typography.dart';
 
 class ErrorPage extends StatelessWidget {
   final String? message;
@@ -13,10 +10,10 @@ class ErrorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Error', style: DabblerTypography.headline6()),
+        title: Text('Error', style: Theme.of(context).textTheme.titleLarge),
       ),
       body: Padding(
-        padding: DabblerSpacing.all24,
+        padding: const EdgeInsets.all(24),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -26,20 +23,23 @@ class ErrorPage extends StatelessWidget {
                 size: 64,
                 color: Theme.of(context).colorScheme.error,
               ),
-              SizedBox(height: DabblerSpacing.spacing24),
+              const SizedBox(height: 24),
               Text(
                 message ?? 'An error occurred',
-                style: DabblerTypography.headline5(),
+                style: Theme.of(context).textTheme.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: DabblerSpacing.spacing16),
+              const SizedBox(height: 16),
               Text(
                 'Please try again or contact support if the problem persists.',
-                style: DabblerTypography.body1(),
+                style: Theme.of(context).textTheme.bodyLarge,
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: DabblerSpacing.spacing32),
-              AppButton(label: 'Retry', onPressed: () => context.pop()),
+              const SizedBox(height: 32),
+              FilledButton(
+                onPressed: () => context.pop(),
+                child: const Text('Retry'),
+              ),
             ],
           ),
         ),

@@ -2,11 +2,11 @@
   "socialLight": {
     "primary": "#3473D7",
     "onPrimary": "#FFFFFF",
-    "primaryContainer": "#D6E3FF",
+    "primaryContainer": "#A6DCFF",
     "onPrimaryContainer": "#001B3D",
     "secondary": "#65A8FF",
     "onSecondary": "#002C60",
-    "secondaryContainer": "#D4E3FF",
+    "secondaryContainer": "#E5F5FF",
     "onSecondaryContainer": "#001B3D",
     "tertiary": "#855BE2",
     "onTertiary": "#FFFFFF",

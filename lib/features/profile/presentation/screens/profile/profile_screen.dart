@@ -21,6 +21,8 @@ import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/data/models/sport_tags.dart';
 import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
+import 'package:dabbler/features/profile/presentation/widgets/friends_list_widget.dart';
+import 'package:dabbler/features/social/providers/friends_list_provider.dart';
 // Extracted widgets for hero and basics live alongside this screen for now.
 // If you re-enable them, ensure the import paths match actual file locations.
 
@@ -221,9 +223,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildHeader(context),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 9),
                     _buildProfileHeroCard(context, profileState, sportsState),
-                    const SizedBox(height: 16),
+                    // const SizedBox(height: 16),
                     _buildSportProfileHeaderSection(
                       context,
                       sportProfileHeaderAsync,
@@ -240,6 +242,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                         _buildQuickActions(context),
                         // const SizedBox(height: 24),
                         _buildProfileCompletion(context, profileState),
+                        _buildFriendsSection(context),
                         _buildBasicInfo(context, profileState),
                         if (FeatureFlags.enableRewards)
                           _buildRewardsSection(context),
@@ -276,28 +279,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         : TwoSectionLayout(
             category: 'profile',
             onRefresh: _onRefresh,
-            topSection: Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHeader(context),
-                  const SizedBox(height: 24),
-                  _buildProfileTypeSwitcher(context),
-                  const SizedBox(height: 24),
-                  _buildProfileHeroCard(context, profileState, sportsState),
-                  if (profileType == 'player') ...[
-                    const SizedBox(height: 16),
-                    _buildSportProfileHeaderSection(
-                      context,
-                      sportProfileHeaderAsync,
-                    ),
+            topSection: Container(
+              color: colorScheme.primaryContainer,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildHeader(context),
+                    const SizedBox(height: 24),
+                    _buildProfileTypeSwitcher(context),
+                    const SizedBox(height: 24),
+                    _buildProfileHeroCard(context, profileState, sportsState),
+                    if (profileType == 'player') ...[
+                      const SizedBox(height: 16),
+                      _buildSportProfileHeaderSection(
+                        context,
+                        sportProfileHeaderAsync,
+                      ),
+                    ],
+                    if (profileType == 'organiser') ...[
+                      const SizedBox(height: 16),
+                      _buildOrganiserProfileSection(context, organiserState),
+                    ],
                   ],
-                  if (profileType == 'organiser') ...[
-                    const SizedBox(height: 16),
-                    _buildOrganiserProfileSection(context, organiserState),
-                  ],
-                ],
+                ),
               ),
             ),
             bottomSection: Padding(
@@ -315,6 +321,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       if (profileType == 'organiser' &&
                           FeatureFlags.enableOrganiserGameCreation)
                         _buildGameManagementCard(context),
+                      _buildFriendsSection(context),
                       _buildBasicInfo(context, profileState),
                       if (FeatureFlags.enableRewards)
                         _buildRewardsSection(context),
@@ -536,27 +543,17 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildAvatar(BuildContext context, UserProfile? profile) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return Container(
-      width: 96,
-      height: 96,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(
-          color: colorScheme.categoryProfile.withValues(alpha: 0.35),
-          width: 3,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
-          ? Image.network(profile.avatarUrl!, fit: BoxFit.cover)
-          : Container(
-              color: colorScheme.primaryContainer.withValues(alpha: 0.6),
-              child: Icon(
-                Iconsax.profile_circle_copy,
-                size: 42,
-                color: const Color(0xFFFEFEFE),
-              ),
-            ),
+    return CircleAvatar(
+      radius: 32,
+      backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.2),
+      foregroundColor: colorScheme.categoryProfile,
+      backgroundImage:
+          profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
+          ? NetworkImage(profile.avatarUrl!)
+          : null,
+      child: profile?.avatarUrl == null || profile!.avatarUrl!.isEmpty
+          ? Icon(Iconsax.profile_circle_copy, size: 36)
+          : null,
     );
   }
 
@@ -648,31 +645,31 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     return Column(
       children: [
-        // First row: 3 stats
         Row(
-          children: allStats.sublist(0, 3).asMap().entries.map((entry) {
-            final index = entry.key;
-            final stat = entry.value;
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: index < 2 ? 8 : 0),
-                child: _buildStatCard(stat, colorScheme, textTheme),
-              ),
-            );
-          }).toList(),
+          children: allStats
+              .sublist(0, 3)
+              .map(
+                (stat) => Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 0),
+                    child: _buildStatCard(stat, colorScheme, textTheme),
+                  ),
+                ),
+              )
+              .toList(),
         ),
-        // Second row: 3 stats
         Row(
-          children: allStats.sublist(3, 6).asMap().entries.map((entry) {
-            final index = entry.key;
-            final stat = entry.value;
-            return Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: index < 2 ? 8 : 0),
-                child: _buildStatCard(stat, colorScheme, textTheme),
-              ),
-            );
-          }).toList(),
+          children: allStats
+              .sublist(3)
+              .map(
+                (stat) => Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 0),
+                    child: _buildStatCard(stat, colorScheme, textTheme),
+                  ),
+                ),
+              )
+              .toList(),
         ),
       ],
     );
@@ -685,42 +682,29 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   ) {
     return Card(
       elevation: 0,
+      color: colorScheme.categoryProfile.withValues(alpha: 0.08),
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(
-          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
-        ),
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide.none,
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(stat.icon, size: 20, color: colorScheme.categoryProfile),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    stat.value,
-                    style: textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: colorScheme.onSurface,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    stat.label,
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+            Text(
+              stat.value,
+              style: textTheme.labelMedium?.copyWith(
+                color: colorScheme.onSurface,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              stat.label,
+              style: textTheme.labelSmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w400,
               ),
             ),
           ],
@@ -1832,6 +1816,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     }
   }
 
+  Widget _buildFriendsSection(BuildContext context) {
+    final friendsAsync = ref.watch(friendsListProvider);
+
+    return friendsAsync.when(
+      data: (friends) => FriendsListWidget(
+        friends: friends,
+        onViewAll: () {
+          // TODO: Navigate to full friends list screen
+        },
+      ),
+      loading: () => const FriendsListWidget(friends: [], isLoading: true),
+      error: (_, __) => const SizedBox.shrink(),
+    );
+  }
+
   Widget _buildRewardsSection(BuildContext context) {
     // Get current user ID from profile state
     final profileState = ref.watch(profileControllerProvider);
@@ -1855,23 +1854,27 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           color: colorScheme.categoryProfile.withValues(alpha: 0.3),
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          // Check-in widget
-          const ProfileCheckInWidget(),
-          const SizedBox(height: 16),
-          ProfileRewardsWidget(userId: userProfile.id),
-          const SizedBox(height: 16),
-          Align(
-            alignment: Alignment.centerRight,
-            child: OutlinedButton.icon(
-              onPressed: () => context.push(RoutePaths.leaderboard),
-              icon: const Icon(Iconsax.ranking_copy, size: 18),
-              label: const Text('View leaderboard'),
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Check-in widget
+            const ProfileCheckInWidget(),
+            const SizedBox(height: 16),
+            ProfileRewardsWidget(userId: userProfile.id),
+            const SizedBox(height: 16),
+            Align(
+              alignment: Alignment.centerRight,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push(RoutePaths.leaderboard),
+                icon: const Icon(Iconsax.ranking_copy, size: 18),
+                label: const Text('View leaderboard'),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

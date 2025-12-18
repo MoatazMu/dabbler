@@ -23,22 +23,32 @@ enum NotificationType {
   static NotificationType fromDb(String value) {
     switch (value) {
       case 'game_invite':
+      case 'games.invite':
         return NotificationType.gameInvite;
       case 'game_update':
+      case 'games.update':
         return NotificationType.gameUpdate;
       case 'booking_confirmation':
+      case 'bookings.confirmation':
         return NotificationType.bookingConfirmation;
       case 'booking_reminder':
+      case 'bookings.reminder':
         return NotificationType.bookingReminder;
       case 'friend_request':
+      case 'social.friend_request':
+      case 'social.friend_accepted':
         return NotificationType.friendRequest;
       case 'achievement':
+      case 'achievements.unlocked':
         return NotificationType.achievement;
       case 'loyalty_points':
+      case 'loyalty.points':
         return NotificationType.loyaltyPoints;
       case 'general_update':
+      case 'system.update':
         return NotificationType.generalUpdate;
       case 'system_alert':
+      case 'system.alert':
         return NotificationType.systemAlert;
       default:
         return NotificationType.generalUpdate;
@@ -171,17 +181,26 @@ class NotificationItem {
 
   /// Parse from Supabase row
   factory NotificationItem.fromMap(Map<String, dynamic> map) {
+    // Handle both old schema (user_id, type, message, data) and new schema (to_user_id, kind_key, body, context)
+    final userId = map['to_user_id'] as String? ?? map['user_id'] as String;
+    final typeKey = map['kind_key'] as String? ?? map['type'] as String;
+    final messageText =
+        map['body'] as String? ?? map['message'] as String? ?? '';
+    final contextData =
+        map['context'] as Map<String, dynamic>? ??
+        map['data'] as Map<String, dynamic>?;
+
     return NotificationItem(
       id: map['id'] as String,
-      userId: map['user_id'] as String,
+      userId: userId,
       title: map['title'] as String,
-      message: map['message'] as String,
-      type: NotificationType.fromDb(map['type'] as String),
+      message: messageText,
+      type: NotificationType.fromDb(typeKey),
       priority: NotificationPriority.fromDb(
         map['priority'] as String? ?? 'normal',
       ),
       isRead: map['is_read'] as bool? ?? false,
-      data: map['data'] as Map<String, dynamic>?,
+      data: contextData,
       imageUrl: map['image_url'] as String?,
       actionText: map['action_text'] as String?,
       actionRoute: map['action_route'] as String?,
@@ -189,7 +208,9 @@ class NotificationItem {
           ? DateTime.parse(map['read_at'] as String)
           : null,
       createdAt: DateTime.parse(map['created_at'] as String),
-      updatedAt: DateTime.parse(map['updated_at'] as String),
+      updatedAt: map['updated_at'] != null
+          ? DateTime.parse(map['updated_at'] as String)
+          : DateTime.parse(map['created_at'] as String),
     );
   }
 
@@ -307,7 +328,10 @@ class NotificationsRepository {
   }) async {
     try {
       // Start query
-      var query = _client.from('notifications').select().eq('user_id', userId);
+      var query = _client
+          .from('notifications')
+          .select()
+          .eq('to_user_id', userId);
 
       // Apply type filter
       if (typeFilter != null) {
@@ -419,7 +443,6 @@ class NotificationsRepository {
           .update({
             'is_read': true,
             'read_at': DateTime.now().toIso8601String(),
-            'updated_at': DateTime.now().toIso8601String(),
           })
           .eq('id', notificationId);
     } catch (e, stack) {
@@ -436,11 +459,7 @@ class NotificationsRepository {
     try {
       await _client
           .from('notifications')
-          .update({
-            'is_read': false,
-            'read_at': null,
-            'updated_at': DateTime.now().toIso8601String(),
-          })
+          .update({'is_read': false, 'read_at': null})
           .eq('id', notificationId);
     } catch (e, stack) {
       throw RepoException(
@@ -458,8 +477,8 @@ class NotificationsRepository {
 
       await _client
           .from('notifications')
-          .update({'is_read': true, 'read_at': now, 'updated_at': now})
-          .eq('user_id', userId)
+          .update({'is_read': true, 'read_at': now})
+          .eq('to_user_id', userId)
           .eq('is_read', false); // Only update unread notifications
     } catch (e, stack) {
       throw RepoException(
@@ -518,7 +537,7 @@ class NotificationsRepository {
           table: 'notifications',
           filter: PostgresChangeFilter(
             type: PostgresChangeFilterType.eq,
-            column: 'user_id',
+            column: 'to_user_id',
             value: userId,
           ),
           callback: (payload) {
@@ -538,7 +557,7 @@ class NotificationsRepository {
           table: 'notifications',
           filter: PostgresChangeFilter(
             type: PostgresChangeFilterType.eq,
-            column: 'user_id',
+            column: 'to_user_id',
             value: userId,
           ),
           callback: (payload) {

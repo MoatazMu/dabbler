@@ -2,11 +2,11 @@
   "activityLight": {
     "primary": "#CF3989",
     "onPrimary": "#FFFFFF",
-    "primaryContainer": "#FFD8E6",
+    "primaryContainer": "#FCDEE8",
     "onPrimaryContainer": "#3A0026",
     "secondary": "#EB005A",
     "onSecondary": "#FFFFFF",
-    "secondaryContainer": "#FFD9E1",
+    "secondaryContainer": "#FFF2FC",
     "onSecondaryContainer": "#3B0014",
     "tertiary": "#ADB4FF",
     "onTertiary": "#00115A",

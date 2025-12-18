@@ -1,6 +1,7 @@
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/features/rewards/controllers/check_in_controller.dart';
 import 'package:dabbler/features/rewards/presentation/widgets/check_in_progress_indicator.dart';
+import 'package:dabbler/themes/material3_extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -109,27 +110,32 @@ class ProfileCheckInWidget extends ConsumerWidget {
     final progress = status.totalDaysCompleted / 14;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16),
+        color: theme.colorScheme.categoryProfile.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
-              const Text('🐦', style: TextStyle(fontSize: 24)),
-              const SizedBox(width: 12),
+              const Text('🐦', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Early Bird Challenge',
                       style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -137,57 +143,64 @@ class ProfileCheckInWidget extends ConsumerWidget {
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
               if (status.streakCount > 1)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.tertiaryContainer,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🔥', style: TextStyle(fontSize: 14)),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${status.streakCount}',
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.onTertiaryContainer,
-                        ),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.categoryProfile.withValues(
+                        alpha: 0.15,
                       ),
-                    ],
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🔥', style: TextStyle(fontSize: 12)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${status.streakCount}',
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: theme.colorScheme.categoryProfile,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
 
           // Progress indicator
           CompactCheckInProgressIndicator(
             completedDays: status.totalDaysCompleted,
             totalDays: 14,
-            segmentColor: theme.colorScheme.primary,
+            segmentColor: theme.colorScheme.categoryProfile,
           ),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
 
           // Progress bar
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(4),
             child: LinearProgressIndicator(
               value: progress,
-              minHeight: 6,
-              backgroundColor: theme.colorScheme.surfaceContainerHigh,
+              minHeight: 4,
+              backgroundColor: theme.colorScheme.categoryProfile.withValues(
+                alpha: 0.12,
+              ),
               valueColor: AlwaysStoppedAnimation<Color>(
-                theme.colorScheme.primary,
+                theme.colorScheme.categoryProfile,
               ),
             ),
           ),
@@ -200,6 +213,7 @@ class ProfileCheckInWidget extends ConsumerWidget {
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),

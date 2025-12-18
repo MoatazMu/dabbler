@@ -29,7 +29,7 @@ class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
   Widget _buildTopSection() {
     return Column(
       children: [
-        SizedBox(height: AppSpacing.md),
+        SizedBox(height: 12.0),
         // Header with home and arena buttons
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -49,7 +49,7 @@ class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
             ),
           ],
         ),
-        SizedBox(height: AppSpacing.xl),
+        SizedBox(height: 24.0),
         // What's on your mind input
         SocialInputBox(
           placeholder: "What's on your mind?",
@@ -85,7 +85,7 @@ class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
             // Handle menu
           },
         ),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: 16.0),
         SocialFeedPost(
           name: 'Sarah',
           time: '2h',
@@ -101,7 +101,7 @@ class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
             // Handle comment
           },
         ),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: 16.0),
         SocialFeedPost(
           name: 'Sarah',
           time: '2h',
@@ -111,7 +111,7 @@ class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
           likes: '24',
           comments: '8',
         ),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: 16.0),
         SocialFeedPost(
           name: 'Sarah',
           time: '2h',
@@ -121,7 +121,7 @@ class _SocialFeedScreenState extends ConsumerState<SocialFeedScreen>
           likes: '24',
           comments: '8',
         ),
-        SizedBox(height: AppSpacing.lg),
+        SizedBox(height: 16.0),
         SocialFeedPost(
           name: 'Sarah',
           time: '2h',

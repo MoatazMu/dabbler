@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:dabbler/core/design_system/widgets/app_card.dart';
 
 /// Legacy contact support entry-point updated with Material 3 styling
 class ContactSupportScreen extends StatelessWidget {
@@ -105,39 +104,41 @@ class ContactSupportScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppCard(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Quick actions',
-                            style: textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Quick actions',
+                              style: textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-                          _SupportActionRow(
-                            icon: Icons.chat_bubble_outline,
-                            label: 'Chat with us',
-                            description: 'Available 10am – 10pm GST',
-                            onTap: () => _showComingSoon(context),
-                          ),
-                          const Divider(height: 24),
-                          _SupportActionRow(
-                            icon: Icons.mail_outline,
-                            label: 'Email support',
-                            description: 'team@dabbler.club',
-                            onTap: () => _showComingSoon(context),
-                          ),
-                          const Divider(height: 24),
-                          _SupportActionRow(
-                            icon: Icons.description_outlined,
-                            label: 'View help center',
-                            description: 'Guides, FAQs, best practices',
-                            onTap: () => _showComingSoon(context),
-                          ),
-                        ],
+                            const SizedBox(height: 16),
+                            _SupportActionRow(
+                              icon: Icons.chat_bubble_outline,
+                              label: 'Chat with us',
+                              description: 'Available 10am – 10pm GST',
+                              onTap: () => _showComingSoon(context),
+                            ),
+                            const Divider(height: 24),
+                            _SupportActionRow(
+                              icon: Icons.mail_outline,
+                              label: 'Email support',
+                              description: 'team@dabbler.club',
+                              onTap: () => _showComingSoon(context),
+                            ),
+                            const Divider(height: 24),
+                            _SupportActionRow(
+                              icon: Icons.description_outlined,
+                              label: 'View help center',
+                              description: 'Guides, FAQs, best practices',
+                              onTap: () => _showComingSoon(context),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),

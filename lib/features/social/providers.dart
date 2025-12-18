@@ -14,6 +14,8 @@ import 'package:dabbler/data/repositories/squads_repository_impl.dart';
 import 'package:dabbler/features/misc/data/datasources/supabase_remote_data_source.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+export 'package:dabbler/features/social/providers/friends_list_provider.dart';
+
 final squadsRepositoryProvider = Provider<SquadsRepository>((ref) {
   final svc = ref.watch(supabaseServiceProvider);
   return SquadsRepositoryImpl(svc);
@@ -171,4 +173,16 @@ final outboxProvider =
     FutureProvider<Result<List<Map<String, dynamic>>, Failure>>((ref) {
       final repo = ref.watch(friendsRepositoryProvider);
       return repo.outbox();
+    });
+
+final friendshipStatusProvider =
+    StreamProvider.family<Result<String, Failure>, String>((ref, userId) {
+      final repo = ref.watch(friendsRepositoryProvider);
+      return repo.getFriendshipStatusStream(userId);
+    });
+
+final friendsListProvider =
+    FutureProvider<Result<List<Map<String, dynamic>>, Failure>>((ref) {
+      final repo = ref.watch(friendsRepositoryProvider);
+      return repo.getFriends();
     });
