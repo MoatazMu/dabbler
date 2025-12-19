@@ -83,6 +83,7 @@ import 'package:dabbler/features/social/presentation/screens/onboarding/social_o
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_privacy_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_notifications_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_complete_screen.dart';
+import 'package:dabbler/features/social/presentation/screens/real_friends_screen.dart';
 
 // Admin screens
 import 'package:dabbler/features/admin/presentation/screens/moderation_queue_screen.dart';
@@ -1114,7 +1115,7 @@ class AppRouter {
       name: RouteNames.socialFriends,
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
-        child: const _PlaceholderScreen(title: 'Friends'),
+        child: const RealFriendsScreen(),
       ),
     ),
 

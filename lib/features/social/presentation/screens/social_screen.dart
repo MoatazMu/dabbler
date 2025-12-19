@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
@@ -6,6 +8,7 @@ import 'package:dabbler/widgets/thoughts_input.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
 import '../../services/social_service.dart';
 import '../../services/social_rewards_handler.dart';
+import '../../services/realtime_likes_service.dart';
 import 'package:dabbler/core/services/auth_service.dart';
 
 /// Instagram-like social feed screen with posts and interactions
@@ -24,6 +27,7 @@ class _SocialScreenState extends State<SocialScreen> {
 
   late SocialRewardsHandler _rewardsHandler;
   final AuthService _authService = AuthService();
+  final Map<String, StreamSubscription<PostLikeUpdate>> _likeSubscriptions = {};
 
   @override
   void initState() {
@@ -35,7 +39,39 @@ class _SocialScreenState extends State<SocialScreen> {
   @override
   void dispose() {
     _scrollController.dispose();
+    // Cancel all realtime subscriptions
+    for (final subscription in _likeSubscriptions.values) {
+      subscription.cancel();
+    }
+    _likeSubscriptions.clear();
     super.dispose();
+  }
+
+  /// Subscribe to realtime like updates for a specific post
+  void _subscribeToPostLikes(String postId) {
+    // Don't subscribe twice
+    if (_likeSubscriptions.containsKey(postId)) return;
+
+    final subscription = RealtimeLikesService().postUpdates(postId).listen((
+      update,
+    ) {
+      if (!mounted) return;
+
+      // Find and update the post in the list
+      final index = _posts.indexWhere((p) => p.id == update.postId);
+      if (index != -1) {
+        setState(() {
+          _posts[index] = _posts[index].copyWith(
+            likesCount: update.newLikeCount,
+            isLiked: update.userId == _authService.getCurrentUser()?.id
+                ? update.isLiked
+                : _posts[index].isLiked,
+          );
+        });
+      }
+    });
+
+    _likeSubscriptions[postId] = subscription;
   }
 
   Future<void> _loadPosts() async {
@@ -52,6 +88,11 @@ class _SocialScreenState extends State<SocialScreen> {
         _posts.addAll(posts);
         _isLoading = false;
       });
+
+      // Subscribe to realtime updates for each loaded post
+      for (final post in posts) {
+        _subscribeToPostLikes(post.id);
+      }
     } catch (e) {
       // Show error, don't fall back to sample data
       setState(() {
@@ -85,59 +126,104 @@ class _SocialScreenState extends State<SocialScreen> {
     await _loadPosts();
   }
 
+  final Set<String> _likesInProgress = {};
+
   void _likePost(String postId) async {
     final currentUser = _authService.getCurrentUser();
     if (currentUser == null) return;
 
+    // Prevent multiple simultaneous like requests for this post
+    if (_likesInProgress.contains(postId)) return;
+
+    // Store original post state for rollback on error
+    final postIndex = _posts.indexWhere((post) => post.id == postId);
+    if (postIndex == -1) return;
+    final originalPost = _posts[postIndex];
+
+    // Lock this post from further like requests
+    _likesInProgress.add(postId);
+
+    // Update UI optimistically first for instant feedback
+    setState(() {
+      _posts[postIndex] = originalPost.copyWith(
+        isLiked: !originalPost.isLiked,
+        likesCount: originalPost.isLiked
+            ? originalPost.likesCount - 1
+            : originalPost.likesCount + 1,
+      );
+    });
+
     try {
       final socialService = SocialService();
-      await socialService.toggleLike(postId);
+      final result = await socialService.toggleLike(postId);
 
-      // Track social interaction for rewards
-      final post = _posts.firstWhere((p) => p.id == postId);
-      await _rewardsHandler.trackSocialInteraction(
-        userId: currentUser.id,
-        interactionType: 'like',
-        targetUserId: post.authorId,
-        metadata: {'postId': postId},
-      );
+      // Track social interaction for rewards only on like (not unlike)
+      if (result['isLiked'] as bool) {
+        await _rewardsHandler.trackSocialInteraction(
+          userId: currentUser.id,
+          interactionType: 'like',
+          targetUserId: originalPost.authorId,
+          metadata: {'postId': postId},
+        );
+      }
 
-      // Update UI optimistically
-      setState(() {
-        final postIndex = _posts.indexWhere((post) => post.id == postId);
-        if (postIndex != -1) {
-          final post = _posts[postIndex];
-          _posts[postIndex] = post.copyWith(
-            isLiked: !post.isLiked,
-            likesCount: post.isLiked
-                ? post.likesCount - 1
-                : post.likesCount + 1,
-          );
-        }
-      });
+      // Update with actual values from server
+      final actualIsLiked = result['isLiked'] as bool;
+      final actualLikesCount = result['likesCount'] as int;
+
+      if (mounted) {
+        setState(() {
+          final currentIndex = _posts.indexWhere((post) => post.id == postId);
+          if (currentIndex != -1) {
+            _posts[currentIndex] = _posts[currentIndex].copyWith(
+              isLiked: actualIsLiked,
+              likesCount: actualLikesCount,
+            );
+          }
+        });
+      }
     } catch (e) {
+      // Rollback to original state on error
+      if (mounted) {
+        setState(() {
+          final currentIndex = _posts.indexWhere((post) => post.id == postId);
+          if (currentIndex != -1) {
+            _posts[currentIndex] = originalPost;
+          }
+        });
+      }
+
       if (!mounted) return;
-      final colorScheme = Theme.of(context).colorScheme;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Icon(
-                Icons.error_outline,
-                color: colorScheme.onErrorContainer,
-                size: 16,
-              ),
-              const SizedBox(width: 8),
-              const Text('Failed to update like'),
-            ],
+
+      // Only show error if it's not a concurrent request error
+      if (!e.toString().contains('already in progress')) {
+        final colorScheme = Theme.of(context).colorScheme;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                Icon(
+                  Icons.error_outline,
+                  color: colorScheme.onErrorContainer,
+                  size: 16,
+                ),
+                const SizedBox(width: 8),
+                const Text('Failed to update like'),
+              ],
+            ),
+            backgroundColor: colorScheme.errorContainer,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            margin: const EdgeInsets.all(16),
+            duration: const Duration(seconds: 2),
           ),
-          backgroundColor: colorScheme.errorContainer,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          margin: const EdgeInsets.all(16),
-          duration: const Duration(seconds: 2),
-        ),
-      );
+        );
+      }
+    } finally {
+      // Always release the lock
+      _likesInProgress.remove(postId);
     }
   }
 

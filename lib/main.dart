@@ -5,6 +5,7 @@ import 'package:dabbler/core/services/analytics/analytics_service.dart';
 import 'package:dabbler/core/design_system/tokens/token_based_theme.dart';
 import 'package:dabbler/core/services/theme_service.dart';
 import 'package:dabbler/core/services/app_lifecycle_manager.dart';
+import 'package:dabbler/features/social/services/realtime_likes_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -109,6 +110,11 @@ Future<void> main() async {
 
     // Initialize app lifecycle manager
     AppLifecycleManager().init();
+
+    // Initialize realtime likes service for social features
+    if (FeatureFlags.socialFeed) {
+      await RealtimeLikesService().initialize();
+    }
 
     runApp(const ProviderScope(child: MyApp()));
   } catch (e) {

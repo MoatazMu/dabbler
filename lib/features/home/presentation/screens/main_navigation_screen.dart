@@ -6,6 +6,7 @@ import 'package:dabbler/features/home/presentation/screens/home_screen.dart';
 import 'package:dabbler/features/home/presentation/widgets/inline_post_composer.dart';
 import 'package:dabbler/features/explore/presentation/screens/sports_screen.dart'
     show ExploreScreen;
+import 'package:dabbler/features/social/presentation/screens/social_screen.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/core/services/app_lifecycle_manager.dart';
@@ -26,9 +27,10 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   final PageController _pageController = PageController();
   bool _hasShownModalThisSession = false;
 
-  // Only swipeable screens (Home and Sports, excluding Create)
+  // Only swipeable screens (Home, Social, and Sports, excluding Create)
   final List<Widget> _swipeableScreens = [
     const HomeScreen(),
+    const SocialScreen(),
     const ExploreScreen(), // Sports screen
   ];
 
@@ -157,8 +159,8 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   }
 
   void _onItemTapped(int index) {
-    if (index == 1) {
-      // Show create post modal
+    if (index == 2) {
+      // Show create post modal (index 2 is Create button)
       _showCreatePostModal();
       return;
     }
@@ -167,8 +169,16 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
       _currentIndex = index;
     });
 
-    // Map nav index to page index (skip middle create button)
-    final pageIndex = index == 0 ? 0 : 1;
+    // Map nav index to page index: 0->0 (Home), 1->1 (Social), 3->2 (Sports)
+    int pageIndex;
+    if (index == 0) {
+      pageIndex = 0; // Home
+    } else if (index == 1) {
+      pageIndex = 1; // Social
+    } else {
+      pageIndex = 2; // Sports (index 3 maps to page 2)
+    }
+
     _pageController.animateToPage(
       pageIndex,
       duration: const Duration(milliseconds: 300),
@@ -177,8 +187,15 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   }
 
   void _onPageChanged(int pageIndex) {
-    // Map page index back to nav index (0 -> 0, 1 -> 2)
-    final navIndex = pageIndex == 0 ? 0 : 2;
+    // Map page index back to nav index: 0->0 (Home), 1->1 (Social), 2->3 (Sports)
+    int navIndex;
+    if (pageIndex == 0) {
+      navIndex = 0; // Home
+    } else if (pageIndex == 1) {
+      navIndex = 1; // Social
+    } else {
+      navIndex = 3; // Sports
+    }
     setState(() {
       _currentIndex = navIndex;
     });
@@ -208,7 +225,12 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         return isDark
             ? const Color(0xFF4A148C).withOpacity(0.50)
             : const Color(0xFFE0C7FF).withOpacity(0.50);
-      case 2: // Sports - Sports category
+      case 1: // Social - Social category
+        final colorScheme = Theme.of(context).colorScheme;
+        return isDark
+            ? colorScheme.categorySocial.withOpacity(0.50)
+            : colorScheme.categorySocial.withOpacity(0.50);
+      case 3: // Sports - Sports category
         final colorScheme = Theme.of(context).colorScheme;
         return isDark
             ? colorScheme.categorySports.withOpacity(0.50)
@@ -268,9 +290,19 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
                   foregroundColorInactive: foregroundColorInactive,
                 ),
 
+                // Social Feed
+                _buildNavItem(
+                  index: 1,
+                  outlineIcon: Iconsax.messages_2_copy,
+                  bulkIcon: Iconsax.messages_2,
+                  label: 'Social',
+                  foregroundColor: foregroundColor,
+                  foregroundColorInactive: foregroundColorInactive,
+                ),
+
                 // Create Post (Small CTA Button)
                 GestureDetector(
-                  onTap: () => _onItemTapped(1),
+                  onTap: () => _onItemTapped(2),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
@@ -304,7 +336,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
 
                 // Sports
                 _buildNavItem(
-                  index: 2,
+                  index: 3,
                   outlineIcon: Iconsax.search_status_copy,
                   bulkIcon: Iconsax.search_status,
                   label: 'Sports',

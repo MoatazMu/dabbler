@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,6 +12,7 @@ import 'package:dabbler/features/social/presentation/widgets/post/share_post_bot
 import 'package:dabbler/features/social/presentation/widgets/comments/comments_thread.dart';
 import 'package:dabbler/features/social/presentation/widgets/comments/comment_input.dart';
 import '../../../services/social_service.dart';
+import '../../../services/realtime_likes_service.dart';
 import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 import 'package:intl/intl.dart';
@@ -29,6 +32,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final FocusNode _commentFocus = FocusNode();
 
   String? _replyingToCommentId;
+  StreamSubscription<PostLikeUpdate>? _likeSubscription;
 
   @override
   void initState() {
@@ -39,6 +43,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
       ref
           .read(socialFeedControllerProvider.notifier)
           .loadPostDetails(widget.postId);
+
+      // Subscribe to realtime like updates for this specific post
+      _likeSubscription = RealtimeLikesService()
+          .postUpdates(widget.postId)
+          .listen((update) {
+            if (!mounted) return;
+            // Invalidate provider to refresh UI with updated counts
+            ref.invalidate(postDetailsProvider(widget.postId));
+          });
     });
   }
 
@@ -47,6 +60,7 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     _scrollController.dispose();
     _commentController.dispose();
     _commentFocus.dispose();
+    _likeSubscription?.cancel();
     super.dispose();
   }
 
@@ -684,19 +698,54 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
     }
   }
 
+  bool _likeInProgress = false;
+
   void _handleLike(String postId) async {
+    // Prevent multiple simultaneous like requests
+    if (_likeInProgress) return;
+
+    // Store original post state for rollback on error
+    final postAsync = ref.read(postDetailsProvider(postId));
+    final originalPost = postAsync.valueOrNull;
+    if (originalPost == null) return;
+
+    // Lock to prevent rapid clicks
+    _likeInProgress = true;
+
+    // Store optimistic state for comparison
+    final optimisticIsLiked = !originalPost.isLiked;
+
     try {
       final socialService = SocialService();
-      await socialService.toggleLike(postId);
+      final result = await socialService.toggleLike(postId);
 
-      // Refresh post details to get updated like count
+      // Verify the result matches our optimistic update
+      final actualIsLiked = result['isLiked'] as bool;
+
+      // Refresh post details with the actual values from server
       ref.invalidate(postDetailsProvider(postId));
+
+      // If there's a mismatch, show a message
+      if (actualIsLiked != optimisticIsLiked && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Like status updated'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+      }
     } catch (e) {
-      if (mounted) {
+      // Rollback on error
+      ref.invalidate(postDetailsProvider(postId));
+
+      if (mounted && !e.toString().contains('already in progress')) {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Failed to toggle like: $e')));
       }
+    } finally {
+      // Always release the lock
+      _likeInProgress = false;
     }
   }
 

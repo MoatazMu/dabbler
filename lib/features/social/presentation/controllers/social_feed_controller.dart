@@ -256,6 +256,26 @@ class SocialFeedController extends StateNotifier<SocialFeedState> {
     });
   }
 
+  /// Update post like count from realtime events
+  void updatePostLikeCount(String postId, int newLikeCount, bool isLiked) {
+    final postIndex = state.posts.indexWhere((post) => post.id == postId);
+    if (postIndex == -1) return;
+
+    final post = state.posts[postIndex];
+    final updatedPost = post.copyWith(
+      likesCount: newLikeCount,
+      isLiked: isLiked,
+    );
+
+    final updatedPosts = List<PostModel>.from(state.posts);
+    updatedPosts[postIndex] = updatedPost;
+
+    state = state.copyWith(
+      posts: updatedPosts,
+      filteredPosts: _applyFilter(updatedPosts, state.filter),
+    );
+  }
+
   /// Toggle like status of a post
   Future<void> togglePostLike(String postId) async {
     try {

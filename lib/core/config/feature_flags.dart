@@ -13,8 +13,8 @@ class FeatureFlags {
   /// Authentication
   static const bool enablePhoneAuth = true;
   static const bool enableEmailAuth = true;
-  static const bool enableGoogleAuth = false; // Future
-  static const bool enableAppleAuth = false; // Future
+  static const bool enableGoogleAuth = true; // Future
+  static const bool enableAppleAuth = true; // Future
 
   /// Profile Management
   static const bool enableBasicProfile = true;
@@ -47,18 +47,18 @@ class FeatureFlags {
   // ============================================================================
 
   /// Central MVP feature flags (UI gating only; do not delete code).
-  static const bool multiSport = false;
-  static const bool organiserProfile = false;
+  static const bool multiSport = true;
+  static const bool organiserProfile = true;
   static const bool socialFeed = true; // NOW ENABLED FOR MVP
-  static const bool messaging = false;
+  static const bool messaging = true;
   static const bool notifications = true;
-  static const bool squads = false;
-  static const bool venuesBooking = false; // venues remain read-only
+  static const bool squads = true;
+  static const bool venuesBooking = true; // venues remain read-only
   static const bool enableRewards = true; // Early Bird check-in system enabled
 
   /// Game Creation Features (Split by profile type)
   static const bool enablePlayerGameCreation =
-      false; // Players CANNOT create games in MVP
+      true; // Players CANNOT create games in MVP
   static const bool enableOrganiserGameCreation =
       true; // Organisers can create organized games in MVP
 
@@ -66,22 +66,22 @@ class FeatureFlags {
   static const bool enablePlayerGameJoining =
       true; // Players CAN join games in MVP
   static const bool enableOrganiserGameJoining =
-      false; // Organisers CANNOT join games in MVP (they create/organize)
+      true; // Organisers CANNOT join games in MVP (they create/organize)
 
   /// Game Management
-  static const bool enableGameEditing = false;
-  static const bool enableGameDeletion = false;
-  static const bool enableRecurringGames = false;
-  static const bool enablePrivateGames = false;
-  static const bool enableGameInvitations = false;
-  static const bool enableGameWaitlist = false;
-  static const bool enableGameChat = false;
+  static const bool enableGameEditing = true;
+  static const bool enableGameDeletion = true;
+  static const bool enableRecurringGames = true;
+  static const bool enablePrivateGames = true;
+  static const bool enableGameInvitations = true;
+  static const bool enableGameWaitlist = true;
+  static const bool enableGameChat = true;
 
   /// Profile Types
   static const bool enableOrganiserProfile = true; // NOW ENABLED FOR MVP
-  static const bool enableMultiProfile = false;
-  static const bool enableVerificationBadge = false;
-  static const bool enableProfileCompletionPercent = false;
+  static const bool enableMultiProfile = true;
+  static const bool enableVerificationBadge = true;
+  static const bool enableProfileCompletionPercent = true;
 
   /// Social Features
   static const bool enableSocialFeed = true; // NOW ENABLED FOR MVP
@@ -92,25 +92,27 @@ class FeatureFlags {
   static const bool enableFollowUsers = true; // NOW ENABLED FOR MVP
   static const bool enableFriendRequests = true; // NOW ENABLED FOR MVP
   static const bool enableFriendsList = true; // NOW ENABLED FOR MVP
-  static const bool enableBlockUsers = false;
-  static const bool enableReportContent = false;
-  static const bool enableCircleFeed = false;
-  static const bool enableActivityFeed = false;
+  static const bool enableBlockUsers =
+      true; // NOW ENABLED - Full blocking support
+  static const bool enableReportContent =
+      true; // NOW ENABLED - Content moderation
+  static const bool enableCircleFeed = true;
+  static const bool enableActivityFeed = true;
 
   /// Squads & Teams
-  static const bool enableSquads = false;
-  static const bool enableCreateSquad = false;
-  static const bool enableJoinSquad = false;
-  static const bool enableSquadChat = false;
-  static const bool enableSquadInvites = false;
-  static const bool enableSquadStats = false;
+  static const bool enableSquads = true;
+  static const bool enableCreateSquad = true;
+  static const bool enableJoinSquad = true;
+  static const bool enableSquadChat = true;
+  static const bool enableSquadInvites = true;
+  static const bool enableSquadStats = true;
 
   /// Messaging
-  static const bool enableDirectMessages = false;
-  static const bool enableGroupChat = false;
-  static const bool enableChatHistory = false;
-  static const bool enableTypingIndicators = false;
-  static const bool enableReadReceipts = false;
+  static const bool enableDirectMessages = true;
+  static const bool enableGroupChat = true;
+  static const bool enableChatHistory = true;
+  static const bool enableTypingIndicators = true;
+  static const bool enableReadReceipts = true;
 
   /// Notifications
   static const bool enablePushNotifications = true;
@@ -119,50 +121,50 @@ class FeatureFlags {
   static const bool enableNotificationPreferences = true;
 
   /// Venues
-  static const bool enableVenueSearch = false;
-  static const bool enableNearbyVenues = false;
-  static const bool enableVenueBooking = false;
-  static const bool enableVenueRatings = false;
-  static const bool enableVenuePhotos = false;
+  static const bool enableVenueSearch = true;
+  static const bool enableNearbyVenues = true;
+  static const bool enableVenueBooking = true;
+  static const bool enableVenueRatings = true;
+  static const bool enableVenuePhotos = true;
 
   /// Payments & Bookings
-  static const bool enablePayments = false;
-  static const bool enableWallet = false;
-  static const bool enableTransactionHistory = false;
-  static const bool enableBookingFlow = false;
-  static const bool enableBookingHistory = false;
+  static const bool enablePayments = true;
+  static const bool enableWallet = true;
+  static const bool enableTransactionHistory = true;
+  static const bool enableBookingFlow = true;
+  static const bool enableBookingHistory = true;
 
   /// Advanced Statistics
-  static const bool enableDetailedStats = false;
-  static const bool enableLeaderboards = false;
-  static const bool enableAchievementBadges = false;
-  static const bool enablePerformanceTrends = false;
+  static const bool enableDetailedStats = true;
+  static const bool enableLeaderboards = true;
+  static const bool enableAchievementBadges = true;
+  static const bool enablePerformanceTrends = true;
 
   /// Bench Mode
-  static const bool enableBenchMode = false; // Unique feature, post-MVP
+  static const bool enableBenchMode = true; // Unique feature, post-MVP
 
   /// Discovery
-  static const bool enableAdvancedSearch = false;
+  static const bool enableAdvancedSearch = true;
   static const bool enableFilters = true; // Basic filters only
-  static const bool enableMapView = false;
-  static const bool enableRecommendations = false;
-  static const bool enableTrendingGames = false;
+  static const bool enableMapView = true;
+  static const bool enableRecommendations = true;
+  static const bool enableTrendingGames = true;
 
   /// Ratings Extended
-  static const bool enableVenueRating = false;
-  static const bool enableGameRating = false;
-  static const bool enableRatingComments = false; // Stars only for MVP
+  static const bool enableVenueRating = true;
+  static const bool enableGameRating = true;
+  static const bool enableRatingComments = true; // Stars only for MVP
 
   /// Moderation (Backend only, no UI)
-  static const bool enableModerationUI = false; // Admin panel only
-  static const bool enableUserReports = false;
-  static const bool enableContentModeration = false;
+  static const bool enableModerationUI = true; // Admin panel only
+  static const bool enableUserReports = true;
+  static const bool enableContentModeration = true;
 
   /// Advanced Features
-  static const bool enableRealtimeSync = false; // Use polling for MVP
-  static const bool enableOfflineMode = false;
-  static const bool enableAnalytics = false;
-  static const bool enableABTesting = false;
+  static const bool enableRealtimeSync = true; // Use polling for MVP
+  static const bool enableOfflineMode = true;
+  static const bool enableAnalytics = true;
+  static const bool enableABTesting = true;
 
   // ============================================================================
   // SPORT CONFIGURATION
@@ -170,7 +172,20 @@ class FeatureFlags {
 
   /// Sports available in MVP
   /// Three main sports: football, cricket, paddle
-  static const List<String> enabledSports = ['football', 'cricket', 'paddle'];
+  static const List<String> enabledSports = [
+    'football',
+    'cricket',
+    'paddle',
+    'basketball',
+    'tennis',
+    'volleyball',
+    'badminton',
+    'table_tennis',
+    'squash',
+    'baseball',
+    'rugby',
+    'hockey',
+  ];
 
   /// All sports (for future enablement)
   static const List<String> allSports = [
@@ -260,14 +275,14 @@ class FeatureFlags {
       true; // NOW ENABLED FOR MVP - Sports/Games Browsing
   static const bool showMyGamesTab = true;
   static const bool showSocialTab = true; // NOW ENABLED FOR MVP
-  static const bool showSquadsTab = false;
+  static const bool showSquadsTab = true;
   static const bool showProfileTab = true;
   static const bool showSettingsTab = true; // Or within profile
 
   /// Top bar features
   static const bool showNotificationBell = true;
-  static const bool showMessagesIcon = false;
-  static const bool showSearchIcon = false;
+  static const bool showMessagesIcon = true;
+  static const bool showSearchIcon = true;
 
   // ============================================================================
   // PROFILE TYPE CONFIGURATION
@@ -289,7 +304,11 @@ class FeatureFlags {
   // ============================================================================
 
   /// Game types visible in MVP
-  static const List<String> enabledGameTypes = ['pickup', 'organized'];
+  static const List<String> enabledGameTypes = [
+    'pickup',
+    'organized',
+    'tournament',
+  ];
 
   /// All game types
   static const List<String> allGameTypes = [
@@ -309,7 +328,11 @@ class FeatureFlags {
 
   /// Privacy levels available in MVP
   /// Only public games for simplicity
-  static const List<String> enabledPrivacyLevels = ['public'];
+  static const List<String> enabledPrivacyLevels = [
+    'public',
+    'private',
+    'invite_only',
+  ];
 
   /// All privacy levels
   static const List<String> allPrivacyLevels = [
@@ -323,9 +346,9 @@ class FeatureFlags {
   // ============================================================================
 
   /// Enable debug features
-  static const bool enableDebugMode = false;
-  static const bool enableFeatureFlagOverride = false; // Allow runtime toggle
-  static const bool showFeatureFlagIndicators = false; // Show "BETA" badges
+  static const bool enableDebugMode = true;
+  static const bool enableFeatureFlagOverride = true; // Allow runtime toggle
+  static const bool showFeatureFlagIndicators = true; // Show "BETA" badges
 
   // ============================================================================
   // UTILITY METHODS

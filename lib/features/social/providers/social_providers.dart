@@ -1,10 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/controllers/chat_controller.dart';
 import '../presentation/controllers/friends_controller.dart';
+import '../presentation/controllers/simple_friends_controller.dart';
 import '../presentation/controllers/posts_controller.dart';
 import '../presentation/controllers/social_feed_controller.dart';
+import '../domain/usecases/friendship_usecases.dart';
 import 'package:dabbler/data/models/social/chat_message_model.dart';
 import 'package:dabbler/data/models/social/conversation_model.dart';
+import 'package:dabbler/providers.dart' as global;
 import '../../../../utils/enums/social_enums.dart'; // Import MessageType
 import '../services/social_service.dart';
 import '../../authentication/presentation/providers/auth_providers.dart';
@@ -31,16 +34,68 @@ final socialFeedControllerProvider =
     });
 
 // =============================================================================
+// FRIENDSHIP USE CASES
+// =============================================================================
+
+final sendFriendRequestUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(global.friendsRepositoryProvider);
+  return SendFriendRequestUseCase(repository);
+});
+
+final acceptFriendRequestUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(global.friendsRepositoryProvider);
+  return AcceptFriendRequestUseCase(repository);
+});
+
+final rejectFriendRequestUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(global.friendsRepositoryProvider);
+  return RejectFriendRequestUseCase(repository);
+});
+
+final removeFriendUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(global.friendsRepositoryProvider);
+  return RemoveFriendUseCase(repository);
+});
+
+final blockUserUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(global.friendsRepositoryProvider);
+  return BlockUserUseCase(repository);
+});
+
+final unblockUserUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(global.friendsRepositoryProvider);
+  return UnblockUserUseCase(repository);
+});
+
+final getFriendshipStatusUseCaseProvider = Provider((ref) {
+  final repository = ref.watch(global.friendsRepositoryProvider);
+  return GetFriendshipStatusUseCase(repository);
+});
+
+// =============================================================================
 // FRIENDS CONTROLLER PROVIDER
 // =============================================================================
 
-/// Provider for FriendsController
+/// Provider for SimpleFriendsController (new working implementation)
+final simpleFriendsControllerProvider =
+    StateNotifierProvider<SimpleFriendsController, SimpleFriendsState>((ref) {
+      return SimpleFriendsController(
+        sendFriendRequest: ref.watch(sendFriendRequestUseCaseProvider),
+        acceptFriendRequest: ref.watch(acceptFriendRequestUseCaseProvider),
+        rejectFriendRequest: ref.watch(rejectFriendRequestUseCaseProvider),
+        removeFriend: ref.watch(removeFriendUseCaseProvider),
+        blockUser: ref.watch(blockUserUseCaseProvider),
+        unblockUser: ref.watch(unblockUserUseCaseProvider),
+        repository: ref.watch(global.friendsRepositoryProvider),
+      );
+    });
+
+/// Legacy FriendsController provider (kept for backward compatibility)
+/// Use simpleFriendsControllerProvider for new code
 final friendsControllerProvider =
     StateNotifierProvider<FriendsController, FriendsState>((ref) {
-      // Placeholder implementation - in real app, inject proper use cases
-      throw UnimplementedError(
-        'FriendsController dependencies not implemented',
-      );
+      // Placeholder implementation - use simpleFriendsControllerProvider instead
+      throw UnimplementedError('Use simpleFriendsControllerProvider instead');
     });
 
 // =============================================================================
@@ -49,25 +104,25 @@ final friendsControllerProvider =
 
 /// Total friends count
 final totalFriendsCountProvider = Provider<int>((ref) {
-  final friendsState = ref.watch(friendsControllerProvider);
+  final friendsState = ref.watch(simpleFriendsControllerProvider);
   return friendsState.totalFriendsCount;
 });
 
-/// Online friends count
+/// Online friends count (placeholder for now)
 final onlineFriendsCountProvider = Provider<int>((ref) {
-  final friendsState = ref.watch(friendsControllerProvider);
-  return friendsState.onlineFriendsCount;
+  // TODO: Implement online presence tracking
+  return 0;
 });
 
-/// Blocked users count
+/// Blocked users count (placeholder for now)
 final blockedUsersCountProvider = Provider<int>((ref) {
-  final friendsState = ref.watch(friendsControllerProvider);
-  return friendsState.blockedUsers.length;
+  // TODO: Query blocked users from repository
+  return 0;
 });
 
 /// Has pending friend requests
 final hasPendingFriendRequestsProvider = Provider<bool>((ref) {
-  final friendsState = ref.watch(friendsControllerProvider);
+  final friendsState = ref.watch(simpleFriendsControllerProvider);
   return friendsState.incomingRequests.isNotEmpty;
 });
 

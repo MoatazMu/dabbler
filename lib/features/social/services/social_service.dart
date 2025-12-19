@@ -12,6 +12,9 @@ class SocialService {
   final SupabaseClient _supabase = Supabase.instance.client;
   final AuthService _authService = AuthService();
 
+  // Track posts currently being liked/unliked to prevent concurrent requests
+  final Map<String, bool> _likesInProgress = {};
+
   /// Ensure session is fresh before making Supabase queries
   Future<void> _ensureValidSession() async {
     try {
@@ -592,7 +595,16 @@ class SocialService {
   }
 
   /// Like/unlike a post
-  Future<void> toggleLike(String postId) async {
+  /// Database triggers automatically update like_count in realtime
+  /// Real-time updates are broadcast via RealtimeLikesService
+  Future<Map<String, dynamic>> toggleLike(String postId) async {
+    // Prevent concurrent like toggles on the same post
+    if (_likesInProgress[postId] == true) {
+      throw Exception('Like already in progress');
+    }
+
+    _likesInProgress[postId] = true;
+
     try {
       await _ensureValidSession();
 
@@ -614,8 +626,7 @@ class SocialService {
 
       final profileId = profileRes['id'] as String;
 
-      // Check if already liked - use the original postId consistently
-      // post_likes table uses composite key (post_id, user_id), no id column
+      // Check if already liked
       final existingLikes = await _supabase
           .from('post_likes')
           .select('post_id')
@@ -623,26 +634,51 @@ class SocialService {
           .eq('user_id', user.id);
 
       final isCurrentlyLiked = existingLikes.isNotEmpty;
+      final bool newLikeState;
 
       if (isCurrentlyLiked) {
-        // Unlike: Remove the like (trigger will decrement like_count automatically)
+        // Unlike: Database trigger will auto-decrement like_count and broadcast update
         await _supabase
             .from('post_likes')
             .delete()
             .eq('post_id', postId)
             .eq('user_id', user.id);
+        newLikeState = false;
       } else {
-        // Like: Add the like (trigger will increment like_count automatically)
+        // Like: Database trigger will auto-increment like_count and broadcast update
+        // Delete-first ensures no duplicates, then insert fresh
+        await _supabase
+            .from('post_likes')
+            .delete()
+            .eq('post_id', postId)
+            .eq('user_id', user.id);
+
         await _supabase.from('post_likes').insert({
           'post_id': postId,
           'user_id': user.id,
-          'profile_id':
-              profileId, // Required: use profile_id per social model spec
+          'profile_id': profileId,
           'created_at': DateTime.now().toIso8601String(),
         });
+        newLikeState = true;
       }
+
+      // Small delay to ensure trigger completes before fetching
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      // Fetch updated like count (will also be broadcast via realtime)
+      final postData = await _supabase
+          .from('posts')
+          .select('like_count')
+          .eq('id', postId)
+          .maybeSingle();
+
+      final likesCount = postData?['like_count'] as int? ?? 0;
+
+      return {'isLiked': newLikeState, 'likesCount': likesCount};
     } catch (e) {
       throw Exception('Failed to toggle like: $e');
+    } finally {
+      _likesInProgress.remove(postId);
     }
   }
 

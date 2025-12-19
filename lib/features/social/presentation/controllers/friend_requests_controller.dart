@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/usecases/add_friend_usecase.dart';
+import '../../domain/usecases/friendship_usecases.dart';
 import 'package:dabbler/data/models/social/friend_request_model.dart';
 import 'package:dabbler/data/models/authentication/user_model.dart' as core;
 import 'package:dabbler/data/models/social/friend_request.dart';
+import 'dart:math' as math;
 
 /// State for friend requests management
 class FriendRequestsState {
@@ -115,12 +116,13 @@ enum FriendRequestFilter {
 
 /// Controller for managing friend requests
 class FriendRequestsController extends StateNotifier<FriendRequestsState> {
-  final AddFriendUseCase _addFriendUseCase;
+  final AcceptFriendRequestUseCase _acceptFriendRequest;
+  final RejectFriendRequestUseCase _rejectFriendRequest;
 
   StreamSubscription? _requestUpdatesSubscription;
   Timer? _refreshTimer;
 
-  FriendRequestsController(this._addFriendUseCase)
+  FriendRequestsController(this._acceptFriendRequest, this._rejectFriendRequest)
     : super(const FriendRequestsState()) {
     _setupRealtimeUpdates();
     _startPeriodicRefresh();
@@ -198,13 +200,7 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
         (req) => req.id == requestId,
       );
 
-      final params = AddFriendParams(
-        userId: 'current_user', // From auth state
-        targetUserId: request.fromUserId,
-        message: 'Accepted friend request',
-      );
-
-      final result = await _addFriendUseCase(params);
+      final result = await _acceptFriendRequest(request.fromUserId);
 
       result.fold(
         (failure) {
@@ -215,14 +211,14 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
             }),
           );
         },
-        (success) {
+        (_) {
           // Remove from incoming requests
           final updatedIncoming = state.incomingRequests
               .where((req) => req.id != requestId)
               .toList();
 
           // Update notification count
-          final newCount = Math.max(0, state.notificationCount - 1);
+          final newCount = math.max(0, state.notificationCount - 1);
 
           state = state.copyWith(
             incomingRequests: updatedIncoming,
@@ -251,26 +247,39 @@ class FriendRequestsController extends StateNotifier<FriendRequestsState> {
     );
 
     try {
-      final success = await _declineFriendRequest(requestId);
+      final request = state.incomingRequests.firstWhere(
+        (req) => req.id == requestId,
+      );
 
-      if (success) {
-        // Remove from incoming requests
-        final updatedIncoming = state.incomingRequests
-            .where((req) => req.id != requestId)
-            .toList();
+      final result = await _rejectFriendRequest(request.fromUserId);
 
-        // Update notification count
-        final newCount = Math.max(0, state.notificationCount - 1);
+      result.fold(
+        (failure) {
+          state = state.copyWith(
+            error: failure.message,
+            processingRequests: state.processingRequests.difference({
+              requestId,
+            }),
+          );
+        },
+        (_) {
+          // Remove from incoming requests
+          final updatedIncoming = state.incomingRequests
+              .where((req) => req.id != requestId)
+              .toList();
 
-        state = state.copyWith(
-          incomingRequests: updatedIncoming,
-          notificationCount: newCount,
-          hasUnreadNotifications: newCount > 0,
-        );
-      }
+          // Update notification count
+          final newCount = math.max(0, state.notificationCount - 1);
 
-      state = state.copyWith(
-        processingRequests: state.processingRequests.difference({requestId}),
+          state = state.copyWith(
+            incomingRequests: updatedIncoming,
+            processingRequests: state.processingRequests.difference({
+              requestId,
+            }),
+            notificationCount: newCount,
+            hasUnreadNotifications: newCount > 0,
+          );
+        },
       );
     } catch (e) {
       state = state.copyWith(

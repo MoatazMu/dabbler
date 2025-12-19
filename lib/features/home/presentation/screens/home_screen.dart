@@ -20,6 +20,7 @@ import 'package:dabbler/widgets/thoughts_input.dart';
 import 'package:dabbler/data/models/games/game.dart';
 import 'package:dabbler/features/social/presentation/widgets/feed/post_card.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
+import 'package:dabbler/features/social/services/realtime_likes_service.dart';
 import 'package:dabbler/services/notifications/push_notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:dabbler/features/home/presentation/widgets/notification_permission_drawer.dart';
@@ -37,12 +38,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final AuthService _authService = AuthService();
   Map<String, dynamic>? _userProfile;
   String _selectedPostFilter = 'all'; // all, moment, dab, kickin
+  final Map<String, StreamSubscription<PostLikeUpdate>> _likeSubscriptions = {};
+  Timer? _refreshDebounceTimer;
 
   @override
   void initState() {
     super.initState();
     _loadUserProfile();
     _checkNotificationPermission();
+  }
+
+  @override
+  void dispose() {
+    _refreshDebounceTimer?.cancel();
+    // Cancel all realtime subscriptions
+    for (final subscription in _likeSubscriptions.values) {
+      subscription.cancel();
+    }
+    _likeSubscriptions.clear();
+    super.dispose();
   }
 
   Future<void> _checkNotificationPermission() async {
@@ -684,28 +698,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               )
             else
               Column(
-                children: filteredPosts
-                    .map(
-                      (post) => PostCard(
-                        post: post,
-                        onLike: () => _handleLikePost(post.id),
-                        onComment: () => _handleCommentPost(post.id),
-                        onDelete: () {
-                          // Refresh feed after deletion
-                          ref.invalidate(latestFeedPostsProvider);
-                        },
-                        onPostTap: () => context.pushNamed(
-                          RouteNames.socialPostDetail,
-                          pathParameters: {'postId': post.id},
-                        ),
-                        onProfileTap: () {
-                          context.go(
-                            '${RoutePaths.userProfile}/${post.authorId}',
-                          );
-                        },
-                      ),
-                    )
-                    .toList(),
+                children: filteredPosts.map((post) {
+                  // Subscribe to realtime updates for each post
+                  _subscribeToPostLikes(post.id);
+
+                  return PostCard(
+                    post: post,
+                    onLike: () => _handleLikePost(post.id),
+                    onComment: () => _handleCommentPost(post.id),
+                    onDelete: () {
+                      // Refresh feed after deletion
+                      ref.invalidate(latestFeedPostsProvider);
+                    },
+                    onPostTap: () => context.pushNamed(
+                      RouteNames.socialPostDetail,
+                      pathParameters: {'postId': post.id},
+                    ),
+                    onProfileTap: () {
+                      context.go('${RoutePaths.userProfile}/${post.authorId}');
+                    },
+                  );
+                }).toList(),
               ),
           ],
         );
@@ -788,18 +801,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  /// Subscribe to realtime like updates for a specific post
+  void _subscribeToPostLikes(String postId) {
+    // Don't subscribe twice
+    if (_likeSubscriptions.containsKey(postId)) return;
+
+    final subscription = RealtimeLikesService().postUpdates(postId).listen((
+      update,
+    ) {
+      if (!mounted) return;
+      // Debounce provider invalidation to batch multiple rapid updates
+      _refreshDebounceTimer?.cancel();
+      _refreshDebounceTimer = Timer(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          ref.invalidate(latestFeedPostsProvider);
+        }
+      });
+    });
+
+    _likeSubscriptions[postId] = subscription;
+  }
+
   Future<void> _handleLikePost(String postId) async {
     try {
       final socialService = SocialService();
       await socialService.toggleLike(postId);
 
-      // Wait for database trigger to update like_count
-      await Future.delayed(const Duration(milliseconds: 400));
-
-      // Refresh posts to show updated like count
-      if (mounted) {
-        ref.invalidate(latestFeedPostsProvider);
-      }
+      // Realtime service will automatically update all subscribed screens
+      // No need to manually refresh - the subscription will trigger updates
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

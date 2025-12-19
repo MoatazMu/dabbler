@@ -287,4 +287,51 @@ class FriendsRepositoryImpl implements FriendsRepository {
       return Err(svc.mapPostgrestError(error));
     }
   }
+
+  /// Get friend suggestions based on mutual friends
+  @override
+  Future<Result<List<Map<String, dynamic>>, Failure>> getFriendSuggestions({
+    int limit = 20,
+  }) async {
+    try {
+      final rows = await _db.rpc(
+        'rpc_get_friend_suggestions',
+        params: {'p_limit': limit},
+      );
+      if (rows is List) {
+        final suggestions = rows
+            .map((dynamic row) => Map<String, dynamic>.from(row as Map))
+            .toList(growable: false);
+        return Ok(suggestions);
+      }
+      return Err(
+        const ServerFailure(message: 'Unexpected suggestions payload'),
+      );
+    } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
+  }
+
+  /// Search for users by name or username
+  @override
+  Future<Result<List<Map<String, dynamic>>, Failure>> searchUsers(
+    String query, {
+    int limit = 20,
+  }) async {
+    try {
+      final rows = await _db.rpc(
+        'rpc_search_users',
+        params: {'p_query': query, 'p_limit': limit},
+      );
+      if (rows is List) {
+        final results = rows
+            .map((dynamic row) => Map<String, dynamic>.from(row as Map))
+            .toList(growable: false);
+        return Ok(results);
+      }
+      return Err(const ServerFailure(message: 'Unexpected search payload'));
+    } catch (error) {
+      return Err(svc.mapPostgrestError(error));
+    }
+  }
 }

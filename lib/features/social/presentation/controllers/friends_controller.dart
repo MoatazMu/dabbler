@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/usecases/add_friend_usecase.dart';
-import '../../domain/usecases/block_user_usecase.dart';
+import '../../domain/usecases/friendship_usecases.dart';
 import 'package:dabbler/data/models/authentication/user_model.dart';
 import 'package:dabbler/data/models/social/friend_request_model.dart';
 import 'package:dabbler/data/models/social/friend_request.dart';
@@ -126,14 +125,14 @@ enum FriendFilter { all, online, offline, recent, close }
 
 /// Controller for managing friends and friend requests
 class FriendsController extends StateNotifier<FriendsState> {
-  final AddFriendUseCase _addFriendUseCase;
-  final BlockUserUseCase _blockUserUseCase;
+  final SendFriendRequestUseCase _sendFriendRequest;
+  final BlockUserUseCase _blockUser;
 
   StreamSubscription? _onlineStatusSubscription;
   StreamSubscription? _friendRequestSubscription;
   Timer? _presenceUpdateTimer;
 
-  FriendsController(this._addFriendUseCase, this._blockUserUseCase)
+  FriendsController(this._sendFriendRequest, this._blockUser)
     : super(const FriendsState()) {
     _setupOnlineStatusTracking();
     _setupFriendRequestUpdates();
@@ -192,12 +191,7 @@ class FriendsController extends StateNotifier<FriendsState> {
     );
 
     try {
-      final params = AddFriendParams(
-        userId: 'current_user', // From auth state
-        targetUserId: userId,
-      );
-
-      final result = await _addFriendUseCase(params);
+      final result = await _sendFriendRequest(userId);
 
       result.fold(
         (failure) {
@@ -209,19 +203,9 @@ class FriendsController extends StateNotifier<FriendsState> {
             },
           );
         },
-        (success) {
-          // Add to outgoing requests
-          final newRequest = FriendRequestModel(
-            id: success.friendship.id,
-            fromUserId: 'current_user',
-            toUserId: userId,
-            status: FriendRequestStatus.pending,
-            createdAt: DateTime.now(),
-            message: params.message,
-          );
-
+        (_) {
+          // Request sent successfully
           state = state.copyWith(
-            outgoingRequests: [...state.outgoingRequests, newRequest],
             requestProcessingStates: {
               ...state.requestProcessingStates,
               userId: false,
@@ -349,12 +333,7 @@ class FriendsController extends StateNotifier<FriendsState> {
     );
 
     try {
-      final params = BlockUserParams(
-        blockingUserId: 'current_user', // From auth state
-        blockedUserId: userId,
-      );
-
-      final result = await _blockUserUseCase(params);
+      final result = await _blockUser(userId);
 
       result.fold(
         (failure) {
@@ -366,7 +345,7 @@ class FriendsController extends StateNotifier<FriendsState> {
             },
           );
         },
-        (success) {
+        (_) {
           // Remove from all friends lists
           final updatedFriendsByStatus = <FriendStatus, List<UserModel>>{};
           for (final entry in state.friendsByStatus.entries) {

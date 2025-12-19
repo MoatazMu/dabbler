@@ -44,4 +44,15 @@ abstract class FriendsRepository {
 
   /// Get list of friends
   Future<Result<List<Map<String, dynamic>>, Failure>> getFriends();
+
+  /// Get friend suggestions based on mutual friends
+  Future<Result<List<Map<String, dynamic>>, Failure>> getFriendSuggestions({
+    int limit = 20,
+  });
+
+  /// Search for users by name or username
+  Future<Result<List<Map<String, dynamic>>, Failure>> searchUsers(
+    String query, {
+    int limit = 20,
+  });
 }
