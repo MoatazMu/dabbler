@@ -1361,6 +1361,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   Widget _buildSearchRow() {
     final colorScheme = Theme.of(context).colorScheme;
+    final sportsScheme = context.getCategoryTheme('sports');
 
     return Row(
       children: [
@@ -1369,10 +1370,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             height: 56,
             child: TextField(
               controller: _searchController,
-              style: const TextStyle(fontSize: 15, color: Colors.white),
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontSize: 15,
+                    color: colorScheme.onSurface,
+                  ),
               decoration: InputDecoration(
                 filled: true,
-                fillColor: Colors.black.withValues(alpha: 0.2),
+                fillColor: sportsScheme.primary.withValues(alpha: 0.12),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
@@ -1384,20 +1388,20 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide(
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: sportsScheme.primary,
                     width: 2,
                   ),
                 ),
                 hintText: 'Search games and venues',
                 hintStyle: TextStyle(
                   fontSize: 15,
-                  color: Colors.white.withValues(alpha: 0.7),
+                  color: colorScheme.onSurfaceVariant,
                 ),
                 suffixIcon: Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: Icon(
                     Iconsax.search_normal_copy,
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: colorScheme.onSurfaceVariant,
                     size: 24,
                   ),
                 ),
@@ -1415,8 +1419,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           onPressed: _showFilterModal,
           icon: const Icon(Iconsax.setting_4_copy),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
-            foregroundColor: colorScheme.onSurface,
+            backgroundColor: sportsScheme.primary.withValues(alpha: 0.14),
+            foregroundColor: sportsScheme.primary,
             minimumSize: const Size(48, 48),
           ),
         ),
@@ -1426,8 +1430,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           tooltip: _sortTooltip(ref),
           icon: const Icon(Iconsax.sort_copy),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
-            foregroundColor: colorScheme.onSurface,
+            backgroundColor: sportsScheme.primary.withValues(alpha: 0.14),
+            foregroundColor: sportsScheme.primary,
             minimumSize: const Size(48, 48),
           ),
         ),
