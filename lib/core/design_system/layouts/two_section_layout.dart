@@ -36,6 +36,12 @@ class TwoSectionLayout extends StatelessWidget {
   /// Optional pull-to-refresh callback
   final Future<void> Function()? onRefresh;
 
+  /// Optional left-side drawer
+  final Widget? drawer;
+
+  /// Optional right-side drawer
+  final Widget? endDrawer;
+
   const TwoSectionLayout({
     super.key,
     required this.topSection,
@@ -48,6 +54,8 @@ class TwoSectionLayout extends StatelessWidget {
     this.floatingActionButton,
     this.floatingActionButtonLocation,
     this.onRefresh,
+    this.drawer,
+    this.endDrawer,
   });
 
   /// Get bottom section color based on category
@@ -200,6 +208,8 @@ class TwoSectionLayout extends StatelessWidget {
     return Scaffold(
       // Use token app color for background
       backgroundColor: tokens.app,
+      drawer: drawer,
+      endDrawer: endDrawer,
       floatingActionButton: floatingActionButton,
       floatingActionButtonLocation: floatingActionButtonLocation,
       extendBody: true,
