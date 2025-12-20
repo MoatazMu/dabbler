@@ -520,283 +520,280 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     return ascending ? 'Sort: Closest first' : 'Sort: Farthest first';
   }
 
-  void _openFilterDrawer(BuildContext scaffoldContext) {
-    final scaffoldState = Scaffold.maybeOf(scaffoldContext);
-    scaffoldState?.openEndDrawer();
+  void _showFilterModal() {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      showDragHandle: true,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => _buildFiltersBottomSheetContent(),
+    );
   }
 
-  Widget _buildFiltersDrawer() {
+  Widget _buildFiltersBottomSheetContent() {
     final colorScheme = Theme.of(context).colorScheme;
     final sportsScheme = context.getCategoryTheme('sports');
 
-    return Drawer(
-      child: SafeArea(
-        child: StatefulBuilder(
-          builder: (context, setModalState) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          'Filter Results',
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.close),
-                        tooltip: 'Close',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-                  // Sport-Specific Filters
-                  if (SportFiltersConfig.hasSportSpecificFilters(
-                    _sports[_selectedSportIndex]['name'],
-                  ))
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (SportSpecificFiltersFactory.create(
-                              sport: _sports[_selectedSportIndex]['name'],
-                              selectedFilters: _sportSpecificFilters,
-                              onFilterChanged: (key, value) {
-                                setModalState(() {
-                                  if (value == null || value == 'All') {
-                                    _sportSpecificFilters.remove(key);
-                                  } else {
-                                    _sportSpecificFilters[key] = value;
-                                  }
-                                });
-                              },
-                            ) !=
-                            null)
-                          SportSpecificFiltersFactory.create(
-                            sport: _sports[_selectedSportIndex]['name'],
-                            selectedFilters: _sportSpecificFilters,
-                            onFilterChanged: (key, value) {
-                              setModalState(() {
-                                if (value == null || value == 'All') {
-                                  _sportSpecificFilters.remove(key);
-                                } else {
-                                  _sportSpecificFilters[key] = value;
-                                }
-                              });
-                            },
-                          )!,
-                        const SizedBox(height: 20),
-                      ],
-                    ),
-                  // Area
-                  Text(
-                    'Area',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  DropdownButtonFormField<String>(
-                    value: _selectedArea,
-                    hint: const Text('Select Area'),
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: sportsScheme.primary.withOpacity(0.18),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(
-                          color: sportsScheme.primary,
-                          width: 2,
-                        ),
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                    ),
-                    items:
-                        const [
-                          'Downtown',
-                          'Jumeirah',
-                          'Marina',
-                          'Business Bay',
-                          'Other',
-                        ].map((area) {
-                          return DropdownMenuItem(
-                            value: area,
-                            child: Text(area),
-                          );
-                        }).toList(),
-                    onChanged: (value) =>
-                        setModalState(() => _selectedArea = value),
-                  ),
-                  const SizedBox(height: 20),
-                  // Price Range
-                  Text(
-                    'Price Range (AED)',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  RangeSlider(
-                    values: _selectedPriceRange,
-                    min: 0,
-                    max: 500,
-                    divisions: 10,
-                    activeColor: sportsScheme.primary,
-                    inactiveColor: sportsScheme.primary.withOpacity(0.18),
-                    labels: RangeLabels(
-                      _selectedPriceRange.start.round().toString(),
-                      _selectedPriceRange.end.round().toString(),
-                    ),
-                    onChanged: (values) =>
-                        setModalState(() => _selectedPriceRange = values),
-                  ),
-                  Text(
-                    'AED ${_selectedPriceRange.start.round()} - AED ${_selectedPriceRange.end.round()}',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Rating
-                  Text(
-                    'Minimum Rating',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Slider(
-                    value: _selectedRating,
-                    min: 0,
-                    max: 5,
-                    divisions: 5,
-                    activeColor: sportsScheme.primary,
-                    inactiveColor: sportsScheme.primary.withOpacity(0.18),
-                    label: _selectedRating == 0
-                        ? 'Any'
-                        : _selectedRating.toStringAsFixed(1),
-                    onChanged: (value) =>
-                        setModalState(() => _selectedRating = value),
-                  ),
-                  Text(
-                    _selectedRating == 0
-                        ? 'Any rating'
-                        : '${_selectedRating.toStringAsFixed(1)}+ stars',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  // Amenities
-                  Text(
-                    'Amenities',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children:
-                        const [
-                          'Parking',
-                          'Showers',
-                          'Indoor',
-                          'Outdoor',
-                          'Cafeteria',
-                        ].map((amenity) {
-                          final selected = _selectedAmenities.contains(amenity);
-                          return FilterChip(
-                            label: Text(amenity),
-                            selected: selected,
-                            selectedColor: sportsScheme.primary.withOpacity(
-                              0.16,
-                            ),
-                            checkmarkColor: sportsScheme.primary,
-                            side: BorderSide(
-                              color: selected
-                                  ? sportsScheme.primary.withOpacity(0.35)
-                                  : sportsScheme.primary.withOpacity(0.18),
-                            ),
-                            labelStyle: TextStyle(
-                              color: selected
-                                  ? sportsScheme.primary
-                                  : colorScheme.onSurface,
-                              fontWeight: selected
-                                  ? FontWeight.w600
-                                  : FontWeight.w500,
-                            ),
-                            onSelected: (selectedNow) {
-                              setModalState(() {
-                                if (selectedNow) {
-                                  _selectedAmenities.add(amenity);
-                                } else {
-                                  _selectedAmenities.remove(amenity);
-                                }
-                              });
-                            },
-                          );
-                        }).toList(),
-                  ),
-                  const SizedBox(height: 32),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () {
+    return StatefulBuilder(
+      builder: (context, setModalState) {
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 8,
+            bottom: 16 + MediaQuery.of(context).viewInsets.bottom,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Filter Results',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              // Sport-Specific Filters
+              if (SportFiltersConfig.hasSportSpecificFilters(
+                _sports[_selectedSportIndex]['name'],
+              ))
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (SportSpecificFiltersFactory.create(
+                          sport: _sports[_selectedSportIndex]['name'],
+                          selectedFilters: _sportSpecificFilters,
+                          onFilterChanged: (key, value) {
                             setModalState(() {
-                              _selectedArea = null;
-                              _selectedPriceRange = const RangeValues(0, 500);
-                              _selectedRating = 0;
-                              _selectedAmenities.clear();
-                              _sportSpecificFilters.clear();
+                              if (value == null || value == 'All') {
+                                _sportSpecificFilters.remove(key);
+                              } else {
+                                _sportSpecificFilters[key] = value;
+                              }
                             });
                           },
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            foregroundColor: sportsScheme.primary,
-                          ),
-                          child: const Text('Clear All'),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FilledButton(
-                          onPressed: () {
-                            setState(() {
-                              // Apply filters
-                            });
-                            Navigator.of(context).pop();
-                          },
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            backgroundColor: sportsScheme.primary,
-                            foregroundColor: sportsScheme.onPrimary,
-                          ),
-                          child: const Text('Apply Filters'),
-                        ),
-                      ),
-                    ],
+                        ) !=
+                        null)
+                      SportSpecificFiltersFactory.create(
+                        sport: _sports[_selectedSportIndex]['name'],
+                        selectedFilters: _sportSpecificFilters,
+                        onFilterChanged: (key, value) {
+                          setModalState(() {
+                            if (value == null || value == 'All') {
+                              _sportSpecificFilters.remove(key);
+                            } else {
+                              _sportSpecificFilters[key] = value;
+                            }
+                          });
+                        },
+                      )!,
+                    const SizedBox(height: 20),
+                  ],
+                ),
+              // Area
+              Text(
+                'Area',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<String>(
+                value: _selectedArea,
+                hint: const Text('Select Area'),
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  const SizedBox(height: 16),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: sportsScheme.primary.withOpacity(0.18),
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: sportsScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                ),
+                items:
+                    const [
+                      'Downtown',
+                      'Jumeirah',
+                      'Marina',
+                      'Business Bay',
+                      'Other',
+                    ].map((area) {
+                      return DropdownMenuItem(value: area, child: Text(area));
+                    }).toList(),
+                onChanged: (value) =>
+                    setModalState(() => _selectedArea = value),
+              ),
+              const SizedBox(height: 20),
+              // Price Range
+              Text(
+                'Price Range (AED)',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              RangeSlider(
+                values: _selectedPriceRange,
+                min: 0,
+                max: 500,
+                divisions: 10,
+                activeColor: sportsScheme.primary,
+                inactiveColor: sportsScheme.primary.withOpacity(0.18),
+                labels: RangeLabels(
+                  _selectedPriceRange.start.round().toString(),
+                  _selectedPriceRange.end.round().toString(),
+                ),
+                onChanged: (values) =>
+                    setModalState(() => _selectedPriceRange = values),
+              ),
+              Text(
+                'AED ${_selectedPriceRange.start.round()} - AED ${_selectedPriceRange.end.round()}',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Rating
+              Text(
+                'Minimum Rating',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              Slider(
+                value: _selectedRating,
+                min: 0,
+                max: 5,
+                divisions: 5,
+                activeColor: sportsScheme.primary,
+                inactiveColor: sportsScheme.primary.withOpacity(0.18),
+                label: _selectedRating == 0
+                    ? 'Any'
+                    : _selectedRating.toStringAsFixed(1),
+                onChanged: (value) =>
+                    setModalState(() => _selectedRating = value),
+              ),
+              Text(
+                _selectedRating == 0
+                    ? 'Any rating'
+                    : '${_selectedRating.toStringAsFixed(1)}+ stars',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Amenities
+              Text(
+                'Amenities',
+                style: Theme.of(
+                  context,
+                ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                children:
+                    const [
+                      'Parking',
+                      'Showers',
+                      'Indoor',
+                      'Outdoor',
+                      'Cafeteria',
+                    ].map((amenity) {
+                      final selected = _selectedAmenities.contains(amenity);
+                      return FilterChip(
+                        label: Text(amenity),
+                        selected: selected,
+                        selectedColor: sportsScheme.primary.withOpacity(0.16),
+                        checkmarkColor: sportsScheme.primary,
+                        side: BorderSide(
+                          color: selected
+                              ? sportsScheme.primary.withOpacity(0.35)
+                              : sportsScheme.primary.withOpacity(0.18),
+                        ),
+                        labelStyle: TextStyle(
+                          color: selected
+                              ? sportsScheme.primary
+                              : colorScheme.onSurface,
+                          fontWeight: selected
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                        ),
+                        onSelected: (selectedNow) {
+                          setModalState(() {
+                            if (selectedNow) {
+                              _selectedAmenities.add(amenity);
+                            } else {
+                              _selectedAmenities.remove(amenity);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+              ),
+              const SizedBox(height: 32),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextButton(
+                      onPressed: () {
+                        setModalState(() {
+                          _selectedArea = null;
+                          _selectedPriceRange = const RangeValues(0, 500);
+                          _selectedRating = 0;
+                          _selectedAmenities.clear();
+                          _sportSpecificFilters.clear();
+                        });
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        foregroundColor: sportsScheme.primary,
+                      ),
+                      child: const Text('Clear All'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        setState(() {
+                          // Apply filters
+                        });
+                        Navigator.of(context).pop();
+                      },
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        backgroundColor: sportsScheme.primary,
+                        foregroundColor: sportsScheme.onPrimary,
+                      ),
+                      child: const Text('Apply Filters'),
+                    ),
+                  ),
                 ],
               ),
-            );
-          },
-        ),
-      ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -813,7 +810,6 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     return TwoSectionLayout(
       category: 'sports',
       onRefresh: _handleRefresh,
-      endDrawer: _buildFiltersDrawer(),
       topSection: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1440,18 +1436,14 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           ),
         ),
         const SizedBox(width: 12),
-        Builder(
-          builder: (scaffoldContext) {
-            return IconButton.filledTonal(
-              onPressed: () => _openFilterDrawer(scaffoldContext),
-              icon: const Icon(Iconsax.setting_4_copy),
-              style: IconButton.styleFrom(
-                backgroundColor: sportsScheme.primary.withValues(alpha: 0.14),
-                foregroundColor: sportsScheme.primary,
-                minimumSize: const Size(48, 48),
-              ),
-            );
-          },
+        IconButton.filledTonal(
+          onPressed: _showFilterModal,
+          icon: const Icon(Iconsax.setting_4_copy),
+          style: IconButton.styleFrom(
+            backgroundColor: sportsScheme.primary.withValues(alpha: 0.14),
+            foregroundColor: sportsScheme.primary,
+            minimumSize: const Size(48, 48),
+          ),
         ),
         const SizedBox(width: 8),
         IconButton.filledTonal(
