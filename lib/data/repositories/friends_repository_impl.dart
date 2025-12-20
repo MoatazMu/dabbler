@@ -122,6 +122,15 @@ class FriendsRepositoryImpl implements FriendsRepository {
         return Ok(payload);
       }
       return Err(const ServerFailure(message: 'Unexpected inbox payload'));
+    } on PostgrestException catch (error) {
+      // If the RPC is mis-deployed with an unexpected return type, avoid
+      // surfacing a fatal error to the UI; return an empty list instead.
+      if ((error.message ?? '').toLowerCase().contains(
+        'structure of query does not match function result type',
+      )) {
+        return Ok(const []);
+      }
+      return Err(svc.mapPostgrestError(error));
     } catch (error) {
       return Err(svc.mapPostgrestError(error));
     }
@@ -139,6 +148,15 @@ class FriendsRepositoryImpl implements FriendsRepository {
         return Ok(payload);
       }
       return Err(const ServerFailure(message: 'Unexpected outbox payload'));
+    } on PostgrestException catch (error) {
+      // If the RPC is mis-deployed with an unexpected return type, avoid
+      // surfacing a fatal error to the UI; return an empty list instead.
+      if ((error.message ?? '').toLowerCase().contains(
+        'structure of query does not match function result type',
+      )) {
+        return Ok(const []);
+      }
+      return Err(svc.mapPostgrestError(error));
     } catch (error) {
       return Err(svc.mapPostgrestError(error));
     }
@@ -238,7 +256,7 @@ class FriendsRepositoryImpl implements FriendsRepository {
     controller.add(initialStatus);
 
     // Create unique channel name
-    final channelName = 'friendship_$currentUserId\_$peerUserId';
+    final channelName = 'friendship_${currentUserId}_$peerUserId';
 
     // Subscribe to realtime changes
     final subscription = _db
@@ -270,20 +288,18 @@ class FriendsRepositoryImpl implements FriendsRepository {
   @override
   Future<Result<List<Map<String, dynamic>>, Failure>> getFriends() async {
     try {
-      print('DEBUG: Calling rpc_get_friends...');
-      final rows = await _db.rpc('rpc_get_friends');
-      print('DEBUG: RPC returned: $rows');
-      if (rows is List) {
-        final friends = rows
-            .map((dynamic row) => Map<String, dynamic>.from(row as Map))
-            .toList(growable: false);
-        print('DEBUG: Mapped ${friends.length} friends');
-        return Ok(friends);
+      final userId = _db.auth.currentUser?.id;
+      if (userId == null) {
+        return Err(const AuthFailure(message: 'User not authenticated'));
       }
-      print('DEBUG: Unexpected payload type: ${rows.runtimeType}');
-      return Err(const ServerFailure(message: 'Unexpected friends payload'));
+
+      // Use the stable Circle view for the friends list.
+      // This avoids server-side failures from broken/overloaded rpc_get_friends
+      // definitions (e.g. "structure of query does not match function result type").
+      // v_circle is scoped to auth.uid() via its definition + RLS.
+      final rows = await _db.from('v_circle').select();
+      return Ok(rows.cast<Map<String, dynamic>>());
     } catch (error) {
-      print('DEBUG: Error in getFriends: $error');
       return Err(svc.mapPostgrestError(error));
     }
   }

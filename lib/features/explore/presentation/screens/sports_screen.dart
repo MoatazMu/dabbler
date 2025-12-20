@@ -1436,8 +1436,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Widget _buildSportsChips() {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final sportsScheme = context.getCategoryTheme('sports');
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -1447,6 +1447,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           children: List.generate(_sports.length, (index) {
             final sport = _sports[index];
             final isSelected = _selectedSportIndex == index;
+            final chipBackground = isSelected
+                ? sportsScheme.primary
+                : sportsScheme.primary.withValues(alpha: 0.12);
+            final chipForeground = isSelected
+                ? sportsScheme.onPrimary
+                : sportsScheme.primary;
+
             return GestureDetector(
               onTap: () {
                 setState(() {
@@ -1460,9 +1467,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.categorySports
-                      : colorScheme.surfaceContainerHighest,
+                  color: chipBackground,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
@@ -1471,17 +1476,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                     Icon(
                       sport['icon'] as IconData,
                       size: 16,
-                      color: isSelected
-                          ? colorScheme.onPrimary
-                          : colorScheme.onSurfaceVariant,
+                      color: chipForeground,
                     ),
                     const SizedBox(width: 6),
                     Text(
                       sport['name'] as String,
                       style: textTheme.labelMedium?.copyWith(
-                        color: isSelected
-                            ? colorScheme.onPrimary
-                            : colorScheme.onSurfaceVariant,
+                        color: chipForeground,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1493,13 +1494,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: colorScheme.onPrimary.withValues(alpha: 0.2),
+                          color: sportsScheme.onPrimary.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           '${sport['count']}',
                           style: textTheme.labelSmall?.copyWith(
-                            color: colorScheme.onPrimary,
+                            color: sportsScheme.onPrimary,
                             fontWeight: FontWeight.w700,
                             fontSize: 10,
                           ),

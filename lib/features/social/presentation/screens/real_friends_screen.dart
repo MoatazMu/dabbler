@@ -14,6 +14,35 @@ class _RealFriendsScreenState extends ConsumerState<RealFriendsScreen>
     with TickerProviderStateMixin {
   late TabController _tabController;
 
+  String _peerIdFromRow(Map<String, dynamic> row) {
+    final dynamic value =
+        row['profile_id'] ??
+        row['peer_user_id'] ??
+        row['friend_user_id'] ??
+        row['user_id'] ??
+        row['id'];
+    return (value is String) ? value : (value?.toString() ?? '');
+  }
+
+  String _displayNameFromRow(Map<String, dynamic> row) {
+    final dynamic value = row['display_name'] ?? row['full_name'];
+    return (value is String && value.trim().isNotEmpty)
+        ? value
+        : 'Unknown User';
+  }
+
+  String _usernameFromRow(Map<String, dynamic> row) {
+    final dynamic value = row['username'];
+    final username = (value is String) ? value : (value?.toString() ?? '');
+    return username.trim().isNotEmpty ? username : 'user';
+  }
+
+  String? _avatarUrlFromRow(Map<String, dynamic> row) {
+    final dynamic value = row['avatar_url'];
+    final url = (value is String) ? value : (value?.toString() ?? '');
+    return url.trim().isEmpty ? null : url;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -141,30 +170,25 @@ class _RealFriendsScreenState extends ConsumerState<RealFriendsScreen>
         itemCount: friends.length,
         itemBuilder: (context, index) {
           final friend = friends[index];
-          final profile = friend['profile'] as Map<String, dynamic>?;
-          final friendId =
-              friend['peer_user_id'] as String? ??
-              friend['user_id'] as String? ??
-              '';
+          final friendId = _peerIdFromRow(friend);
+          final avatarUrl = _avatarUrlFromRow(friend);
+          final displayName = _displayNameFromRow(friend);
+          final username = _usernameFromRow(friend);
 
           return Card(
             margin: const EdgeInsets.only(bottom: 8),
             child: ListTile(
               leading: CircleAvatar(
                 backgroundColor: Colors.grey[200],
-                backgroundImage: profile?['avatar_url'] != null
-                    ? NetworkImage(profile!['avatar_url'] as String)
+                backgroundImage: avatarUrl != null
+                    ? NetworkImage(avatarUrl)
                     : null,
-                child: profile?['avatar_url'] == null
+                child: avatarUrl == null
                     ? Icon(Icons.person, color: Colors.grey[600])
                     : null,
               ),
-              title: Text(
-                profile?['full_name'] as String? ??
-                    profile?['display_name'] as String? ??
-                    'Unknown User',
-              ),
-              subtitle: Text('@${profile?['username'] as String? ?? 'user'}'),
+              title: Text(displayName),
+              subtitle: Text('@$username'),
               trailing: PopupMenuButton(
                 itemBuilder: (context) => [
                   const PopupMenuItem(
@@ -248,8 +272,10 @@ class _RealFriendsScreenState extends ConsumerState<RealFriendsScreen>
         itemCount: requests.length,
         itemBuilder: (context, index) {
           final request = requests[index];
-          final profile = request['profile'] as Map<String, dynamic>?;
-          final fromUserId = request['user_id'] as String? ?? '';
+          final fromUserId = _peerIdFromRow(request);
+          final avatarUrl = _avatarUrlFromRow(request);
+          final displayName = _displayNameFromRow(request);
+          final username = _usernameFromRow(request);
           final state = ref.watch(simpleFriendsControllerProvider);
           final isProcessing = state.processingIds[fromUserId] == true;
 
@@ -261,10 +287,10 @@ class _RealFriendsScreenState extends ConsumerState<RealFriendsScreen>
                 children: [
                   CircleAvatar(
                     backgroundColor: Colors.grey[200],
-                    backgroundImage: profile?['avatar_url'] != null
-                        ? NetworkImage(profile!['avatar_url'] as String)
+                    backgroundImage: avatarUrl != null
+                        ? NetworkImage(avatarUrl)
                         : null,
-                    child: profile?['avatar_url'] == null
+                    child: avatarUrl == null
                         ? Icon(Icons.person, color: Colors.grey[600])
                         : null,
                   ),
@@ -274,13 +300,11 @@ class _RealFriendsScreenState extends ConsumerState<RealFriendsScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          profile?['full_name'] as String? ??
-                              profile?['display_name'] as String? ??
-                              'Unknown User',
+                          displayName,
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          '@${profile?['username'] as String? ?? 'user'}',
+                          '@$username',
                           style: Theme.of(
                             context,
                           ).textTheme.bodySmall?.copyWith(color: Colors.grey),
@@ -392,7 +416,7 @@ class _RealFriendsScreenState extends ConsumerState<RealFriendsScreen>
         itemCount: state.suggestions.length,
         itemBuilder: (context, index) {
           final suggestion = state.suggestions[index];
-          final userId = suggestion['user_id'] as String;
+          final userId = _peerIdFromRow(suggestion);
           final mutualCount = suggestion['mutual_friends_count'] as int? ?? 0;
           final isProcessing = state.processingIds[userId] == true;
 
@@ -417,11 +441,11 @@ class _RealFriendsScreenState extends ConsumerState<RealFriendsScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          suggestion['full_name'] as String? ?? 'Unknown User',
+                          _displayNameFromRow(suggestion),
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          '@${suggestion['username'] as String? ?? 'user'}',
+                          '@${_usernameFromRow(suggestion)}',
                           style: Theme.of(
                             context,
                           ).textTheme.bodySmall?.copyWith(color: Colors.grey),
@@ -605,7 +629,7 @@ class _RealFriendsScreenState extends ConsumerState<RealFriendsScreen>
                       itemCount: state.searchResults.length,
                       itemBuilder: (context, index) {
                         final user = state.searchResults[index];
-                        final userId = user['user_id'] as String;
+                        final userId = _peerIdFromRow(user);
                         final isFriend = user['is_friend'] as bool? ?? false;
                         final hasPendingRequest =
                             user['has_pending_request'] as bool? ?? false;
@@ -622,12 +646,8 @@ class _RealFriendsScreenState extends ConsumerState<RealFriendsScreen>
                                 ? Icon(Icons.person, color: Colors.grey[600])
                                 : null,
                           ),
-                          title: Text(
-                            user['full_name'] as String? ?? 'Unknown User',
-                          ),
-                          subtitle: Text(
-                            '@${user['username'] as String? ?? 'user'}',
-                          ),
+                          title: Text(_displayNameFromRow(user)),
+                          subtitle: Text('@${_usernameFromRow(user)}'),
                           trailing: isFriend
                               ? const Chip(
                                   label: Text('Friends'),

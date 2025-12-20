@@ -22,7 +22,6 @@ import 'package:dabbler/data/models/social/post_model.dart';
 import 'package:dabbler/features/social/services/social_service.dart';
 import 'package:dabbler/features/social/providers.dart';
 import 'package:dabbler/features/profile/presentation/widgets/friends_list_widget.dart';
-import 'package:dabbler/features/social/providers/friends_list_provider.dart';
 
 /// Provider to fetch all posts by a user for the activities tab
 final userPostsProvider = FutureProvider.family<List<PostModel>, String>((

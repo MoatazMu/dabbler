@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:dabbler/core/design_system/design_system.dart';
 import '../widgets/feed/post_card.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
 import 'package:dabbler/data/models/social/post_model.dart';
@@ -10,6 +13,7 @@ import '../../services/social_service.dart';
 import '../../services/social_rewards_handler.dart';
 import '../../services/realtime_likes_service.dart';
 import 'package:dabbler/core/services/auth_service.dart';
+import '../../providers/social_providers.dart';
 
 /// Instagram-like social feed screen with posts and interactions
 class SocialScreen extends StatefulWidget {
@@ -22,7 +26,6 @@ class SocialScreen extends StatefulWidget {
 class _SocialScreenState extends State<SocialScreen> {
   final List<PostModel> _posts = [];
   bool _isLoading = false;
-  final ScrollController _scrollController = ScrollController();
   // Removed search functionality – simplified feed
 
   late SocialRewardsHandler _rewardsHandler;
@@ -34,11 +37,19 @@ class _SocialScreenState extends State<SocialScreen> {
     super.initState();
     _rewardsHandler = SocialRewardsHandler();
     _loadPosts();
+
+    // Preload friends data for the dashboard overview
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final container = ProviderScope.containerOf(context, listen: false);
+      container.read(simpleFriendsControllerProvider.notifier).loadFriends();
+      container
+          .read(simpleFriendsControllerProvider.notifier)
+          .loadSuggestions();
+    });
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
     // Cancel all realtime subscriptions
     for (final subscription in _likeSubscriptions.values) {
       subscription.cancel();
@@ -121,9 +132,17 @@ class _SocialScreenState extends State<SocialScreen> {
     }
   }
 
-  // ignore: unused_element
   Future<void> _refreshPosts() async {
     await _loadPosts();
+
+    // Also refresh friends overview data
+    final container = ProviderScope.containerOf(context, listen: false);
+    await Future.wait([
+      container.read(simpleFriendsControllerProvider.notifier).loadFriends(),
+      container
+          .read(simpleFriendsControllerProvider.notifier)
+          .loadSuggestions(),
+    ]);
   }
 
   final Set<String> _likesInProgress = {};
@@ -277,167 +296,113 @@ class _SocialScreenState extends State<SocialScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: CustomScrollView(
-          controller: _scrollController,
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            SliverToBoxAdapter(child: _buildHeaderSection()),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            SliverToBoxAdapter(child: _buildComposerCard()),
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
-            if (_isLoading && _posts.isEmpty)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 80),
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-              ),
-            if (!_isLoading && _posts.isEmpty)
-              SliverToBoxAdapter(child: _buildEmptyState()),
-            if (_posts.isNotEmpty) _buildPostsSliver(),
-          ],
-        ),
+    return TwoSectionLayout(
+      category: 'social',
+      topSection: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeaderSection(),
+          const SizedBox(height: 12),
+          _buildComposerCard(),
+          const SizedBox(height: 16),
+          // Friends overview section removed
+        ],
       ),
+      bottomSection: _buildFeedSection(),
+      onRefresh: _refreshPosts,
     );
   }
 
   Widget _buildHeaderSection() {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    final heroColor = isDarkMode
-        ? const Color(0xFF4A148C)
-        : const Color(0xFFE0C7FF);
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
-    final subtextColor = isDarkMode
-        ? Colors.white.withOpacity(0.8)
-        : Colors.black.withOpacity(0.7);
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Row(
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              IconButton.filledTonal(
-                onPressed: () => context.go(RoutePaths.home),
-                icon: const Icon(Icons.dashboard_rounded),
-                style: IconButton.styleFrom(
-                  backgroundColor: colorScheme.surfaceContainerHigh,
-                  foregroundColor: colorScheme.onSurface,
-                  minimumSize: const Size(48, 48),
+              Text(
+                'Community',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: colorScheme.onSurface,
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Community',
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: colorScheme.onSurface,
+              const SizedBox(height: 4),
+              Row(
+                children: [
+                  Icon(
+                    Iconsax.profile_2user_copy,
+                    size: 14,
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      'Connect with friends',
+                      style: textTheme.bodySmall?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 16),
-              FilledButton.tonalIcon(
-                onPressed: () => context.push(RoutePaths.socialSearch),
-                icon: const Icon(Icons.search_rounded),
-                label: const Text('Find friends'),
-                style: FilledButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 14,
                   ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                ),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 24),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: heroColor,
-              borderRadius: BorderRadius.circular(28),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Community spotlight',
-                  style: textTheme.labelLarge?.copyWith(
-                    color: subtextColor,
-                    letterSpacing: 0.6,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Celebrate your highlights',
-                  style: textTheme.headlineSmall?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Share match recaps, training wins, and invite others to join upcoming sessions.',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: isDarkMode
-                        ? Colors.white.withOpacity(0.85)
-                        : Colors.black.withOpacity(0.7),
-                  ),
-                ),
-              ],
-            ),
+        ),
+        const SizedBox(width: 12),
+        IconButton.filledTonal(
+          onPressed: () => context.push(RoutePaths.socialFriends),
+          icon: const Icon(Iconsax.profile_2user_copy),
+          tooltip: 'Circle',
+          style: IconButton.styleFrom(
+            backgroundColor: colorScheme.categorySocial.withValues(alpha: 0.2),
+            foregroundColor: colorScheme.onSurface,
+            minimumSize: const Size(48, 48),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildComposerCard() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
-      child: ThoughtsInput(onTap: _navigateToCreatePost),
-    );
+    return ThoughtsInput(onTap: _navigateToCreatePost);
   }
 
-  SliverPadding _buildPostsSliver() {
-    return SliverPadding(
-      padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
-      sliver: SliverList(
-        delegate: SliverChildBuilderDelegate((context, index) {
-          final post = _posts[index];
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: index == _posts.length - 1 ? 0 : 20,
+  Widget _buildFeedSection() {
+    if (_isLoading && _posts.isEmpty) {
+      return const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 80),
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (!_isLoading && _posts.isEmpty) {
+      return _buildEmptyState();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 32),
+      child: Column(
+        children: [
+          for (var i = 0; i < _posts.length; i++)
+            Padding(
+              padding: EdgeInsets.only(bottom: i == _posts.length - 1 ? 0 : 20),
+              child: PostCard(
+                post: _posts[i],
+                onLike: () => _likePost(_posts[i].id),
+                onComment: () => _openComments(_posts[i].id),
+                onShare: () => _sharePost(_posts[i].id),
+                onProfileTap: () => _openProfile(_posts[i].authorId),
+                onPostTap: () => _openComments(_posts[i].id),
+              ),
             ),
-            child: PostCard(
-              post: post,
-              onLike: () => _likePost(post.id),
-              onComment: () => _openComments(post.id),
-              onShare: () => _sharePost(post.id),
-              onProfileTap: () => _openProfile(post.authorId),
-              onPostTap: () => _openComments(post.id),
-            ),
-          );
-        }, childCount: _posts.length),
+        ],
       ),
     );
   }
