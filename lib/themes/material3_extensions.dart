@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/design_system/colors/profile_colors.dart';
 
 /// Material 3 ColorScheme extension for app-specific category colors
 ///
@@ -12,7 +13,12 @@ extension AppColorSchemeExtension on ColorScheme {
   static const Color _activitiesDark = Color(
     0xFFFCDEE8,
   ); // Activity dark primary
-  static const Color _profileDark = Color(0xFFFFF4CC); // Profile dark primary
+  static const Color _profileDark = ProfileColors.primaryDark;
+
+  // Category container colors for dark theme - from token files
+  static const Color _mainDarkContainer = Color(0xFF7328CE);
+  static const Color _socialDarkContainer = Color(0xFF3473D7);
+  static const Color _sportsDarkContainer = Color(0xFF348638);
 
   // Category colors for light theme - from token files
   static const Color _mainLight = Color(0xFF7328CE); // Main light primary
@@ -21,19 +27,38 @@ extension AppColorSchemeExtension on ColorScheme {
   static const Color _activitiesLight = Color(
     0xFFCF3989,
   ); // Activity light primary
-  static const Color _profileLight = Color(0xFFF6AA4F); // Profile light primary
+  static const Color _profileLight = ProfileColors.primaryLight;
+
+  // Category container colors for light theme - from token files
+  static const Color _mainLightContainer = Color(0xFFEADDFF);
+  static const Color _socialLightContainer = Color(0xFFA6DCFF);
+  static const Color _sportsLightContainer = Color(0xFF79FFC3);
 
   /// Main category color (purple)
   Color get categoryMain =>
       brightness == Brightness.dark ? _mainDark : _mainLight;
 
+  /// Main category container color
+  Color get categoryMainContainer =>
+      brightness == Brightness.dark ? _mainDarkContainer : _mainLightContainer;
+
   /// Social category color (blue)
   Color get categorySocial =>
       brightness == Brightness.dark ? _socialDark : _socialLight;
 
+  /// Social category container color
+  Color get categorySocialContainer => brightness == Brightness.dark
+      ? _socialDarkContainer
+      : _socialLightContainer;
+
   /// Sports category color (green)
   Color get categorySports =>
       brightness == Brightness.dark ? _sportsDark : _sportsLight;
+
+  /// Sports category container color
+  Color get categorySportsContainer => brightness == Brightness.dark
+      ? _sportsDarkContainer
+      : _sportsLightContainer;
 
   /// Activities category color (pink)
   Color get categoryActivities =>

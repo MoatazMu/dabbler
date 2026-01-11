@@ -62,6 +62,7 @@ class DesignTokens {
 class ThemeColorTokens {
   final Color header;
   final Color section;
+  final Color secondaryContainer;
   final Color button;
   final Color btnBase;
   final Color tabActive;
@@ -80,6 +81,7 @@ class ThemeColorTokens {
   const ThemeColorTokens({
     required this.header,
     required this.section,
+    required this.secondaryContainer,
     required this.button,
     required this.btnBase,
     required this.tabActive,
@@ -102,6 +104,7 @@ class MainLightColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFFE0C7FF),
     section: Color(0x2EE0C7FF), // rgba(224, 199, 255, 0.18)
+    secondaryContainer: Color(0xFFFEF1FF),
     button: Color(0xFF7328CE),
     btnBase: Color(0x0F7328CE), // rgba(115, 40, 206, 0.06)
     tabActive: Color(0xFF7328CE),
@@ -124,6 +127,7 @@ class MainDarkColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFF4A148C),
     section: Color(0x524A148C), // rgba(74, 20, 140, 0.32)
+    secondaryContainer: Color(0xFF340040),
     button: Color(0xFFC18FFF),
     btnBase: Color(0x0FC18FFF), // rgba(193, 143, 255, 0.06)
     tabActive: Color(0xFFC18FFF),
@@ -146,6 +150,7 @@ class SocialLightColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFFD1EAFA),
     section: Color(0x2ED1EAFA), // rgba(209, 234, 250, 0.18)
+    secondaryContainer: Color(0xFFE5F5FF),
     button: Color(0xFF3473D7),
     btnBase: Color(0x0F3473D7), // rgba(52, 115, 215, 0.06)
     tabActive: Color(0xFF3473D7),
@@ -168,6 +173,7 @@ class SocialDarkColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFF023D99),
     section: Color(0x52023D99), // rgba(2, 61, 153, 0.32)
+    secondaryContainer: Color(0xFF002564),
     button: Color(0xFFA6DCFF),
     btnBase: Color(0x0FA6DCFF), // rgba(166, 220, 255, 0.06)
     tabActive: Color(0xFFA6DCFF),
@@ -190,6 +196,7 @@ class SportsLightColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFFB1FBDA),
     section: Color(0x2EB1FBDA), // rgba(177, 251, 218, 0.18)
+    secondaryContainer: Color(0xFFE5FFF4),
     button: Color(0xFF348638),
     btnBase: Color(0x17348638), // rgba(52, 134, 56, 0.09)
     tabActive: Color(0xFF348638),
@@ -212,6 +219,7 @@ class SportsDarkColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFF235826),
     section: Color(0x52235826), // rgba(35, 88, 38, 0.32)
+    secondaryContainer: Color(0xFF00504A),
     button: Color(0xFF7FD89B),
     btnBase: Color(0x0F7FD89B), // rgba(127, 216, 155, 0.06)
     tabActive: Color(0xFF7FD89B),
@@ -234,6 +242,7 @@ class ActivitiesLightColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFFFCDEE8),
     section: Color(0x2EFCDEE8), // rgba(252, 222, 232, 0.18)
+    secondaryContainer: Color(0xFFFFF2FC),
     button: Color(0xFFD72078),
     btnBase: Color(0x0FD72078), // rgba(215, 32, 120, 0.06)
     tabActive: Color(0xFFD72078),
@@ -256,6 +265,7 @@ class ActivitiesDarkColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFF9C2464),
     section: Color(0x529C2464), // rgba(156, 36, 100, 0.32)
+    secondaryContainer: Color(0xFF7A0065),
     button: Color(0xFFFFA8D5),
     btnBase: Color(0x0FFFA8D5), // rgba(255, 168, 213, 0.06)
     tabActive: Color(0xFFFFA8D5),
@@ -278,6 +288,7 @@ class ProfileLightColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFFFCF8EA),
     section: Color(0x2EFCF8EA), // rgba(252, 248, 234, 0.18)
+    secondaryContainer: Color(0xFFFFFBEE),
     button: Color(0xFFF59E0B),
     btnBase: Color(0x0FF59E0B), // rgba(245, 158, 11, 0.06)
     tabActive: Color(0xFFF59E0B),
@@ -300,6 +311,7 @@ class ProfileDarkColors {
   static const tokens = ThemeColorTokens(
     header: Color(0xFFEC8F1E),
     section: Color(0x52EC8F1E), // rgba(236, 143, 30, 0.32)
+    secondaryContainer: Color(0xFF5A3200),
     button: Color(0xFFFFCE7A),
     btnBase: Color(0x0FFFCE7A), // rgba(255, 206, 122, 0.06)
     tabActive: Color(0xFFFFCE7A),

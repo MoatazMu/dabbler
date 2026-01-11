@@ -120,7 +120,7 @@ class _PostCardState extends State<PostCard> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 0),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: _getVibeColor(colorScheme).withOpacity(0.1),
         borderRadius: BorderRadius.circular(24),
@@ -644,8 +644,8 @@ class _PostCardState extends State<PostCard> {
 
   Color _getVibeColor(ColorScheme colorScheme) {
     // Try to get color from primaryVibe data
-    if (widget.post.primaryVibe != null && widget.post.primaryVibe is Map) {
-      final primaryVibe = widget.post.primaryVibe!;
+    final primaryVibe = widget.post.primaryVibe;
+    if (primaryVibe is Map<String, dynamic>) {
       final colorHex = primaryVibe['color_hex'];
       if (colorHex != null && colorHex is String && colorHex.isNotEmpty) {
         try {

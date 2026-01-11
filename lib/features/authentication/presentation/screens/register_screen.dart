@@ -19,7 +19,9 @@ class RegisterScreen extends ConsumerWidget {
               padding: EdgeInsets.fromLTRB(16, 16, 16, 16 + bottomInset),
               child: ConstrainedBox(
                 constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight - 16,
+                  minHeight: (constraints.maxHeight - 16)
+                      .clamp(0.0, double.infinity)
+                      .toDouble(),
                 ),
                 child: Column(
                   children: [

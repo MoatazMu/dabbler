@@ -10,6 +10,7 @@ class SimpleFriendsState {
   final List<Map<String, dynamic>> outgoingRequests;
   final List<Map<String, dynamic>> suggestions;
   final List<Map<String, dynamic>> searchResults;
+  final Set<String> dismissedSuggestionIds;
   final bool isLoading;
   final bool isLoadingSuggestions;
   final bool isSearching;
@@ -22,6 +23,7 @@ class SimpleFriendsState {
     this.outgoingRequests = const [],
     this.suggestions = const [],
     this.searchResults = const [],
+    this.dismissedSuggestionIds = const {},
     this.isLoading = false,
     this.isLoadingSuggestions = false,
     this.isSearching = false,
@@ -35,6 +37,7 @@ class SimpleFriendsState {
     List<Map<String, dynamic>>? outgoingRequests,
     List<Map<String, dynamic>>? suggestions,
     List<Map<String, dynamic>>? searchResults,
+    Set<String>? dismissedSuggestionIds,
     bool? isLoading,
     bool? isLoadingSuggestions,
     bool? isSearching,
@@ -47,6 +50,8 @@ class SimpleFriendsState {
       outgoingRequests: outgoingRequests ?? this.outgoingRequests,
       suggestions: suggestions ?? this.suggestions,
       searchResults: searchResults ?? this.searchResults,
+      dismissedSuggestionIds:
+          dismissedSuggestionIds ?? this.dismissedSuggestionIds,
       isLoading: isLoading ?? this.isLoading,
       isLoadingSuggestions: isLoadingSuggestions ?? this.isLoadingSuggestions,
       isSearching: isSearching ?? this.isSearching,
@@ -87,6 +92,11 @@ class SimpleFriendsController extends StateNotifier<SimpleFriendsState> {
        _unblockUser = unblockUser,
        _repository = repository,
        super(const SimpleFriendsState());
+
+  void clearError() {
+    if (state.error == null) return;
+    state = state.copyWith(error: null);
+  }
 
   /// Load all friends data
   Future<void> loadFriends() async {
@@ -300,14 +310,14 @@ class SimpleFriendsController extends StateNotifier<SimpleFriendsState> {
   Future<void> loadSuggestions() async {
     state = state.copyWith(isLoadingSuggestions: true);
 
-    final result = await _repository.getFriendSuggestions(limit: 50);
+    // Show all available profiles in Suggestions.
+    final result = await _repository.listProfiles(limit: 200);
 
     result.fold(
       (failure) {
-        state = state.copyWith(
-          isLoadingSuggestions: false,
-          error: 'Failed to load suggestions: ${failure.message}',
-        );
+        // Suggestions are non-critical. Avoid promoting transient backend
+        // failures to a full-screen error state.
+        state = state.copyWith(isLoadingSuggestions: false);
       },
       (suggestions) {
         state = state.copyWith(
@@ -345,5 +355,15 @@ class SimpleFriendsController extends StateNotifier<SimpleFriendsState> {
   /// Clear search results
   void clearSearch() {
     state = state.copyWith(searchResults: [], isSearching: false);
+  }
+
+  void dismissSuggestion(String peerUserId) {
+    final trimmed = peerUserId.trim();
+    if (trimmed.isEmpty) return;
+    if (state.dismissedSuggestionIds.contains(trimmed)) return;
+
+    state = state.copyWith(
+      dismissedSuggestionIds: {...state.dismissedSuggestionIds, trimmed},
+    );
   }
 }

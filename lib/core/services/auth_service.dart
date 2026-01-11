@@ -134,7 +134,7 @@ class AuthService {
             'sport': primarySport.toLowerCase(),
             'skill_level': 1, // Beginner level
           };
-          final sportProfileResult = await _supabase
+          await _supabase
               .from('sport_profiles')
               .insert(sportProfileData)
               .select()
@@ -153,7 +153,7 @@ class AuthService {
             // Use DB defaults for: organiser_level (1), commission_type ('percent'),
             // commission_value (0), is_verified (false), is_active (true)
           };
-          final organiserProfileResult = await _supabase
+          await _supabase
               .from('organiser_profiles')
               .insert(organiserProfileData)
               .select()
@@ -181,9 +181,6 @@ class AuthService {
         email: normalizedEmail,
         password: password,
       );
-
-      // Verify the auth state immediately after signin
-      final isAuth = _supabase.auth.currentUser != null;
 
       return response;
     } catch (e) {
@@ -740,6 +737,7 @@ class AuthService {
     String? displayName,
     String? username,
     String? bio,
+    String? avatarUrl,
     String? phone,
     DateTime? dateOfBirth,
     int? age,
@@ -757,7 +755,9 @@ class AuthService {
       final user = _supabase.auth.currentUser;
       if (user == null) throw Exception('User not authenticated');
 
-      // Prefer server-side RPC if available for consistent authorization/validation
+      // Prefer server-side RPC if available for consistent authorization/validation.
+      // Note: We intentionally do NOT pass avatarUrl to the RPC since older
+      // deployments may not accept that parameter.
       try {
         final response = await _supabase.rpc(
           'update_user_profile',
@@ -779,6 +779,19 @@ class AuthService {
             'user_language': language,
           },
         );
+
+        // If avatarUrl is requested, apply it via a separate table update to
+        // keep compatibility with older RPC definitions.
+        if (avatarUrl != null) {
+          final trimmed = avatarUrl.trim();
+          await _supabase
+              .from(SupabaseConfig.usersTable)
+              .update({
+                'avatar_url': trimmed.isEmpty ? null : trimmed,
+                'updated_at': DateTime.now().toIso8601String(),
+              })
+              .eq('user_id', user.id);
+        }
 
         return response;
       } on PostgrestException catch (e) {
@@ -816,6 +829,11 @@ class AuthService {
 
         if (bio != null) {
           updates['bio'] = bio.trim().isEmpty ? null : bio.trim();
+        }
+        if (avatarUrl != null) {
+          updates['avatar_url'] = avatarUrl.trim().isEmpty
+              ? null
+              : avatarUrl.trim();
         }
         if (phone != null) {
           updates['phone'] = phone.trim().isEmpty ? null : phone.trim();
@@ -891,6 +909,9 @@ class AuthService {
           }
           if (updates.containsKey('intent')) {
             altUpdates['intent'] = updates['intent'];
+          }
+          if (updates.containsKey('avatar_url')) {
+            altUpdates['avatar_url'] = updates['avatar_url'];
           }
 
           // If error reveals a specific missing column, drop it from the retry payload

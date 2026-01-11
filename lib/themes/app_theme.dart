@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import '../core/theme/dynamic_color_scheme_loader.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'material3_extensions.dart' as material3_extensions;
@@ -9,6 +10,32 @@ export '../core/theme/color_token_extensions.dart';
 /// Uses native Material components with custom category colors
 /// Access tokens via: Theme.of(context).colorScheme.categoryMain, .categorySocial, etc.
 class AppTheme {
+  static const String defaultCategory = 'main';
+  static const List<String> supportedCategories = <String>[
+    'main',
+    'social',
+    'sports',
+    'activities',
+    'profile',
+  ];
+
+  static final Map<String, Map<Brightness, ColorScheme>> _schemeCache =
+      <String, Map<Brightness, ColorScheme>>{};
+
+  static bool _initialized = false;
+  static bool get isInitialized => _initialized;
+
+  /// Returns a cached ColorScheme for a category/brightness if available.
+  ///
+  /// This is sync-only and is intended for UI code paths.
+  static ColorScheme? tryGetCachedColorScheme(
+    String category,
+    Brightness brightness,
+  ) {
+    final normalized = _normalizeCategory(category);
+    return _schemeCache[normalized]?[brightness];
+  }
+
   // Expose static ColorSchemes for extensions and other files
   static ColorScheme get mainLightColorScheme => _mainLightColorScheme;
   static ColorScheme get mainDarkColorScheme => _mainDarkColorScheme;
@@ -22,6 +49,58 @@ class AppTheme {
       _activitiesDarkColorScheme;
   static ColorScheme get profileLightColorScheme => _profileLightColorScheme;
   static ColorScheme get profileDarkColorScheme => _profileDarkColorScheme;
+
+  /// Preload ColorSchemes from JSON tokens and rebuild the app themes.
+  ///
+  /// Call this once during startup (before `runApp`).
+  static Future<void> initialize({
+    List<String> preloadCategories = supportedCategories,
+  }) async {
+    final categories = preloadCategories
+        .map(_normalizeCategory)
+        .toSet()
+        .toList(growable: false);
+
+    for (final category in categories) {
+      try {
+        final light = await DynamicColorSchemeLoader.load(
+          category: category,
+          brightness: Brightness.light,
+        );
+        final dark = await DynamicColorSchemeLoader.load(
+          category: category,
+          brightness: Brightness.dark,
+        );
+
+        _schemeCache[category] = <Brightness, ColorScheme>{
+          Brightness.light: light,
+          Brightness.dark: dark,
+        };
+      } catch (e, st) {
+        if (kDebugMode) {
+          debugPrint(
+            '⚠️ [AppTheme] Failed to preload token scheme for "$category": $e\n$st',
+          );
+        }
+        // Ignore and let callers fall back to static schemes.
+      }
+    }
+
+    // Rebuild global themes from token-based main scheme (fallback to static).
+    final mainLight =
+        _schemeCache[defaultCategory]?[Brightness.light] ??
+        _mainLightColorScheme;
+    final mainDark =
+        _schemeCache[defaultCategory]?[Brightness.dark] ?? _mainDarkColorScheme;
+
+    lightTheme = _buildTheme(
+      brightness: Brightness.light,
+      colorScheme: mainLight,
+    );
+    darkTheme = _buildTheme(brightness: Brightness.dark, colorScheme: mainDark);
+
+    _initialized = true;
+  }
 
   /// Light Material Design 3 Theme - Main category
   static ThemeData lightTheme = _buildTheme(
@@ -55,7 +134,7 @@ class AppTheme {
     errorContainer: Color(0xFFFFDAD6),
     onErrorContainer: Color(0xFF410002),
     surface: Color(0xFFFEF7FF),
-    onSurface: Color(0xFF1D1B20),
+    onSurface: Color(0xFF1F2937), // DabblerColors.textPrimaryLight
     surfaceContainerHighest: Color(0xFFE6E0E9),
     surfaceContainerHigh: Color(0xFFECE6F0),
     surfaceContainer: Color(0xFFF3EDF7),
@@ -95,7 +174,7 @@ class AppTheme {
     onPrimaryContainer: Color(0xFFEADDFF),
     secondary: Color(0xFFFF86DD),
     onSecondary: Color(0xFF5A004A),
-    secondaryContainer: Color(0xFF7A0065),
+    secondaryContainer: Color(0xFF340040),
     onSecondaryContainer: Color(0xFFFFD7F1),
     tertiary: Color(0xFFFF8FAF),
     onTertiary: Color(0xFF640024),
@@ -106,7 +185,7 @@ class AppTheme {
     errorContainer: Color(0xFF93000A),
     onErrorContainer: Color(0xFFFFDAD6),
     surface: Color(0xFF141218),
-    onSurface: Color(0xFFE6E0E9),
+    onSurface: Color(0xFFF9FAFB), // DabblerColors.textPrimaryDark
     surfaceContainerHighest: Color(0xFF36343B),
     surfaceContainerHigh: Color(0xFF2B2930),
     surfaceContainer: Color(0xFF211F26),
@@ -157,7 +236,7 @@ class AppTheme {
     errorContainer: Color(0xFFFFDAD6),
     onErrorContainer: Color(0xFF410002),
     surface: Color(0xFFFDFBFF),
-    onSurface: Color(0xFF1B1B1F),
+    onSurface: Color(0xFF1F2937), // DabblerColors.textPrimaryLight
     surfaceContainerHighest: Color(0xFFE6E3EC),
     surfaceContainerHigh: Color(0xFFECEAF2),
     surfaceContainer: Color(0xFFF3F3F9),
@@ -196,8 +275,8 @@ class AppTheme {
     primaryContainer: Color(0xFF3473D7),
     onPrimaryContainer: Color(0xFFD6E3FF),
     secondary: Color(0xFF7EEAFF),
-    onSecondary: Color(0xFF003544),
-    secondaryContainer: Color(0xFF004B61),
+    onSecondary: Color(0xFF001E64),
+    secondaryContainer: Color(0xFF002564),
     onSecondaryContainer: Color(0xFFC0F0FF),
     tertiary: Color(0xFFE6A2CF),
     onTertiary: Color(0xFF4A003C),
@@ -208,7 +287,7 @@ class AppTheme {
     errorContainer: Color(0xFF93000A),
     onErrorContainer: Color(0xFFFFDAD6),
     surface: Color(0xFF1B1B1F),
-    onSurface: Color(0xFFE4E1E6),
+    onSurface: Color(0xFFF9FAFB), // DabblerColors.textPrimaryDark
     surfaceContainerHighest: Color(0xFF36343B),
     surfaceContainerHigh: Color(0xFF2B2A30),
     surfaceContainer: Color(0xFF212026),
@@ -361,7 +440,7 @@ class AppTheme {
     errorContainer: Color(0xFFFFDAD6),
     onErrorContainer: Color(0xFF410002),
     surface: Color(0xFFFFFBFF),
-    onSurface: Color(0xFF1C1B1E),
+    onSurface: Color(0xFF1F2937), // DabblerColors.textPrimaryLight
     surfaceContainerHighest: Color(0xFFE5E1E6),
     surfaceContainerHigh: Color(0xFFECE7EC),
     surfaceContainer: Color(0xFFF3EFF3),
@@ -412,7 +491,7 @@ class AppTheme {
     errorContainer: Color(0xFF93000A),
     onErrorContainer: Color(0xFFFFDAD6),
     surface: Color(0xFF1C1B1E),
-    onSurface: Color(0xFFE6E1E6),
+    onSurface: Color(0xFFF9FAFB), // DabblerColors.textPrimaryDark
     surfaceContainerHighest: Color(0xFF323034),
     surfaceContainerHigh: Color(0xFF28262A),
     surfaceContainer: Color(0xFF1E1C20),
@@ -463,7 +542,7 @@ class AppTheme {
     errorContainer: Color(0xFFFFDAD6),
     onErrorContainer: Color(0xFF410002),
     surface: Color(0xFFFFFBFF),
-    onSurface: Color(0xFF1F1B16),
+    onSurface: Color(0xFF1F2937), // DabblerColors.textPrimaryLight
     surfaceContainerHighest: Color(0xFFEBE4DB),
     surfaceContainerHigh: Color(0xFFF0EAE1),
     surfaceContainer: Color(0xFFF6EFE6),
@@ -499,7 +578,7 @@ class AppTheme {
     brightness: Brightness.dark,
     primary: Color(0xFFFFF4CC),
     onPrimary: Color(0xFF452B00),
-    primaryContainer: Color(0xFFF6AA4F),
+    primaryContainer: Color(0xFFE6993D),
     onPrimaryContainer: Color(0xFFFFE0B3),
     secondary: Color(0xFFF2954B),
     onSecondary: Color(0xFF3E2000),
@@ -514,7 +593,7 @@ class AppTheme {
     errorContainer: Color(0xFF93000A),
     onErrorContainer: Color(0xFFFFDAD6),
     surface: Color(0xFF17130E),
-    onSurface: Color(0xFFEBE4DB),
+    onSurface: Color(0xFFF9FAFB), // DabblerColors.textPrimaryDark
     surfaceContainerHighest: Color(0xFF39352F),
     surfaceContainerHigh: Color(0xFF2E2A24),
     surfaceContainer: Color(0xFF24201A),
@@ -552,10 +631,21 @@ class AppTheme {
     Brightness brightness,
   ) async {
     try {
-      return await DynamicColorSchemeLoader.load(
-        category: category,
+      final normalized = _normalizeCategory(category);
+      final cached = _schemeCache[normalized]?[brightness];
+      if (cached != null) return cached;
+
+      final loaded = await DynamicColorSchemeLoader.load(
+        category: normalized,
         brightness: brightness,
       );
+
+      final entry = _schemeCache.putIfAbsent(
+        normalized,
+        () => <Brightness, ColorScheme>{},
+      );
+      entry[brightness] = loaded;
+      return loaded;
     } catch (_) {
       // Fallback to static
       final isDark = brightness == Brightness.dark;
@@ -575,6 +665,15 @@ class AppTheme {
         default:
           return isDark ? _mainDarkColorScheme : _mainLightColorScheme;
       }
+    }
+  }
+
+  static String _normalizeCategory(String category) {
+    switch (category.toLowerCase()) {
+      case 'activities':
+        return 'activity';
+      default:
+        return category.toLowerCase();
     }
   }
 

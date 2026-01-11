@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 
 /// Widget to display a single mentioned user chip
 class MentionChip extends StatelessWidget {
@@ -19,6 +20,11 @@ class MentionChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final resolvedAvatarUrl = resolveAvatarUrl(avatarUrl);
+    final displayInitial = (username ?? displayName).isNotEmpty
+        ? (username ?? displayName)[0].toUpperCase()
+        : '?';
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -30,13 +36,23 @@ class MentionChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (avatarUrl != null && avatarUrl!.isNotEmpty) ...[
-              CircleAvatar(
-                radius: 10,
-                backgroundImage: NetworkImage(avatarUrl!),
-              ),
-              const SizedBox(width: 6),
-            ],
+            CircleAvatar(
+              radius: 10,
+              backgroundImage:
+                  resolvedAvatarUrl != null && resolvedAvatarUrl.isNotEmpty
+                  ? NetworkImage(resolvedAvatarUrl)
+                  : null,
+              child: resolvedAvatarUrl == null || resolvedAvatarUrl.isEmpty
+                  ? Text(
+                      displayInitial,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    )
+                  : null,
+            ),
+            const SizedBox(width: 6),
             Text(
               '@${username ?? displayName}',
               style: TextStyle(
@@ -158,14 +174,16 @@ class MentionsListView extends StatelessWidget {
         final displayName = profile['display_name'] ?? 'Unknown';
         final username = profile['username'];
         final avatarUrl = profile['avatar_url'];
+        final resolvedAvatarUrl = resolveAvatarUrl(avatarUrl?.toString());
         final isVerified = profile['verified'] == true;
 
         return ListTile(
           leading: CircleAvatar(
-            backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
-                ? NetworkImage(avatarUrl)
+            backgroundImage:
+                resolvedAvatarUrl != null && resolvedAvatarUrl.isNotEmpty
+                ? NetworkImage(resolvedAvatarUrl)
                 : null,
-            child: avatarUrl == null || avatarUrl.isEmpty
+            child: resolvedAvatarUrl == null || resolvedAvatarUrl.isEmpty
                 ? Text(displayName[0].toUpperCase())
                 : null,
           ),

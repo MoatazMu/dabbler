@@ -144,7 +144,7 @@ Future<void> sendFriendRequest(String userId) async {
 // In friends_repository_impl.dart
 Future<Result<void>> sendFriendRequest(String peerUserId) async {
   try {
-    await _db.rpc('rpc_friend_request_send', params: {'p_peer': peerUserId});
+    await _db.rpc('rpc_friend_request_send', params: {'p_peer_profile_id': peerProfileId});
     return right(null);
   } catch (error) {
     return left(svc.mapPostgrestError(error));

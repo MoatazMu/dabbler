@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/features/venues/providers.dart';
+import 'package:dabbler/themes/app_theme.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:dabbler/features/games/providers/games_providers.dart'
+  as games_providers;
+import 'package:dabbler/features/authentication/presentation/providers/auth_profile_providers.dart'
+  show currentUserIdProvider;
 
 class VenueDetailScreen extends ConsumerStatefulWidget {
   final String venueId;
@@ -13,58 +21,8 @@ class VenueDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
-  // Mock data as fallback (will be replaced by real data from provider)
-  final Map<String, dynamic> _venueData = {
-    'id': '1',
-    'name': 'Central Park Basketball Court',
-    'description':
-        'A beautiful outdoor basketball court located in the heart of Central Park. Features professional-grade surfaces and equipment with stunning city views.',
-    'address': '123 Main Street, New York, NY 10001',
-    'coordinates': {'lat': 40.7831, 'lng': -73.9712},
-    'phone': '+1 (555) 123-4567',
-    'email': 'info@centralparkcourt.com',
-    'website': 'www.centralparkcourt.com',
-    'rating': 4.5,
-    'reviewCount': 128,
-    'priceRange': 'Free',
-    'images': [
-      'https://example.com/image1.jpg',
-      'https://example.com/image2.jpg',
-      'https://example.com/image3.jpg',
-    ],
-    'sports': ['Basketball', 'Tennis'],
-    'amenities': [
-      'Free Parking',
-      'Restrooms',
-      'Water Fountain',
-      'Lighting',
-      'Seating Area',
-    ],
-    'features': [
-      'Outdoor Courts',
-      '2 Basketball Courts',
-      'Professional Grade Surface',
-      'Spectator Seating',
-    ],
-    'hours': {
-      'monday': '6:00 AM - 10:00 PM',
-      'tuesday': '6:00 AM - 10:00 PM',
-      'wednesday': '6:00 AM - 10:00 PM',
-      'thursday': '6:00 AM - 10:00 PM',
-      'friday': '6:00 AM - 11:00 PM',
-      'saturday': '7:00 AM - 11:00 PM',
-      'sunday': '7:00 AM - 10:00 PM',
-    },
-    'isOpen': true,
-    'openUntil': '10:00 PM',
-    'rules': [
-      'No glass containers allowed',
-      'Clean up after yourself',
-      'Be respectful to other players',
-      'No loud music after 8 PM',
-      'Maximum 2 hours per session during peak hours',
-    ],
-  };
+  bool? _favoriteOptimistic;
+  bool _favoriteBusy = false;
 
   @override
   void initState() {
@@ -79,83 +37,109 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final venueAsync = ref.watch(venueDetailProvider(widget.venueId));
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final sportsScheme = context.getCategoryTheme('sports');
+    final favoriteIdsAsync = ref.watch(favoriteVenueIdsForCurrentUserProvider);
+    final isFavoritedFromProvider = favoriteIdsAsync.maybeWhen(
+      data: (ids) => ids.contains(widget.venueId),
+      orElse: () => false,
+    );
+    final isFavorited = _favoriteOptimistic ?? isFavoritedFromProvider;
 
-    return Scaffold(
-      backgroundColor: colorScheme.surface,
-      body: SafeArea(
-        child: venueAsync.when(
-          data: (venue) => CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _buildHeaderSection(venue, colorScheme, textTheme),
-                ),
+    return venueAsync.when(
+      data: (venue) => TwoSectionLayout(
+        category: 'sports',
+        topSection: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeaderSection(
+                venue,
+                sportsScheme,
+                textTheme,
+                isFavorited: isFavorited,
               ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-                sliver: SliverToBoxAdapter(
-                  child: _buildHeroSection(venue, colorScheme, textTheme),
-                ),
-              ),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-                sliver: SliverToBoxAdapter(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildQuickInfoCards(venue, textTheme, colorScheme),
-                      const SizedBox(height: 20),
-                      _buildAboutSection(venue, textTheme, colorScheme),
-                      const SizedBox(height: 20),
-                      _buildSportsSection(venue, textTheme, colorScheme),
-                      const SizedBox(height: 20),
-                      _buildAmenitiesSection(venue, textTheme, colorScheme),
-                      const SizedBox(height: 20),
-                      _buildHoursSection(venue, textTheme, colorScheme),
-                      const SizedBox(height: 20),
-                      _buildRulesSection(textTheme, colorScheme),
-                    ],
-                  ),
-                ),
-              ),
+              const SizedBox(height: 24),
+              _buildHeroSection(venue, sportsScheme, textTheme),
             ],
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.error_outline, size: 48, color: colorScheme.error),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Failed to load venue',
-                    style: textTheme.titleMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                    textAlign: TextAlign.center,
+        ),
+        bottomSection: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildQuickInfoCards(venue, textTheme, sportsScheme),
+            const SizedBox(height: 20),
+            _buildAboutSection(venue, textTheme, sportsScheme),
+            const SizedBox(height: 20),
+            _buildSportsSection(venue, textTheme, sportsScheme),
+            const SizedBox(height: 20),
+            _buildAmenitiesSection(venue, textTheme, sportsScheme),
+            const SizedBox(height: 20),
+            _buildHoursSection(venue, textTheme, sportsScheme),
+            const SizedBox(height: 20),
+            _buildBottomBar(venue, sportsScheme, textTheme),
+          ],
+        ),
+      ),
+      loading: () => TwoSectionLayout(
+        category: 'sports',
+        topSection: _buildLoadingTop(textTheme),
+        bottomSection: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stack) => TwoSectionLayout(
+        category: 'sports',
+        topSection: _buildLoadingTop(textTheme),
+        bottomSection: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Iconsax.danger_copy, size: 48, color: sportsScheme.error),
+                const SizedBox(height: 16),
+                Text(
+                  'Failed to load venue',
+                  style: textTheme.titleMedium?.copyWith(
+                    color: sportsScheme.onSecondaryContainer,
                   ),
-                  const SizedBox(height: 16),
-                  FilledButton.tonal(
-                    onPressed: () =>
-                        ref.refresh(venueDetailProvider(widget.venueId)),
-                    child: const Text('Retry'),
-                  ),
-                ],
-              ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                FilledButton.tonal(
+                  onPressed: () =>
+                      ref.refresh(venueDetailProvider(widget.venueId)),
+                  child: const Text('Retry'),
+                ),
+              ],
             ),
           ),
         ),
       ),
-      bottomNavigationBar: venueAsync.maybeWhen(
-        data: (venue) => _buildBottomBar(venue, colorScheme, textTheme),
-        orElse: () => null,
-      ),
+    );
+  }
+
+  Widget _buildLoadingTop(TextTheme textTheme) {
+    return Row(
+      children: [
+        IconButton.filledTonal(
+          onPressed: () => Navigator.of(context).maybePop(),
+          icon: const Icon(Iconsax.arrow_left_copy),
+          style: IconButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            minimumSize: const Size(48, 48),
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            'Venue details',
+            style: textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -163,15 +147,17 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     dynamic venue,
     ColorScheme colorScheme,
     TextTheme textTheme,
+    {
+    required bool isFavorited,
+  }
   ) {
     return Row(
       children: [
         IconButton.filledTonal(
           onPressed: () => Navigator.of(context).maybePop(),
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: const Icon(Iconsax.arrow_left_copy),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
-            foregroundColor: colorScheme.onSurface,
+            backgroundColor: Colors.transparent,
             minimumSize: const Size(48, 48),
           ),
         ),
@@ -182,16 +168,8 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
             children: [
               Text(
                 'Venue details',
-                style: textTheme.headlineSmall?.copyWith(
+                style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                venue.city ?? 'Community venue',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
             ],
@@ -200,20 +178,20 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
         const SizedBox(width: 16),
         IconButton.filledTonal(
           onPressed: _shareVenue,
-          icon: const Icon(Icons.share_rounded),
+          icon: const Icon(Iconsax.share_copy),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
-            foregroundColor: colorScheme.onSurface,
+            backgroundColor: Colors.transparent,
             minimumSize: const Size(48, 48),
           ),
         ),
         const SizedBox(width: 8),
         IconButton.filledTonal(
-          onPressed: _toggleFavorite,
-          icon: const Icon(Icons.favorite_border_rounded),
+          onPressed: _favoriteBusy ? null : () => _toggleFavorite(isFavorited),
+          icon: Icon(
+            isFavorited ? Iconsax.bookmark_2_copy : Iconsax.bookmark_copy,
+          ),
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.surfaceContainerHigh,
-            foregroundColor: colorScheme.onSurface,
+            backgroundColor: Colors.transparent,
             minimumSize: const Size(48, 48),
           ),
         ),
@@ -227,12 +205,7 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     ColorScheme colorScheme,
     TextTheme textTheme,
   ) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final heroColor = isDarkMode
-        ? const Color(0xFF4A148C)
-        : const Color(0xFFE0C7FF);
-    final textColor = isDarkMode ? Colors.white : Colors.black87;
-    final isOpen = _venueData['isOpen'] as bool;
+    final isOpen = venue.isOpenAt(DateTime.now());
     final statusColor = isOpen
         ? colorScheme.secondaryContainer
         : colorScheme.errorContainer;
@@ -240,31 +213,106 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
         ? colorScheme.onSecondaryContainer
         : colorScheme.onErrorContainer;
 
+    // Minimal hero that relies on TwoSectionLayout's top background.
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: heroColor,
-        borderRadius: BorderRadius.circular(18),
-      ),
+      padding: const EdgeInsets.all(0),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(28)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Status badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: statusColor,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              isOpen ? 'OPEN' : 'CLOSED',
-              style: textTheme.labelMedium?.copyWith(
-                color: statusTextColor,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.5,
-              ),
-            ),
+          // Status + Location
+          Builder(
+            builder: (context) {
+              final city = (venue.city?.toString() ?? '').trim();
+              final country = (venue.country?.toString() ?? '').trim();
+              final locationText = <String>[
+                city,
+                country,
+              ].where((value) => value.isNotEmpty).join(', ');
+
+              // Conservative max width so it won't overflow even with long names.
+              final maxChipLabelWidth = (MediaQuery.sizeOf(context).width - 220)
+                  .clamp(120.0, double.infinity)
+                  .toDouble();
+
+              return Wrap(
+                spacing: 12,
+                runSpacing: 8,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: statusColor,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isOpen
+                              ? Iconsax.tick_circle_copy
+                              : Iconsax.close_circle_copy,
+                          size: 16,
+                          color: statusTextColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isOpen ? 'OPEN' : 'CLOSED',
+                          style: textTheme.labelMedium?.copyWith(
+                            color: statusTextColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: colorScheme.primary.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Iconsax.location_copy,
+                          size: 16,
+                          color: colorScheme.primary,
+                        ),
+                        const SizedBox(width: 8),
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxWidth: maxChipLabelWidth,
+                          ),
+                          child: Text(
+                            locationText.isEmpty
+                                ? 'Location unavailable'
+                                : locationText,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: textTheme.labelMedium?.copyWith(
+                              color: colorScheme.onPrimaryContainer.withValues(
+                                alpha: 0.9,
+                              ),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
 
@@ -272,32 +320,11 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           Text(
             venue.name,
             style: textTheme.headlineSmall?.copyWith(
-              color: textColor,
+              color: colorScheme.onPrimaryContainer,
               fontWeight: FontWeight.w700,
             ),
           ),
           const SizedBox(height: 12),
-
-          // Location
-          Row(
-            children: [
-              Icon(
-                Icons.location_on,
-                size: 16,
-                color: textColor.withOpacity(0.8),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '${venue.city}, ${venue.country}',
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: textColor.withOpacity(0.9),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
         ],
       ),
     );
@@ -309,124 +336,125 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     TextTheme textTheme,
     ColorScheme colorScheme,
   ) {
-    return Column(
-      children: [
-        Row(
+    final priceText = venue.priceText;
+    final phone = (venue.phone as String?)?.trim();
+    final hasPhone = phone != null && phone.isNotEmpty;
+    final ratingText = venue.totalRatings == 0
+        ? 'No ratings'
+        : venue.rating.toStringAsFixed(1);
+
+    return Card.filled(
+      color: colorScheme.surfaceContainerHigh,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
           children: [
-            // Price Card
-            Expanded(
-              child: Card(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.payments,
-                          color: colorScheme.primary,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Price',
-                          style: textTheme.labelLarge?.copyWith(
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
+            Row(
+              children: [
+                Icon(Iconsax.card_copy, size: 20, color: colorScheme.primary),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Price',
+                    style: textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '\$${venue.pricePerHour.toStringAsFixed(0)}/${venue.currency}',
-                      style: textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  priceText,
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: colorScheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+            if (FeatureFlags.venuesBooking) ...[
+              const SizedBox(height: 12),
+              Divider(
+                height: 1,
+                thickness: 1,
+                color: colorScheme.outlineVariant,
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(
+                    Iconsax.star_copy,
+                    size: 20,
+                    color: colorScheme.tertiary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Rating',
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.onSurfaceVariant,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Text(
+                    ratingText,
+                    style: textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(width: 12),
-
-            // Rating Card
-            if (FeatureFlags.venuesBooking)
-              Expanded(
-                child: Card(
+            ],
+            const SizedBox(height: 12),
+            Divider(height: 1, thickness: 1, color: colorScheme.outlineVariant),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Iconsax.call_copy,
+                    size: 18,
+                    color: colorScheme.primary,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Icon(Icons.star, color: Colors.amber[700], size: 20),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Rating',
-                            style: textTheme.labelLarge?.copyWith(
-                              color: colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
                       Text(
-                        '${_venueData['rating']}',
-                        style: textTheme.titleLarge?.copyWith(
+                        'Contact',
+                        style: textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        hasPhone ? phone : 'Not available',
+                        style: textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
+                IconButton(
+                  onPressed: hasPhone ? () => _callVenue(phone) : null,
+                  icon: Icon(Iconsax.call_copy, color: colorScheme.primary),
+                ),
+              ],
+            ),
           ],
         ),
-        const SizedBox(height: 12),
-
-        // Contact Card
-        Card(
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.phone,
-                  color: colorScheme.onPrimaryContainer,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Contact',
-                      style: textTheme.labelLarge?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _venueData['phone'] as String,
-                      style: textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                onPressed: _callVenue,
-                icon: Icon(Icons.call, color: colorScheme.primary),
-              ),
-            ],
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -444,14 +472,18 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        Card(
-          child: Text(
-            venue.description.isEmpty
-                ? 'No description available'
-                : venue.description,
-            style: textTheme.bodyMedium?.copyWith(
-              height: 1.5,
-              color: colorScheme.onSurface,
+        Card.filled(
+          color: Colors.transparent,
+          child: Padding(
+            padding: const EdgeInsets.all(0),
+            child: Text(
+              venue.description.isEmpty
+                  ? 'No description available'
+                  : venue.description,
+              style: textTheme.bodyMedium?.copyWith(
+                height: 1.5,
+                color: colorScheme.onSurface,
+              ),
             ),
           ),
         ),
@@ -475,44 +507,59 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        Card(
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: sports.map((sport) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _getSportIcon(sport),
-                      size: 16,
-                      color: colorScheme.onPrimaryContainer,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      sport,
-                      style: textTheme.labelMedium?.copyWith(
-                        color: colorScheme.onPrimaryContainer,
-                        fontWeight: FontWeight.w600,
+        Card.filled(
+          color: colorScheme.surfaceContainerHigh,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: sports.map((sport) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (_isFootballSport(sport))
+                        Text(
+                          '⚽️',
+                          style: textTheme.bodyMedium?.copyWith(height: 1),
+                        )
+                      else
+                        Icon(
+                          _getSportIcon(sport),
+                          size: 16,
+                          color: colorScheme.primary,
+                        ),
+                      const SizedBox(width: 6),
+                      Text(
+                        sport,
+                        style: textTheme.labelMedium?.copyWith(
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
       ],
     );
+  }
+
+  bool _isFootballSport(String sport) {
+    final value = sport.trim().toLowerCase();
+    return value == 'football' || value == 'soccer';
   }
 
   // Amenities Section
@@ -531,40 +578,44 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        Card(
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: amenities.map((amenity) {
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _getAmenityIcon(amenity),
-                      size: 16,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      amenity,
-                      style: textTheme.labelMedium?.copyWith(
+        Card.filled(
+          color: colorScheme.surfaceContainerHigh,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: amenities.map((amenity) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _getAmenityIcon(amenity),
+                        size: 16,
                         color: colorScheme.onSurfaceVariant,
-                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                      const SizedBox(width: 6),
+                      Text(
+                        amenity,
+                        style: textTheme.labelMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
           ),
         ),
       ],
@@ -577,8 +628,8 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     TextTheme textTheme,
     ColorScheme colorScheme,
   ) {
-    final openingTime = venue.openingTime ?? '—';
-    final closingTime = venue.closingTime ?? '—';
+    final openingTime = (venue.openingTime as String).trim();
+    final closingTime = (venue.closingTime as String).trim();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -588,91 +639,49 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
           style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 12),
-        Card(
-          child: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: colorScheme.tertiaryContainer,
-                  borderRadius: BorderRadius.circular(12),
+        Card.filled(
+          color: colorScheme.surfaceContainerHigh,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: colorScheme.primary.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Iconsax.clock_copy,
+                    color: colorScheme.primary,
+                    size: 22,
+                  ),
                 ),
-                child: Icon(
-                  Icons.schedule,
-                  color: colorScheme.onTertiaryContainer,
-                  size: 24,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Daily Hours',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${openingTime.isEmpty ? '—' : openingTime} - ${closingTime.isEmpty ? '—' : closingTime}',
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Daily Hours',
-                      style: textTheme.labelLarge?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '$openingTime - $closingTime',
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // Rules Section
-  Widget _buildRulesSection(TextTheme textTheme, ColorScheme colorScheme) {
-    final rules = _venueData['rules'] as List<String>;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Venue Rules',
-          style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: 12),
-        Card(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: rules.asMap().entries.map((entry) {
-              final isLast = entry.key == rules.length - 1;
-              return Padding(
-                padding: EdgeInsets.only(bottom: isLast ? 0 : 12),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(top: 4),
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(
-                        color: colorScheme.primary,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        entry.value,
-                        style: textTheme.bodyMedium?.copyWith(height: 1.4),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+              ],
+            ),
           ),
         ),
       ],
@@ -691,15 +700,10 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
         ? venue.addressLine1
         : 'Address not available';
 
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-        border: Border(top: BorderSide(color: colorScheme.outlineVariant)),
-      ),
-      child: SafeArea(
-        top: false,
+    return Card.filled(
+      color: colorScheme.surfaceContainerHigh,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Expanded(
@@ -709,14 +713,17 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                 children: [
                   Text(
                     priceRange,
-                    style: textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
+                    style: textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: colorScheme.onSurface,
                     ),
                   ),
+                  const SizedBox(height: 4),
                   Text(
                     addressFirstLine,
                     style: textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -725,7 +732,6 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
               ),
             ),
             const SizedBox(width: 16),
-
             FilledButton.icon(
               onPressed: _getDirections,
               style: FilledButton.styleFrom(
@@ -733,13 +739,13 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
                 foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
-                  vertical: 16,
+                  vertical: 14,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
               ),
-              icon: const Icon(Icons.directions),
+              icon: const Icon(Iconsax.routing_copy),
               label: const Text(
                 'Directions',
                 style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
@@ -755,17 +761,17 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
   IconData _getSportIcon(String sport) {
     switch (sport.toLowerCase()) {
       case 'basketball':
-        return Icons.sports_basketball;
+        return Iconsax.game_copy;
       case 'tennis':
-        return Icons.sports_tennis;
+        return Iconsax.activity_copy;
       case 'soccer':
-        return Icons.sports_soccer;
+        return Iconsax.ticket_2_copy;
       case 'football':
-        return Icons.sports_football;
+        return Iconsax.ticket_2_copy;
       case 'volleyball':
-        return Icons.sports_volleyball;
+        return Iconsax.activity_copy;
       default:
-        return Icons.sports;
+        return Iconsax.activity_copy;
     }
   }
 
@@ -773,55 +779,143 @@ class _VenueDetailScreenState extends ConsumerState<VenueDetailScreen> {
     switch (amenity.toLowerCase()) {
       case 'free parking':
       case 'parking':
-        return Icons.local_parking;
+        return Iconsax.building_copy;
       case 'restrooms':
-        return Icons.wc;
+        return Iconsax.building_copy;
       case 'water fountain':
       case 'water':
-        return Icons.water_drop;
+        return Iconsax.tick_circle_copy;
       case 'lighting':
-        return Icons.lightbulb;
+        return Iconsax.tick_circle_copy;
       case 'seating area':
       case 'seating':
-        return Icons.chair;
+        return Iconsax.tick_circle_copy;
       case 'locker rooms':
-        return Icons.lock;
+        return Iconsax.lock_copy;
       case 'snack bar':
-        return Icons.restaurant;
+        return Iconsax.tick_circle_copy;
       case 'wifi':
-        return Icons.wifi;
+        return Iconsax.wifi_square_copy;
       case 'pro shop':
-        return Icons.store;
+        return Iconsax.building_copy;
       case 'restaurant':
-        return Icons.restaurant_menu;
+        return Iconsax.building_copy;
       case 'gym':
-        return Icons.fitness_center;
+        return Iconsax.activity_copy;
       default:
-        return Icons.check_circle;
+        return Iconsax.tick_circle_copy;
     }
   }
 
-  void _shareVenue() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Sharing venue...')));
+  void _showInfoSnackBar(String message) {
+    final messenger = ScaffoldMessenger.maybeOf(context);
+    if (messenger == null) return;
+
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.fixed,
+        ),
+      );
   }
 
-  void _toggleFavorite() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Added to favorites')));
+  void _shareVenue() {
+    _showInfoSnackBar('Sharing venue...');
+  }
+
+  Future<void> _toggleFavorite(bool currentlyFavorited) async {
+    if (_favoriteBusy) return;
+
+    final userId = ref.read(currentUserIdProvider);
+    if (userId == null || userId.isEmpty) {
+      _showInfoSnackBar('Sign in to save venues');
+      return;
+    }
+
+    setState(() {
+      _favoriteBusy = true;
+      _favoriteOptimistic = !currentlyFavorited;
+    });
+
+    final repository = ref.read(games_providers.venuesRepositoryProvider);
+    final result = await repository.toggleVenueFavorite(widget.venueId, userId);
+
+    if (!mounted) return;
+
+    result.fold(
+      (failure) {
+        setState(() {
+          _favoriteBusy = false;
+          _favoriteOptimistic = currentlyFavorited;
+        });
+        _showInfoSnackBar(failure.message);
+      },
+      (_) {
+        ref.invalidate(favoriteVenuesForCurrentUserProvider);
+        ref.invalidate(favoriteVenueIdsForCurrentUserProvider);
+        setState(() {
+          _favoriteBusy = false;
+          _favoriteOptimistic = null;
+        });
+        _showInfoSnackBar(
+          currentlyFavorited ? 'Removed from saved' : 'Saved',
+        );
+      },
+    );
   }
 
   void _getDirections() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Opening directions...')));
+    _showInfoSnackBar('Opening directions...');
   }
 
-  void _callVenue() {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Calling ${_venueData['phone']}')));
+  void _callVenue(String phone) {
+    _launchPhoneDialer(phone);
+  }
+
+  String _normalizePhoneForTelUri(String input) {
+    final trimmed = input.trim();
+    if (trimmed.isEmpty) return '';
+
+    final buffer = StringBuffer();
+    for (var i = 0; i < trimmed.length; i++) {
+      final ch = trimmed[i];
+      final isDigit = ch.codeUnitAt(0) >= 48 && ch.codeUnitAt(0) <= 57;
+      if (isDigit) {
+        buffer.write(ch);
+        continue;
+      }
+      if (ch == '+' && buffer.isEmpty) {
+        buffer.write(ch);
+      }
+    }
+
+    return buffer.toString();
+  }
+
+  Future<void> _launchPhoneDialer(String phone) async {
+    final normalized = _normalizePhoneForTelUri(phone);
+    if (normalized.isEmpty) {
+      if (!mounted) return;
+      _showInfoSnackBar('Phone number not available');
+      return;
+    }
+
+    final uri = Uri(scheme: 'tel', path: normalized);
+
+    try {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched && mounted) {
+        _showInfoSnackBar('Calling is not supported on this device');
+      }
+    } catch (_) {
+      if (!mounted) return;
+      _showInfoSnackBar('Could not open the phone dialer');
+    }
   }
 }

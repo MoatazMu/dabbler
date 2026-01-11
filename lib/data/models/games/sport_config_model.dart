@@ -268,7 +268,7 @@ class SportConfigModel extends SportConfig {
           isTeamSport: false,
           isIndoorSport: true,
           isOutdoorSport: false,
-          requiredEquipment: ['Paddle', 'Table tennis balls'],
+          requiredEquipment: ['Padel', 'Table tennis balls'],
           scoringSystem: 'points',
           createdAt: now,
           updatedAt: now,

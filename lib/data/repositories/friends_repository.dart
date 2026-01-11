@@ -50,6 +50,13 @@ abstract class FriendsRepository {
     int limit = 20,
   });
 
+  /// List available profiles for discovery (Suggestions tab).
+  ///
+  /// Implementations should exclude the current user when possible.
+  Future<Result<List<Map<String, dynamic>>, Failure>> listProfiles({
+    int limit = 200,
+  });
+
   /// Search for users by name or username
   Future<Result<List<Map<String, dynamic>>, Failure>> searchUsers(
     String query, {

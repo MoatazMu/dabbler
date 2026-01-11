@@ -187,18 +187,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         opacity: _fadeAnimation,
         child: SlideTransition(
           position: _slideAnimation,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(context),
-              const SizedBox(height: 24),
-              _buildHeroCard(context),
-              _buildSearchBar(context),
-              ..._buildFilteredSectionsList(context),
-              _buildSignOutSection(context),
-              _buildVersionInfo(context),
-              const SizedBox(height: 20),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 24),
+                _buildHeroCard(context),
+                _buildSearchBar(context),
+                ..._buildFilteredSectionsList(context),
+                _buildSignOutSection(context),
+                _buildVersionInfo(context),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),
@@ -227,7 +230,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             children: [
               Text(
                 'Settings',
-                style: textTheme.headlineSmall?.copyWith(
+                style: textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   color: colorScheme.onSurface,
                 ),
@@ -254,14 +257,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final profileAccent = colorScheme.categoryProfile;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDarkMode
-            ? Colors.white.withOpacity(0.1)
-            : Colors.white.withOpacity(0.6),
+        color: profileAccent.withValues(alpha: isDarkMode ? 0.14 : 0.10),
         borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
@@ -270,9 +272,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           Text(
             'Customize your experience',
             style: textTheme.labelLarge?.copyWith(
-              color: isDarkMode
-                  ? Colors.white.withOpacity(0.8)
-                  : Colors.black.withOpacity(0.7),
+              color: profileAccent.withValues(alpha: 0.9),
               fontWeight: FontWeight.w600,
               letterSpacing: 0.6,
             ),
@@ -280,8 +280,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           const SizedBox(height: 8),
           Text(
             'Tune Dabbler to match how you play',
-            style: textTheme.headlineSmall?.copyWith(
-              color: isDarkMode ? Colors.white : Colors.black87,
+            style: textTheme.titleLarge?.copyWith(
+              color: colorScheme.onSurface,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -289,7 +289,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
           Text(
             'Manage your account, preferences, and notifications all in one place.',
             style: textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onPrimary.withOpacity(0.8),
+              color: colorScheme.onSurfaceVariant,
             ),
           ),
         ],
@@ -299,6 +299,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
   Widget _buildSearchBar(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 24, 0, 12),
@@ -312,6 +313,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         decoration: InputDecoration(
           hintText: 'Search settings',
           prefixIcon: const Icon(Iconsax.search_normal_copy),
+          prefixIconColor: colorScheme.categoryProfile,
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   onPressed: () {
@@ -324,10 +326,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                 )
               : null,
           filled: true,
-          fillColor: colorScheme.surfaceContainerHighest,
+          fillColor: colorScheme.categoryProfile.withValues(
+            alpha: isDarkMode ? 0.14 : 0.10,
+          ),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(28),
             borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(28),
+            borderSide: BorderSide(
+              color: colorScheme.categoryProfile,
+              width: 2,
+            ),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
@@ -371,6 +382,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,7 +400,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
         ),
         Card(
           elevation: 0,
-          color: colorScheme.surfaceContainerHigh,
+          color: colorScheme.categoryProfile.withValues(
+            alpha: isDarkMode ? 0.08 : 0.06,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
           ),
@@ -422,10 +436,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.12),
+              color: colorScheme.categoryProfile.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(item.icon, color: colorScheme.primary),
+            child: Icon(item.icon, color: colorScheme.categoryProfile),
           ),
           title: Text(
             item.title,
@@ -454,7 +468,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Divider(
               height: 1,
-              color: colorScheme.outlineVariant.withOpacity(0.4),
+              color: colorScheme.outlineVariant.withValues(alpha: 0.4),
             ),
           ),
       ],
@@ -464,12 +478,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
   Widget _buildSignOutSection(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+      padding: const EdgeInsets.all(0),
       child: Card(
         elevation: 0,
-        color: colorScheme.surfaceContainerHigh,
+        color: colorScheme.categoryProfile.withValues(
+          alpha: isDarkMode ? 0.08 : 0.06,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: ListTile(
           onTap: _showSignOutDialog,
@@ -477,7 +494,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: colorScheme.error.withOpacity(0.12),
+              color: colorScheme.error.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(Iconsax.logout_copy, color: colorScheme.error),

@@ -129,7 +129,9 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
           ? const Center(child: CircularProgressIndicator())
           : ConstrainedBox(
               constraints: BoxConstraints(
-                minHeight: screenHeight - topPadding - bottomPadding - 48,
+                minHeight: (screenHeight - topPadding - bottomPadding - 48)
+                    .clamp(0.0, double.infinity)
+                    .toDouble(),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,

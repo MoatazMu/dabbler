@@ -1,9 +1,11 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 import 'package:dabbler/core/widgets/loading_widget.dart';
 import 'package:dabbler/features/social/providers/social_providers.dart';
 import 'package:dabbler/features/social/presentation/widgets/comments/comments_thread.dart';
@@ -31,6 +33,34 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
   bool _isSubmittingComment = false;
   StreamSubscription<PostLikeUpdate>? _likeSubscription;
   StreamSubscription<PostCommentUpdate>? _commentSubscription;
+
+  final Random _avatarRandom = Random();
+  final Map<String, ({Color backgroundColor, Color foregroundColor})>
+  _avatarColorCache = {};
+
+  ({Color backgroundColor, Color foregroundColor}) _avatarColors(
+    ColorScheme colorScheme,
+    String seed,
+  ) {
+    final palette = <({Color bg, Color fg})>[
+      (bg: colorScheme.primaryContainer, fg: colorScheme.onPrimaryContainer),
+      (
+        bg: colorScheme.secondaryContainer,
+        fg: colorScheme.onSecondaryContainer,
+      ),
+      (bg: colorScheme.tertiaryContainer, fg: colorScheme.onTertiaryContainer),
+      (bg: colorScheme.errorContainer, fg: colorScheme.onErrorContainer),
+    ];
+
+    final cacheKey = seed.isEmpty ? 'user' : seed;
+    final cached = _avatarColorCache[cacheKey];
+    if (cached != null) return cached;
+
+    final chosen = palette[_avatarRandom.nextInt(palette.length)];
+    final result = (backgroundColor: chosen.bg, foregroundColor: chosen.fg);
+    _avatarColorCache[cacheKey] = result;
+    return result;
+  }
 
   @override
   void initState() {
@@ -188,7 +218,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
         // Header with back button and post info
         SliverToBoxAdapter(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 48, 16, 16),
+            padding: const EdgeInsets.fromLTRB(16, 54, 16, 16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -202,6 +232,14 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                   onTap: () => _navigateToProfile(post.authorId),
                   child: CircleAvatar(
                     radius: 24,
+                    backgroundColor: _avatarColors(
+                      colorScheme,
+                      post.authorId?.toString() ?? post.authorName,
+                    ).backgroundColor,
+                    foregroundColor: _avatarColors(
+                      colorScheme,
+                      post.authorId?.toString() ?? post.authorName,
+                    ).foregroundColor,
                     backgroundImage: post.authorAvatar.isNotEmpty
                         ? NetworkImage(post.authorAvatar)
                         : null,
@@ -839,7 +877,7 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
   Widget _buildCommentInput(BuildContext context, ThemeData theme) {
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-    final isDark = theme.brightness == Brightness.dark;
+    final socialTint = colorScheme.categorySocial.withValues(alpha: 0.16);
 
     // Prevent DOM errors by checking if widget is still mounted
     if (!mounted) return const SizedBox.shrink();
@@ -862,78 +900,74 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
           ),
         ],
       ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _commentController,
-                decoration: InputDecoration(
-                  hintText: 'Add a reply...',
-                  hintStyle: TextStyle(
-                    color: colorScheme.onSurface.withOpacity(0.5),
-                    fontSize: 15,
-                  ),
-                  filled: true,
-                  fillColor: isDark
-                      ? colorScheme.surfaceContainerLow
-                      : colorScheme.surfaceContainerHigh,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: colorScheme.outlineVariant,
-                      width: 1.5,
-                    ),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: colorScheme.outlineVariant,
-                      width: 1.5,
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(
-                      color: colorScheme.primary,
-                      width: 2,
-                    ),
-                  ),
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
-                ),
-                style: textTheme.bodyLarge?.copyWith(
-                  color: colorScheme.onSurface,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _commentController,
+              cursorColor: colorScheme.categorySocial,
+              decoration: InputDecoration(
+                hintText: 'Add a reply...',
+                hintStyle: TextStyle(
+                  color: colorScheme.onSurface.withOpacity(0.5),
                   fontSize: 15,
                 ),
-                maxLines: null,
-                textCapitalization: TextCapitalization.sentences,
+                filled: true,
+                fillColor: socialTint,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.outlineVariant,
+                    width: 1.5,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.outlineVariant,
+                    width: 1.5,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: colorScheme.categorySocial,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            IconButton(
-              onPressed: _isSubmittingComment ? null : _submitComment,
-              icon: _isSubmittingComment
-                  ? SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: colorScheme.primary,
-                      ),
-                    )
-                  : Icon(Iconsax.send_1, color: colorScheme.primary),
-              style: IconButton.styleFrom(
-                backgroundColor: colorScheme.primaryContainer,
-                padding: const EdgeInsets.all(12),
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
+                fontSize: 15,
               ),
+              maxLines: null,
+              textCapitalization: TextCapitalization.sentences,
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          IconButton(
+            onPressed: _isSubmittingComment ? null : _submitComment,
+            icon: _isSubmittingComment
+                ? SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: colorScheme.categorySocial,
+                    ),
+                  )
+                : Icon(Iconsax.send_1, color: colorScheme.categorySocial),
+            style: IconButton.styleFrom(
+              backgroundColor: socialTint,
+              padding: const EdgeInsets.all(12),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -1257,8 +1291,6 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                 FilledButton.icon(
                   onPressed: () {
                     // Open in maps app
-                    final url =
-                        'https://www.google.com/maps/search/?api=1&query=$lat,$lng';
                     // Use url_launcher package to open
                   },
                   icon: const Icon(Iconsax.map_copy),
@@ -1321,15 +1353,34 @@ class _ThreadScreenState extends ConsumerState<ThreadScreen> {
                     final user = reaction['user'];
                     final emoji = reaction['emoji'] ?? '👍';
                     final userName = user?['display_name'] ?? 'Anonymous';
-                    final userAvatar = user?['avatar_url'];
+                    final avatarSeed =
+                        user?['user_id']?.toString() ??
+                        (userName == 'Anonymous'
+                            ? 'Anonymous#$index'
+                            : userName);
+                    final resolvedUserAvatar = resolveAvatarUrl(
+                      user?['avatar_url']?.toString(),
+                    );
 
                     return ListTile(
                       leading: CircleAvatar(
                         radius: 20,
-                        backgroundImage: userAvatar != null
-                            ? NetworkImage(userAvatar)
+                        backgroundColor: _avatarColors(
+                          colorScheme,
+                          avatarSeed,
+                        ).backgroundColor,
+                        foregroundColor: _avatarColors(
+                          colorScheme,
+                          avatarSeed,
+                        ).foregroundColor,
+                        backgroundImage:
+                            resolvedUserAvatar != null &&
+                                resolvedUserAvatar.isNotEmpty
+                            ? NetworkImage(resolvedUserAvatar)
                             : null,
-                        child: userAvatar == null
+                        child:
+                            resolvedUserAvatar == null ||
+                                resolvedUserAvatar.isEmpty
                             ? Text(userName.substring(0, 1).toUpperCase())
                             : null,
                       ),

@@ -276,7 +276,7 @@ class SportsConstants {
       idealPlayers: 4,
       positions: ['Singles Player', 'Doubles Partner'],
       scoringSystem: ScoringSystem.points,
-      equipmentNeeded: ['Table Tennis Paddles', 'Ping Pong Balls', 'Table'],
+      equipmentNeeded: ['Table Tennis Padels', 'Ping Pong Balls', 'Table'],
       gameRules: [
         'Singles: 1v1, Doubles: 2v2',
         'First to 11 points wins game',

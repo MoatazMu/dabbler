@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/utils/enums/social_enums.dart';
@@ -173,39 +174,78 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
   }
 
   void _showAttachmentOptions() {
+    final platform = Theme.of(context).platform;
+
+    if (platform == TargetPlatform.iOS) {
+      showCupertinoModalPopup<void>(
+        context: context,
+        builder: (context) {
+          return CupertinoActionSheet(
+            title: const Text('Add to your post'),
+            actions: [
+              CupertinoActionSheetAction(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+                child: const Text('Camera'),
+              ),
+              CupertinoActionSheetAction(
+                onPressed: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+                child: const Text('Gallery'),
+              ),
+            ],
+            cancelButton: CupertinoActionSheetAction(
+              onPressed: () => Navigator.pop(context),
+              isDefaultAction: true,
+              child: const Text('Cancel'),
+            ),
+          );
+        },
+      );
+      return;
+    }
+
     showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       builder: (context) {
-        return NavigationDrawer(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          elevation: 1,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 16, 16, 10),
-              child: Text(
-                'Add to your post',
-                style: Theme.of(context).textTheme.titleSmall,
+        final textTheme = Theme.of(context).textTheme;
+        final colorScheme = Theme.of(context).colorScheme;
+
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+                child: Text('Add to your post', style: textTheme.titleSmall),
               ),
-            ),
-            NavigationDrawerDestination(
-              icon: Icon(Iconsax.camera_copy),
-              label: Text('Camera'),
-            ),
-            NavigationDrawerDestination(
-              icon: Icon(Iconsax.gallery_copy),
-              label: Text('Gallery'),
-            ),
-            const SizedBox(height: 12),
-          ],
-          onDestinationSelected: (index) {
-            Navigator.pop(context);
-            if (index == 0) {
-              _pickImage(ImageSource.camera);
-            } else if (index == 1) {
-              _pickImage(ImageSource.gallery);
-            }
-          },
+              const Divider(height: 1),
+              ListTile(
+                leading: Icon(Iconsax.camera_copy, color: colorScheme.primary),
+                title: const Text('Camera'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.camera);
+                },
+              ),
+              ListTile(
+                leading: Icon(Iconsax.gallery_copy, color: colorScheme.primary),
+                title: const Text('Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  _pickImage(ImageSource.gallery);
+                },
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
         );
       },
     );
@@ -637,7 +677,7 @@ class _InlinePostComposerState extends ConsumerState<InlinePostComposer> {
                   ),
                 ],
 
-                const Spacer(),
+                const SizedBox(width: 24),
 
                 // Post/Comment button
                 if (hasContent && _creationType == CreationType.post)

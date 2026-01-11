@@ -6,7 +6,6 @@ import 'package:dabbler/features/home/presentation/screens/home_screen.dart';
 import 'package:dabbler/features/home/presentation/widgets/inline_post_composer.dart';
 import 'package:dabbler/features/explore/presentation/screens/sports_screen.dart'
     show ExploreScreen;
-import 'package:dabbler/features/social/presentation/screens/social_screen.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/core/services/app_lifecycle_manager.dart';
@@ -26,11 +25,11 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
   bool _hasShownModalThisSession = false;
+  bool _checkInModalInFlight = false;
 
-  // Only swipeable screens (Home, Social, and Sports, excluding Create)
+  // Only swipeable screens (Home and Sports, excluding Create)
   final List<Widget> _swipeableScreens = [
     const HomeScreen(),
-    const SocialScreen(),
     const ExploreScreen(), // Sports screen
   ];
 
@@ -66,16 +65,28 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   }
 
   Future<void> _checkAndShowModal() async {
-    if (!mounted || _hasShownModalThisSession) return;
+    if (!mounted || _hasShownModalThisSession || _checkInModalInFlight) return;
+
+    _checkInModalInFlight = true;
 
     try {
       final controller = ref.read(checkInControllerProvider.notifier);
       final shouldShow = await controller.shouldShowCheckInModal();
 
+      if (!mounted) return;
+      if (_hasShownModalThisSession) return;
+
       debugPrint('MainNavigationScreen: shouldShow=$shouldShow');
 
       if (shouldShow && mounted) {
         _hasShownModalThisSession = true;
+
+        // Avoid showing dialogs while this route is not current (e.g. during redirects).
+        final isCurrentRoute = ModalRoute.of(context)?.isCurrent ?? true;
+        if (!isCurrentRoute) {
+          debugPrint('MainNavigationScreen: skip modal (route not current)');
+          return;
+        }
 
         final state = ref.read(checkInControllerProvider);
         final status = state.valueOrNull;
@@ -105,7 +116,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             if (!mounted) return;
 
             // Always close the modal after check-in attempt
-            Navigator.of(context).pop();
+            Navigator.of(context, rootNavigator: true).pop();
 
             if (wasFirstToday) {
               final newStatus = ref.read(checkInControllerProvider).valueOrNull;
@@ -155,12 +166,14 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     } catch (e, stack) {
       debugPrint('MainNavigationScreen check-in error: $e');
       debugPrint('Stack: $stack');
+    } finally {
+      _checkInModalInFlight = false;
     }
   }
 
   void _onItemTapped(int index) {
-    if (index == 2) {
-      // Show create post modal (index 2 is Create button)
+    if (index == 1) {
+      // Show create post modal (index 1 is Create button)
       _showCreatePostModal();
       return;
     }
@@ -169,14 +182,12 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
       _currentIndex = index;
     });
 
-    // Map nav index to page index: 0->0 (Home), 1->1 (Social), 3->2 (Sports)
+    // Map nav index to page index: 0->0 (Home), 2->1 (Sports)
     int pageIndex;
     if (index == 0) {
       pageIndex = 0; // Home
-    } else if (index == 1) {
-      pageIndex = 1; // Social
     } else {
-      pageIndex = 2; // Sports (index 3 maps to page 2)
+      pageIndex = 1; // Sports
     }
 
     _pageController.animateToPage(
@@ -187,14 +198,12 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   }
 
   void _onPageChanged(int pageIndex) {
-    // Map page index back to nav index: 0->0 (Home), 1->1 (Social), 2->3 (Sports)
+    // Map page index back to nav index: 0->0 (Home), 1->2 (Sports)
     int navIndex;
     if (pageIndex == 0) {
       navIndex = 0; // Home
-    } else if (pageIndex == 1) {
-      navIndex = 1; // Social
     } else {
-      navIndex = 3; // Sports
+      navIndex = 2; // Sports
     }
     setState(() {
       _currentIndex = navIndex;
@@ -217,28 +226,16 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
 
   /// Get bottom nav color based on current screen
   Color _getBottomNavColor(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colorScheme = Theme.of(context).colorScheme;
 
     // Map index to category colors
     switch (_currentIndex) {
       case 0: // Home - Main category
-        return isDark
-            ? const Color(0xFF4A148C).withOpacity(0.50)
-            : const Color(0xFFE0C7FF).withOpacity(0.50);
-      case 1: // Social - Social category
-        final colorScheme = Theme.of(context).colorScheme;
-        return isDark
-            ? colorScheme.categorySocial.withOpacity(0.50)
-            : colorScheme.categorySocial.withOpacity(0.50);
-      case 3: // Sports - Sports category
-        final colorScheme = Theme.of(context).colorScheme;
-        return isDark
-            ? colorScheme.categorySports.withOpacity(0.50)
-            : colorScheme.categorySports.withOpacity(0.50);
+        return colorScheme.categoryMainContainer;
+      case 2: // Sports - Sports category
+        return colorScheme.categorySportsContainer;
       default: // Default to main
-        return isDark
-            ? const Color(0xFF4A148C).withOpacity(0.50)
-            : const Color(0xFFE0C7FF).withOpacity(0.50);
+        return colorScheme.categoryMainContainer;
     }
   }
 
@@ -255,97 +252,139 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
       }
     });
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final foregroundColor = isDark ? Colors.white : Colors.black87;
-    final foregroundColorInactive = isDark
-        ? Colors.white.withOpacity(0.6)
-        : Colors.black54;
-    final borderColor = isDark
-        ? Colors.white.withOpacity(0.3)
-        : Colors.black.withOpacity(0.2);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    // Get target colors based on current screen
+    Color targetPrimaryColor;
+    if (_currentIndex == 0) {
+      // Home screen - Main category
+      targetPrimaryColor = colorScheme.categoryMain;
+    } else if (_currentIndex == 2) {
+      // Sports screen - Sports category
+      targetPrimaryColor = colorScheme.categorySports;
+    } else {
+      // Default to main
+      targetPrimaryColor = colorScheme.categoryMain;
+    }
 
     return Scaffold(
+      extendBody: true,
       body: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
         children: _swipeableScreens,
       ),
-      bottomNavigationBar: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        decoration: BoxDecoration(color: _getBottomNavColor(context)),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                // What's New (Home)
-                _buildNavItem(
-                  index: 0,
-                  outlineIcon: Iconsax.home_2_copy,
-                  bulkIcon: Iconsax.home_2,
-                  label: "What's New",
-                  foregroundColor: foregroundColor,
-                  foregroundColorInactive: foregroundColorInactive,
-                ),
+      bottomNavigationBar: SafeArea(
+        minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        child: TweenAnimationBuilder<Color?>(
+          duration: const Duration(milliseconds: 300),
+          tween: ColorTween(end: targetPrimaryColor),
+          builder: (context, animatedColor, child) {
+            final foregroundColor = animatedColor ?? targetPrimaryColor;
+            final foregroundColorInactive = foregroundColor.withOpacity(0.8);
+            final borderColor = foregroundColor;
 
-                // Social Feed
-                _buildNavItem(
-                  index: 1,
-                  outlineIcon: Iconsax.messages_2_copy,
-                  bulkIcon: Iconsax.messages_2,
-                  label: 'Social',
-                  foregroundColor: foregroundColor,
-                  foregroundColorInactive: foregroundColorInactive,
-                ),
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final targetWidth = (constraints.maxWidth * 0.82)
+                    .clamp(0.0, 300.0)
+                    .toDouble();
 
-                // Create Post (Small CTA Button)
-                GestureDetector(
-                  onTap: () => _onItemTapped(2),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: borderColor, width: 1.5),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Iconsax.add_circle_copy,
-                          color: foregroundColor,
-                          size: 20,
+                return Align(
+                  alignment: Alignment.bottomCenter,
+                  child: SizedBox(
+                    width: targetWidth,
+                    child: Material(
+                      elevation: 6,
+                      borderRadius: BorderRadius.circular(24),
+                      clipBehavior: Clip.antiAlias,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        decoration: BoxDecoration(
+                          color: _getBottomNavColor(context),
+                          borderRadius: BorderRadius.circular(24),
                         ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Create',
-                          style: TextStyle(
-                            color: foregroundColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 8,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // What's New (Home)
+                              _buildNavItem(
+                                index: 0,
+                                outlineIcon: Iconsax.home_2_copy,
+                                bulkIcon: Iconsax.home_2,
+                                label: "What's New",
+                                foregroundColor: foregroundColor,
+                                foregroundColorInactive:
+                                    foregroundColorInactive,
+                              ),
+
+                              const SizedBox(width: 24),
+
+                              // Create Post (Small CTA Button)
+                              GestureDetector(
+                                onTap: () => _onItemTapped(1),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: borderColor,
+                                      width: 1.5,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Iconsax.add_circle_copy,
+                                        color: foregroundColor,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Create',
+                                        style: TextStyle(
+                                          color: foregroundColor,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(width: 24),
+
+                              // Sports
+                              _buildNavItem(
+                                index: 2,
+                                outlineIcon: Iconsax.search_status_copy,
+                                bulkIcon: Iconsax.search_status,
+                                label: 'Sports',
+                                foregroundColor: foregroundColor,
+                                foregroundColorInactive:
+                                    foregroundColorInactive,
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
-
-                // Sports
-                _buildNavItem(
-                  index: 3,
-                  outlineIcon: Iconsax.search_status_copy,
-                  bulkIcon: Iconsax.search_status,
-                  label: 'Sports',
-                  foregroundColor: foregroundColor,
-                  foregroundColorInactive: foregroundColorInactive,
-                ),
-              ],
-            ),
-          ),
+                );
+              },
+            );
+          },
         ),
       ),
     );
@@ -364,7 +403,7 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
     return GestureDetector(
       onTap: () => _onItemTapped(index),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

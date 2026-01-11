@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:dabbler/data/models/core/game_creation_model.dart';
 
-enum SportType { football, cricket, padel }
+enum SportType { football, cricket, paddle }
 
 class Sport {
   final SportType type;
@@ -41,8 +41,8 @@ class SportsConfig {
       secondaryColor: Color(0xFFF3E8FF),
     ),
     Sport(
-      type: SportType.padel,
-      name: 'padel',
+      type: SportType.paddle,
+      name: 'paddle',
       displayName: 'Padel',
       icon: LucideIcons.square, // Padel court (rectangular)
       primaryColor: Color(0xFF06B6D4), // Cyan
@@ -89,7 +89,7 @@ class SportsConfig {
         return FootballFormat.allFormats.cast<GameFormat>();
       case 'cricket':
         return CricketFormat.allFormats.cast<GameFormat>();
-      case 'padel':
+      case 'paddle':
         return PadelFormat.allFormats.cast<GameFormat>();
       default:
         return [];
@@ -98,7 +98,7 @@ class SportsConfig {
 
   // Helper methods for common sport checks
   static bool isPadel(String sportName) {
-    return sportName.toLowerCase() == 'padel';
+    return sportName.toLowerCase() == 'paddle';
   }
 
   static bool isFootball(String sportName) {
@@ -116,7 +116,7 @@ class SportsConfig {
         return 'Football Stadium';
       case 'cricket':
         return 'Cricket Ground';
-      case 'padel':
+      case 'paddle':
         return 'Padel Center';
       default:
         return 'Sports Complex';
@@ -130,7 +130,7 @@ class SportsConfig {
         return const Duration(minutes: 90);
       case 'cricket':
         return const Duration(hours: 3);
-      case 'padel':
+      case 'paddle':
         return const Duration(minutes: 90);
       default:
         return const Duration(minutes: 60);
@@ -144,8 +144,8 @@ class SportsConfig {
         return 10; // Futsal default
       case 'cricket':
         return 22; // Standard cricket
-      case 'padel':
-        return 4; // Double padel
+      case 'paddle':
+        return 4; // Double paddle
       default:
         return 8;
     }
@@ -158,7 +158,7 @@ class SportsConfig {
         return FootballFormat.futsal;
       case 'cricket':
         return CricketFormat.standard;
-      case 'padel':
+      case 'paddle':
         return PadelFormat.double;
       default:
         return null;

@@ -58,10 +58,13 @@ class ConversationTile extends StatelessWidget {
         CircleAvatar(
           radius: 24,
           backgroundColor: theme.colorScheme.primaryContainer,
-          backgroundImage: conversation.avatarUrl != null
+          backgroundImage:
+              conversation.avatarUrl != null &&
+                  conversation.avatarUrl!.isNotEmpty
               ? NetworkImage(conversation.avatarUrl!)
               : null,
-          child: conversation.avatarUrl == null
+          child:
+              conversation.avatarUrl == null || conversation.avatarUrl!.isEmpty
               ? Text(
                   conversation.name?.substring(0, 1).toUpperCase() ?? 'C',
                   style: theme.textTheme.titleMedium?.copyWith(

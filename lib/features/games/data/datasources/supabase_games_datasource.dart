@@ -21,6 +21,27 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
     _initializeRealTimeSubscriptions();
   }
 
+  bool _isJwtExpired(PostgrestException e) {
+    final msg = e.message.toLowerCase();
+    final details = (e.details ?? '').toString().toLowerCase();
+    return msg.contains('jwt expired') ||
+        msg.contains('invalid jwt') ||
+        e.code == 'PGRST303' ||
+        details.contains('unauthorized');
+  }
+
+  Future<T> _withJwtRefreshRetry<T>(Future<T> Function() body) async {
+    try {
+      return await body();
+    } on PostgrestException catch (e) {
+      if (_isJwtExpired(e)) {
+        await _supabaseClient.auth.refreshSession();
+        return await body();
+      }
+      rethrow;
+    }
+  }
+
   // Real-time streams
   Stream<GameModel> get gameUpdates => _gameUpdatesController.stream;
   Stream<Map<String, dynamic>> get playerEvents =>
@@ -247,9 +268,11 @@ class SupabaseGamesDataSource implements GamesRemoteDataSource {
 
       // Apply sorting and pagination
       // MVP Fix: Use 'start_at' instead of 'scheduled_date'
-      final response = await query
-          .order(sortBy ?? 'start_at', ascending: ascending)
-          .range((page - 1) * limit, page * limit - 1);
+      final response = await _withJwtRefreshRetry(() async {
+        return await query
+            .order(sortBy ?? 'start_at', ascending: ascending)
+            .range((page - 1) * limit, page * limit - 1);
+      });
 
       if (response.isNotEmpty) {}
 

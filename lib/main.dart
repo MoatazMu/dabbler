@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:dabbler/core/config/environment.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/core/services/analytics/analytics_service.dart';
-import 'package:dabbler/core/design_system/tokens/token_based_theme.dart';
 import 'package:dabbler/core/services/theme_service.dart';
 import 'package:dabbler/core/services/app_lifecycle_manager.dart';
+import 'package:dabbler/core/services/auth_service.dart';
 import 'package:dabbler/features/social/services/realtime_likes_service.dart';
+import 'package:dabbler/design_system/theme/app_theme.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,6 +78,9 @@ Future<void> main() async {
     // Location service is now initialized on-demand in sports screen
     await ThemeService().init();
 
+    // Preload token-based color schemes and build ThemeData.
+    await AppTheme.initialize();
+
     final anonKey = Environment.supabaseAnonKey;
 
     // Initialize Supabase with deep-link detection enabled for auth flows
@@ -111,6 +115,12 @@ Future<void> main() async {
     // Initialize app lifecycle manager
     AppLifecycleManager().init();
 
+    // Proactively refresh session on resume to avoid "JWT expired" loops.
+    // This is best-effort; failures will be handled by per-request retry.
+    AppLifecycleManager().onResume(() {
+      unawaited(AuthService().refreshSession());
+    });
+
     // Initialize realtime likes service for social features
     if (FeatureFlags.socialFeed) {
       await RealtimeLikesService().initialize();
@@ -140,8 +150,8 @@ class MyApp extends StatelessWidget {
         return MaterialApp.router(
           title: 'Dabbler',
           routerConfig: appRouter,
-          theme: TokenBasedTheme.build(AppThemeMode.mainLight),
-          darkTheme: TokenBasedTheme.build(AppThemeMode.mainDark),
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
           themeMode: _themeService.effectiveThemeMode,
           debugShowCheckedModeBanner: false,
           builder: (context, child) {

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dabbler/core/design_system/tokens/design_tokens.dart';
+import 'package:dabbler/themes/app_theme.dart';
 
 /// Reusable single-section layout component
 /// Can be used as a standalone screen (with Scaffold) or as a child widget
@@ -55,12 +55,11 @@ class SingleSectionLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get color tokens for current theme/category
-    final tokens = category != null
-        ? context.getCategoryColorTokens(category!)
-        : context.colorTokens;
-
-    final sectionColor = backgroundColor ?? tokens.section;
+    final currentScheme = Theme.of(context).colorScheme;
+    final scheme = category != null
+        ? context.getCategoryTheme(category!)
+        : currentScheme;
+    final sectionColor = backgroundColor ?? scheme.secondaryContainer;
 
     // Get device corner radius dynamically based on safe area insets
     final topInset = MediaQuery.of(context).padding.top;
@@ -71,28 +70,24 @@ class SingleSectionLayout extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
     final bottomNavHeight = MediaQuery.of(context).padding.bottom + 80;
 
-    // Build the content container with padding and rounded corners
-    // Same structure as TwoSectionLayout
+    // Unified: Only one container, using sectionColor for background
     final content = Container(
-      padding: const EdgeInsets.all(4),
+      width: double.infinity,
+      padding:
+          padding ?? const EdgeInsets.symmetric(horizontal: 0, vertical: 48),
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
-        color: tokens.app, // Use token for app background
+        color: sectionColor,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(deviceRadius > 0 ? 52 : 0),
+          borderRadius: BorderRadius.circular(deviceRadius > 0 ? 50 : 0),
         ),
       ),
-      child: Container(
-        width: double.infinity,
-        padding: padding ?? const EdgeInsets.all(24),
-        clipBehavior: Clip.antiAlias,
-        decoration: ShapeDecoration(
-          color: sectionColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(deviceRadius > 0 ? 50 : 0),
-          ),
+      child: IconTheme.merge(
+        data: IconThemeData(color: scheme.onSecondaryContainer),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: scheme.onSecondaryContainer),
+          child: child,
         ),
-        child: child,
       ),
     );
 
@@ -109,7 +104,9 @@ class SingleSectionLayout extends StatelessWidget {
             ),
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            minHeight: screenHeight - bottomNavHeight - appBarHeight,
+            minHeight: (screenHeight - bottomNavHeight - appBarHeight)
+                .clamp(0.0, double.infinity)
+                .toDouble(),
           ),
           child: content,
         ),
@@ -123,7 +120,7 @@ class SingleSectionLayout extends StatelessWidget {
     // Return with or without Scaffold based on configuration
     if (withScaffold) {
       return Scaffold(
-        backgroundColor: tokens.app, // Use app background color
+        backgroundColor: sectionColor,
         appBar: appBar,
         floatingActionButton: floatingActionButton,
         floatingActionButtonLocation: floatingActionButtonLocation,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dabbler/core/config/sport_filters_config.dart';
+import 'package:dabbler/core/theme/color_token_extensions.dart';
 
 /// Base widget for sport-specific filters
 abstract class SportSpecificFilters extends StatelessWidget {
@@ -13,13 +14,15 @@ abstract class SportSpecificFilters extends StatelessWidget {
   });
 
   Widget buildSectionTitle(BuildContext context, String title) {
+    final sportsScheme = context.getCategoryTheme('sports');
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title,
-        style: Theme.of(
-          context,
-        ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: sportsScheme.primary,
+        ),
       ),
     );
   }
@@ -29,6 +32,7 @@ abstract class SportSpecificFilters extends StatelessWidget {
     List<String> options,
     String filterKey,
   ) {
+    final sportsScheme = context.getCategoryTheme('sports');
     final selectedValue = selectedFilters[filterKey];
 
     return Wrap(
@@ -47,13 +51,13 @@ abstract class SportSpecificFilters extends StatelessWidget {
               onFilterChanged(filterKey, option == 'All' ? null : option);
             }
           },
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          selectedColor: Theme.of(context).colorScheme.primaryContainer,
-          checkmarkColor: Theme.of(context).colorScheme.onPrimaryContainer,
+          backgroundColor: sportsScheme.surfaceContainerHighest,
+          selectedColor: sportsScheme.primaryContainer,
+          checkmarkColor: sportsScheme.onPrimaryContainer,
           labelStyle: TextStyle(
             color: isSelected
-                ? Theme.of(context).colorScheme.onPrimaryContainer
-                : Theme.of(context).colorScheme.onSurface,
+                ? sportsScheme.onPrimaryContainer
+                : sportsScheme.onSurface,
             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
           ),
           shape: RoundedRectangleBorder(
@@ -61,7 +65,7 @@ abstract class SportSpecificFilters extends StatelessWidget {
             side: BorderSide(
               color: isSelected
                   ? Colors.transparent
-                  : Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  : sportsScheme.outlineVariant.withOpacity(0.55),
             ),
           ),
         );

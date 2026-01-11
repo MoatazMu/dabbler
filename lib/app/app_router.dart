@@ -84,6 +84,7 @@ import 'package:dabbler/features/social/presentation/screens/onboarding/social_o
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_notifications_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/onboarding/social_onboarding_complete_screen.dart';
 import 'package:dabbler/features/social/presentation/screens/real_friends_screen.dart';
+import 'package:dabbler/features/social/presentation/screens/add_friends_screen.dart';
 
 // Admin screens
 import 'package:dabbler/features/admin/presentation/screens/moderation_queue_screen.dart';
@@ -129,20 +130,20 @@ class AppRouter {
     BuildContext context,
     GoRouterState state,
   ) async {
-    if (kDebugMode && _routeLogging) {
-      // Compact single-line log
+    void logRoute(String message) {
+      if (kDebugMode && _routeLogging) {
+        debugPrint('[Router] $message');
+      }
     }
 
     try {
       // Access Riverpod container to read auth/guest state
       final container = ProviderScope.containerOf(context, listen: false);
       final isAuthenticated = container.read(isAuthenticatedProvider);
-      final isGuest = container.read(isGuestProvider);
+      container.read(isGuestProvider);
 
       // Also read the full auth state for debugging
       final authState = container.read(simpleAuthProvider);
-
-      if (kDebugMode && _routeLogging) {}
 
       // Auth paths: Routes that unauthenticated users can access
       // Includes onboarding screens because email users are unauthenticated during onboarding
@@ -180,11 +181,13 @@ class AppRouter {
       final isOnAuthPage = authPaths.contains(loc);
       final isOnboardingPage = onboardingPaths.contains(loc);
 
-      if (kDebugMode && _routeLogging) {}
+      logRoute(
+        'loc=$loc auth=$isAuthenticated authPage=$isOnAuthPage onboardingPage=$isOnboardingPage loading=${authState.isLoading}',
+      );
 
       // Don't redirect while auth state is loading
       if (authState.isLoading) {
-        if (kDebugMode && _routeLogging) {}
+        logRoute('allow (auth loading)');
         return null;
       }
 
@@ -211,6 +214,7 @@ class AppRouter {
                 .from('profiles')
                 .select('id, onboard')
                 .eq('user_id', currentUser.id)
+                .limit(1)
                 .maybeSingle();
 
             final isOnboarded =
@@ -222,17 +226,19 @@ class AppRouter {
               // Google user without profile or not onboarded - redirect to onboarding start
               // Allow them to stay on any onboarding screen (CreateUserInfo, SportsSelection, IntentSelection, SetUsername)
               if (!isOnboardingPage) {
-                if (kDebugMode && _routeLogging) {}
+                logRoute(
+                  'redirect (google not onboarded) -> ${RoutePaths.createUserInfo}',
+                );
                 return RoutePaths.createUserInfo;
               }
               // Already on onboarding, allow it
-              if (kDebugMode && _routeLogging) {}
+              logRoute('allow (google onboarding)');
               return null;
             }
           }
         }
       } catch (e) {
-        if (kDebugMode && _routeLogging) {}
+        logRoute('google onboard check failed: $e');
         // Continue with normal flow if check fails
       }
 
@@ -240,11 +246,11 @@ class AppRouter {
       if (!isAuthenticated) {
         // If not on an auth page, redirect to landing page first
         if (!isOnAuthPage) {
-          if (kDebugMode && _routeLogging) {}
+          logRoute('redirect (unauth) -> ${RoutePaths.landing}');
           return RoutePaths.landing;
         }
         // Stay on auth page
-        if (kDebugMode && _routeLogging) {}
+        logRoute('allow (unauth on auth page)');
         return null;
       }
 
@@ -256,6 +262,7 @@ class AppRouter {
               .from('profiles')
               .select('id, onboard')
               .eq('user_id', currentUser.id)
+              .limit(1)
               .maybeSingle();
 
           final isOnboarded =
@@ -265,11 +272,13 @@ class AppRouter {
 
           if (profileResponse == null || !isOnboarded) {
             // User not onboarded - redirect to onboarding
-            if (kDebugMode && _routeLogging) {}
+            logRoute(
+              'redirect (not onboarded) -> ${RoutePaths.createUserInfo}',
+            );
             return RoutePaths.createUserInfo;
           }
         } catch (e) {
-          if (kDebugMode && _routeLogging) {}
+          logRoute('onboard check failed: $e');
           // Continue with normal flow if check fails
         }
       }
@@ -291,6 +300,7 @@ class AppRouter {
                 .from('profiles')
                 .select('id, onboard')
                 .eq('user_id', currentUser.id)
+                .limit(1)
                 .maybeSingle();
 
             final isOnboarded =
@@ -301,17 +311,19 @@ class AppRouter {
             // If no profile exists or not onboarded, user needs to complete onboarding
             if (profileResponse == null || !isOnboarded) {
               // Redirect to onboarding start
-              if (kDebugMode && _routeLogging) {}
+              logRoute(
+                'redirect (auth page but not onboarded) -> ${RoutePaths.createUserInfo}',
+              );
               return RoutePaths.createUserInfo;
             }
           }
         } catch (e) {
-          if (kDebugMode && _routeLogging) {}
+          logRoute('auth-page onboard check failed: $e');
           // If check fails, proceed with normal redirect
         }
 
         // User has completed onboarding - redirect to home
-        if (kDebugMode && _routeLogging) {}
+        logRoute('redirect (authed on auth page) -> ${RoutePaths.home}');
         return RoutePaths.home;
       }
 
@@ -329,6 +341,7 @@ class AppRouter {
                 .from('profiles')
                 .select('id, onboard')
                 .eq('user_id', currentUser.id)
+                .limit(1)
                 .maybeSingle();
 
             final isOnboarded =
@@ -338,20 +351,22 @@ class AppRouter {
 
             // If no profile exists or not onboarded, redirect to onboarding
             if (profileResponse == null || !isOnboarded) {
-              if (kDebugMode && _routeLogging) {}
+              logRoute(
+                'redirect (protected route not onboarded) -> ${RoutePaths.createUserInfo}',
+              );
               return RoutePaths.createUserInfo;
             }
           }
         } catch (e) {
-          if (kDebugMode && _routeLogging) {}
+          logRoute('protected-route onboard check failed: $e');
           // If check fails, allow access (better UX than blocking)
         }
       }
 
-      if (kDebugMode && _routeLogging) {}
+      logRoute('allow');
       return null;
     } catch (e) {
-      if (kDebugMode && _routeLogging) {}
+      logRoute('redirect handler failed: $e');
       return null;
     }
   }
@@ -1116,6 +1131,15 @@ class AppRouter {
       pageBuilder: (context, state) => FadeThroughTransitionPage(
         key: state.pageKey,
         child: const RealFriendsScreen(),
+      ),
+    ),
+
+    GoRoute(
+      path: RoutePaths.socialAddFriends,
+      name: RouteNames.socialAddFriends,
+      pageBuilder: (context, state) => FadeThroughTransitionPage(
+        key: state.pageKey,
+        child: const AddFriendsScreen(),
       ),
     ),
 

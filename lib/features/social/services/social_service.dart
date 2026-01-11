@@ -17,21 +17,53 @@ class SocialService {
 
   /// Ensure session is fresh before making Supabase queries
   Future<void> _ensureValidSession() async {
-    try {
-      final session = _supabase.auth.currentSession;
-      if (session == null) return;
+    final session = _supabase.auth.currentSession;
+    if (session == null) return;
 
-      // Check if session expires in less than 5 minutes
-      final expiresAt = DateTime.fromMillisecondsSinceEpoch(
-        (session.expiresAt ?? 0) * 1000,
-      );
-      final now = DateTime.now();
-      final timeToExpiry = expiresAt.difference(now);
+    // Refresh if expired or expiring soon.
+    final expiresAt = DateTime.fromMillisecondsSinceEpoch(
+      (session.expiresAt ?? 0) * 1000,
+    );
+    final now = DateTime.now();
+    final timeToExpiry = expiresAt.difference(now);
 
-      if (timeToExpiry.inMinutes < 5) {
-        await _authService.refreshSession();
+    if (timeToExpiry <= const Duration(minutes: 5)) {
+      final refreshed = await _authService.refreshSession();
+      if (refreshed == null) {
+        // Avoid getting stuck in a JWT-expired loop; force a clean auth reset.
+        await _supabase.auth.signOut();
+        throw Exception('Session expired. Please sign in again.');
       }
-    } catch (e) {}
+    }
+  }
+
+  bool _isJwtExpiredError(Object error) {
+    if (error is PostgrestException) {
+      final msg = error.message.toLowerCase();
+      final details = (error.details ?? '').toString().toLowerCase();
+      return msg.contains('jwt expired') ||
+          msg.contains('invalid jwt') ||
+          error.code == 'PGRST303' ||
+          details.contains('unauthorized');
+    }
+    return false;
+  }
+
+  Future<T> _withJwtRefreshRetry<T>(Future<T> Function() body) async {
+    try {
+      await _ensureValidSession();
+      return await body();
+    } catch (e) {
+      if (_isJwtExpiredError(e)) {
+        final refreshed = await _authService.refreshSession();
+        if (refreshed == null) {
+          await _supabase.auth.signOut();
+          throw Exception('Session expired. Please sign in again.');
+        }
+        return await body();
+      }
+      rethrow;
+    }
   }
 
   /// Create a new post
@@ -135,19 +167,18 @@ class SocialService {
   /// Get posts for the social feed
   Future<List<PostModel>> getFeedPosts({int limit = 20, int offset = 0}) async {
     try {
-      await _ensureValidSession();
-
-      // Query posts using actual database schema, join vibe data
-      final postsResponse = await _supabase
-          .from('posts')
-          .select(
-            '*, vibe:vibes!primary_vibe_id(emoji, label_en, key, color_hex)',
-          )
-          .eq('visibility', 'public')
-          .eq('is_deleted', false)
-          .eq('is_hidden_admin', false)
-          .order('created_at', ascending: false)
-          .range(offset, offset + limit - 1);
+      final postsResponse = await _withJwtRefreshRetry(() async {
+        return await _supabase
+            .from('posts')
+            .select(
+              '*, vibe:vibes!primary_vibe_id(emoji, label_en, key, color_hex)',
+            )
+            .eq('visibility', 'public')
+            .eq('is_deleted', false)
+            .eq('is_hidden_admin', false)
+            .order('created_at', ascending: false)
+            .range(offset, offset + limit - 1);
+      });
 
       // Get unique author IDs from actual field name
       final authorIds = postsResponse
@@ -156,10 +187,12 @@ class SocialService {
           .toList();
 
       // Fetch all required profiles in batch
-      final profilesResponse = await _supabase
-          .from('profiles')
-          .select('user_id, display_name, avatar_url, verified')
-          .inFilter('user_id', authorIds);
+      final profilesResponse = await _withJwtRefreshRetry(() async {
+        return await _supabase
+            .from('profiles')
+            .select('user_id, display_name, avatar_url, verified')
+            .inFilter('user_id', authorIds);
+      });
 
       // Create a map for quick profile lookup
       final profilesMap = <String, Map<String, dynamic>>{};
@@ -175,11 +208,13 @@ class SocialService {
             .map((post) => post['id'].toString())
             .toList();
         if (postIds.isNotEmpty) {
-          final likedPosts = await _supabase
-              .from('post_likes')
-              .select('post_id')
-              .eq('user_id', user.id)
-              .inFilter('post_id', postIds);
+          final likedPosts = await _withJwtRefreshRetry(() async {
+            return await _supabase
+                .from('post_likes')
+                .select('post_id')
+                .eq('user_id', user.id)
+                .inFilter('post_id', postIds);
+          });
           likedPostIds.addAll(
             likedPosts.map((like) => like['post_id'].toString()),
           );

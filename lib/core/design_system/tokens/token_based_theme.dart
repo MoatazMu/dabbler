@@ -92,7 +92,7 @@ class TokenBasedTheme {
       onPrimaryContainer: tokens.titleOnSec,
       secondary: tokens.tabActive,
       onSecondary: tokens.onBtn,
-      secondaryContainer: tokens.section,
+      secondaryContainer: tokens.secondaryContainer,
       onSecondaryContainer: tokens.titleOnSec,
       tertiary: tokens.header,
       onTertiary: tokens.titleOnHead,

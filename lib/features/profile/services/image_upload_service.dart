@@ -1,16 +1,19 @@
-import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart' as path;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dabbler/core/config/supabase_config.dart';
+import 'package:dabbler/features/profile/services/image_file_reader.dart';
 
 /// Service for handling image uploads with compression and processing
 class ImageUploadService {
   final SupabaseClient _supabase;
+  final ImageFileReader _fileReader;
 
-  ImageUploadService({SupabaseClient? supabase})
-    : _supabase = supabase ?? Supabase.instance.client;
+  ImageUploadService({SupabaseClient? supabase, ImageFileReader? fileReader})
+    : _supabase = supabase ?? Supabase.instance.client,
+      _fileReader = fileReader ?? createImageFileReader();
 
   /// Upload profile image with compression and multiple sizes
   Future<ImageUploadResult> uploadProfileImage({
@@ -20,13 +23,12 @@ class ImageUploadService {
   }) async {
     try {
       // Validate image file
-      final file = File(imagePath);
-      if (!await file.exists()) {
+      if (!await _fileReader.exists(imagePath)) {
         throw ValidationException('Image file not found');
       }
 
       // Validate file size (max 10MB)
-      final fileSize = await file.length();
+      final fileSize = await _fileReader.length(imagePath);
       if (fileSize > 10 * 1024 * 1024) {
         throw ValidationException('Image file too large. Maximum size is 10MB');
       }
@@ -42,7 +44,7 @@ class ImageUploadService {
       onProgress?.call(0.1);
 
       // Read and process image
-      final imageBytes = await file.readAsBytes();
+      final imageBytes = await _fileReader.readAsBytes(imagePath);
       final originalImage = img.decodeImage(imageBytes);
 
       if (originalImage == null) {
@@ -56,7 +58,8 @@ class ImageUploadService {
       onProgress?.call(0.7);
 
       // Upload all sizes
-      final uploadResults = <String, String>{};
+      final uploadUrls = <String, String>{};
+      final uploadPaths = <String, String>{};
       for (final sizeEntry in sizes.entries) {
         final sizeKey = sizeEntry.key;
         final imageData = sizeEntry.value;
@@ -67,7 +70,7 @@ class ImageUploadService {
 
         // Upload to storage
         await _supabase.storage
-            .from('avatars')
+            .from(SupabaseConfig.avatarsBucket)
             .uploadBinary(
               filePath,
               imageData,
@@ -79,10 +82,11 @@ class ImageUploadService {
 
         // Get public URL
         final publicUrl = _supabase.storage
-            .from('avatars')
+            .from(SupabaseConfig.avatarsBucket)
             .getPublicUrl(filePath);
 
-        uploadResults[sizeKey] = publicUrl;
+        uploadUrls[sizeKey] = publicUrl;
+        uploadPaths[sizeKey] = filePath;
       }
 
       onProgress?.call(1.0);
@@ -91,19 +95,114 @@ class ImageUploadService {
       await _cleanupOldImages(userId);
 
       final result = ImageUploadResult(
-        url: uploadResults['large']!,
-        thumbnailUrl: uploadResults['thumbnail'],
-        mediumUrl: uploadResults['medium'],
+        path: uploadPaths['large']!,
+        url: uploadUrls['large']!,
+        thumbnailPath: uploadPaths['thumbnail'],
+        thumbnailUrl: uploadUrls['thumbnail'],
+        mediumPath: uploadPaths['medium'],
+        mediumUrl: uploadUrls['medium'],
         metadata: {
           'original_size': fileSize,
           'format': 'jpeg',
-          'sizes': uploadResults,
+          'sizes': uploadUrls,
+          'paths': uploadPaths,
           'uploaded_at': DateTime.now().toIso8601String(),
         },
       );
 
       Logger.info('Profile image uploaded successfully for user $userId');
       return result;
+    } catch (e) {
+      Logger.error('Error uploading profile image for user $userId', e);
+      rethrow;
+    }
+  }
+
+  /// Upload profile image from bytes (Web-safe).
+  Future<ImageUploadResult> uploadProfileImageBytes({
+    required String userId,
+    required Uint8List bytes,
+    required String originalFileName,
+    Function(double)? onProgress,
+  }) async {
+    try {
+      final fileSize = bytes.lengthInBytes;
+      if (fileSize == 0) {
+        throw ValidationException('Image file is empty');
+      }
+
+      if (fileSize > 10 * 1024 * 1024) {
+        throw ValidationException('Image file too large. Maximum size is 10MB');
+      }
+
+      final extension = path.extension(originalFileName).toLowerCase();
+      if (extension.isNotEmpty &&
+          !['.jpg', '.jpeg', '.png', '.webp'].contains(extension)) {
+        throw ValidationException(
+          'Unsupported image format. Use JPG, PNG, or WebP',
+        );
+      }
+
+      onProgress?.call(0.1);
+
+      final originalImage = img.decodeImage(bytes);
+      if (originalImage == null) {
+        throw ValidationException('Invalid image file');
+      }
+
+      onProgress?.call(0.3);
+
+      final sizes = await _generateImageSizes(originalImage, userId);
+      onProgress?.call(0.7);
+
+      final uploadUrls = <String, String>{};
+      final uploadPaths = <String, String>{};
+      for (final sizeEntry in sizes.entries) {
+        final sizeKey = sizeEntry.key;
+        final imageData = sizeEntry.value;
+
+        final fileName =
+            '${userId}_${sizeKey}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final filePath = 'profiles/$fileName';
+
+        await _supabase.storage
+            .from(SupabaseConfig.avatarsBucket)
+            .uploadBinary(
+              filePath,
+              imageData,
+              fileOptions: const FileOptions(
+                contentType: 'image/jpeg',
+                upsert: true,
+              ),
+            );
+
+        final publicUrl = _supabase.storage
+            .from(SupabaseConfig.avatarsBucket)
+            .getPublicUrl(filePath);
+
+        uploadUrls[sizeKey] = publicUrl;
+        uploadPaths[sizeKey] = filePath;
+      }
+
+      onProgress?.call(1.0);
+
+      await _cleanupOldImages(userId);
+
+      return ImageUploadResult(
+        path: uploadPaths['large']!,
+        url: uploadUrls['large']!,
+        thumbnailPath: uploadPaths['thumbnail'],
+        thumbnailUrl: uploadUrls['thumbnail'],
+        mediumPath: uploadPaths['medium'],
+        mediumUrl: uploadUrls['medium'],
+        metadata: {
+          'original_size': fileSize,
+          'format': 'jpeg',
+          'sizes': uploadUrls,
+          'paths': uploadPaths,
+          'uploaded_at': DateTime.now().toIso8601String(),
+        },
+      );
     } catch (e) {
       Logger.error('Error uploading profile image for user $userId', e);
       rethrow;
@@ -165,7 +264,7 @@ class ImageUploadService {
     try {
       // List all files in user's profile folder
       final files = await _supabase.storage
-          .from('avatars')
+          .from(SupabaseConfig.avatarsBucket)
           .list(path: 'profiles');
 
       // Find files belonging to this user (older than current upload)
@@ -192,7 +291,9 @@ class ImageUploadService {
             .toList();
 
         if (filesToDelete.isNotEmpty) {
-          await _supabase.storage.from('avatars').remove(filesToDelete);
+          await _supabase.storage
+              .from(SupabaseConfig.avatarsBucket)
+              .remove(filesToDelete);
           Logger.info(
             'Cleaned up ${filesToDelete.length} old images for user $userId',
           );
@@ -241,9 +342,7 @@ class ImageUploadService {
   /// Validate image file before upload
   Future<ImageValidationResult> validateImage(String imagePath) async {
     try {
-      final file = File(imagePath);
-
-      if (!await file.exists()) {
+      if (!await _fileReader.exists(imagePath)) {
         return ImageValidationResult(
           isValid: false,
           errors: ['File does not exist'],
@@ -251,7 +350,7 @@ class ImageUploadService {
       }
 
       final errors = <String>[];
-      final fileSize = await file.length();
+      final fileSize = await _fileReader.length(imagePath);
 
       // Check file size
       if (fileSize > 10 * 1024 * 1024) {
@@ -270,7 +369,7 @@ class ImageUploadService {
 
       // Try to decode image
       try {
-        final imageBytes = await file.readAsBytes();
+        final imageBytes = await _fileReader.readAsBytes(imagePath);
         final image = img.decodeImage(imageBytes);
 
         if (image == null) {
@@ -307,7 +406,7 @@ class ImageUploadService {
   Future<void> deleteUserImages(String userId) async {
     try {
       final files = await _supabase.storage
-          .from('avatars')
+          .from(SupabaseConfig.avatarsBucket)
           .list(path: 'profiles');
       final userFiles = files
           .where((file) => file.name.startsWith('${userId}_'))
@@ -315,7 +414,9 @@ class ImageUploadService {
           .toList();
 
       if (userFiles.isNotEmpty) {
-        await _supabase.storage.from('avatars').remove(userFiles);
+        await _supabase.storage
+            .from(SupabaseConfig.avatarsBucket)
+            .remove(userFiles);
         Logger.info('Deleted ${userFiles.length} images for user $userId');
       }
     } catch (e) {
@@ -327,14 +428,21 @@ class ImageUploadService {
 
 /// Result of image upload operation
 class ImageUploadResult {
+  /// Storage path for the main (large) avatar image (e.g. `profiles/<file>.jpg`).
+  final String path;
   final String url;
+  final String? thumbnailPath;
   final String? thumbnailUrl;
+  final String? mediumPath;
   final String? mediumUrl;
   final Map<String, dynamic> metadata;
 
   ImageUploadResult({
+    required this.path,
     required this.url,
+    this.thumbnailPath,
     this.thumbnailUrl,
+    this.mediumPath,
     this.mediumUrl,
     required this.metadata,
   });

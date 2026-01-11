@@ -116,204 +116,185 @@ class _ManualLocationDrawerState extends State<ManualLocationDrawer> {
       maxChildSize: 0.95,
       expand: false,
       builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          ),
-          child: Column(
-            children: [
-              // Drag handle
-              Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
-                width: 32,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: colorScheme.categorySports.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-
-              // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 16,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      'Select Location',
-                      style: textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                      textAlign: TextAlign.center,
+        return Column(
+          children: [
+            // Header
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Select Location',
+                    style: textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
-                    const SizedBox(height: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
 
-                    // Use current location button
-                    OutlinedButton.icon(
-                      onPressed: _isLoading ? null : _useCurrentLocation,
-                      icon: _isLoading
-                          ? SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: colorScheme.categorySports,
-                              ),
-                            )
-                          : const Icon(Iconsax.gps_copy, size: 20),
-                      label: const Text('Use Current Location'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: colorScheme.categorySports,
-                        side: BorderSide(color: colorScheme.categorySports),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
+                  // Use current location button
+                  OutlinedButton.icon(
+                    onPressed: _isLoading ? null : _useCurrentLocation,
+                    icon: _isLoading
+                        ? SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: colorScheme.categorySports,
+                            ),
+                          )
+                        : const Icon(Iconsax.gps_copy, size: 20),
+                    label: const Text('Use Current Location'),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: colorScheme.categorySports,
+                      side: BorderSide(color: colorScheme.categorySports),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Divider with "or choose" text
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Divider(
+                          color: colorScheme.categorySports.withOpacity(0.3),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'or choose from list',
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colorScheme.categorySports.withOpacity(0.8),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Divider(
+                          color: colorScheme.categorySports.withOpacity(0.3),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Search input
+                  SizedBox(
+                    height: 56,
+                    child: TextField(
+                      controller: _searchController,
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontSize: 15,
+                        color: colorScheme.onSurface,
+                      ),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: colorScheme.primary.withValues(
+                          alpha: isDark ? 0.14 : 0.12,
+                        ),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Divider with "or choose" text
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Divider(
-                            color: colorScheme.categorySports.withOpacity(0.3),
-                          ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
                         ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Text(
-                            'or choose from list',
-                            style: textTheme.bodySmall?.copyWith(
-                              color: colorScheme.categorySports.withOpacity(
-                                0.8,
-                              ),
-                            ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: colorScheme.primary,
+                            width: 2,
                           ),
                         ),
-                        Expanded(
-                          child: Divider(
-                            color: colorScheme.categorySports.withOpacity(0.3),
-                          ),
+                        hintText: 'Search locations...',
+                        hintStyle: TextStyle(
+                          fontSize: 15,
+                          color: colorScheme.onSurfaceVariant,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Search input
-                    SizedBox(
-                      height: 56,
-                      child: TextField(
-                        controller: _searchController,
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: isDark
-                              ? colorScheme.surfaceContainerHighest
-                              : colorScheme.surfaceContainerHigh,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: colorScheme.outlineVariant,
-                              width: 1.5,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: colorScheme.outlineVariant,
-                              width: 1.5,
-                            ),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: colorScheme.primary,
-                              width: 2,
-                            ),
-                          ),
-                          hintText: 'Search locations...',
-                          hintStyle: TextStyle(
-                            fontSize: 15,
-                            color: colorScheme.onSurfaceVariant,
-                          ),
-                          suffixIcon: Icon(
-                            Icons.search,
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.only(right: 12),
+                          child: Icon(
+                            Iconsax.search_normal_copy,
                             color: colorScheme.onSurfaceVariant,
                             size: 24,
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 12,
-                          ),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+            ),
 
-              // Location list
-              Expanded(
-                child: _isLoading
-                    ? Center(
-                        child: CircularProgressIndicator(
-                          color: colorScheme.categorySports,
-                        ),
-                      )
-                    : _filteredLocations.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Iconsax.location_slash_copy,
-                              size: 64,
-                              color: colorScheme.categorySports.withOpacity(
-                                0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No locations found',
-                              style: textTheme.titleMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Try a different search term',
-                              style: textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant.withOpacity(
-                                  0.7,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.builder(
-                        controller: scrollController,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        itemCount: _filteredLocations.length,
-                        itemBuilder: (context, index) {
-                          final location = _filteredLocations[index];
-                          return _LocationTile(
-                            location: location,
-                            onTap: () => _selectLocation(location),
-                          );
-                        },
+            // Location list
+            Expanded(
+              child: _isLoading
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: colorScheme.categorySports,
                       ),
-              ),
-            ],
-          ),
+                    )
+                  : _filteredLocations.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Iconsax.location_slash_copy,
+                            size: 64,
+                            color: colorScheme.categorySports.withOpacity(0.5),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No locations found',
+                            style: textTheme.titleMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Try a different search term',
+                            style: textTheme.bodySmall?.copyWith(
+                              color: colorScheme.onSurfaceVariant.withOpacity(
+                                0.7,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      controller: scrollController,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 8,
+                      ),
+                      itemCount: _filteredLocations.length,
+                      separatorBuilder: (context, index) => Divider(
+                        height: 1,
+                        color: colorScheme.outlineVariant.withOpacity(0.35),
+                      ),
+                      itemBuilder: (context, index) {
+                        final location = _filteredLocations[index];
+                        return _LocationTile(
+                          location: location,
+                          onTap: () => _selectLocation(location),
+                        );
+                      },
+                    ),
+            ),
+          ],
         );
       },
     );
@@ -332,65 +313,39 @@ class _LocationTile extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Card.outlined(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              // Location icon
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.categorySports.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  Iconsax.location_copy,
-                  size: 20,
-                  color: colorScheme.categorySports,
-                ),
-              ),
-              const SizedBox(width: 12),
-
-              // Location info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      location.displayName,
-                      style: textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      location.city,
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
-              ),
-
-              // Arrow icon
-              Icon(
-                Iconsax.arrow_right_3_copy,
-                size: 20,
-                color: colorScheme.categorySports,
-              ),
-            ],
-          ),
+    return ListTile(
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: colorScheme.categorySports.withOpacity(0.2),
+          borderRadius: BorderRadius.circular(8),
         ),
+        child: Icon(
+          Iconsax.location_copy,
+          size: 20,
+          color: colorScheme.categorySports,
+        ),
+      ),
+      title: Text(
+        location.displayName,
+        style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(
+        location.city,
+        style: textTheme.bodySmall?.copyWith(
+          color: colorScheme.onSurfaceVariant,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      trailing: Icon(
+        Iconsax.arrow_right_3_copy,
+        size: 20,
+        color: colorScheme.categorySports,
       ),
     );
   }

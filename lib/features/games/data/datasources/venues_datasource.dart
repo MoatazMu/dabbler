@@ -677,15 +677,27 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     int limit = 20,
   }) async {
     try {
+      // Query via venue_favorites -> venues relationship.
+      // This is more robust than querying venues with a reverse embed, which can
+      // return empty depending on PostgREST relationship inference/caching.
       final response = await _supabaseClient
-          .from('venues')
-          .select('*, venue_favorites!inner(user_id)')
-          .eq('venue_favorites.user_id', userId)
-          .order('name_en')
+          .from('venue_favorites')
+          .select('venue:venues(*)')
+          .eq('user_id', userId)
+          .order('created_at', ascending: false)
           .range((page - 1) * limit, page * limit - 1);
 
       return response
-          .map<VenueModel>((json) => VenueModel.fromJson(json))
+          .map<VenueModel>((row) {
+            final venueJson = row['venue'];
+            if (venueJson is Map<String, dynamic>) {
+              return VenueModel.fromJson(venueJson);
+            }
+            if (venueJson is Map) {
+              return VenueModel.fromJson(Map<String, dynamic>.from(venueJson));
+            }
+            throw VenueServerException('Invalid venue payload in favorites');
+          })
           .toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');

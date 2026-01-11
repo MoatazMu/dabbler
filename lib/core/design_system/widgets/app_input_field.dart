@@ -50,8 +50,6 @@ class AppInputField extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -66,77 +64,82 @@ class AppInputField extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
-        TextField(
-          controller: controller,
-          onChanged: onChanged,
-          onTap: onTap,
-          obscureText: obscureText,
-          readOnly: readOnly,
-          enabled: enabled,
-          keyboardType: keyboardType,
-          maxLines: maxLines,
-          minLines: minLines,
-          style: textTheme.bodyLarge?.copyWith(
-            color: colorScheme.onSurface,
-            fontSize: 15,
-          ),
-          decoration: InputDecoration(
-            hintText: placeholder ?? hintText,
-            hintStyle: TextStyle(
-              color: colorScheme.onSurface.withOpacity(0.5),
-              fontSize: 15,
-            ),
-            helperText: helperText,
-            helperStyle: textTheme.bodySmall?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-            ),
-            errorText: errorText,
-            errorStyle: textTheme.bodySmall?.copyWith(color: colorScheme.error),
-            prefixIcon:
-                prefixWidget ??
-                (prefixIcon != null
-                    ? Icon(
-                        prefixIcon,
-                        color: colorScheme.onSurfaceVariant,
-                        size: 20,
-                      )
-                    : null),
-            suffixIcon: suffixIcon,
-            filled: true,
-            fillColor: isDark
-                ? colorScheme.surfaceContainerLow
-                : colorScheme.surfaceContainerHigh,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: colorScheme.outlineVariant,
-                width: 1.5,
+        Builder(
+          builder: (context) {
+            final field = TextField(
+              controller: controller,
+              onChanged: onChanged,
+              onTap: onTap,
+              obscureText: obscureText,
+              readOnly: readOnly,
+              enabled: enabled,
+              keyboardType: keyboardType,
+              maxLines: maxLines,
+              minLines: minLines,
+              style: textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurface,
+                fontSize: 15,
               ),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(
-                color: colorScheme.outlineVariant,
-                width: 1.5,
+              decoration: InputDecoration(
+                hintText: placeholder ?? hintText,
+                hintStyle: TextStyle(
+                  fontSize: 15,
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                helperText: helperText,
+                helperStyle: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+                errorText: errorText,
+                errorStyle: textTheme.bodySmall?.copyWith(
+                  color: colorScheme.error,
+                ),
+                prefixIcon:
+                    prefixWidget ??
+                    (prefixIcon != null
+                        ? Icon(
+                            prefixIcon,
+                            color: colorScheme.onSurfaceVariant,
+                            size: 20,
+                          )
+                        : null),
+                suffixIcon: suffixIcon,
+                filled: true,
+                fillColor: colorScheme.primary.withValues(alpha: 0.12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: colorScheme.primary, width: 2),
+                ),
+                errorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: colorScheme.error, width: 1.5),
+                ),
+                focusedErrorBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: colorScheme.error, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
               ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: colorScheme.primary, width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: colorScheme.error, width: 1.5),
-            ),
-            focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: colorScheme.error, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-          ),
+            );
+
+            final isSingleLine = (maxLines ?? 1) == 1 && (minLines ?? 1) == 1;
+            if (isSingleLine) {
+              return SizedBox(height: 48, child: field);
+            }
+
+            return field;
+          },
         ),
       ],
     );

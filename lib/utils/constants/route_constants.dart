@@ -68,6 +68,7 @@ class RoutePaths {
   static const String socialChatList = '/social-chat-list';
   static const String socialMessages = '/social-messages';
   static const String socialFriends = '/social-friends';
+  static const String socialAddFriends = '/social-add-friends';
   static const String socialNotifications = '/social-notifications';
   static const String socialSearch = '/social-search';
   static const String socialCreatePost = '/social-create-post';
@@ -167,6 +168,7 @@ class RouteNames {
   static const String socialChatList = 'social-chat-list';
   static const String socialMessages = 'social-messages';
   static const String socialFriends = 'social-friends';
+  static const String socialAddFriends = 'social-add-friends';
   static const String socialNotifications = 'social-notifications';
   static const String socialSearch = 'social-search';
   static const String socialCreatePost = 'social-create-post';

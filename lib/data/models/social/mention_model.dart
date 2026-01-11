@@ -1,3 +1,5 @@
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
+
 /// Model for post_mentions
 class PostMentionModel {
   final String postId;
@@ -25,7 +27,8 @@ class PostMentionModel {
 
   String? get displayName => mentionedProfile?['display_name'] as String?;
   String? get username => mentionedProfile?['username'] as String?;
-  String? get avatarUrl => mentionedProfile?['avatar_url'] as String?;
+  String? get avatarUrl =>
+      resolveAvatarUrl(mentionedProfile?['avatar_url'] as String?);
 }
 
 /// Model for comment_mentions
@@ -55,5 +58,6 @@ class CommentMentionModel {
 
   String? get displayName => mentionedProfile?['display_name'] as String?;
   String? get username => mentionedProfile?['username'] as String?;
-  String? get avatarUrl => mentionedProfile?['avatar_url'] as String?;
+  String? get avatarUrl =>
+      resolveAvatarUrl(mentionedProfile?['avatar_url'] as String?);
 }

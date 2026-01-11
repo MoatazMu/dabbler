@@ -1,5 +1,6 @@
 import '../../../../utils/enums/social_enums.dart';
 import 'package:dabbler/data/models/social/reaction.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 
 /// Data model for reactions on posts and comments
 class ReactionModel extends Reaction {
@@ -142,7 +143,11 @@ class ReactionModel extends Reaction {
           userData['display_name'] ??
           userData['username'] ??
           'Unknown User',
-      userAvatar: userData['avatar_url'] ?? userData['profile_picture'] ?? '',
+      userAvatar:
+          resolveAvatarUrl(
+            (userData['avatar_url'] ?? userData['profile_picture'])?.toString(),
+          ) ??
+          '',
       userIsVerified:
           userData['verified'] == true || userData['is_verified'] == true,
       groupedReactions: groupedReactions,

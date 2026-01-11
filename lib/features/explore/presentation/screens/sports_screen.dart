@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
-import 'package:dabbler/features/explore/presentation/screens/sports_history_screen.dart';
+import 'package:dabbler/features/explore/presentation/screens/sports_library_screen.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/core/design_system/ds.dart';
 import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
@@ -19,6 +19,7 @@ import 'package:dabbler/core/services/location_service.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dabbler/features/explore/presentation/widgets/location_permission_drawer.dart';
 import 'package:dabbler/features/explore/presentation/widgets/manual_location_drawer.dart';
+import 'package:dabbler/features/venues/providers.dart' as venues_providers;
 
 IconData _sportIconFor(String sport) {
   switch (sport.toLowerCase()) {
@@ -80,22 +81,25 @@ class VenueCard extends StatelessWidget {
     final name = venue['name'] as String? ?? 'Unknown Venue';
     final area = venue['location'] as String? ?? 'Location not available';
     final sports = (venue['sports'] as List<dynamic>?)?.cast<String>() ?? [];
+    final visibleSports = sports.take(2).toList();
+    final overflowCount = sports.length > visibleSports.length
+        ? sports.length - visibleSports.length
+        : 0;
     final rating = (venue['rating'] as num?)?.toDouble() ?? 0.0;
     final isClosed = venue['isOpen'] == false;
+    final distance = venue['distance'] as String? ?? '';
     final reviews =
         (venue['reviews'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
         [];
-    final distance = venue['distance'] as String? ?? '';
     final showRating = reviews.length >= 3 && rating >= 3.0;
-    final maxSports = 3;
-    final visibleSports = sports.take(maxSports).toList();
-    final overflowCount = sports.length - maxSports;
 
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final sportsScheme = context.getCategoryTheme('sports');
 
     return Card.filled(
-      margin: const EdgeInsets.only(bottom: 12),
+      color: sportsScheme.primary.withValues(alpha: 0.08),
+      margin: const EdgeInsets.only(bottom: 0),
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -279,9 +283,12 @@ class VenueCard extends StatelessWidget {
   }
 
   Widget _buildSkeletonCard(BuildContext context) {
+    final sportsScheme = context.getCategoryTheme('sports');
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Card(
+        color: sportsScheme.primary.withValues(alpha: 0.08),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -292,8 +299,8 @@ class VenueCard extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  borderRadius: BorderRadius.circular(12),
+                  color: sportsScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(24),
                 ),
               ),
               const SizedBox(width: 16),
@@ -329,7 +336,7 @@ class VenueCard extends StatelessWidget {
                 width: 20,
                 height: 20,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  color: sportsScheme.surfaceContainerHighest,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -374,21 +381,18 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     {
       'name': 'Football',
       'icon': Iconsax.medal_star_copy,
-      'color': Colors.green,
       'description': 'Find football games near you',
       'count': 30,
     },
     {
       'name': 'Cricket',
       'icon': Iconsax.game_copy,
-      'color': Colors.orange,
       'description': 'Join cricket games and tournaments',
       'count': 15,
     },
     {
       'name': 'Padel',
       'icon': Iconsax.game_copy,
-      'color': Colors.blue,
       'description': 'Discover padel courts and players',
       'count': 8,
     },
@@ -441,27 +445,38 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   void _showLocationDrawer() {
+    final colorScheme = Theme.of(context).colorScheme;
+    final sportsScheme = context.getCategoryTheme('sports');
+
     showModalBottomSheet<void>(
       context: context,
+      useSafeArea: true,
       isScrollControlled: true,
       isDismissible: true,
       enableDrag: true,
       showDragHandle: true,
+      backgroundColor: colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) {
-        return LocationPermissionDrawer(
-          onAllowLocation: () async {
-            Navigator.pop(context);
-            await _locationService.saveLocationPreference('allow');
-            await _locationService.fetchLocation();
-          },
-          onRemindLater: () async {
-            Navigator.pop(context);
-            await _locationService.saveLocationPreference('remind_later');
-          },
-          onNoThanks: () async {
-            Navigator.pop(context);
-            await _locationService.saveLocationPreference('never');
-          },
+        return Theme(
+          data: Theme.of(context).copyWith(colorScheme: sportsScheme),
+          child: LocationPermissionDrawer(
+            onAllowLocation: () async {
+              Navigator.pop(context);
+              await _locationService.saveLocationPreference('allow');
+              await _locationService.fetchLocation();
+            },
+            onRemindLater: () async {
+              Navigator.pop(context);
+              await _locationService.saveLocationPreference('remind_later');
+            },
+            onNoThanks: () async {
+              Navigator.pop(context);
+              await _locationService.saveLocationPreference('never');
+            },
+          ),
         );
       },
     );
@@ -522,6 +537,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   void _showFilterModal() {
     final colorScheme = Theme.of(context).colorScheme;
+    final sportsScheme = context.getCategoryTheme('sports');
 
     showModalBottomSheet<void>(
       context: context,
@@ -532,7 +548,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
-      builder: (context) => _buildFiltersBottomSheetContent(),
+      builder: (context) => Theme(
+        data: Theme.of(context).copyWith(colorScheme: sportsScheme),
+        child: _buildFiltersBottomSheetContent(),
+      ),
     );
   }
 
@@ -605,16 +624,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _selectedArea,
+                initialValue: _selectedArea,
                 hint: const Text('Select Area'),
                 decoration: InputDecoration(
+                  filled: true,
+                  fillColor: sportsScheme.primary.withValues(
+                    alpha: Theme.of(context).brightness == Brightness.dark
+                        ? 0.14
+                        : 0.12,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide(
-                      color: sportsScheme.primary.withOpacity(0.18),
+                      color: sportsScheme.primary.withValues(alpha: 0.18),
                     ),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -656,7 +681,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 max: 500,
                 divisions: 10,
                 activeColor: sportsScheme.primary,
-                inactiveColor: sportsScheme.primary.withOpacity(0.18),
+                inactiveColor: sportsScheme.primary.withValues(alpha: 0.18),
                 labels: RangeLabels(
                   _selectedPriceRange.start.round().toString(),
                   _selectedPriceRange.end.round().toString(),
@@ -684,7 +709,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 max: 5,
                 divisions: 5,
                 activeColor: sportsScheme.primary,
-                inactiveColor: sportsScheme.primary.withOpacity(0.18),
+                inactiveColor: sportsScheme.primary.withValues(alpha: 0.18),
                 label: _selectedRating == 0
                     ? 'Any'
                     : _selectedRating.toStringAsFixed(1),
@@ -722,20 +747,26 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       return FilterChip(
                         label: Text(amenity),
                         selected: selected,
-                        selectedColor: sportsScheme.primary.withOpacity(0.16),
-                        checkmarkColor: sportsScheme.primary,
-                        side: BorderSide(
-                          color: selected
-                              ? sportsScheme.primary.withOpacity(0.35)
-                              : sportsScheme.primary.withOpacity(0.18),
-                        ),
+                        backgroundColor: sportsScheme.surfaceContainerHighest,
+                        selectedColor: sportsScheme.primaryContainer,
+                        checkmarkColor: sportsScheme.onPrimaryContainer,
                         labelStyle: TextStyle(
                           color: selected
-                              ? sportsScheme.primary
-                              : colorScheme.onSurface,
+                              ? sportsScheme.onPrimaryContainer
+                              : sportsScheme.onSurface,
                           fontWeight: selected
                               ? FontWeight.w600
-                              : FontWeight.w500,
+                              : FontWeight.w400,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(
+                            color: selected
+                                ? Colors.transparent
+                                : sportsScheme.outlineVariant.withValues(
+                                    alpha: 0.55,
+                                  ),
+                          ),
                         ),
                         onSelected: (selectedNow) {
                           setModalState(() {
@@ -818,6 +849,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           _buildTabSwitcher(),
           const SizedBox(height: 9),
           _buildSearchRow(),
+          const SizedBox(height: 9),
           _buildSportsChips(),
         ],
       ),
@@ -887,7 +919,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                         size: 64,
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.3),
+                        ).colorScheme.onSurface.withValues(alpha: 0.3),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -895,7 +927,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -956,6 +988,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Widget _buildGameCard(game) {
+    final sportsScheme = context.getCategoryTheme('sports');
+
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
@@ -974,12 +1008,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
           bottom: 18,
         ),
         decoration: ShapeDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: sportsScheme.surfaceContainerHigh,
           shape: RoundedRectangleBorder(
             side: BorderSide(
               width: 0.50,
               strokeAlign: BorderSide.strokeAlignCenter,
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.1),
+              color: sportsScheme.outline.withValues(alpha: 0.1),
             ),
             borderRadius: BorderRadius.circular(12),
           ),
@@ -1018,7 +1052,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       style: TextStyle(
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.6),
+                        ).colorScheme.onSurface.withValues(alpha: 0.6),
                         fontSize: 12,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w400,
@@ -1032,7 +1066,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   style: TextStyle(
                     color: Theme.of(
                       context,
-                    ).colorScheme.onSurface.withOpacity(0.6),
+                    ).colorScheme.onSurface.withValues(alpha: 0.6),
                     fontSize: 12,
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w400,
@@ -1069,7 +1103,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       style: TextStyle(
                         color: Theme.of(
                           context,
-                        ).colorScheme.onSurface.withOpacity(0.9),
+                        ).colorScheme.onSurface.withValues(alpha: 0.9),
                         fontSize: 14,
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w400,
@@ -1093,7 +1127,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                         style: TextStyle(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.9),
+                          ).colorScheme.onSurface.withValues(alpha: 0.9),
                           fontSize: 14,
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w400,
@@ -1128,7 +1162,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                         style: TextStyle(
                           color: Theme.of(
                             context,
-                          ).colorScheme.onSurface.withOpacity(0.6),
+                          ).colorScheme.onSurface.withValues(alpha: 0.6),
                           fontSize: 12,
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w400,
@@ -1154,12 +1188,15 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                           vertical: 2,
                         ),
                         decoration: ShapeDecoration(
-                          color: _sports[_selectedSportIndex]['color']
-                              .withOpacity(0.9),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.categorySports.withValues(alpha: 0.9),
                           shape: RoundedRectangleBorder(
                             side: BorderSide(
                               width: 1,
-                              color: Colors.white.withOpacity(0.12),
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary.withValues(alpha: 0.12),
                             ),
                             borderRadius: BorderRadius.circular(22),
                           ),
@@ -1229,79 +1266,102 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   Widget _buildHeader() {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final sportsScheme = context.getCategoryTheme('sports');
 
-    return Row(
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Sports',
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Sports',
+                  style: textTheme.headlineSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: sportsScheme.primary,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Iconsax.location_copy,
-                    size: 14,
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                  const SizedBox(width: 4),
-                  Flexible(
-                    child: Text(
-                      _locationService.currentArea ?? 'Location not available',
-                      style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  GestureDetector(
-                    onTap: () {
-                      showModalBottomSheet<void>(
-                        context: context,
-                        isScrollControlled: true,
-                        isDismissible: true,
-                        enableDrag: true,
-                        showDragHandle: true,
-                        builder: (context) => const ManualLocationDrawer(),
-                      );
-                    },
-                    child: Icon(
-                      Iconsax.refresh_copy,
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    Icon(
+                      Iconsax.location_copy,
                       size: 14,
-                      color: colorScheme.categorySports,
+                      color: sportsScheme.primary,
                     ),
-                  ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        _locationService.currentArea ??
+                            'Location not available',
+                        style: textTheme.bodySmall?.copyWith(
+                          color: sportsScheme.primary,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    GestureDetector(
+                      onTap: () {
+                        final colorScheme = Theme.of(context).colorScheme;
+                        final sportsScheme = context.getCategoryTheme('sports');
+
+                        showModalBottomSheet<void>(
+                          context: context,
+                          useSafeArea: true,
+                          isScrollControlled: true,
+                          isDismissible: true,
+                          enableDrag: true,
+                          showDragHandle: true,
+                          backgroundColor: colorScheme.surface,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(24),
+                            ),
+                          ),
+                          builder: (context) => Theme(
+                            data: Theme.of(
+                              context,
+                            ).copyWith(colorScheme: sportsScheme),
+                            child: const ManualLocationDrawer(),
+                          ),
+                        );
+                      },
+                      child: Icon(
+                        Iconsax.refresh_copy,
+                        size: 14,
+                        color: sportsScheme.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        IconButton.filledTonal(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const SportsHistoryScreen(),
+          const SizedBox(width: 12),
+          IconButton.filledTonal(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) =>
+                      const SportsLibraryScreen(initialTabIndex: 1),
+                ),
+              );
+            },
+            icon: const Icon(Iconsax.archive_copy),
+            tooltip: 'Library',
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.categorySports.withValues(
+                alpha: 0.0,
               ),
-            );
-          },
-          icon: const Icon(Iconsax.clock_copy),
-          tooltip: 'History',
-          style: IconButton.styleFrom(
-            backgroundColor: colorScheme.categorySports.withValues(alpha: 0.0),
-            foregroundColor: colorScheme.onSurface,
-            minimumSize: const Size(48, 48),
+              foregroundColor: colorScheme.onSurface,
+              minimumSize: const Size(48, 48),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1310,7 +1370,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final sportsScheme = context.getCategoryTheme('sports');
 
     return Padding(
-      padding: const EdgeInsets.only(top: 12),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
       child: SizedBox(
         width: double.infinity,
         child: SegmentedButton<int>(
@@ -1321,7 +1381,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Iconsax.game_copy, size: 18),
-                  SizedBox(width: 8),
+                  SizedBox(width: 8, height: 30),
                   Text('Games'),
                 ],
               ),
@@ -1348,32 +1408,31 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             }
           },
           style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.resolveWith<Color?>((
-              states,
-            ) {
-              if (states.contains(MaterialState.selected)) {
-                return sportsScheme.primary.withOpacity(0.14);
+            side: WidgetStateProperty.all(
+              const BorderSide(color: Colors.transparent),
+            ),
+            backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+              if (states.contains(WidgetState.selected)) {
+                return sportsScheme.primary.withValues(alpha: 1);
               }
-              return sportsScheme.primary.withOpacity(0.08);
+              return sportsScheme.primary.withValues(alpha: 0.1);
             }),
-            foregroundColor: MaterialStateProperty.resolveWith<Color?>((
-              states,
-            ) {
-              if (states.contains(MaterialState.selected)) {
-                return sportsScheme.primary;
+            foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
+              if (states.contains(WidgetState.selected)) {
+                return sportsScheme.onPrimary;
               }
-              return sportsScheme.primary;
+              return sportsScheme.onSurface;
             }),
-            textStyle: MaterialStateProperty.all(
+            textStyle: WidgetStateProperty.all(
               textTheme.bodyMedium?.copyWith(
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
             ),
-            padding: MaterialStateProperty.all(
+            padding: WidgetStateProperty.all(
               const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             ),
-            shape: MaterialStateProperty.all(
+            shape: WidgetStateProperty.all(
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
@@ -1387,76 +1446,90 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final sportsScheme = context.getCategoryTheme('sports');
 
-    return Row(
-      children: [
-        Expanded(
-          child: SizedBox(
-            height: 56,
-            child: TextField(
-              controller: _searchController,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontSize: 15,
-                color: colorScheme.onSurface,
-              ),
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: sportsScheme.primary.withValues(alpha: 0.12),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: sportsScheme.primary, width: 2),
-                ),
-                hintText: 'Search games and venues',
-                hintStyle: TextStyle(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: SizedBox(
+              height: 48,
+              child: TextField(
+                controller: _searchController,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   fontSize: 15,
-                  color: colorScheme.onSurfaceVariant,
+                  color: sportsScheme.primary,
                 ),
-                suffixIcon: Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Icon(
-                    Iconsax.search_normal_copy,
-                    color: colorScheme.onSurfaceVariant,
-                    size: 24,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: sportsScheme.primary.withValues(alpha: 0.12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(
+                      color: sportsScheme.primary,
+                      width: 2,
+                    ),
+                  ),
+                  hintText: 'Search games and venues',
+                  hintStyle: TextStyle(
+                    fontSize: 15,
+                    color: colorScheme.onSurface,
+                  ),
+                  suffixIcon: Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Icon(
+                      Iconsax.search_normal_copy,
+                      color: sportsScheme.primary,
+                      size: 24,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
                   ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
+                onChanged: _onSearchChanged,
               ),
-              onChanged: _onSearchChanged,
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        IconButton.filledTonal(
-          onPressed: _showFilterModal,
-          icon: const Icon(Iconsax.setting_4_copy),
-          style: IconButton.styleFrom(
-            backgroundColor: sportsScheme.primary.withValues(alpha: 0.14),
-            foregroundColor: sportsScheme.primary,
-            minimumSize: const Size(48, 48),
+          const SizedBox(width: 12),
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: IconButton.filledTonal(
+              onPressed: _showFilterModal,
+              icon: const Icon(Iconsax.setting_4_copy),
+              style: IconButton.styleFrom(
+                backgroundColor: sportsScheme.primary.withValues(alpha: 0.0),
+                foregroundColor: sportsScheme.primary,
+                minimumSize: const Size(48, 48),
+              ),
+            ),
           ),
-        ),
-        const SizedBox(width: 8),
-        IconButton.filledTonal(
-          onPressed: _handleSortTap,
-          tooltip: _sortTooltip(ref),
-          icon: const Icon(Iconsax.sort_copy),
-          style: IconButton.styleFrom(
-            backgroundColor: sportsScheme.primary.withValues(alpha: 0.14),
-            foregroundColor: sportsScheme.primary,
-            minimumSize: const Size(48, 48),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 48,
+            height: 48,
+            child: IconButton.filledTonal(
+              onPressed: _handleSortTap,
+              tooltip: _sortTooltip(ref),
+              icon: const Icon(Iconsax.sort_copy),
+              style: IconButton.styleFrom(
+                backgroundColor: sportsScheme.primary.withValues(alpha: 0.0),
+                foregroundColor: sportsScheme.primary,
+                minimumSize: const Size(48, 48),
+              ),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -1469,74 +1542,86 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: List.generate(_sports.length, (index) {
-            final sport = _sports[index];
-            final isSelected = _selectedSportIndex == index;
-            final chipBackground = isSelected
-                ? sportsScheme.primary
-                : sportsScheme.primary.withValues(alpha: 0.12);
-            final chipForeground = isSelected
-                ? sportsScheme.onPrimary
-                : sportsScheme.primary;
+          children: [
+            const SizedBox(width: 24),
+            ...List.generate(_sports.length, (index) {
+              final sport = _sports[index];
+              final isSelected = _selectedSportIndex == index;
+              final chipBackground = isSelected
+                  ? sportsScheme.primary
+                  : sportsScheme.primary.withValues(alpha: 0.12);
+              final chipForeground = isSelected
+                  ? sportsScheme.onPrimary
+                  : sportsScheme.primary;
 
-            return GestureDetector(
-              onTap: () {
-                setState(() {
-                  _selectedSportIndex = index;
-                });
-              },
-              child: Container(
-                margin: const EdgeInsets.only(right: 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: chipBackground,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      sport['icon'] as IconData,
-                      size: 16,
-                      color: chipForeground,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      sport['name'] as String,
-                      style: textTheme.labelMedium?.copyWith(
-                        color: chipForeground,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (isSelected && sport['count'] != null) ...[
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedSportIndex = index;
+                  });
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: chipBackground,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      sport['name'] == 'Football'
+                          ? const Text('⚽️', style: TextStyle(fontSize: 18))
+                          : sport['name'] == 'Cricket'
+                          ? const Text('🏏', style: TextStyle(fontSize: 18))
+                          : sport['name'] == 'Padel'
+                          ? const Text('🎾', style: TextStyle(fontSize: 18))
+                          : Icon(
+                              sport['icon'] as IconData,
+                              size: 16,
+                              color: chipForeground,
+                            ),
                       const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
+                      Text(
+                        sport['name'] as String,
+                        style: textTheme.labelMedium?.copyWith(
+                          color: chipForeground,
+                          fontWeight: FontWeight.w600,
                         ),
-                        decoration: BoxDecoration(
-                          color: sportsScheme.onPrimary.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          '${sport['count']}',
-                          style: textTheme.labelSmall?.copyWith(
-                            color: sportsScheme.onPrimary,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 10,
+                      ),
+                      if (isSelected && sport['count'] != null) ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 2,
+                          ),
+                          decoration: BoxDecoration(
+                            color: sportsScheme.onPrimary.withValues(
+                              alpha: 0.2,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${sport['count']}',
+                            style: textTheme.labelSmall?.copyWith(
+                              color: sportsScheme.onPrimary,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
+                            ),
                           ),
                         ),
-                      ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            );
-          }),
+              );
+            }),
+            const SizedBox(width: 24),
+          ],
         ),
       ),
     );
@@ -1559,6 +1644,180 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       priceRange: priceRange,
       rating: rating,
       amenities: amenities,
+    );
+  }
+}
+
+class FavoriteVenuesScreen extends ConsumerWidget {
+  const FavoriteVenuesScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    final sportsScheme = context.getCategoryTheme('sports');
+
+    final favoritesAsync = ref.watch(
+      venues_providers.favoriteVenuesForCurrentUserProvider,
+    );
+
+    return TwoSectionLayout(
+      category: 'sports',
+      topSection: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Row(
+          children: [
+            IconButton.filledTonal(
+              onPressed: () => Navigator.of(context).maybePop(),
+              icon: const Icon(Iconsax.arrow_left_copy),
+              style: IconButton.styleFrom(
+                backgroundColor: colorScheme.categorySports.withValues(
+                  alpha: 0.0,
+                ),
+                foregroundColor: colorScheme.onSurface,
+                minimumSize: const Size(48, 48),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Icon(Iconsax.star_1_copy, size: 20, color: sportsScheme.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Favorite venues',
+                style: textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: sportsScheme.primary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      bottomSection: favoritesAsync.when(
+        loading: () => Center(
+          child: CircularProgressIndicator(color: sportsScheme.primary),
+        ),
+        error: (error, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Iconsax.danger_copy, size: 48, color: sportsScheme.error),
+                const SizedBox(height: 12),
+                Text(
+                  'Couldn\'t load saved venues',
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error.toString(),
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                FilledButton.icon(
+                  onPressed: () => ref.invalidate(
+                    venues_providers.favoriteVenuesForCurrentUserProvider,
+                  ),
+                  icon: const Icon(Iconsax.refresh_copy),
+                  label: const Text('Retry'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: sportsScheme.primary,
+                    foregroundColor: sportsScheme.onPrimary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        data: (venues) {
+          if (venues.isEmpty) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Iconsax.heart_copy,
+                      size: 64,
+                      color: sportsScheme.primary.withValues(alpha: 0.3),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'No saved venues yet',
+                      style: textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onSurface,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Tap the bookmark on a venue to save it here',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
+
+          return ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: venues.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final venue = venues[index];
+              final venueMap = {
+                'id': venue.id,
+                'name': venue.name,
+                'location': venue.state.isNotEmpty
+                    ? '${venue.state}, ${venue.city}'
+                    : '${venue.city}, ${venue.country}',
+                'sports': venue.supportedSports,
+                'images': [],
+                'rating': venue.rating,
+                'isOpen': venue.isOpenAt(DateTime.now()),
+                'slots': [],
+                'reviews': List.generate(
+                  venue.totalRatings >= 3 ? 3 : venue.totalRatings,
+                  (_) => <String, dynamic>{},
+                ),
+                'distance': '',
+                'price': venue.pricePerHour > 0
+                    ? '${venue.currency} ${venue.pricePerHour.toStringAsFixed(0)}/hr'
+                    : 'Free',
+                'amenities': venue.amenities,
+              };
+
+              return VenueCard(
+                venue: venueMap,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          VenueDetailScreen(venueId: venue.id),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -1671,45 +1930,6 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Builder(
-            builder: (context) {
-              final colorScheme = Theme.of(context).colorScheme;
-              final textTheme = Theme.of(context).textTheme;
-              return Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      color: colorScheme.outline.withOpacity(0.1),
-                      width: 1,
-                    ),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Iconsax.building_copy,
-                      size: 16,
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Near Dubai, UAE',
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
           if (venuesState.isLoading && filteredVenues.isEmpty)
             _buildLoadingState()
           else if (venuesState.error != null && filteredVenues.isEmpty)
@@ -1779,6 +1999,8 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
   }
 
   Widget _buildErrorState() {
+    final sportsScheme = context.getCategoryTheme('sports');
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -1788,24 +2010,28 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: DS.error.withOpacity(0.08),
+                color: sportsScheme.error.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Iconsax.wifi_square_copy, size: 48, color: DS.error),
+              child: Icon(
+                Iconsax.wifi_square_copy,
+                size: 48,
+                color: sportsScheme.error,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
               'Couldn\'t load venues',
               style: DS.headline.copyWith(
                 fontWeight: FontWeight.w700,
-                color: DS.onSurface,
+                color: sportsScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Check your connection and try again',
-              style: DS.body.copyWith(color: DS.onSurfaceVariant),
+              style: DS.body.copyWith(color: sportsScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -1813,6 +2039,10 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
               onPressed: _refreshVenues,
               icon: const Icon(Iconsax.refresh_copy),
               label: const Text('Retry'),
+              style: FilledButton.styleFrom(
+                backgroundColor: sportsScheme.primary,
+                foregroundColor: sportsScheme.onPrimary,
+              ),
             ),
           ],
         ),
@@ -1821,6 +2051,8 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
   }
 
   Widget _buildEmptyState() {
+    final sportsScheme = context.getCategoryTheme('sports');
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -1830,24 +2062,28 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: DS.primary.withOpacity(0.08),
+                color: sportsScheme.primary.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(Iconsax.building_copy, size: 48, color: DS.primary),
+              child: Icon(
+                Iconsax.building_copy,
+                size: 48,
+                color: sportsScheme.primary,
+              ),
             ),
             const SizedBox(height: 24),
             Text(
               'No ${widget.selectedSport} venues found',
               style: DS.headline.copyWith(
                 fontWeight: FontWeight.w700,
-                color: DS.onSurface,
+                color: sportsScheme.onSurface,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Try broadening your filters or check back later',
-              style: DS.body.copyWith(color: DS.onSurfaceVariant),
+              style: DS.body.copyWith(color: sportsScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -1855,6 +2091,10 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
               onPressed: _refreshVenues,
               icon: const Icon(Iconsax.filter_copy),
               label: const Text('Adjust Filters'),
+              style: FilledButton.styleFrom(
+                backgroundColor: sportsScheme.primary,
+                foregroundColor: sportsScheme.onPrimary,
+              ),
             ),
           ],
         ),

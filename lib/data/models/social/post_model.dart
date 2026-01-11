@@ -1,4 +1,5 @@
 import 'package:dabbler/data/models/social/post.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 import '../../../../utils/enums/social_enums.dart';
 
 /// Data model for social posts with JSON serialization.
@@ -233,7 +234,11 @@ class PostModel extends Post {
           authorData['full_name'] ??
           'Unknown User',
       authorAvatar:
-          authorData['avatar_url'] ?? authorData['profile_picture'] ?? '',
+          resolveAvatarUrl(
+            (authorData['avatar_url'] ?? authorData['profile_picture'])
+                ?.toString(),
+          ) ??
+          '',
       content: json['body'] ?? json['content'] ?? '',
       mediaUrls: mediaUrls,
       createdAt: _parseDateTime(json['created_at']),

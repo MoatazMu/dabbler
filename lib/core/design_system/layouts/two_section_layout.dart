@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:dabbler/core/design_system/tokens/design_tokens.dart';
-import 'package:dabbler/themes/material3_extensions.dart';
+import 'package:dabbler/themes/app_theme.dart';
 
 /// Standard two-section layout for all screens using Material Design 3
 /// Top section: Category-colored background with rounded bottom corners
@@ -50,44 +49,10 @@ class TwoSectionLayout extends StatelessWidget {
     this.onRefresh,
   });
 
-  /// Get bottom section color based on category
-  Color _getBottomSectionColor(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    switch (category?.toLowerCase()) {
-      case 'main':
-        return isDark
-            ? const Color(0xFF4A148C).withValues(alpha: 0.32)
-            : const Color(0xFFE0C7FF).withValues(alpha: 0.18);
-      case 'profile':
-        return isDark
-            ? const Color(0xFFEC8F1E).withValues(alpha: 0.32)
-            : const Color(0xFFFCF8EA).withValues(alpha: 0.18);
-      case 'sports':
-        return isDark
-            ? colorScheme.categorySports.withValues(alpha: 0.32)
-            : colorScheme.categorySports.withValues(alpha: 0.18);
-      case 'social':
-        return colorScheme.surface;
-      case 'activities':
-        return isDark
-            ? colorScheme.categoryActivities.withValues(alpha: 0.32)
-            : colorScheme.categoryActivities.withValues(alpha: 0.18);
-      default:
-        // Default to main category colors
-        return isDark
-            ? const Color(0xFF4A148C).withValues(alpha: 0.32)
-            : const Color(0xFFE0C7FF).withValues(alpha: 0.18);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    // Get color tokens for current theme/category
-    final tokens = category != null
-        ? context.getCategoryColorTokens(category!)
-        : context.colorTokens;
+    final brightness = Theme.of(context).brightness;
+    final currentScheme = Theme.of(context).colorScheme;
 
     // Get device corner radius dynamically based on safe area insets
     final topInset = MediaQuery.of(context).padding.top;
@@ -98,114 +63,151 @@ class TwoSectionLayout extends StatelessWidget {
     final screenHeight = MediaQuery.of(context).size.height;
     final bottomNavHeight = MediaQuery.of(context).padding.bottom + 80;
 
-    final scrollView = LayoutBuilder(
-      builder: (context, constraints) {
-        return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(
-            parent: BouncingScrollPhysics(),
-          ),
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: screenHeight - bottomNavHeight,
+    Widget buildContent(ColorScheme scheme) {
+      final background = bottomBackgroundColor ?? scheme.secondaryContainer;
+
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
             ),
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              clipBehavior: Clip.antiAlias,
-              decoration: ShapeDecoration(
-                color: tokens.app, // Use token for app background
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                    deviceRadius > 0 ? 52 : 0,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: (screenHeight - bottomNavHeight)
+                    .clamp(0.0, double.infinity)
+                    .toDouble(),
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(0),
+                clipBehavior: Clip.none,
+                decoration: ShapeDecoration(
+                  // Native M3 outer surface background.
+                  color: background,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                      deviceRadius > 0 ? 52 : 0,
+                    ),
                   ),
                 ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // ========== TOP SECTION - Header from tokens.json ==========
-                  Container(
-                    width: double.infinity,
-                    padding:
-                        topPadding ??
-                        const EdgeInsets.only(
-                          top: 48,
-                          left: 24,
-                          right: 24,
-                          bottom: 12,
-                        ),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: ShapeDecoration(
-                      // Use token header color (top section background)
-                      color: topBackgroundColor ?? tokens.header,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(deviceRadius > 0 ? 50 : 0),
-                          topRight: Radius.circular(deviceRadius > 0 ? 50 : 0),
-                          bottomLeft: Radius.circular(24),
-                          bottomRight: Radius.circular(24),
-                        ),
-                      ),
-                    ),
-                    child: topSection,
-                  ),
-
-                  // 4px gap between sections
-                  const SizedBox(height: 4),
-
-                  // ========== BOTTOM SECTION - Section from tokens.json ==========
-                  ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: screenHeight - bottomNavHeight - 300,
-                    ),
-                    child: Container(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ========== TOP SECTION ==========
+                    Container(
                       width: double.infinity,
                       padding:
-                          bottomPadding ??
-                          const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 24,
+                          topPadding ??
+                          const EdgeInsets.only(
+                            top: 48,
+                            left: 0,
+                            right: 0,
+                            bottom: 18,
                           ),
-                      clipBehavior: Clip.antiAlias,
+                      clipBehavior: Clip.none,
                       decoration: ShapeDecoration(
-                        // Use category-specific colors with opacity
-                        color:
-                            bottomBackgroundColor ??
-                            _getBottomSectionColor(context),
+                        // Default to primaryContainer (JSON token source-of-truth).
+                        color: topBackgroundColor ?? scheme.primaryContainer,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(24),
-                            topRight: Radius.circular(24),
-                            bottomLeft: Radius.circular(
+                            topLeft: Radius.circular(deviceRadius > 0 ? 50 : 0),
+                            topRight: Radius.circular(
                               deviceRadius > 0 ? 50 : 0,
                             ),
-                            bottomRight: Radius.circular(
-                              deviceRadius > 0 ? 50 : 0,
-                            ),
+                            bottomLeft: const Radius.circular(24),
+                            bottomRight: const Radius.circular(24),
                           ),
                         ),
                       ),
-                      child: bottomSection,
+                      child: IconTheme.merge(
+                        data: IconThemeData(color: scheme.onPrimaryContainer),
+                        child: DefaultTextStyle.merge(
+                          style: TextStyle(color: scheme.onPrimaryContainer),
+                          child: topSection,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+
+                    // 4px gap between sections
+                    const SizedBox(height: 4),
+
+                    // ========== BOTTOM SECTION ==========
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: (screenHeight - bottomNavHeight - 300)
+                            .clamp(0.0, double.infinity)
+                            .toDouble(),
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.fromLTRB(12, 12, 12, 78),
+
+                        clipBehavior: Clip.none,
+                        decoration: ShapeDecoration(
+                          // Default to secondaryContainer (JSON token source-of-truth).
+                          color:
+                              bottomBackgroundColor ??
+                              scheme.secondaryContainer,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.only(
+                              topLeft: const Radius.circular(24),
+                              topRight: const Radius.circular(24),
+                              bottomLeft: Radius.circular(
+                                deviceRadius > 0 ? 50 : 0,
+                              ),
+                              bottomRight: Radius.circular(
+                                deviceRadius > 0 ? 50 : 0,
+                              ),
+                            ),
+                          ),
+                        ),
+                        child: IconTheme.merge(
+                          data: IconThemeData(
+                            color: scheme.onSecondaryContainer,
+                          ),
+                          child: DefaultTextStyle.merge(
+                            style: TextStyle(
+                              color: scheme.onSecondaryContainer,
+                            ),
+                            child: bottomSection,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+      );
+    }
 
-    return Scaffold(
-      // Use token app color for background
-      backgroundColor: tokens.app,
-      floatingActionButton: floatingActionButton,
-      floatingActionButtonLocation: floatingActionButtonLocation,
-      extendBody: true,
-      body: onRefresh != null
-          ? RefreshIndicator(onRefresh: onRefresh!, child: scrollView)
-          : scrollView,
-    );
+    Widget buildScaffold(ColorScheme scheme) {
+      final scrollView = buildContent(scheme);
+
+      return Scaffold(
+        // Match the screen background to the active scheme (category-aware).
+        backgroundColor: bottomBackgroundColor ?? scheme.secondaryContainer,
+        floatingActionButton: floatingActionButton,
+        floatingActionButtonLocation: floatingActionButtonLocation,
+        extendBody: true,
+        body: onRefresh != null
+            ? RefreshIndicator(onRefresh: onRefresh!, child: scrollView)
+            : scrollView,
+      );
+    }
+
+    if (category == null) {
+      return buildScaffold(currentScheme);
+    }
+
+    final resolvedCategory = category!;
+    final scheme =
+        AppTheme.tryGetCachedColorScheme(resolvedCategory, brightness) ??
+        context.getCategoryTheme(resolvedCategory);
+    return buildScaffold(scheme);
   }
 }

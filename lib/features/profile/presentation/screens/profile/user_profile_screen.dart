@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import '../../controllers/profile_controller.dart';
@@ -101,24 +102,24 @@ class _UserActivitiesTab extends ConsumerWidget {
   final String userId;
   const _UserActivitiesTab({required this.userId});
 
+  static const String _emptyIllustrationAssetPath =
+      'assets/images/undraw/empty_post.svg';
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final postsAsync = ref.watch(userPostsProvider(userId));
     return postsAsync.when(
       data: (posts) {
         if (posts.isEmpty) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(24.0),
-              child: Text('No activities yet.'),
-            ),
+          return const _ActivitiesEmptyState(
+            assetPath: _emptyIllustrationAssetPath,
           );
         }
-        return ListView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: posts.length,
-          itemBuilder: (context, index) {
+        // TwoSectionLayout already provides the scrolling container.
+        // Avoid nesting a ListView inside a SingleChildScrollView.
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(posts.length, (index) {
             final post = posts[index];
             return PostCard(
               post: post,
@@ -136,7 +137,7 @@ class _UserActivitiesTab extends ConsumerWidget {
                 context.go('${RoutePaths.userProfile}/$userId');
               },
             );
-          },
+          }),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -182,6 +183,124 @@ class _UserActivitiesTab extends ConsumerWidget {
       RouteNames.socialPostDetail,
       pathParameters: {'postId': postId},
     );
+  }
+}
+
+class _ActivitiesEmptyState extends StatelessWidget {
+  final String assetPath;
+
+  const _ActivitiesEmptyState({required this.assetPath});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _ThemeableUndrawSvg(assetPath: assetPath, height: 130),
+                const SizedBox(height: 10),
+                Text(
+                  'No activities yet',
+                  style: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Posts you create will appear here.',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ThemeableUndrawSvg extends StatelessWidget {
+  final String assetPath;
+  final double height;
+
+  const _ThemeableUndrawSvg({required this.assetPath, required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return FutureBuilder<String>(
+      future: DefaultAssetBundle.of(context).loadString(assetPath),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final themedSvg = _themeifyUndrawSvg(snapshot.data!, colorScheme);
+          return SvgPicture.string(
+            themedSvg,
+            height: height,
+            fit: BoxFit.contain,
+          );
+        }
+
+        if (snapshot.hasError) {
+          return SizedBox(
+            height: height,
+            child: Center(
+              child: Icon(
+                Icons.article_outlined,
+                size: 60,
+                color: colorScheme.primary.withValues(alpha: 0.7),
+              ),
+            ),
+          );
+        }
+
+        return SizedBox(height: height);
+      },
+    );
+  }
+
+  String _themeifyUndrawSvg(String svg, ColorScheme colorScheme) {
+    final primary = _toHexRgb(colorScheme.primary);
+    final secondary = _toHexRgb(colorScheme.tertiary);
+    final surfaceStroke = _toHexRgb(colorScheme.outlineVariant);
+    final darkInk = _toHexRgb(colorScheme.onSurfaceVariant);
+    final lightFill = _toHexRgb(colorScheme.surfaceContainerHighest);
+    final accentSoft = _toHexRgb(colorScheme.secondaryContainer);
+
+    return svg
+        .replaceAll('#6c63ff', primary)
+        .replaceAll('#6C63FF', primary)
+        .replaceAll('#ff6584', secondary)
+        .replaceAll('#FF6584', secondary)
+        .replaceAll('#3f3d56', darkInk)
+        .replaceAll('#3F3D56', darkInk)
+        .replaceAll('#2f2e41', darkInk)
+        .replaceAll('#2F2E41', darkInk)
+        .replaceAll('#e6e6e6', lightFill)
+        .replaceAll('#E6E6E6', lightFill)
+        .replaceAll('#ffb8b8', accentSoft)
+        .replaceAll('#FFB8B8', accentSoft)
+        .replaceAll('#d0cde1', surfaceStroke)
+        .replaceAll('#D0CDE1', surfaceStroke);
+  }
+
+  String _toHexRgb(Color color) {
+    final rgb = color.value & 0x00FFFFFF;
+    return '#${rgb.toRadixString(16).padLeft(6, '0')}';
   }
 }
 
@@ -323,15 +442,25 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
           return TwoSectionLayout(
             category: 'social',
             onRefresh: _onRefresh,
+            topPadding: const EdgeInsets.only(
+              top: 48,
+              left: 24,
+              right: 24,
+              bottom: 18,
+            ),
+            bottomPadding: const EdgeInsets.symmetric(
+              horizontal: 24,
+              vertical: 24,
+            ),
             topSection: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeader(context),
-                const SizedBox(height: 24),
+                const SizedBox(height: 18),
                 _buildProfileHeroCard(context, profileState, sportsState),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _buildActionButtons(context),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 _buildSportProfileHeaderSection(
                   context,
                   sportProfileHeaderAsync,
@@ -344,13 +473,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
                 const SizedBox(height: 16),
                 _buildFriendsSection(context),
                 const SizedBox(height: 24),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Activities',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                Text(
+                  'Activities',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -369,6 +495,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
   Widget _buildHeader(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final profileState = ref.watch(profileControllerProvider);
+    final profile = profileState.profile;
 
     return Row(
       children: [
@@ -387,13 +515,22 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Profile',
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
+              // Text(
+              //   'Username',
+              //   style: textTheme.headlineSmall?.copyWith(
+              //     fontWeight: FontWeight.w700,
+              //     color: colorScheme.onSurface,
+              //   ),
+              // ),
+              if (profile?.username != null &&
+                  profile!.username!.isNotEmpty) ...[
+                Text(
+                  '${profile.username}',
+                  style: textTheme.labelLarge?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),
@@ -464,6 +601,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
 
   Widget _buildAvatar(BuildContext context, UserProfile? profile) {
     final colorScheme = Theme.of(context).colorScheme;
+    final displayName = profile?.getDisplayName();
+    final initial = (displayName != null && displayName.isNotEmpty)
+        ? displayName[0].toUpperCase()
+        : 'U';
 
     return CircleAvatar(
       radius: 30,
@@ -474,7 +615,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
           ? NetworkImage(profile.avatarUrl!)
           : null,
       child: profile?.avatarUrl == null || profile!.avatarUrl!.isEmpty
-          ? const Icon(Iconsax.user_copy, size: 36)
+          ? Text(
+              initial,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: colorScheme.categorySocial,
+              ),
+            )
           : null,
     );
   }
@@ -669,44 +817,60 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
     final friendshipStatusAsync = ref.watch(
       friendshipStatusProvider(widget.userId),
     );
+    final buttonTextStyle = Theme.of(context).textTheme.labelMedium;
 
     return Row(
       children: [
-        Expanded(
-          child: FilledButton.icon(
+        SizedBox(
+          width: 40,
+          height: 40,
+          child: OutlinedButton(
             onPressed: () => _sendMessage(context),
-            icon: const Icon(Iconsax.message_copy),
-            label: const Text('Message'),
-            style: FilledButton.styleFrom(
-              backgroundColor: colorScheme.categorySocial,
-              foregroundColor: colorScheme.onPrimary,
+            style: OutlinedButton.styleFrom(
+              padding: EdgeInsets.zero,
+              foregroundColor: colorScheme.categorySocial,
+              side: BorderSide(
+                color: colorScheme.categorySocial.withValues(alpha: 0.5),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
+            child: const Icon(Iconsax.message_copy, size: 20),
           ),
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: friendshipStatusAsync.when(
-            data: (result) => switch (result) {
-              Ok(:final value) => _buildFriendButton(context, value),
-              Err() => _buildFriendButton(context, 'none'),
-              _ => _buildFriendButton(context, 'none'),
-            },
-            loading: () => OutlinedButton.icon(
-              onPressed: null,
-              icon: const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              label: const Text('Loading'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colorScheme.categorySocial,
-                side: BorderSide(
-                  color: colorScheme.categorySocial.withValues(alpha: 0.5),
+          child: SizedBox(
+            height: 40,
+            child: friendshipStatusAsync.when(
+              data: (result) => switch (result) {
+                Ok(:final value) => _buildFriendButton(context, value),
+                Err() => _buildFriendButton(context, 'none'),
+                _ => _buildFriendButton(context, 'none'),
+              },
+              loading: () => OutlinedButton.icon(
+                onPressed: null,
+                icon: const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                label: const Text('Loading'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(40),
+                  textStyle: buttonTextStyle,
+                  foregroundColor: colorScheme.categorySocial,
+                  side: BorderSide(
+                    color: colorScheme.categorySocial.withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
+              error: (_, __) => _buildFriendButton(context, 'none'),
             ),
-            error: (_, __) => _buildFriendButton(context, 'none'),
           ),
         ),
       ],
@@ -715,6 +879,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
 
   Widget _buildFriendButton(BuildContext context, String status) {
     final colorScheme = Theme.of(context).colorScheme;
+    final buttonTextStyle = Theme.of(context).textTheme.labelMedium;
 
     switch (status) {
       case 'friends':
@@ -723,9 +888,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
           icon: const Icon(Iconsax.user_tick_copy),
           label: const Text('Friends'),
           style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(40),
+            textStyle: buttonTextStyle,
             foregroundColor: colorScheme.categorySocial,
             side: BorderSide(
               color: colorScheme.categorySocial.withValues(alpha: 0.5),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
           ),
         );
@@ -735,21 +905,54 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
           icon: const Icon(Iconsax.user_remove_copy),
           label: const Text('Cancel Request'),
           style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(40),
+            textStyle: buttonTextStyle,
             foregroundColor: colorScheme.onSurfaceVariant,
             side: BorderSide(
               color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
             ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       case 'pending_received':
-        return FilledButton.icon(
-          onPressed: () => _acceptFriendRequest(context),
-          icon: const Icon(Iconsax.user_tick_copy),
-          label: const Text('Accept Request'),
-          style: FilledButton.styleFrom(
-            backgroundColor: colorScheme.categorySocial,
-            foregroundColor: colorScheme.onPrimary,
-          ),
+        return Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () => _declineFriendRequest(context),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(40),
+                  textStyle: buttonTextStyle,
+                  foregroundColor: colorScheme.onSurfaceVariant,
+                  side: BorderSide(
+                    color: colorScheme.onSurfaceVariant.withValues(alpha: 0.5),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Ignore'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: FilledButton(
+                onPressed: () => _acceptFriendRequest(context),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(40),
+                  textStyle: buttonTextStyle,
+                  backgroundColor: colorScheme.categorySocial,
+                  foregroundColor: colorScheme.onPrimary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text('Accept'),
+              ),
+            ),
+          ],
         );
       case 'blocked':
         return OutlinedButton.icon(
@@ -757,8 +960,13 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
           icon: const Icon(Iconsax.slash_copy),
           label: const Text('Blocked'),
           style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(40),
+            textStyle: buttonTextStyle,
             foregroundColor: colorScheme.error,
             side: BorderSide(color: colorScheme.error.withValues(alpha: 0.5)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       case 'none':
@@ -768,13 +976,23 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
           icon: const Icon(Iconsax.user_add_copy),
           label: const Text('Add Friend'),
           style: OutlinedButton.styleFrom(
+            minimumSize: const Size.fromHeight(40),
+            textStyle: buttonTextStyle,
             foregroundColor: colorScheme.categorySocial,
             side: BorderSide(
               color: colorScheme.categorySocial.withValues(alpha: 0.5),
             ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
     }
+  }
+
+  void _declineFriendRequest(BuildContext context) {
+    // Same RPC as cancel (reject). Kept separate for clearer intent.
+    _cancelFriendRequest(context);
   }
 
   Widget _buildSportProfileHeaderSection(
@@ -940,6 +1158,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
+        backgroundColor: Theme.of(dialogContext).colorScheme.surface,
         title: const Text('Remove Friend'),
         content: const Text('Are you sure you want to remove this friend?'),
         actions: [
@@ -1025,6 +1244,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen>
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Theme.of(context).colorScheme.surface,
         title: const Text('Report User'),
         content: Column(
           mainAxisSize: MainAxisSize.min,

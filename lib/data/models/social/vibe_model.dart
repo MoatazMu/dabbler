@@ -1,3 +1,5 @@
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
+
 /// Model for vibes from the vibes table
 class VibeModel {
   final String id;
@@ -158,5 +160,6 @@ class PostReactionModel {
   }
 
   String? get actorDisplayName => actorProfile?['display_name'] as String?;
-  String? get actorAvatarUrl => actorProfile?['avatar_url'] as String?;
+  String? get actorAvatarUrl =>
+      resolveAvatarUrl(actorProfile?['avatar_url'] as String?);
 }

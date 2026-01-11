@@ -15,6 +15,7 @@ import '../../../services/social_service.dart';
 import '../../../services/realtime_likes_service.dart';
 import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 import 'package:intl/intl.dart';
 
 class PostDetailScreen extends ConsumerStatefulWidget {
@@ -1118,14 +1119,17 @@ class LikesListSheet extends ConsumerWidget {
                 itemCount: likes.length,
                 itemBuilder: (context, index) {
                   final like = likes[index];
+                  final resolvedAvatarUrl = resolveAvatarUrl(like.avatarUrl);
 
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundImage:
-                          like.avatarUrl != null && like.avatarUrl!.isNotEmpty
-                          ? NetworkImage(like.avatarUrl!)
+                          resolvedAvatarUrl != null &&
+                              resolvedAvatarUrl.isNotEmpty
+                          ? NetworkImage(resolvedAvatarUrl)
                           : null,
-                      child: like.avatarUrl == null || like.avatarUrl!.isEmpty
+                      child:
+                          resolvedAvatarUrl == null || resolvedAvatarUrl.isEmpty
                           ? Text(like.displayName[0].toUpperCase())
                           : null,
                     ),

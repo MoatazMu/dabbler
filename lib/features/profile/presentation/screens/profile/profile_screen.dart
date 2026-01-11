@@ -16,11 +16,12 @@ import 'package:dabbler/features/profile/presentation/widgets/profile_rewards_wi
 import 'package:dabbler/features/profile/presentation/widgets/profile_check_in_widget.dart';
 import '../../widgets/profile/player_sport_profile_header.dart';
 import '../../../../../utils/constants/route_constants.dart';
-import 'package:dabbler/themes/app_theme.dart';
+import 'package:dabbler/design_system/theme/app_theme.dart';
 import 'package:dabbler/core/config/feature_flags.dart';
 import 'package:dabbler/services/moderation_service.dart';
 import 'package:dabbler/data/models/sport_tags.dart';
-import 'package:dabbler/core/design_system/layouts/two_section_layout.dart';
+import 'package:dabbler/design_system/layouts/two_section_layout.dart';
+import 'package:dabbler/core/widgets/custom_avatar.dart';
 import 'package:dabbler/features/profile/presentation/widgets/friends_list_widget.dart';
 import 'package:dabbler/features/social/providers/friends_list_provider.dart';
 // Extracted widgets for hero and basics live alongside this screen for now.
@@ -280,7 +281,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             category: 'profile',
             onRefresh: _onRefresh,
             topSection: Container(
-              color: colorScheme.primaryContainer,
+              color: colorScheme.categoryProfile.withValues(
+                alpha: Theme.of(context).brightness == Brightness.dark
+                    ? 0.10
+                    : 0.08,
+              ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                 child: Column(
@@ -358,11 +363,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         return Container(
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: colorScheme.surfaceContainerHighest,
+            color: colorScheme.categoryProfile.withValues(
+              alpha: Theme.of(context).brightness == Brightness.dark
+                  ? 0.12
+                  : 0.08,
+            ),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
               _buildProfileTypeChip(
                 context,
@@ -424,7 +432,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           decoration: BoxDecoration(
             color: isSelected
-                ? colorScheme.primaryContainer
+                ? colorScheme.categoryProfile.withValues(alpha: 0.20)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(8),
           ),
@@ -433,7 +441,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               isAvailable ? label : '$label (+)',
               style: textTheme.labelLarge?.copyWith(
                 color: isSelected
-                    ? colorScheme.onPrimaryContainer
+                    ? colorScheme.onSurface
                     : colorScheme.onSurfaceVariant,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
               ),
@@ -448,55 +456,72 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Row(
-      children: [
-        IconButton.filledTonal(
-          onPressed: () =>
-              context.canPop() ? context.pop() : context.go('/home'),
-          icon: const Icon(Iconsax.home_copy),
-          style: IconButton.styleFrom(
-            backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.0),
-            foregroundColor: colorScheme.onSurface,
-            minimumSize: const Size(48, 48),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Profile',
-                style: textTheme.headlineSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colorScheme.onSurface,
-                ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          IconButton.filledTonal(
+            onPressed: () =>
+                context.canPop() ? context.pop() : context.go('/home'),
+            icon: const Icon(Iconsax.home_copy),
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.categoryProfile.withValues(
+                alpha: 0.0,
               ),
-            ],
+              foregroundColor: colorScheme.onPrimaryContainer,
+              minimumSize: const Size(48, 48),
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        IconButton.filledTonal(
-          onPressed: () => _showManageProfiles(),
-          icon: const Icon(Iconsax.convert_copy),
-          style: IconButton.styleFrom(
-            backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.0),
-            foregroundColor: colorScheme.onSurface,
-            minimumSize: const Size(48, 48),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Builder(
+                  builder: (context) {
+                    final profileState = ref.watch(profileControllerProvider);
+                    final username = profileState.profile?.username;
+                    return Text(
+                      (username != null && username.isNotEmpty)
+                          ? username
+                          : 'Profile',
+                      style: textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colorScheme.onPrimaryContainer,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-          tooltip: 'Manage profiles',
-        ),
-        const SizedBox(width: 8),
-        IconButton.filledTonal(
-          onPressed: () => context.push('/settings'),
-          icon: const Icon(Iconsax.setting_copy),
-          style: IconButton.styleFrom(
-            backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.0),
-            foregroundColor: colorScheme.onSurface,
-            minimumSize: const Size(48, 48),
+          const SizedBox(width: 12),
+          IconButton.filledTonal(
+            onPressed: () => _showManageProfiles(),
+            icon: const Icon(Iconsax.convert_copy),
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.categoryProfile.withValues(
+                alpha: 0.0,
+              ),
+              foregroundColor: colorScheme.onPrimaryContainer,
+              minimumSize: const Size(48, 48),
+            ),
+            tooltip: 'Manage profiles',
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+          IconButton.filledTonal(
+            onPressed: () => context.push('/settings'),
+            icon: const Icon(Iconsax.setting_copy),
+            style: IconButton.styleFrom(
+              backgroundColor: colorScheme.categoryProfile.withValues(
+                alpha: 0.0,
+              ),
+              foregroundColor: colorScheme.onPrimaryContainer,
+              minimumSize: const Size(48, 48),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -509,51 +534,64 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final textTheme = Theme.of(context).textTheme;
     final profile = profileState.profile;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(0),
-      decoration: BoxDecoration(
-        // color: colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(28),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              _buildAvatar(context, profile),
-              const SizedBox(width: 20),
-              Expanded(
-                child: _buildHeroDetails(
-                  context,
-                  profileState,
-                  textTheme,
-                  colorScheme,
+    final onTop = colorScheme.onPrimaryContainer;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(0),
+        decoration: BoxDecoration(
+          // color: colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(28),
+        ),
+        child: DefaultTextStyle.merge(
+          style: TextStyle(color: onTop),
+          child: IconTheme.merge(
+            data: IconThemeData(color: onTop),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _buildAvatar(context, profile),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: _buildHeroDetails(
+                        context,
+                        profileState,
+                        textTheme,
+                        colorScheme,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                const SizedBox(height: 18),
+                _buildUnifiedStats(context, profileState, sportsState),
+              ],
+            ),
           ),
-          const SizedBox(height: 18),
-          _buildUnifiedStats(context, profileState, sportsState),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildAvatar(BuildContext context, UserProfile? profile) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final displayName = profile?.getDisplayName();
+    final fallbackText = (displayName != null && displayName.trim().isNotEmpty)
+        ? displayName
+        : 'User';
 
-    return CircleAvatar(
-      radius: 32,
-      backgroundColor: colorScheme.categoryProfile.withValues(alpha: 0.2),
-      foregroundColor: colorScheme.categoryProfile,
-      backgroundImage:
-          profile?.avatarUrl != null && profile!.avatarUrl!.isNotEmpty
-          ? NetworkImage(profile.avatarUrl!)
-          : null,
-      child: profile?.avatarUrl == null || profile!.avatarUrl!.isEmpty
-          ? Icon(Iconsax.profile_circle_copy, size: 36)
-          : null,
+    final profileScheme = context.getCategoryTheme('profile');
+
+    return AppAvatar(
+      imageUrl: profile?.avatarUrl,
+      fallbackText: fallbackText,
+      size: 64,
+      showBadge: false,
+      fallbackBackgroundColor: profileScheme.primary.withValues(alpha: 0.12),
+      fallbackForegroundColor: profileScheme.onPrimaryContainer,
+      borderColor: profileScheme.primary.withValues(alpha: 0.2),
     );
   }
 
@@ -569,9 +607,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         ? profile!.bio!
         : 'Add a short bio so teammates know what to expect.';
 
-    final textColor = colorScheme.brightness == Brightness.dark
-        ? const Color(0xFFFEFEFE).withValues(alpha: 0.92)
-        : const Color(0xFF1A1A1A).withValues(alpha: 0.92);
+    final baseOnTop = colorScheme.onPrimaryContainer;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -582,13 +618,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               : 'Complete your profile',
           style: textTheme.headlineSmall?.copyWith(
             fontWeight: FontWeight.w700,
-            color: textColor,
+            color: baseOnTop,
           ),
         ),
         const SizedBox(height: 8),
         Text(
           subtitle,
-          style: textTheme.bodyMedium?.copyWith(color: textColor),
+          style: textTheme.bodyMedium?.copyWith(color: baseOnTop),
           maxLines: 3,
           overflow: TextOverflow.ellipsis,
         ),
@@ -680,6 +716,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     ColorScheme colorScheme,
     TextTheme textTheme,
   ) {
+    final baseOnTop = colorScheme.onPrimaryContainer;
+
     return Card(
       elevation: 0,
       color: colorScheme.categoryProfile.withValues(alpha: 0.08),
@@ -695,7 +733,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             Text(
               stat.value,
               style: textTheme.labelMedium?.copyWith(
-                color: colorScheme.onSurface,
+                color: baseOnTop,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -703,7 +741,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             Text(
               stat.label,
               style: textTheme.labelSmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+                color: baseOnTop,
                 fontWeight: FontWeight.w400,
               ),
             ),
@@ -757,13 +795,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildSportProfileEmptyState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final baseOnTop =
+        DefaultTextStyle.of(context).style.color ??
+        colorScheme.onPrimaryContainer;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
+        color: colorScheme.categoryProfile.withValues(
+          alpha: isDarkMode ? 0.08 : 0.06,
+        ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         children: [
@@ -771,10 +817,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.12),
+              color: colorScheme.categoryProfile.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Iconsax.medal_star_copy, color: colorScheme.primary),
+            child: Icon(
+              Iconsax.medal_star_copy,
+              color: colorScheme.categoryProfile,
+            ),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -784,7 +833,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 Text(
                   'No sport profile yet',
                   style: textTheme.titleMedium?.copyWith(
-                    color: colorScheme.onSurface,
+                    color: baseOnTop.withValues(alpha: 0.92),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -792,7 +841,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 Text(
                   'Create a sport profile to track your level, positions, and achievements.',
                   style: textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+                    color: baseOnTop.withValues(alpha: 0.78),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -822,9 +871,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
       elevation: 0,
-      color: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF585858).withValues(alpha: 0.6)
-          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      color: colorScheme.categoryProfile.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
@@ -895,7 +944,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 _formatSportName(profile.sport),
                 style: textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: colorScheme.primary,
+                  color: colorScheme.categoryProfile,
                 ),
               ),
               const SizedBox(height: 4),
@@ -909,7 +958,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               const SizedBox(height: 8),
               Row(
                 children: [
-                  Icon(Iconsax.star_copy, size: 16, color: colorScheme.primary),
+                  Icon(
+                    Iconsax.star_copy,
+                    size: 16,
+                    color: colorScheme.categoryProfile,
+                  ),
                   const SizedBox(width: 4),
                   Text(
                     'Level ${profile.organiserLevel}',
@@ -926,13 +979,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     Icon(
                       Iconsax.verify_copy,
                       size: 16,
-                      color: colorScheme.primary,
+                      color: colorScheme.categoryProfile,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Verified',
                       style: textTheme.bodySmall?.copyWith(
-                        color: colorScheme.primary,
+                        color: colorScheme.categoryProfile,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -958,13 +1011,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget _buildOrganiserProfileEmptyState(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHigh,
+        color: colorScheme.categoryProfile.withValues(
+          alpha: isDarkMode ? 0.08 : 0.06,
+        ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: colorScheme.outline.withValues(alpha: 0.2)),
+        border: Border.all(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.2),
+        ),
       ),
       child: Row(
         children: [
@@ -972,10 +1030,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: colorScheme.primary.withValues(alpha: 0.12),
+              color: colorScheme.categoryProfile.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(Iconsax.note_copy, color: colorScheme.primary),
+            child: Icon(Iconsax.note_copy, color: colorScheme.categoryProfile),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1024,9 +1082,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 20),
-      color: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF585858).withValues(alpha: 0.6)
-          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      color: colorScheme.categoryProfile.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
@@ -1084,7 +1142,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               label: const Text('Create New Game'),
               style: FilledButton.styleFrom(
                 backgroundColor: colorScheme.categoryProfile,
-                foregroundColor: Colors.white,
+                foregroundColor: colorScheme.onPrimary,
                 minimumSize: const Size(double.infinity, 48),
               ),
             ),
@@ -1121,9 +1179,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final textTheme = Theme.of(context).textTheme;
 
     return Card(
-      color: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF585858).withValues(alpha: 0.6)
-          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      color: colorScheme.categoryProfile.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06,
+      ),
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 20),
       shape: RoundedRectangleBorder(
@@ -1206,13 +1264,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final profile = profileState.profile;
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 20),
-      color: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF585858).withValues(alpha: 0.6)
-          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      color: colorScheme.categoryProfile.withValues(
+        alpha: isDark ? 0.08 : 0.06,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
@@ -1354,9 +1413,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Card(
       margin: const EdgeInsets.only(bottom: 20),
       elevation: 0,
-      color: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF585858).withValues(alpha: 0.6)
-          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      color: colorScheme.categoryProfile.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
@@ -1446,7 +1505,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Icon and primary badge
           Row(
             children: [
               Icon(
@@ -1587,9 +1645,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 24),
-      color: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF585858).withValues(alpha: 0.6)
-          : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+      color: colorScheme.categoryProfile.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06,
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(24),
         side: BorderSide(
@@ -1832,6 +1890,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   }
 
   Widget _buildRewardsSection(BuildContext context) {
+    if (!FeatureFlags.enableRewards) {
+      return const SizedBox.shrink();
+    }
+
     // Get current user ID from profile state
     final profileState = ref.watch(profileControllerProvider);
     final userProfile = profileState.profile;
@@ -1846,9 +1908,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
       margin: const EdgeInsets.only(bottom: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFF585858).withValues(alpha: 0.6)
-            : const Color(0xFFFBFBFB).withValues(alpha: 0.6),
+        color: colorScheme.categoryProfile.withValues(
+          alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06,
+        ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: colorScheme.categoryProfile.withValues(alpha: 0.3),
@@ -2075,7 +2137,9 @@ class _ProfileListTile extends StatelessWidget {
 
     return Card(
       elevation: 0,
-      color: colorScheme.surfaceContainerHigh,
+      color: colorScheme.categoryProfile.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06,
+      ),
       margin: const EdgeInsets.only(bottom: 8),
       child: InkWell(
         onTap: onTap,
@@ -2084,23 +2148,13 @@ class _ProfileListTile extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: colorScheme.primaryContainer,
-                backgroundImage:
-                    profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
-                    ? NetworkImage(profile.avatarUrl!)
-                    : null,
-                child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
-                    ? Text(
-                        profile.getDisplayName().isNotEmpty
-                            ? profile.getDisplayName()[0].toUpperCase()
-                            : 'P',
-                        style: textTheme.titleMedium?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
-                        ),
-                      )
-                    : null,
+              AppAvatar(
+                imageUrl: profile.avatarUrl,
+                fallbackText: profile.getDisplayName().isNotEmpty
+                    ? profile.getDisplayName()
+                    : 'Profile',
+                size: 48,
+                showBadge: false,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -2123,13 +2177,15 @@ class _ProfileListTile extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: colorScheme.primaryContainer,
+                        color: colorScheme.categoryProfile.withValues(
+                          alpha: 0.16,
+                        ),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         profile.profileType?.toUpperCase() ?? 'PLAYER',
                         style: textTheme.labelSmall?.copyWith(
-                          color: colorScheme.onPrimaryContainer,
+                          color: colorScheme.onSurface,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -2142,7 +2198,7 @@ class _ProfileListTile extends StatelessWidget {
                 value: true,
                 groupValue: isActive,
                 onChanged: (_) => onTap(),
-                activeColor: colorScheme.primary,
+                activeColor: colorScheme.categoryProfile,
               ),
             ],
           ),

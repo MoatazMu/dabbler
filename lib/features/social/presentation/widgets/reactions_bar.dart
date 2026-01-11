@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 
 /// Widget to display a single reaction with count
 class ReactionItem extends StatelessWidget {
@@ -154,6 +155,7 @@ class ReactionsListView extends StatelessWidget {
 
         final displayName = profile?['display_name'] ?? 'Unknown';
         final avatarUrl = profile?['avatar_url'];
+        final resolvedAvatarUrl = resolveAvatarUrl(avatarUrl?.toString());
         final emoji = vibe?['emoji'] ?? '👍';
         final reactedAt = reaction['reacted_at'];
 
@@ -162,10 +164,11 @@ class ReactionsListView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               CircleAvatar(
-                backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
-                    ? NetworkImage(avatarUrl)
+                backgroundImage:
+                    resolvedAvatarUrl != null && resolvedAvatarUrl.isNotEmpty
+                    ? NetworkImage(resolvedAvatarUrl)
                     : null,
-                child: avatarUrl == null || avatarUrl.isEmpty
+                child: resolvedAvatarUrl == null || resolvedAvatarUrl.isEmpty
                     ? Text(displayName[0].toUpperCase())
                     : null,
               ),

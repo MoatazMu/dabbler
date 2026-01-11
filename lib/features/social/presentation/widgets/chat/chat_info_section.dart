@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 
 class ChatInfoSection extends StatelessWidget {
   final dynamic conversation;
@@ -17,6 +18,11 @@ class ChatInfoSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final resolvedAvatarUrl = resolveAvatarUrl(
+      conversation.avatarUrl?.toString(),
+    );
+    final name = (conversation.name ?? 'Chat').toString();
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
     return Card(
       child: Padding(
@@ -33,15 +39,16 @@ class ChatInfoSection extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 32,
-                        backgroundImage: conversation.avatarUrl != null
-                            ? NetworkImage(conversation.avatarUrl!)
+                        backgroundImage:
+                            resolvedAvatarUrl != null &&
+                                resolvedAvatarUrl.isNotEmpty
+                            ? NetworkImage(resolvedAvatarUrl)
                             : null,
-                        child: conversation.avatarUrl == null
+                        child:
+                            resolvedAvatarUrl == null ||
+                                resolvedAvatarUrl.isEmpty
                             ? Text(
-                                conversation.name
-                                        ?.substring(0, 1)
-                                        .toUpperCase() ??
-                                    '?',
+                                initial,
                                 style: theme.textTheme.headlineMedium,
                               )
                             : null,

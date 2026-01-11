@@ -258,7 +258,7 @@ class SportProfile {
         return 'Swimming';
       case 'golf':
         return 'Golf';
-      case 'padel':
+      case 'Padel':
         return 'Padel';
       default:
         // Capitalize first letter as fallback

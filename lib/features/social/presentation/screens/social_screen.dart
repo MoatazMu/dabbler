@@ -38,9 +38,12 @@ class _SocialScreenState extends State<SocialScreen> {
     _rewardsHandler = SocialRewardsHandler();
     _loadPosts();
 
+    // Clear any stale friends-state errors so they don't flash in other screens.
+    final container = ProviderScope.containerOf(context, listen: false);
+    container.read(simpleFriendsControllerProvider.notifier).clearError();
+
     // Preload friends data for the dashboard overview
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final container = ProviderScope.containerOf(context, listen: false);
       container.read(simpleFriendsControllerProvider.notifier).loadFriends();
       container
           .read(simpleFriendsControllerProvider.notifier)
@@ -302,9 +305,6 @@ class _SocialScreenState extends State<SocialScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeaderSection(),
-          const SizedBox(height: 12),
-          _buildComposerCard(),
-          const SizedBox(height: 16),
           // Friends overview section removed
         ],
       ),
@@ -359,7 +359,7 @@ class _SocialScreenState extends State<SocialScreen> {
           icon: const Icon(Iconsax.profile_2user_copy),
           tooltip: 'Circle',
           style: IconButton.styleFrom(
-            backgroundColor: colorScheme.categorySocial.withValues(alpha: 0.2),
+            backgroundColor: colorScheme.categorySocial.withValues(alpha: 0.0),
             foregroundColor: colorScheme.onSurface,
             minimumSize: const Size(48, 48),
           ),
@@ -387,12 +387,12 @@ class _SocialScreenState extends State<SocialScreen> {
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 0, 12, 32),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
       child: Column(
         children: [
           for (var i = 0; i < _posts.length; i++)
             Padding(
-              padding: EdgeInsets.only(bottom: i == _posts.length - 1 ? 0 : 20),
+              padding: EdgeInsets.only(bottom: i == _posts.length - 1 ? 0 : 0),
               child: PostCard(
                 post: _posts[i],
                 onLike: () => _likePost(_posts[i].id),

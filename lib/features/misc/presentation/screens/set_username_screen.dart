@@ -189,7 +189,9 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
     return SingleSectionLayout(
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          minHeight: screenHeight - topPadding - bottomPadding - 48,
+          minHeight: (screenHeight - topPadding - bottomPadding - 48)
+              .clamp(0.0, double.infinity)
+              .toDouble(),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,

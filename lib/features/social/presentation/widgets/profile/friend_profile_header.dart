@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 
 class FriendProfileHeader extends StatelessWidget {
   final dynamic friend;
@@ -15,6 +16,9 @@ class FriendProfileHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final name = (friend.name ?? 'User').toString();
+    final resolvedAvatarUrl = resolveAvatarUrl(friend.avatarUrl?.toString());
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
 
     return Container(
       decoration: BoxDecoration(
@@ -36,14 +40,17 @@ class FriendProfileHeader extends StatelessWidget {
             CircleAvatar(
               radius: 50,
               backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-              backgroundImage: friend.avatarUrl != null
-                  ? NetworkImage(friend.avatarUrl)
+              backgroundImage:
+                  resolvedAvatarUrl != null && resolvedAvatarUrl.isNotEmpty
+                  ? NetworkImage(resolvedAvatarUrl)
                   : null,
-              child: friend.avatarUrl == null
-                  ? Icon(
-                      Icons.person,
-                      size: 50,
-                      color: theme.colorScheme.primary,
+              child: resolvedAvatarUrl == null || resolvedAvatarUrl.isEmpty
+                  ? Text(
+                      initial,
+                      style: theme.textTheme.displaySmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: theme.colorScheme.primary,
+                      ),
                     )
                   : null,
             ),

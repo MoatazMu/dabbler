@@ -88,7 +88,7 @@ class SportsConfig {
         return FootballFormat.allFormats.cast<GameFormat>();
       case 'cricket':
         return CricketFormat.allFormats.cast<GameFormat>();
-      case 'padel':
+      case 'paddle':
         return PadelFormat.allFormats.cast<GameFormat>();
       default:
         return [];

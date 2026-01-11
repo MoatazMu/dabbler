@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 
 class ParticipantTile extends StatelessWidget {
   final dynamic participant;
@@ -23,14 +24,20 @@ class ParticipantTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final name = (participant.name ?? 'User').toString();
+    final resolvedAvatarUrl = resolveAvatarUrl(
+      participant.avatarUrl?.toString(),
+    );
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundImage: participant.avatarUrl != null
-            ? NetworkImage(participant.avatarUrl!)
+        backgroundImage:
+            resolvedAvatarUrl != null && resolvedAvatarUrl.isNotEmpty
+            ? NetworkImage(resolvedAvatarUrl)
             : null,
-        child: participant.avatarUrl == null
-            ? Text(participant.name?.substring(0, 1).toUpperCase() ?? '?')
+        child: resolvedAvatarUrl == null || resolvedAvatarUrl.isEmpty
+            ? Text(initial)
             : null,
       ),
       title: Text(

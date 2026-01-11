@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 
 class MutualFriendsSection extends StatelessWidget {
   final List<dynamic> mutualFriends;
@@ -86,16 +87,27 @@ class MutualFriendsSection extends StatelessWidget {
   }
 
   Widget _buildFriendTile(ThemeData theme, dynamic friend) {
+    final name = (friend.name ?? 'User').toString();
+    final resolvedAvatarUrl = resolveAvatarUrl(friend.avatarUrl?.toString());
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : 'U';
+
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
         radius: 20,
         backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-        backgroundImage: friend.avatarUrl != null
-            ? NetworkImage(friend.avatarUrl)
+        backgroundImage:
+            resolvedAvatarUrl != null && resolvedAvatarUrl.isNotEmpty
+            ? NetworkImage(resolvedAvatarUrl)
             : null,
-        child: friend.avatarUrl == null
-            ? Icon(Icons.person, size: 20, color: theme.colorScheme.primary)
+        child: resolvedAvatarUrl == null || resolvedAvatarUrl.isEmpty
+            ? Text(
+                initial,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: theme.colorScheme.primary,
+                ),
+              )
             : null,
       ),
       title: Text(

@@ -663,7 +663,7 @@ class _ReviewConfirmationStepState extends State<ReviewConfirmationStep> {
         return LucideIcons.circle;
       case 'cricket':
         return LucideIcons.target;
-      case 'padel':
+      case 'paddle':
         return LucideIcons.square;
       default:
         return LucideIcons.activity;

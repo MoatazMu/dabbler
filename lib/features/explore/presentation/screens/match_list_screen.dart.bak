@@ -352,7 +352,7 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
         return '🏏';
       case 'volleyball':
         return '🏐';
-      case 'padel':
+      case 'paddle':
         return '🎾';
       default:
         return '⚽️';
@@ -453,7 +453,7 @@ class _MatchListScreenState extends ConsumerState<MatchListScreen> {
           {'label': 'Free', 'value': 'free'},
           {'label': 'Today', 'value': 'today'},
         ];
-      case 'padel':
+      case 'paddle':
         return [
           {'label': 'All', 'value': 'all'},
           {'label': 'Singles', 'value': 'singles'},

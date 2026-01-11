@@ -88,6 +88,24 @@ class SupabaseErrorMapper {
     final code = exception.code;
     final details = _detailsToMap(exception.details);
 
+    final lowerMessage = message.toLowerCase();
+    final lowerDetails = (exception.details ?? '').toString().toLowerCase();
+
+    // Expired/invalid JWT should be treated as an auth/session problem.
+    // PostgREST commonly uses PGRST303 with "Unauthorized" details.
+    if (lowerMessage.contains('jwt expired') ||
+        lowerMessage.contains('invalid jwt') ||
+        code == 'PGRST303' ||
+        lowerDetails.contains('unauthorized')) {
+      return UnauthenticatedFailure(
+        message: 'Session expired. Please sign in again.',
+        code: code,
+        details: details,
+        cause: exception,
+        stackTrace: stackTrace,
+      );
+    }
+
     // Check code for authorization errors
     if (code == 'PGRST301' || code == '42501') {
       return SupabaseAuthorizationFailure(
@@ -122,10 +140,7 @@ class SupabaseErrorMapper {
     }
 
     // Check for validation/bad request errors
-    if (code == 'PGRST301' ||
-        code == 'PGRST303' ||
-        code == '23514' ||
-        code == '23502') {
+    if (code == 'PGRST301' || code == '23514' || code == '23502') {
       return SupabaseValidationFailure(
         message: message,
         details: details,

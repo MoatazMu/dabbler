@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/themes/app_theme.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
+
+import 'package:dabbler/widgets/app_card.dart';
 
 class FriendsListWidget extends StatelessWidget {
   final List<Map<String, dynamic>> friends;
@@ -17,33 +21,83 @@ class FriendsListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: CircularProgressIndicator(),
+      final colorScheme = context.colorScheme;
+
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                LoadingPlaceholder(
+                  height: 18,
+                  width: 120,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                LoadingPlaceholder(
+                  height: 14,
+                  width: 52,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 100,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 0),
+                itemCount: 6,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, index) {
+                  return SizedBox(
+                    width: 80,
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 60,
+                          height: 60,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: colorScheme.outline.withValues(alpha: 0.2),
+                              width: 2,
+                            ),
+                          ),
+                          child: ClipOval(
+                            child: Container(
+                              color: colorScheme.surfaceContainer,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        LoadingPlaceholder(
+                          height: 12,
+                          width: 56,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       );
     }
 
     if (friends.isEmpty) {
-      return Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Center(
-          child: Text(
-            'No friends yet',
-            style: context.textTheme.bodyMedium?.copyWith(
-              color: context.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-      );
+      return const _FriendsEmptyState();
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
+          padding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -62,7 +116,8 @@ class FriendsListWidget extends StatelessWidget {
           height: 100,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.zero,
+            primary: false,
             itemCount: friends.length > 6 ? 6 : friends.length,
             itemBuilder: (context, index) {
               final friend = friends[index];
@@ -85,7 +140,7 @@ class _FriendAvatarItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final userId = friend['user_id'] as String? ?? friend['id'] as String?;
     final displayName = friend['display_name'] as String? ?? 'User';
-    final avatarUrl = friend['avatar_url'] as String?;
+    final avatarUrl = resolveAvatarUrl(friend['avatar_url'] as String?);
     final verified = friend['verified'] as bool? ?? false;
 
     return GestureDetector(
@@ -161,5 +216,136 @@ class _FriendAvatarItem extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _FriendsEmptyState extends StatelessWidget {
+  const _FriendsEmptyState();
+
+  static const String _illustrationAssetPath =
+      'assets/images/undraw/empty_friends.svg';
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    final textTheme = context.textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 16),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const _OptionalUndrawSvg(
+                  assetPath: _illustrationAssetPath,
+                  height: 140,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'No friends yet',
+                  style: textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: colorScheme.onSurface,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'When you connect with people, they’ll show up here.',
+                  style: textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OptionalUndrawSvg extends StatelessWidget {
+  final String assetPath;
+  final double height;
+
+  const _OptionalUndrawSvg({required this.assetPath, required this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+
+    return FutureBuilder<String>(
+      future: DefaultAssetBundle.of(context).loadString(assetPath),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          final themedSvg = _themeifyUndrawSvg(snapshot.data!, colorScheme);
+          return SvgPicture.string(
+            themedSvg,
+            height: height,
+            fit: BoxFit.contain,
+          );
+        }
+
+        if (snapshot.hasError) {
+          return SizedBox(
+            height: height,
+            child: Center(
+              child: Icon(
+                Icons.group_outlined,
+                size: 60,
+                color: colorScheme.primary.withValues(alpha: 0.7),
+              ),
+            ),
+          );
+        }
+
+        // Loading: keep space reserved to avoid layout jump.
+        return SizedBox(height: height);
+      },
+    );
+  }
+
+  String _themeifyUndrawSvg(String svg, ColorScheme colorScheme) {
+    // unDraw illustrations commonly use this palette. We remap it to the app
+    // theme so the SVG feels native in both light and dark mode.
+    final primary = _toHexRgb(colorScheme.primary);
+    final secondary = _toHexRgb(colorScheme.tertiary);
+    final surfaceStroke = _toHexRgb(colorScheme.outlineVariant);
+    final darkInk = _toHexRgb(colorScheme.onSurfaceVariant);
+    final lightFill = _toHexRgb(colorScheme.surfaceContainerHighest);
+    final accentSoft = _toHexRgb(colorScheme.secondaryContainer);
+
+    return svg
+        // Primary accent (often purple)
+        .replaceAll('#6c63ff', primary)
+        .replaceAll('#6C63FF', primary)
+        // Secondary accent (often pink)
+        .replaceAll('#ff6584', secondary)
+        .replaceAll('#FF6584', secondary)
+        // Dark ink / outlines
+        .replaceAll('#3f3d56', darkInk)
+        .replaceAll('#3F3D56', darkInk)
+        .replaceAll('#2f2e41', darkInk)
+        .replaceAll('#2F2E41', darkInk)
+        // Light fills
+        .replaceAll('#e6e6e6', lightFill)
+        .replaceAll('#E6E6E6', lightFill)
+        // Soft skin tone -> themed soft accent
+        .replaceAll('#ffb8b8', accentSoft)
+        .replaceAll('#FFB8B8', accentSoft)
+        // Occasionally used as neutral shadow
+        .replaceAll('#d0cde1', surfaceStroke)
+        .replaceAll('#D0CDE1', surfaceStroke);
+  }
+
+  String _toHexRgb(Color color) {
+    final rgb = color.value & 0x00FFFFFF;
+    return '#${rgb.toRadixString(16).padLeft(6, '0')}';
   }
 }

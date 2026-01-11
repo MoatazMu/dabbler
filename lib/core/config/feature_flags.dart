@@ -54,7 +54,8 @@ class FeatureFlags {
   static const bool notifications = true;
   static const bool squads = true;
   static const bool venuesBooking = true; // venues remain read-only
-  static const bool enableRewards = true; // Early Bird check-in system enabled
+  static const bool enableRewards =
+      false; // Early Bird check-in system disabled for now
 
   /// Game Creation Features (Split by profile type)
   static const bool enablePlayerGameCreation =

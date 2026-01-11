@@ -1,173 +1,72 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:dabbler/features/authentication/presentation/providers/auth_providers.dart';
 import 'package:dabbler/utils/constants/route_constants.dart';
 
-/// Landing page shown before login/signup
-/// Features a user testimonial and value proposition
-class LandingPage extends StatelessWidget {
+/// Splash screen shown on app start.
+/// Hands off to router redirect logic / auth flow.
+class LandingPage extends ConsumerStatefulWidget {
   const LandingPage({super.key});
+
+  @override
+  ConsumerState<LandingPage> createState() => _LandingPageState();
+}
+
+class _LandingPageState extends ConsumerState<LandingPage> {
+  bool _didAdvance = false;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    final authState = ref.watch(simpleAuthProvider);
+    final isAuthenticated = ref.watch(isAuthenticatedProvider);
+
+    // If unauthenticated, auto-advance into the auth flow once the auth state
+    // finishes loading. If authenticated, GoRouter redirect logic will
+    // typically take over.
+    if (!_didAdvance && !authState.isLoading && !isAuthenticated) {
+      _didAdvance = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.go(RoutePaths.phoneInput);
+      });
+    }
+
     return Scaffold(
-      body: Stack(
-        children: [
-          // Background gradient
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  colorScheme.primary,
-                  colorScheme.primary.withOpacity(0.95),
-                ],
-              ),
-            ),
-          ),
-
-          // Decorative Frame overlay
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0.4,
-              child: SvgPicture.asset(
-                'assets/elements/Frame.svg',
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.white.withOpacity(0.1),
-                  BlendMode.softLight,
-                ),
-              ),
-            ),
-          ),
-
-          // Content
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 24, right: 24, top: 60),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // User testimonial card
-                          _buildUserCard(context),
-
-                          const SizedBox(height: 48),
-
-                          // User quote
-
-                          // Main headline
-                          Text(
-                            'I promised myself I\'d play at least twice a week but, between work and life finding a game feels harder than a 90-minute run.',
-                            style: Theme.of(context).textTheme.displayLarge
-                                ?.copyWith(color: Colors.white),
-                          ),
-
-                          const SizedBox(height: 48),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // Value proposition - fixed before button
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 24),
-                    child: Text(
-                      'Dabbler connects players, captains, and venues so you can stop searching and start playing',
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            color: Colors.white.withOpacity(0.95),
-                            fontWeight: FontWeight.w400,
-                          ),
-                    ),
-                  ),
-
-                  // Continue button
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 60),
-                    child: FilledButton(
-                      onPressed: () => context.go(RoutePaths.phoneInput),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: colorScheme.primary,
-                        minimumSize: const Size(double.infinity, 56),
-                      ),
-                      child: const Text('Continue'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUserCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(0, 60, 0, 0),
-      decoration: BoxDecoration(
-        // color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // Avatar with image
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              image: const DecorationImage(
-                image: AssetImage('assets/elements/Avatar.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          const SizedBox(width: 18),
-
-          // User info
-          Expanded(
+      backgroundColor: colorScheme.surfaceContainerLowest,
+      body: SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Badge with emoji
-                Chip(
-                  avatar: const Text('💪', style: TextStyle(fontSize: 15)),
-                  label: const Text('Determined'),
-                  backgroundColor: Colors.white,
-                  labelStyle: const TextStyle(color: Color(0xFF7327CE)),
+                SvgPicture.asset(
+                  'assets/images/logoTypo.svg',
+                  height: 22,
+                  fit: BoxFit.contain,
+                  semanticsLabel: 'Dabbler',
+                  colorFilter: ColorFilter.mode(
+                    colorScheme.primary,
+                    BlendMode.srcIn,
+                  ),
                 ),
-                const SizedBox(height: 12),
-
-                // Name
-                Text(
-                  'Noor',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.headlineSmall?.copyWith(color: Colors.white),
+                const SizedBox(height: 28),
+                SizedBox(
+                  width: 28,
+                  height: 28,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    color: colorScheme.primary,
+                  ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }

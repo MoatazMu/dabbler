@@ -1,3 +1,5 @@
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
+
 /// Comment model for posts
 class CommentModel {
   final String id;
@@ -79,7 +81,9 @@ class CommentModel {
       authorProfileId: json['author_profile_id'] as String,
       authorName:
           authorData['display_name'] ?? json['author_name'] ?? 'Unknown',
-      authorAvatar: authorData['avatar_url'] ?? json['author_avatar'],
+      authorAvatar: resolveAvatarUrl(
+        (authorData['avatar_url'] ?? json['author_avatar'])?.toString(),
+      ),
       authorVerified: authorData['verified'] as bool?,
       content: json['body'] ?? json['content'] ?? '',
       parentCommentId: json['parent_comment_id'] as String?,

@@ -43,6 +43,8 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   );
   final List<FocusNode> _focusNodes = List.generate(6, (index) => FocusNode());
 
+  bool _isHandlingOtpPaste = false;
+
   bool _isLoading = false;
   bool _isResending = false;
   int _resendCountdown = 0;
@@ -103,6 +105,28 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   }
 
   void _onOtpChanged(String value, int index) {
+    if (_isHandlingOtpPaste) return;
+
+    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+    if (digitsOnly.isEmpty) {
+      if (index > 0) {
+        _focusNodes[index - 1].requestFocus();
+      }
+      return;
+    }
+
+    if (digitsOnly.length > 1) {
+      _applyOtpPaste(digitsOnly, startIndex: index);
+      return;
+    }
+
+    if (value != digitsOnly) {
+      _otpControllers[index].text = digitsOnly;
+      _otpControllers[index].selection = TextSelection.collapsed(
+        offset: digitsOnly.length,
+      );
+    }
+
     if (value.length == 1 && index < 5) {
       _focusNodes[index + 1].requestFocus();
     } else if (value.isEmpty && index > 0) {
@@ -123,6 +147,42 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           }
         });
       }
+    }
+  }
+
+  void _applyOtpPaste(String digits, {required int startIndex}) {
+    _isHandlingOtpPaste = true;
+    try {
+      final chars = digits.split('');
+      var writeIndex = startIndex;
+      for (final ch in chars) {
+        if (writeIndex >= _otpControllers.length) break;
+        _otpControllers[writeIndex].text = ch;
+        _otpControllers[writeIndex].selection = const TextSelection.collapsed(
+          offset: 1,
+        );
+        writeIndex++;
+      }
+
+      final nextEmpty = _otpControllers.indexWhere(
+        (c) => c.text.trim().isEmpty,
+      );
+      if (nextEmpty != -1) {
+        _focusNodes[nextEmpty].requestFocus();
+      } else {
+        FocusScope.of(context).unfocus();
+
+        final otpCode = _getOtpCode();
+        if (otpCode.length == 6 && !_isLoading) {
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted && !_isLoading) {
+              _handleSubmit();
+            }
+          });
+        }
+      }
+    } finally {
+      _isHandlingOtpPaste = false;
     }
   }
 
@@ -274,7 +334,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     return SingleSectionLayout(
       child: ConstrainedBox(
         constraints: BoxConstraints(
-          minHeight: screenHeight - topPadding - bottomPadding - 48,
+          minHeight: (screenHeight - topPadding - bottomPadding - 48)
+              .clamp(0.0, double.infinity)
+              .toDouble(),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -366,12 +428,13 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                   children: List.generate(6, (index) {
                     return SizedBox(
                       width: 48,
+                      height: 48,
                       child: TextField(
                         controller: _otpControllers[index],
                         focusNode: _focusNodes[index],
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
-                        maxLength: 1,
+                        maxLength: 6,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
                         ],
@@ -383,31 +446,16 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                         decoration: InputDecoration(
                           counterText: '',
                           filled: true,
-                          fillColor:
-                              Theme.of(context).brightness == Brightness.dark
-                              ? Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHighest
-                              : Theme.of(
-                                  context,
-                                ).colorScheme.surfaceContainerHigh,
+                          fillColor: Theme.of(
+                            context,
+                          ).colorScheme.primary.withValues(alpha: 0.12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outlineVariant,
-                              width: 1.5,
-                            ),
+                            borderSide: BorderSide.none,
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outlineVariant,
-                              width: 1.5,
-                            ),
+                            borderSide: BorderSide.none,
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -417,7 +465,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                             ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                            vertical: 16,
+                            vertical: 12,
                           ),
                         ),
                         onChanged: (value) => _onOtpChanged(value, index),

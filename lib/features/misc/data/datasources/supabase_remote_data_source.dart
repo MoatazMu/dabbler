@@ -16,7 +16,10 @@ class SupabaseService {
 
   /// Returns the authenticated user's id if available.
   String? authUserId() {
-    return _client.auth.currentUser?.id;
+    // On some platforms (notably Android during cold-start / resume),
+    // `currentUser` may briefly be null while the persisted session is
+    // still available. Prefer session.user.id when present.
+    return _client.auth.currentSession?.user.id ?? _client.auth.currentUser?.id;
   }
 
   /// Maps Supabase/PostgREST errors into domain specific failures.

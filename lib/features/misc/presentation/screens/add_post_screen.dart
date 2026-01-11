@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:dabbler/themes/app_theme.dart';
@@ -134,6 +135,16 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                           final userAvatarUrl =
                               currentUser?.userMetadata?['avatar_url']
                                   as String?;
+                          final userName =
+                              currentUser?.userMetadata?['display_name']
+                                  as String? ??
+                              'User';
+                          final resolvedAvatarUrl = resolveAvatarUrl(
+                            userAvatarUrl,
+                          );
+                          final initial = userName.isNotEmpty
+                              ? userName[0].toUpperCase()
+                              : 'U';
 
                           return CircleAvatar(
                             radius: 20,
@@ -141,16 +152,20 @@ class _AddPostScreenState extends ConsumerState<AddPostScreen> {
                               0.2,
                             ),
                             backgroundImage:
-                                userAvatarUrl != null &&
-                                    userAvatarUrl.isNotEmpty
-                                ? NetworkImage(userAvatarUrl)
+                                resolvedAvatarUrl != null &&
+                                    resolvedAvatarUrl.isNotEmpty
+                                ? NetworkImage(resolvedAvatarUrl)
                                 : null,
                             child:
-                                userAvatarUrl == null || userAvatarUrl.isEmpty
-                                ? Icon(
-                                    Icons.person,
-                                    size: 20,
-                                    color: context.colors.primary,
+                                resolvedAvatarUrl == null ||
+                                    resolvedAvatarUrl.isEmpty
+                                ? Text(
+                                    initial,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: context.colors.primary,
+                                    ),
                                   )
                                 : null,
                           );

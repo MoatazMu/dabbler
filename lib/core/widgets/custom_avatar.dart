@@ -11,6 +11,9 @@ class AppAvatar extends StatelessWidget {
   final Widget? badge;
   final bool showBadge;
   final String? _sportEmoji;
+  final Color? fallbackBackgroundColor;
+  final Color? fallbackForegroundColor;
+  final Color? borderColor;
 
   const AppAvatar({
     super.key,
@@ -20,6 +23,9 @@ class AppAvatar extends StatelessWidget {
     this.onTap,
     this.badge,
     this.showBadge = true,
+    this.fallbackBackgroundColor,
+    this.fallbackForegroundColor,
+    this.borderColor,
   }) : _sportEmoji = null;
 
   /// Small avatar (40x40)
@@ -30,6 +36,9 @@ class AppAvatar extends StatelessWidget {
     this.onTap,
     this.badge,
     this.showBadge = true,
+    this.fallbackBackgroundColor,
+    this.fallbackForegroundColor,
+    this.borderColor,
   }) : size = 40.0,
        _sportEmoji = null;
 
@@ -41,6 +50,9 @@ class AppAvatar extends StatelessWidget {
     this.onTap,
     this.badge,
     this.showBadge = true,
+    this.fallbackBackgroundColor,
+    this.fallbackForegroundColor,
+    this.borderColor,
   }) : size = 48.0,
        _sportEmoji = null;
 
@@ -52,6 +64,9 @@ class AppAvatar extends StatelessWidget {
     this.onTap,
     this.badge,
     this.showBadge = true,
+    this.fallbackBackgroundColor,
+    this.fallbackForegroundColor,
+    this.borderColor,
   }) : size = 64.0,
        _sportEmoji = null;
 
@@ -63,6 +78,9 @@ class AppAvatar extends StatelessWidget {
     this.size = 48.0,
     this.onTap,
     required String sportEmoji,
+    this.fallbackBackgroundColor,
+    this.fallbackForegroundColor,
+    this.borderColor,
   }) : badge = null,
        showBadge = true,
        _sportEmoji = sportEmoji;
@@ -72,28 +90,30 @@ class AppAvatar extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final borderRadius = size * 0.375; // 18dp for 48dp size (maintains ratio)
 
+    final hasImage = imageUrl != null && imageUrl!.isNotEmpty;
+    final fallbackBackground =
+        fallbackBackgroundColor ?? colorScheme.primary.withValues(alpha: 0.12);
+    final fallbackForeground = fallbackForegroundColor ?? colorScheme.primary;
+    final effectiveBorderColor =
+        borderColor ?? colorScheme.outline.withValues(alpha: 0.2);
+
     Widget avatarContent = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: imageUrl != null && imageUrl!.isNotEmpty
-            ? null
-            : colorScheme.primary.withOpacity(0.1),
+        color: hasImage ? null : fallbackBackground,
         borderRadius: BorderRadius.circular(borderRadius),
-        border: Border.all(
-          color: colorScheme.outline.withOpacity(0.2),
-          width: 1,
-        ),
-        image: imageUrl != null && imageUrl!.isNotEmpty
+        border: Border.all(color: effectiveBorderColor, width: 1),
+        image: hasImage
             ? DecorationImage(image: NetworkImage(imageUrl!), fit: BoxFit.cover)
             : null,
       ),
-      child: imageUrl == null || imageUrl!.isEmpty
+      child: !hasImage
           ? Center(
               child: Text(
                 _getInitials(fallbackText),
                 style: TextStyle(
-                  color: colorScheme.primary,
+                  color: fallbackForeground,
                   fontSize: size * 0.4,
                   fontWeight: FontWeight.w600,
                 ),

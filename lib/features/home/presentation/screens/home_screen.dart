@@ -16,6 +16,7 @@ import 'package:dabbler/features/games/presentation/screens/join_game/game_detai
 import 'package:dabbler/features/home/presentation/providers/home_providers.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:dabbler/core/design_system/design_system.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 import 'package:dabbler/widgets/thoughts_input.dart';
 import 'package:dabbler/data/models/games/game.dart';
 import 'package:dabbler/features/social/presentation/widgets/feed/post_card.dart';
@@ -25,6 +26,8 @@ import 'package:dabbler/services/notifications/push_notification_service.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:dabbler/features/home/presentation/widgets/notification_permission_drawer.dart';
 import 'package:flutter/foundation.dart' show defaultTargetPlatform;
+import 'package:dabbler/features/notifications/presentation/providers/notifications_providers.dart';
+import 'package:dabbler/features/notifications/presentation/providers/notification_center_badge_providers.dart';
 
 /// Modern home screen for Dabbler
 class HomeScreen extends ConsumerStatefulWidget {
@@ -137,41 +140,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } catch (e) {}
   }
 
-  bool _shouldShowCreateGame() {
-    final profileState = ref.watch(profileControllerProvider);
-    final profileType = profileState.profile?.profileType;
-
-    if (profileType == 'player') {
-      return FeatureFlags.enablePlayerGameCreation;
-    } else if (profileType == 'organiser') {
-      return FeatureFlags.enableOrganiserGameCreation;
-    }
-    return false;
-  }
-
-  bool _shouldShowJoinGame() {
-    final profileState = ref.watch(profileControllerProvider);
-    final profileType = profileState.profile?.profileType;
-
-    if (profileType == 'player') {
-      return FeatureFlags.enablePlayerGameJoining;
-    } else if (profileType == 'organiser') {
-      return FeatureFlags.enableOrganiserGameJoining;
-    }
-    return false;
-  }
-
-  String _getGreeting() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) {
-      return 'Good morning';
-    } else if (hour < 17) {
-      return 'Good afternoon';
-    } else {
-      return 'Good evening';
-    }
-  }
-
   Future<void> _handleRefresh() async {
     // Reload user profile
     await _loadUserProfile();
@@ -187,7 +155,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildHeader() {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+
+    final userId = _authService.getCurrentUserId();
+    final hasUnreadNotifications = userId == null
+        ? false
+        : ref.watch(
+            notificationsControllerProvider(
+              userId,
+            ).select((s) => s.unreadCount > 0),
+          );
+
+    final lastSeenActivityAt = ref.watch(lastSeenActivityAtProvider);
+    final latestActivityAtAsync = ref.watch(latestActivityAtProvider);
+    final hasNewActivity = latestActivityAtAsync.maybeWhen(
+      data: (latestAt) =>
+          latestAt != null &&
+          (lastSeenActivityAt == null || latestAt.isAfter(lastSeenActivityAt)),
+      orElse: () => false,
+    );
+
+    final showNotificationCenterIndicator =
+        hasUnreadNotifications || hasNewActivity;
 
     // Extract initials from display name
     String? getInitials(String? displayName) {
@@ -200,114 +188,92 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
 
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => context.go('/home'),
-          child: DSAvatar.size48(
-            imageUrl:
-                _userProfile?['avatar_url'] is String &&
-                    (_userProfile!['avatar_url'] as String).isNotEmpty
-                ? _userProfile!['avatar_url']
-                : null,
-            initials: getInitials(_userProfile?['display_name']),
-            backgroundColor: colorScheme.categoryMain.withValues(alpha: 0.2),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Text(
-            'Home',
-            style: textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: colorScheme.onSurface,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => context.go(RoutePaths.profile),
+            child: DSAvatar.size48(
+              imageUrl: resolveAvatarUrl(
+                _userProfile?['avatar_url'] as String?,
+              ),
+              initials: getInitials(_userProfile?['display_name']),
+              backgroundColor: colorScheme.categoryMain.withValues(alpha: 0.2),
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        if (FeatureFlags.enableNotificationCenter)
+          const SizedBox(width: 18),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: SvgPicture.asset(
+                'assets/images/logoTypo.svg',
+                height: 18,
+                fit: BoxFit.contain,
+                semanticsLabel: 'Dabbler',
+                colorFilter: ColorFilter.mode(
+                  colorScheme.primary,
+                  BlendMode.srcIn,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          if (FeatureFlags.enableNotificationCenter)
+            IconButton.filledTonal(
+              onPressed: () => context.go(RoutePaths.notifications),
+              icon: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(Iconsax.direct_copy),
+                  if (showNotificationCenterIndicator)
+                    Positioned(
+                      top: -2,
+                      right: -2,
+                      child: Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                          color: colorScheme.error,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: colorScheme.primaryContainer,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: colorScheme.onPrimaryContainer,
+                minimumSize: const Size(48, 48),
+              ),
+            ),
+          if (FeatureFlags.enableNotificationCenter) const SizedBox(width: 8),
           IconButton.filledTonal(
-            onPressed: () => context.go(RoutePaths.notifications),
-            icon: const Icon(Iconsax.notification_status_copy),
+            onPressed: () => context.go(RoutePaths.socialFriends),
+            icon: const Icon(Iconsax.people_copy),
             style: IconButton.styleFrom(
-              backgroundColor: colorScheme.categoryMain.withValues(alpha: 0.2),
-              foregroundColor: colorScheme.onSurface,
+              backgroundColor: Colors.transparent,
+              foregroundColor: colorScheme.onPrimaryContainer,
               minimumSize: const Size(48, 48),
             ),
           ),
-        if (FeatureFlags.enableNotificationCenter) const SizedBox(width: 8),
-        IconButton.filledTonal(
-          onPressed: () => context.go(RoutePaths.profile),
-          icon: const Icon(Iconsax.user_copy),
-          style: IconButton.styleFrom(
-            backgroundColor: colorScheme.categoryMain.withValues(alpha: 0.2),
-            foregroundColor: colorScheme.onSurface,
-            minimumSize: const Size(48, 48),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildGreetingSection(String? displayName) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '${_getGreeting()},',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(color: colorScheme.onSurface),
-        ),
-        if (displayName != null)
-          Text(
-            '$displayName!',
-            style: Theme.of(
-              context,
-            ).textTheme.displaySmall?.copyWith(color: colorScheme.onSurface),
-          ),
-        // else
-        //   Column(
-        //     crossAxisAlignment: CrossAxisAlignment.start,
-        //     children: [
-        //       Text(
-        //         'Complete your profile',
-        //         style: Theme.of(context).textTheme.titleMedium?.copyWith(
-        //           color: colorScheme.onSurface,
-        //           fontStyle: FontStyle.italic,
-        //         ),
-        //       ),
-        //       const SizedBox(height: 8),
-        //       AppButton.primary(
-        //         label: 'Update now',
-        //         onPressed: () => context.go(RoutePaths.profile),
-        //         size: AppButtonSize.sm,
-        //       ),
-        //     ],
-        //   ),
-      ],
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get display name from users table - NO FALLBACK to 'Player'
-    final displayName =
-        _userProfile?['display_name'] != null &&
-            (_userProfile!['display_name'] as String).isNotEmpty
-        ? (_userProfile!['display_name'] as String).split(' ').first
-        : null;
-
     return TwoSectionLayout(
       category: 'main',
       topSection: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildHeader(),
-          // const SizedBox(height: 24),
-          // _buildGreetingSection(displayName),
           Padding(
             padding: const EdgeInsets.only(top: 12),
             child: _buildUpcomingGameSection(),
@@ -329,7 +295,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _buildQuickAccessSection(),
-          _buildNewlyJoinedSection(),
+          // _buildNewlyJoinedSection(),
           // Main Social Feed - Primary feature
           _buildSocialFeedSection(),
           // Padding(
@@ -342,105 +308,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildHeroSection(String? displayName) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '${_getGreeting()},',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: colorScheme.onSurface,
-                    ),
-                  ),
-                  if (displayName != null)
-                    Text(
-                      '$displayName!',
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                        color: colorScheme.onSurface,
-                      ),
-                    )
-                  else
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Complete your profile',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                color: colorScheme.onSurface,
-                                fontStyle: FontStyle.italic,
-                              ),
-                        ),
-                        const SizedBox(height: 8),
-                        FilledButton(
-                          onPressed: () => context.go(RoutePaths.profile),
-                          child: const Text('Update now'),
-                        ),
-                      ],
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 12),
-            Row(
-              children: [
-                if (FeatureFlags.enableNotificationCenter)
-                  GestureDetector(
-                    onTap: () => context.go(RoutePaths.notifications),
-                    child: Container(
-                      width: 30,
-                      height: 30,
-                      alignment: Alignment.center,
-                      child: SvgPicture.asset(
-                        'assets/icons/notification.svg',
-                        width: 24,
-                        height: 24,
-                        colorFilter: ColorFilter.mode(
-                          colorScheme.onSurface,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
-                  ),
-                if (FeatureFlags.enableNotificationCenter)
-                  const SizedBox(width: 12),
-                GestureDetector(
-                  onTap: () => context.go(RoutePaths.profile),
-                  child: DSAvatar.size54(
-                    imageUrl: _userProfile?['avatar_url'],
-                    initials: _userProfile?['display_name'],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: _buildUpcomingGameSection(),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(top: 16),
-          child: ThoughtsInput(
-            onTap: () => context.push('/social-create-post'),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildQuickAccessSection() {
     return const SizedBox.shrink();
   }
 
+  // ignore: unused_element
   Widget _buildNewlyJoinedSection() {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -483,6 +355,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     : displayPlayers.length,
                 itemBuilder: (context, index) {
                   final player = displayPlayers[index];
+                  final avatarUrl = resolveAvatarUrl(
+                    player['avatar_url']?.toString(),
+                  );
+                  final displayName = (player['display_name'] ?? 'U')
+                      .toString()
+                      .trim();
+                  final initial = displayName.isNotEmpty
+                      ? displayName.substring(0, 1).toUpperCase()
+                      : 'U';
                   return GestureDetector(
                     onTap: () {
                       if (player['user_id'] != null) {
@@ -493,19 +374,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     },
                     child: CircleAvatar(
                       radius: 24,
-                      backgroundImage:
-                          player['avatar_url'] != null &&
-                              (player['avatar_url'] as String).isNotEmpty
-                          ? NetworkImage(player['avatar_url'])
+                      backgroundImage: avatarUrl != null && avatarUrl.isNotEmpty
+                          ? NetworkImage(avatarUrl)
                           : null,
-                      child:
-                          player['avatar_url'] == null ||
-                              (player['avatar_url'] as String).isEmpty
-                          ? Text(
-                              (player['display_name'] ?? 'U')
-                                  .substring(0, 1)
-                                  .toUpperCase(),
-                            )
+                      child: avatarUrl == null || avatarUrl.isEmpty
+                          ? Text(initial)
                           : null,
                     ),
                   );
@@ -531,6 +404,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             scrollDirection: Axis.horizontal,
             child: Row(
               children: [
+                const SizedBox(width: 24),
                 _buildFilterChip(
                   label: 'Most recent',
                   value: 'all',
@@ -557,6 +431,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       .where((p) => p.kind.toLowerCase() == 'kickin')
                       .length,
                 ),
+                const SizedBox(width: 24),
               ],
             ),
           ),
@@ -574,7 +449,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final mainScheme = context.getCategoryTheme('main');
     final isSelected = _selectedPostFilter == value;
+
+    final chipForeground = isSelected
+        ? mainScheme.onPrimary
+        : mainScheme.primary;
 
     return GestureDetector(
       onTap: () {
@@ -584,17 +464,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       },
       child: Container(
         margin: const EdgeInsets.only(right: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
               ? colorScheme.primary
-              : colorScheme.surfaceContainer,
+              : colorScheme.primary.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: textTheme.labelMedium?.copyWith(
-            color: isSelected ? colorScheme.onPrimary : colorScheme.outline,
+            color: chipForeground,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -848,134 +728,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildRecentGamesSection() {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return FutureBuilder<List<Map<String, dynamic>>>(
-      future: _fetchRecentGames(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return const SizedBox.shrink();
-        }
-
-        final games = snapshot.data!;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Recent Games',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 12),
-              child: Column(
-                children: [...games.map((game) => _buildRecentGameItem(game))],
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Widget _buildRecentGameItem(Map<String, dynamic> game) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    final sport = game['sport'] ?? 'Football';
-    final format = game['format'] ?? 'Futsal';
-    final title = game['title'] ?? 'Game';
-    final date = game['scheduled_date'] != null
-        ? DateFormat('dd MMM').format(DateTime.parse(game['scheduled_date']))
-        : '25 OCT';
-    final time = game['start_time'] ?? '6:00 PM';
-    final location = game['location_name'] ?? 'Downtown, Dubai';
-    final currentPlayers = game['current_players'] ?? 5;
-    final maxPlayers = game['max_players'] ?? 10;
-
-    return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {
-          if (game['id'] != null) {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => GameDetailScreen(gameId: game['id']),
-              ),
-            );
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(
-                    _getSportEmoji(sport),
-                    style: const TextStyle(fontSize: 24),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    '$currentPlayers/$maxPlayers',
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: colorScheme.outline,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: Text(
-                      '$sport • $format • $date at $time',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.outline,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Flexible(
-                    child: Text(
-                      location,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colorScheme.outline,
-                      ),
-                      textAlign: TextAlign.right,
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   /// Ensure session is fresh before making Supabase queries
   Future<void> _ensureValidSession() async {
     try {
@@ -1023,97 +775,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
-  Future<List<Map<String, dynamic>>> _fetchRecentGames() async {
-    try {
-      await _ensureValidSession();
-
-      final supabase = Supabase.instance.client;
-      final response = await supabase
-          .from('games')
-          .select()
-          .eq('is_cancelled', false)
-          // Exclude past games (server-side)
-          .gte('start_at', DateTime.now().toUtc().toIso8601String())
-          // Show the next upcoming games first
-          .order('start_at', ascending: true)
-          // Fetch a few extra in case some rows have stale timestamps
-          .limit(10);
-
-      final games = (response as List).cast<Map<String, dynamic>>();
-      final upcomingGames = games.where(_isGameInFuture).take(2).toList();
-      return upcomingGames;
-    } catch (e) {
-      return [];
-    }
-  }
-
-  bool _isGameInFuture(Map<String, dynamic> game) {
-    final now = DateTime.now();
-
-    DateTime? parseDateTime(dynamic value) {
-      if (value is DateTime) return value;
-      if (value is String) {
-        return DateTime.tryParse(value);
-      }
-      return null;
-    }
-
-    DateTime? upcomingDateTime;
-
-    final serverStart = parseDateTime(game['start_at']);
-    if (serverStart != null) {
-      upcomingDateTime = serverStart;
-    } else {
-      final scheduledDate = parseDateTime(game['scheduled_date']);
-      if (scheduledDate != null) {
-        final startTime = game['start_time'];
-        if (startTime is String) {
-          final parts = startTime.split(':');
-          final hour = parts.isNotEmpty ? int.tryParse(parts[0]) ?? 0 : 0;
-          final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
-          upcomingDateTime = DateTime(
-            scheduledDate.year,
-            scheduledDate.month,
-            scheduledDate.day,
-            hour,
-            minute,
-          );
-        } else {
-          upcomingDateTime = scheduledDate;
-        }
-      }
-    }
-
-    if (upcomingDateTime == null) {
-      // If we cannot determine the date, err on the side of showing it so data
-      // issues can be spotted and fixed at the source.
-      return true;
-    }
-
-    return upcomingDateTime.isAfter(now);
-  }
-
-  String _getSportEmoji(String? sport) {
-    if (sport == null) return '⚽';
-    switch (sport.toLowerCase()) {
-      case 'football':
-      case 'soccer':
-        return '⚽';
-      case 'basketball':
-        return '🏀';
-      case 'tennis':
-        return '🎾';
-      case 'cricket':
-        return '🏏';
-      case 'padel':
-        return '🎾';
-      case 'volleyball':
-        return '🏐';
-      default:
-        return '⚽';
-    }
-  }
-
   /// Builds the upcoming game section with real Supabase data
   Widget _buildUpcomingGameSection() {
     final gamesAsync = ref.watch(userUpcomingGamesProvider);
@@ -1152,10 +813,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: List.generate(games.length, (index) {
         final game = games[index];
         final isFirst = index == 0;
-        final isLast = index == games.length - 1;
 
         return Padding(
-          padding: EdgeInsets.only(bottom: isLast ? 0 : 8),
+          padding: EdgeInsets.fromLTRB(24, 12, 24, 12),
           child: _StatefulUpcomingGameCard(
             game: game,
             isFirst: isFirst,

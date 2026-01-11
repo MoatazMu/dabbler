@@ -53,6 +53,9 @@ class UpcomingGameCard extends StatelessWidget {
   /// Optional width (defaults to 353px from Figma)
   final double? width;
 
+  /// Callback when the card is tapped (e.g., navigate to game)
+  final VoidCallback? onTap;
+
   const UpcomingGameCard({
     super.key,
     required this.title,
@@ -64,6 +67,7 @@ class UpcomingGameCard extends StatelessWidget {
     this.borderRadiusVariant = BorderRadiusVariant.all,
     this.viewState = CardViewState.collapsed,
     this.width,
+    this.onTap,
   });
 
   /// Factory: Collapsed view
@@ -75,6 +79,7 @@ class UpcomingGameCard extends StatelessWidget {
     required Widget sportIcon,
     BorderRadiusVariant borderRadiusVariant = BorderRadiusVariant.all,
     double? width,
+    VoidCallback? onTap,
   }) {
     return UpcomingGameCard(
       key: key,
@@ -85,6 +90,7 @@ class UpcomingGameCard extends StatelessWidget {
       borderRadiusVariant: borderRadiusVariant,
       viewState: CardViewState.collapsed,
       width: width,
+      onTap: onTap,
     );
   }
 
@@ -99,6 +105,7 @@ class UpcomingGameCard extends StatelessWidget {
     required String location,
     BorderRadiusVariant borderRadiusVariant = BorderRadiusVariant.all,
     double? width,
+    VoidCallback? onTap,
   }) {
     return UpcomingGameCard(
       key: key,
@@ -111,6 +118,7 @@ class UpcomingGameCard extends StatelessWidget {
       borderRadiusVariant: borderRadiusVariant,
       viewState: CardViewState.expanded,
       width: width,
+      onTap: onTap,
     );
   }
 
@@ -141,18 +149,24 @@ class UpcomingGameCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = context.colorTokens;
+    final cardBg = Theme.of(
+      context,
+    ).colorScheme.onPrimaryContainer.withOpacity(0.08);
 
-    return Container(
-      width: width ?? 353,
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      decoration: BoxDecoration(
-        color: tokens.card,
-        border: Border.all(color: tokens.stroke, width: 1),
-        borderRadius: _getBorderRadius(),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: width ?? 353,
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+        decoration: BoxDecoration(
+          color: cardBg,
+          border: Border.all(color: tokens.stroke, width: 1),
+          borderRadius: _getBorderRadius(),
+        ),
+        child: viewState == CardViewState.expanded
+            ? _buildExpandedView(context, tokens)
+            : _buildCollapsedView(context, tokens),
       ),
-      child: viewState == CardViewState.expanded
-          ? _buildExpandedView(context, tokens)
-          : _buildCollapsedView(context, tokens),
     );
   }
 

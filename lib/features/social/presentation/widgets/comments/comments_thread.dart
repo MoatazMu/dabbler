@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:dabbler/core/utils/avatar_url_resolver.dart';
 import '../../providers/social_providers.dart';
 
 class CommentsThread extends ConsumerWidget {
@@ -28,6 +29,7 @@ class CommentsThread extends ConsumerWidget {
     final currentUserId = ref.watch(currentUserIdProvider);
     final isOwnComment = comment.authorId == currentUserId;
     final isPostAuthor = comment.authorId == postAuthorId;
+    final resolvedAvatarUrl = resolveAvatarUrl(comment.author.avatar);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -45,10 +47,11 @@ class CommentsThread extends ConsumerWidget {
               // Comment author avatar
               CircleAvatar(
                 radius: nestingLevel > 0 ? 14 : 16,
-                backgroundImage: comment.author.avatar.isNotEmpty
-                    ? NetworkImage(comment.author.avatar)
+                backgroundImage:
+                    resolvedAvatarUrl != null && resolvedAvatarUrl.isNotEmpty
+                    ? NetworkImage(resolvedAvatarUrl)
                     : null,
-                child: comment.author.avatar.isEmpty
+                child: resolvedAvatarUrl == null || resolvedAvatarUrl.isEmpty
                     ? Text(comment.author.name.substring(0, 1).toUpperCase())
                     : null,
               ),

@@ -548,28 +548,7 @@ class _FriendTileState extends ConsumerState<FriendTile>
   }
 
   Future<List<UserModel>> _getMutualFriends() async {
-    // In real implementation, fetch mutual friends from repository
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Mock data
-    return [
-      UserModel(
-        id: '1',
-        fullName: 'John Doe',
-        email: 'john@example.com',
-        avatarUrl: 'https://example.com/avatar1.jpg',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-      UserModel(
-        id: '2',
-        fullName: 'Jane Smith',
-        email: 'jane@example.com',
-        avatarUrl: 'https://example.com/avatar2.jpg',
-        createdAt: DateTime.now(),
-        updatedAt: DateTime.now(),
-      ),
-    ];
+    return const [];
   }
 }
 
