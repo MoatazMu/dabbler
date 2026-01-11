@@ -35,10 +35,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   List<String> _selectedSports = [];
 
   String _normalizeSportKey(String value) {
-    return value
-        .trim()
-        .toLowerCase()
-        .replaceAll(RegExp(r'[\s-]+'), '_');
+    return value.trim().toLowerCase().replaceAll(RegExp(r'[\s-]+'), '_');
   }
 
   List<String> get _genderOptions {
@@ -272,9 +269,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       avatar: Icon(
         AppHelpers.getSportIcon(sportKey),
         size: 20,
-        color: isSelected
-            ? colorScheme.categoryProfile
-            : colorScheme.onSurface,
+        color: isSelected ? colorScheme.categoryProfile : colorScheme.onSurface,
       ),
       selected: isSelected,
       showCheckmark: false,
@@ -410,7 +405,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       children: [
                         Text(
                           'Display Name',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: colorScheme.onSurface,
                               ),
@@ -438,7 +434,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       children: [
                         Text(
                           'Phone number',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.w600,
                                 color: colorScheme.onSurface,
                               ),
@@ -484,10 +481,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                           minimumSize: const Size(double.infinity, 56),
                           backgroundColor: colorScheme.categoryProfile,
                           foregroundColor: colorScheme.onPrimary,
-                          disabledBackgroundColor:
-                              colorScheme.categoryProfile.withValues(alpha: 0.4),
-                          disabledForegroundColor:
-                              colorScheme.onPrimary.withValues(alpha: 0.75),
+                          disabledBackgroundColor: colorScheme.categoryProfile
+                              .withValues(alpha: 0.4),
+                          disabledForegroundColor: colorScheme.onPrimary
+                              .withValues(alpha: 0.75),
                         ),
                         child: const Text('Save changes'),
                       ),

@@ -9,7 +9,6 @@ import 'package:dabbler/features/games/presentation/screens/join_game/game_detai
 import 'package:dabbler/features/venues/presentation/screens/venue_detail_screen.dart';
 import 'package:dabbler/features/venues/providers.dart' as venues_providers;
 import 'package:dabbler/themes/app_theme.dart';
-import 'package:dabbler/themes/material3_extensions.dart';
 import 'package:dabbler/utils/helpers/date_formatter.dart';
 
 class SportsLibraryScreen extends StatefulWidget {
