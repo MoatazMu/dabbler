@@ -63,6 +63,12 @@ import 'package:dabbler/features/profile/presentation/screens/about/terms_of_ser
 import 'package:dabbler/features/profile/presentation/screens/about/privacy_policy_screen.dart';
 import 'package:dabbler/features/profile/presentation/screens/about/licenses_screen.dart';
 
+// Organiser venue submissions
+import 'package:dabbler/data/models/venue_submission_model.dart';
+import 'package:dabbler/features/venue_submissions/presentation/screens/create_venue_submission_screen.dart';
+import 'package:dabbler/features/venue_submissions/presentation/screens/my_venue_submissions_screen.dart';
+import 'package:dabbler/features/venue_submissions/presentation/screens/venue_submission_detail_screen.dart';
+
 // Transactions screens
 import 'package:dabbler/features/misc/presentation/screens/transactions_screen.dart';
 
@@ -727,6 +733,54 @@ class AppRouter {
         child: const ProfileScreen(),
         type: SharedAxisType.horizontal,
       ),
+    ),
+
+    // Organiser Venue Submissions
+    GoRoute(
+      path: RoutePaths.myVenueSubmissions,
+      name: RouteNames.myVenueSubmissions,
+      redirect: (context, state) {
+        final container = ProviderScope.containerOf(context, listen: false);
+        final profileState = container.read(profileControllerProvider);
+        final profileType = profileState.profile?.profileType;
+        if (profileType != 'organiser') {
+          return RoutePaths.home;
+        }
+        return null;
+      },
+      pageBuilder: (context, state) => SharedAxisTransitionPage(
+        key: state.pageKey,
+        child: const MyVenueSubmissionsScreen(),
+        type: SharedAxisType.horizontal,
+      ),
+      routes: [
+        GoRoute(
+          path: 'create',
+          name: RouteNames.createVenueSubmission,
+          pageBuilder: (context, state) {
+            final initial = state.extra is VenueSubmissionModel
+                ? state.extra as VenueSubmissionModel
+                : null;
+            return SharedAxisTransitionPage(
+              key: state.pageKey,
+              child: CreateVenueSubmissionScreen(initial: initial),
+              type: SharedAxisType.horizontal,
+            );
+          },
+        ),
+        GoRoute(
+          path: ':${RouteParams.submissionId}',
+          name: RouteNames.venueSubmissionDetail,
+          pageBuilder: (context, state) {
+            final id = state.pathParameters[RouteParams.submissionId] ?? '';
+            return SharedAxisTransitionPage(
+              key: state.pageKey,
+              child: VenueSubmissionDetailScreen(submissionId: id),
+              type: SharedAxisType.horizontal,
+            );
+          },
+        ),
+      ],
     ),
 
     // Notifications route (hidden for MVP)

@@ -172,14 +172,15 @@ class FeatureFlags {
   // ============================================================================
 
   /// Sports available in MVP
-  /// Three main sports: football, cricket, paddle
+  /// Three main sports: football, cricket, padel
   static const List<String> enabledSports = [
     'football',
     'cricket',
-    'paddle',
+    'padel',
     'basketball',
     'tennis',
     'volleyball',
+    'handball',
     'badminton',
     'table_tennis',
     'squash',
@@ -192,7 +193,7 @@ class FeatureFlags {
   static const List<String> allSports = [
     'football',
     'cricket',
-    'paddle',
+    'padel',
     'basketball',
     'tennis',
     'volleyball',

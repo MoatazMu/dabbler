@@ -205,293 +205,291 @@ class _SportsSelectionScreenState extends ConsumerState<SportsSelectionScreen> {
                     const SizedBox(height: 40),
 
                     // Form Container
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Preferred Sport Section
-                        Row(
-                          children: [
-                            Text(
-                              'Preferred Sport',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface,
-                                  ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'Required',
-                                style: Theme.of(context).textTheme.bodySmall
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Preferred Sport Section
+                          Row(
+                            children: [
+                              Text(
+                                'Preferred Sport',
+                                style: Theme.of(context).textTheme.titleLarge
                                     ?.copyWith(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                     ),
                               ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 4.0),
-
-                        Text(
-                          'Choose your main sport',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withOpacity(0.7),
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'Required',
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
                               ),
-                        ),
+                            ],
+                          ),
 
-                        SizedBox(height: 12.0),
+                          SizedBox(height: 4.0),
 
-                        // Preferred Sport Grid
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 3,
-                                crossAxisSpacing: 12,
-                                mainAxisSpacing: 12,
-                                childAspectRatio: 1.0,
-                              ),
-                          itemCount: AppConstants.availableSports
-                              .where(
-                                (sport) => FeatureFlags.isSportEnabled(sport),
-                              )
-                              .length,
-                          itemBuilder: (context, index) {
-                            final enabledSports = AppConstants.availableSports
+                          Text(
+                            'Choose your main sport',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withOpacity(0.7),
+                                ),
+                          ),
+
+                          SizedBox(height: 12.0),
+
+                          // Preferred Sport Grid
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  crossAxisSpacing: 12,
+                                  mainAxisSpacing: 12,
+                                  childAspectRatio: 1.0,
+                                ),
+                            itemCount: AppConstants.keySports
                                 .where(
                                   (sport) => FeatureFlags.isSportEnabled(sport),
                                 )
-                                .toList();
-                            final sport = enabledSports[index];
-                            final isSelected = _preferredSport == sport;
+                                .length,
+                            itemBuilder: (context, index) {
+                              final enabledSports = AppConstants.keySports
+                                  .where(
+                                    (sport) =>
+                                        FeatureFlags.isSportEnabled(sport),
+                                  )
+                                  .toList();
+                              final sport = enabledSports[index];
+                              final isSelected = _preferredSport == sport;
 
-                            return Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () => _selectPreferredSport(sport),
-                                borderRadius: BorderRadius.circular(12),
-                                child: Ink(
-                                  decoration: BoxDecoration(
-                                    color: Colors.transparent,
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? Theme.of(
-                                              context,
-                                            ).colorScheme.primary
-                                          : Theme.of(
-                                              context,
-                                            ).colorScheme.outline,
-                                      width: isSelected ? 2 : 1.5,
-                                    ),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  padding: const EdgeInsets.all(16),
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        AppHelpers.getSportIcon(sport),
-                                        size: 32,
+                              return Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () => _selectPreferredSport(sport),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Ink(
+                                    decoration: BoxDecoration(
+                                      color: Colors.transparent,
+                                      border: Border.all(
                                         color: isSelected
                                             ? Theme.of(
                                                 context,
                                               ).colorScheme.primary
                                             : Theme.of(
                                                 context,
-                                              ).colorScheme.onSurface,
+                                              ).colorScheme.outline,
+                                        width: isSelected ? 2 : 1.5,
                                       ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        AppHelpers.getSportDisplayName(sport),
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.normal,
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.onSurface,
-                                            ),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      if (isSelected) ...[
-                                        const SizedBox(height: 4),
-                                        Icon(
-                                          Iconsax.tick_circle_copy,
-                                          size: 16,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.primary,
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.all(12),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          AppHelpers.getSportEmoji(sport),
+                                          style: const TextStyle(fontSize: 28),
                                         ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          AppHelpers.getSportDisplayName(sport),
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.normal,
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurface,
+                                              ),
+                                          textAlign: TextAlign.center,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        if (isSelected) ...[
+                                          const SizedBox(height: 4),
+                                          Icon(
+                                            Iconsax.tick_circle_copy,
+                                            size: 16,
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                          ),
+                                        ],
                                       ],
-                                    ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
+                              );
+                            },
+                          ),
 
-                        SizedBox(height: 32.0),
+                          SizedBox(height: 32.0),
 
-                        // Interests Section
-                        Row(
-                          children: [
-                            Text(
-                              'Additional Interests',
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurface,
-                                  ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.blue.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                'Optional',
-                                style: Theme.of(context).textTheme.bodySmall
+                          // Interests Section
+                          Row(
+                            children: [
+                              Text(
+                                'Additional Interests',
+                                style: Theme.of(context).textTheme.titleLarge
                                     ?.copyWith(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.w600,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.onSurface,
                                     ),
                               ),
-                            ),
-                          ],
-                        ),
-
-                        SizedBox(height: 4.0),
-
-                        Text(
-                          'Select up to 3 additional sports (${_interests.length}/3)',
-                          style: Theme.of(context).textTheme.bodySmall
-                              ?.copyWith(
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSurface.withOpacity(0.7),
-                              ),
-                        ),
-
-                        SizedBox(height: 12.0),
-
-                        // Interests Chips
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: AppConstants.availableSports.map((sport) {
-                            final isSelected = _interests.contains(sport);
-                            final isPreferred = _preferredSport == sport;
-                            final isDisabled =
-                                isPreferred ||
-                                (_interests.length >= 3 && !isSelected);
-
-                            return Opacity(
-                              opacity: isDisabled ? 0.5 : 1.0,
-                              child: FilterChip(
-                                label: Text(
-                                  AppHelpers.getSportDisplayName(sport),
-                                  style: Theme.of(context).textTheme.bodyMedium
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 2,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  'Optional',
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
-                                        color: isSelected
-                                            ? Theme.of(
-                                                context,
-                                              ).colorScheme.primary
-                                            : Theme.of(
-                                                context,
-                                              ).colorScheme.onSurface,
-                                        fontWeight: isSelected
-                                            ? FontWeight.w600
-                                            : FontWeight.normal,
+                                        color: Colors.blue,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                 ),
-                                avatar: Icon(
-                                  AppHelpers.getSportIcon(sport),
-                                  size: 20,
-                                  color: isSelected
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).colorScheme.onSurface,
-                                ),
-                                selected: isSelected,
-                                showCheckmark: false,
-                                onSelected: isDisabled
-                                    ? null
-                                    : (bool selected) => _toggleInterest(sport),
-                                backgroundColor: Colors.transparent,
-                                selectedColor: Theme.of(
-                                  context,
-                                ).colorScheme.primary.withOpacity(0.2),
-                                side: BorderSide(
-                                  color: isSelected
-                                      ? Theme.of(context).colorScheme.primary
-                                      : Theme.of(context).colorScheme.outline,
-                                  width: isSelected ? 2 : 1.5,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 8,
-                                ),
                               ),
-                            );
-                          }).toList(),
-                        ),
-
-                        SizedBox(height: 24.0),
-
-                        // Continue Button
-                        FilledButton(
-                          onPressed: (_isLoading || _preferredSport == null)
-                              ? null
-                              : _handleSubmit,
-                          style: FilledButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 56),
+                            ],
                           ),
-                          child: Text(
-                            _isLoading ? 'Continuing...' : 'Continue',
+
+                          SizedBox(height: 4.0),
+
+                          Text(
+                            'Select up to 3 additional sports (${_interests.length}/3)',
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onSurface.withOpacity(0.7),
+                                ),
                           ),
-                        ),
 
-                        SizedBox(height: 12.0),
+                          SizedBox(height: 12.0),
 
-                        // Back Button
-                        TextButton(
-                          onPressed: () => context.pop(),
-                          style: TextButton.styleFrom(
-                            minimumSize: const Size(double.infinity, 56),
+                          // Interests Chips
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: AppConstants.availableSports.map((sport) {
+                              final isSelected = _interests.contains(sport);
+                              final isPreferred = _preferredSport == sport;
+                              final isDisabled =
+                                  isPreferred ||
+                                  (_interests.length >= 3 && !isSelected);
+
+                              return Opacity(
+                                opacity: isDisabled ? 0.5 : 1.0,
+                                child: FilterChip(
+                                  label: Text(
+                                    AppHelpers.getSportDisplayName(sport),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
+                                          color: isSelected
+                                              ? Theme.of(
+                                                  context,
+                                                ).colorScheme.primary
+                                              : Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurface,
+                                          fontWeight: isSelected
+                                              ? FontWeight.w600
+                                              : FontWeight.normal,
+                                        ),
+                                  ),
+                                  avatar: Text(
+                                    AppHelpers.getSportEmoji(sport),
+                                    style: const TextStyle(fontSize: 20),
+                                  ),
+                                  selected: isSelected,
+                                  showCheckmark: false,
+                                  onSelected: isDisabled
+                                      ? null
+                                      : (bool selected) =>
+                                            _toggleInterest(sport),
+                                  backgroundColor: Colors.transparent,
+                                  selectedColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withOpacity(0.2),
+                                  side: BorderSide(
+                                    color: isSelected
+                                        ? Theme.of(context).colorScheme.primary
+                                        : Theme.of(context).colorScheme.outline,
+                                    width: isSelected ? 2 : 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
-                          child: const Text('Back'),
-                        ),
 
-                        SizedBox(height: 24.0),
-                      ],
+                          SizedBox(height: 24.0),
+
+                          // Continue Button
+                          FilledButton(
+                            onPressed: (_isLoading || _preferredSport == null)
+                                ? null
+                                : _handleSubmit,
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 56),
+                            ),
+                            child: Text(
+                              _isLoading ? 'Continuing...' : 'Continue',
+                            ),
+                          ),
+
+                          SizedBox(height: 12.0),
+
+                          // Back Button
+                          TextButton(
+                            onPressed: () => context.pop(),
+                            style: TextButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 56),
+                            ),
+                            child: const Text('Back'),
+                          ),
+
+                          SizedBox(height: 24.0),
+                        ],
+                      ),
                     ),
                   ],
                 ),

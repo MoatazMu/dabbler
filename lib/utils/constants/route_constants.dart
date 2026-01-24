@@ -41,6 +41,13 @@ class RoutePaths {
   static const String loyalty = '/loyalty';
   static const String designSystemDemo = '/design-system-demo';
 
+  // Organiser Venue Submissions
+  static const String myVenueSubmissions = '/venue-submissions';
+  static const String createVenueSubmission = '/venue-submissions/create';
+
+  static String venueSubmissionDetail(String submissionId) =>
+      '/venue-submissions/$submissionId';
+
   // Rewards & Leaderboard
   static const String rewards = '/rewards';
   static const String leaderboard = '/rewards/leaderboard';
@@ -156,6 +163,11 @@ class RouteNames {
   static const String venuesList = 'venues-list';
   static const String venueDetail = 'venue-detail';
 
+  // Organiser Venue Submissions
+  static const String myVenueSubmissions = 'my-venue-submissions';
+  static const String createVenueSubmission = 'create-venue-submission';
+  static const String venueSubmissionDetail = 'venue-submission-detail';
+
   // Social Routes
   static const String social = 'social';
   static const String socialFeed = 'social-feed';
@@ -209,4 +221,7 @@ class RouteParams {
   static const String searchQuery = 'q';
   static const String searchType = 'type';
   static const String notificationId = 'notificationId';
+
+  // Organiser Venue Submissions
+  static const String submissionId = 'submissionId';
 }

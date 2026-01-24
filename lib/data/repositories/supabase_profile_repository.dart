@@ -64,7 +64,7 @@ class SupabaseProfileRepository implements ProfileRepository {
     try {
       final response = await _service
           .from(_table)
-          .upsert(profile.toJson(), onConflict: 'user_id')
+          .upsert(profile.toJson(), onConflict: 'user_id,profile_type')
           .select(_baseProfileColumns)
           .single();
 

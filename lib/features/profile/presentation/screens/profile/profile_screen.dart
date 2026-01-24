@@ -326,6 +326,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       if (profileType == 'organiser' &&
                           FeatureFlags.enableOrganiserGameCreation)
                         _buildGameManagementCard(context),
+                      if (profileType == 'organiser')
+                        _buildVenueSubmissionsCard(context),
                       _buildFriendsSection(context),
                       _buildBasicInfo(context, profileState),
                       if (FeatureFlags.enableRewards)
@@ -1154,6 +1156,96 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               },
               icon: const Icon(Iconsax.note_copy),
               label: const Text('View My Games'),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: colorScheme.categoryProfile,
+                side: BorderSide(
+                  color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+                ),
+                minimumSize: const Size(double.infinity, 48),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVenueSubmissionsCard(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Card(
+      elevation: 0,
+      margin: const EdgeInsets.only(bottom: 20),
+      color: colorScheme.categoryProfile.withValues(
+        alpha: Theme.of(context).brightness == Brightness.dark ? 0.08 : 0.06,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+        side: BorderSide(
+          color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: colorScheme.categoryProfile.withValues(alpha: 0.3),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Iconsax.building_4_copy,
+                    color: colorScheme.categoryProfile,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Venue submissions',
+                        style: textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Submit new venues for approval',
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            FilledButton.icon(
+              onPressed: () => context.push(RoutePaths.myVenueSubmissions),
+              icon: const Icon(Iconsax.document_text_copy),
+              label: const Text('View submissions'),
+              style: FilledButton.styleFrom(
+                backgroundColor: colorScheme.categoryProfile,
+                foregroundColor: colorScheme.onPrimary,
+                minimumSize: const Size(double.infinity, 48),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton.icon(
+              onPressed: () => context.push(RoutePaths.createVenueSubmission),
+              icon: const Icon(Iconsax.add_copy),
+              label: const Text('Create submission'),
               style: OutlinedButton.styleFrom(
                 foregroundColor: colorScheme.categoryProfile,
                 side: BorderSide(

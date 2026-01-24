@@ -704,47 +704,50 @@ class _CreateUserInformationState extends ConsumerState<CreateUserInformation> {
             const SizedBox(height: 40),
 
             // Form Container: Inputs and CTA
-            Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Name Input
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Display Name',
-                      hintText: 'Choose a name',
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Name Input
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: const InputDecoration(
+                        labelText: 'Display Name',
+                        hintText: 'Choose a name',
+                      ),
+                      validator: AppValidators.validateName,
                     ),
-                    validator: AppValidators.validateName,
-                  ),
-                  SizedBox(height: 12.0),
+                    SizedBox(height: 12.0),
 
-                  // Birth Date Picker
-                  _buildBirthDatePicker(context),
-                  SizedBox(height: 12.0),
+                    // Birth Date Picker
+                    _buildBirthDatePicker(context),
+                    SizedBox(height: 12.0),
 
-                  // Gender Selection
-                  _buildGenderSelect(context),
-                  SizedBox(height: 24.0),
+                    // Gender Selection
+                    _buildGenderSelect(context),
+                    SizedBox(height: 24.0),
 
-                  // Continue Button
-                  FilledButton(
-                    onPressed: (_isLoading || !_areAllFieldsValid())
-                        ? null
-                        : _handleSubmit,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 56),
+                    // Continue Button
+                    FilledButton(
+                      onPressed: (_isLoading || !_areAllFieldsValid())
+                          ? null
+                          : _handleSubmit,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 56),
+                      ),
+                      child: Text(
+                        _isLoading
+                            ? 'Continuing...'
+                            : _areAllFieldsValid()
+                            ? 'Continue'
+                            : 'Fill all fields to continue',
+                      ),
                     ),
-                    child: Text(
-                      _isLoading
-                          ? 'Continuing...'
-                          : _areAllFieldsValid()
-                          ? 'Continue'
-                          : 'Fill all fields to continue',
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],

@@ -29,6 +29,24 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
   final Map<String, DateTime> _cacheTimestamps = {};
   static const Duration _cacheDuration = Duration(minutes: 10);
 
+  String _stableCacheKey(Object? value) {
+    if (value == null) return 'null';
+    if (value is String) return 's:${value.trim()}';
+    if (value is num) return 'n:$value';
+    if (value is bool) return 'b:$value';
+    if (value is List) {
+      return 'l:[${value.map(_stableCacheKey).join(',')}]';
+    }
+    if (value is Map) {
+      final keys = value.keys.map((k) => k.toString()).toList()..sort();
+      final pairs = keys
+          .map((k) => '$k=${_stableCacheKey(value[k])}')
+          .join('&');
+      return 'm:{$pairs}';
+    }
+    return 'o:${value.toString()}';
+  }
+
   SupabaseVenuesDataSource(this._supabaseClient);
 
   @override
@@ -40,29 +58,67 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     bool ascending = true,
   }) async {
     try {
-      final cacheKey = 'venues_${filters.hashCode}_${page}_$limit';
+      final cacheKey = 'venues_${_stableCacheKey(filters)}_${page}_$limit';
 
       // Check cache first
       if (_isCacheValid(cacheKey)) {
         return _listCache[cacheKey]!;
       }
 
-      // Build select query with joins to related tables
-      // Use left joins so venues without spaces/photos still appear
-      var query = _supabaseClient.from('venues').select('''
+      final sportsFilter = filters == null
+          ? null
+          : (filters['sports'] ?? filters['sport']);
+
+      // Build select query with joins to related tables.
+      // - Default: left-join venue_sports so venues without sports still appear.
+      // - If we are filtering by sport, use an INNER join so the filter applies to venues.
+      final select = sportsFilter == null
+          ? '''
         *,
         venue_spaces(sport, name_en, is_active),
+        venue_sports(sport_id, sports(sport_key, name_en, is_active)),
         venue_rating_aggregate(composite_score, event_count),
         venue_photos(url, sort_order)
-      ''');
+      '''
+          : '''
+        *,
+        venue_spaces(sport, name_en, is_active),
+        venue_sports!inner(sport_id, sports!inner(sport_key, name_en, is_active)),
+        venue_rating_aggregate(composite_score, event_count),
+        venue_photos(url, sort_order)
+      ''';
+
+      var query = _supabaseClient.from('venues').select(select);
 
       // Apply filters
       if (filters != null) {
-        // Sports filtering - filter venues that have spaces with the sport
-        final sports = filters['sports'] ?? filters['sport'];
-        if (sports != null) {
-          // For sport filtering, we'll filter client-side after fetching
-          // or use a subquery approach - simplified for now
+        // Sports filtering via venue_sports -> sports.
+        if (sportsFilter != null) {
+          final sportList = sportsFilter is List
+              ? sportsFilter
+              : <dynamic>[sportsFilter];
+
+          final normalizedKeys = sportList
+              .map((s) => s.toString().trim().toLowerCase())
+              .where((s) => s.isNotEmpty && s != 'all')
+              .toList(growable: false);
+
+          if (normalizedKeys.isNotEmpty) {
+            // `sport_key` is the stable identifier (e.g., football, padel).
+            // IMPORTANT: PostgREST `or=` cannot parse dotted embedded paths
+            // like `venue_sports.sports.sport_key`. Use `in`/`eq` instead.
+            if (normalizedKeys.length == 1) {
+              query = query.eq(
+                'venue_sports.sports.sport_key',
+                normalizedKeys.first,
+              );
+            } else {
+              query = query.inFilter(
+                'venue_sports.sports.sport_key',
+                normalizedKeys,
+              );
+            }
+          }
         }
 
         if (filters['city'] != null) {
@@ -91,28 +147,12 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .map<VenueModel>((json) => VenueModel.fromJson(json))
           .toList();
 
-      // Filter by sport client-side if filter was provided
-      if (filters != null) {
-        final sports = filters['sports'] ?? filters['sport'];
-        if (sports != null) {
-          final sportList = sports is List ? sports : [sports];
-          venues = venues.where((venue) {
-            return venue.supportedSports.any(
-              (sport) => sportList.any(
-                (filterSport) =>
-                    sport.toLowerCase() == filterSport.toString().toLowerCase(),
-              ),
-            );
-          }).toList();
-        }
-
-        // Filter by rating if provided
-        if (filters['min_rating'] != null) {
-          final minRating = filters['min_rating'] as num;
-          venues = venues
-              .where((venue) => venue.rating >= minRating.toDouble())
-              .toList();
-        }
+      // Filter by rating if provided
+      if (filters != null && filters['min_rating'] != null) {
+        final minRating = filters['min_rating'] as num;
+        venues = venues
+            .where((venue) => venue.rating >= minRating.toDouble())
+            .toList();
       }
 
       // Update cache
@@ -378,11 +418,20 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
     int limit = 20,
   }) async {
     try {
+      final sportKey = sportType.trim().toLowerCase();
+
+      // Filter venues via venue_sports join (authoritative mapping).
       var query = _supabaseClient
           .from('venues')
-          .select('*')
-          .contains('supported_sports', [sportType])
-          .eq('is_available', true);
+          .select('''
+            *,
+            venue_spaces(sport, name_en, is_active),
+            venue_sports!inner(sport_id, sports!inner(sport_key, name_en, is_active)),
+            venue_rating_aggregate(composite_score, event_count),
+            venue_photos(url, sort_order)
+          ''')
+          .eq('venue_sports.sports.sport_key', sportKey)
+          .eq('is_active', true);
 
       // Location filtering if provided
       if (latitude != null && longitude != null && radiusKm != null) {
@@ -486,7 +535,10 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
         'update_venue_average_rating',
         params: {'venue_id': venueId},
       );
-    } catch (e) {}
+    } catch (_) {
+      // Best-effort: rating aggregates are non-critical for the user flow.
+      return;
+    }
   }
 
   @override
@@ -687,18 +739,16 @@ class SupabaseVenuesDataSource implements VenuesRemoteDataSource {
           .order('created_at', ascending: false)
           .range((page - 1) * limit, page * limit - 1);
 
-      return response
-          .map<VenueModel>((row) {
-            final venueJson = row['venue'];
-            if (venueJson is Map<String, dynamic>) {
-              return VenueModel.fromJson(venueJson);
-            }
-            if (venueJson is Map) {
-              return VenueModel.fromJson(Map<String, dynamic>.from(venueJson));
-            }
-            throw VenueServerException('Invalid venue payload in favorites');
-          })
-          .toList();
+      return response.map<VenueModel>((row) {
+        final venueJson = row['venue'];
+        if (venueJson is Map<String, dynamic>) {
+          return VenueModel.fromJson(venueJson);
+        }
+        if (venueJson is Map) {
+          return VenueModel.fromJson(Map<String, dynamic>.from(venueJson));
+        }
+        throw VenueServerException('Invalid venue payload in favorites');
+      }).toList();
     } on PostgrestException catch (e) {
       throw VenueServerException('Database error: ${e.message}');
     } catch (e) {

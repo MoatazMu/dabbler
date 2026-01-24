@@ -408,133 +408,139 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             const SizedBox(height: 40),
 
             // Form Container
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Instructions text
-                Text(
-                  'Enter the 6-digit code',
-                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w500,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Instructions text
+                  Text(
+                    'Enter the 6-digit code',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(height: 16.0),
+                  SizedBox(height: 16.0),
 
-                // OTP Input Fields
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: List.generate(6, (index) {
-                    return SizedBox(
-                      width: 48,
-                      height: 48,
-                      child: TextField(
-                        controller: _otpControllers[index],
-                        focusNode: _focusNodes[index],
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        maxLength: 6,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.digitsOnly,
-                        ],
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                        decoration: InputDecoration(
-                          counterText: '',
-                          filled: true,
-                          fillColor: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
+                  // OTP Input Fields
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(6, (index) {
+                      return SizedBox(
+                        width: 48,
+                        height: 48,
+                        child: TextField(
+                          controller: _otpControllers[index],
+                          focusNode: _focusNodes[index],
+                          keyboardType: TextInputType.number,
+                          textAlign: TextAlign.center,
+                          maxLength: 6,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide.none,
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 2,
+                          decoration: InputDecoration(
+                            counterText: '',
+                            filled: true,
+                            fillColor: Theme.of(
+                              context,
+                            ).colorScheme.primary.withValues(alpha: 0.12),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                              vertical: 12,
                             ),
                           ),
-                          contentPadding: const EdgeInsets.symmetric(
-                            vertical: 12,
-                          ),
+                          onChanged: (value) => _onOtpChanged(value, index),
                         ),
-                        onChanged: (value) => _onOtpChanged(value, index),
-                      ),
-                    );
-                  }),
-                ),
-                SizedBox(height: 24.0),
-
-                // Verify Button
-                FilledButton(
-                  onPressed: _isLoading ? null : _handleSubmit,
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 56),
+                      );
+                    }),
                   ),
-                  child: Text(_isLoading ? 'Verifying...' : 'Verify'),
-                ),
+                  SizedBox(height: 24.0),
 
-                SizedBox(height: 16.0),
-
-                // Resend OTP
-                Column(
-                  children: [
-                    Text(
-                      'Didn\'t receive the code?',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                  // Verify Button
+                  FilledButton(
+                    onPressed: _isLoading ? null : _handleSubmit,
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 56),
                     ),
-                    SizedBox(height: 4.0),
-                    if (_resendCountdown > 0)
+                    child: Text(_isLoading ? 'Verifying...' : 'Verify'),
+                  ),
+
+                  SizedBox(height: 16.0),
+
+                  // Resend OTP
+                  Column(
+                    children: [
                       Text(
-                        'Resend in $_resendCountdown s',
+                        'Didn\'t receive the code?',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
-                      )
-                    else
-                      GestureDetector(
-                        onTap: _isResending ? null : _handleResend,
-                        child: Text(
-                          _isResending ? 'Sending...' : 'Resend',
+                      ),
+                      SizedBox(height: 4.0),
+                      if (_resendCountdown > 0)
+                        Text(
+                          'Resend in $_resendCountdown s',
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.w600,
-                                decoration: TextDecoration.underline,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
+                        )
+                      else
+                        GestureDetector(
+                          onTap: _isResending ? null : _handleResend,
+                          child: Text(
+                            _isResending ? 'Sending...' : 'Resend',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.underline,
+                                ),
+                          ),
                         ),
-                      ),
-                  ],
-                ),
-
-                SizedBox(height: 24.0),
-
-                // Change identifier button
-                TextButton(
-                  onPressed: () => context.go(RoutePaths.phoneInput),
-                  style: TextButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 56),
+                    ],
                   ),
-                  child: Text(
-                    _identifierType == IdentifierType.email
-                        ? 'Change Email'
-                        : 'Change Phone Number',
+
+                  SizedBox(height: 24.0),
+
+                  // Change identifier button
+                  TextButton(
+                    onPressed: () => context.go(RoutePaths.phoneInput),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 56),
+                    ),
+                    child: Text(
+                      _identifierType == IdentifierType.email
+                          ? 'Change Email'
+                          : 'Change Phone Number',
+                    ),
                   ),
-                ),
-                SizedBox(height: 24.0),
-              ],
+                  SizedBox(height: 24.0),
+                ],
+              ),
             ),
           ],
         ),

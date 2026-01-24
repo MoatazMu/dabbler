@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:dabbler/features/profile/presentation/providers/profile_providers.dart';
 import 'package:dabbler/features/explore/presentation/screens/sports_library_screen.dart';
@@ -20,6 +22,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:dabbler/features/explore/presentation/widgets/location_permission_drawer.dart';
 import 'package:dabbler/features/explore/presentation/widgets/manual_location_drawer.dart';
 import 'package:dabbler/features/venues/providers.dart' as venues_providers;
+import 'package:dabbler/utils/constants/route_constants.dart';
+import 'package:dabbler/features/venues/presentation/providers/venues_with_sports_providers.dart';
+import 'package:dabbler/core/utils/sport_id_mapping.dart';
 
 IconData _sportIconFor(String sport) {
   switch (sport.toLowerCase()) {
@@ -53,6 +58,18 @@ String _sportEmojiFor(String sport) {
       return '🎾';
     case 'basketball':
       return '🏀';
+    case 'badminton':
+      return '🏸';
+    case 'futsal':
+      return '⚽';
+    case 'running':
+      return '🏃';
+    case 'swimming':
+      return '🏊';
+    case 'equestrian':
+      return '🐎';
+    case 'shooting':
+      return '🎯';
     case 'volleyball':
       return '🏐';
     default:
@@ -382,21 +399,66 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
       'name': 'Football',
       'icon': Iconsax.medal_star_copy,
       'description': 'Find football games near you',
-      'count': 30,
     },
     {
       'name': 'Cricket',
       'icon': Iconsax.game_copy,
       'description': 'Join cricket games and tournaments',
-      'count': 15,
     },
     {
       'name': 'Padel',
       'icon': Iconsax.game_copy,
       'description': 'Discover padel courts and players',
-      'count': 8,
+    },
+    {
+      'name': 'Basketball',
+      'icon': _sportIconFor('basketball'),
+      'description': 'Find basketball courts and games',
+    },
+    {
+      'name': 'Tennis',
+      'icon': _sportIconFor('tennis'),
+      'description': 'Discover tennis courts and games',
+    },
+    {
+      'name': 'Badminton',
+      'icon': _sportIconFor('badminton'),
+      'description': 'Find badminton venues and matches',
+    },
+    {
+      'name': 'Running',
+      'icon': _sportIconFor('running'),
+      'description': 'Explore running routes and events',
+    },
+    {
+      'name': 'Swimming',
+      'icon': _sportIconFor('swimming'),
+      'description': 'Find swimming pools and sessions',
+    },
+    {
+      'name': 'Equestrian',
+      'icon': _sportIconFor('equestrian'),
+      'description': 'Discover equestrian venues and activities',
+    },
+    {
+      'name': 'Shooting',
+      'icon': _sportIconFor('shooting'),
+      'description': 'Find shooting ranges and sessions',
     },
   ];
+
+  List<Map<String, dynamic>> _sportsForChips() {
+    // Always show all available sports from the catalog
+    return _sports;
+  }
+
+  int _safeSelectedSportIndex(int sportsLength) {
+    if (sportsLength <= 0) return 0;
+    if (_selectedSportIndex < 0 || _selectedSportIndex >= sportsLength) {
+      return 0;
+    }
+    return _selectedSportIndex;
+  }
 
   @override
   void initState() {
@@ -558,6 +620,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   Widget _buildFiltersBottomSheetContent() {
     final colorScheme = Theme.of(context).colorScheme;
     final sportsScheme = context.getCategoryTheme('sports');
+    final sports = _sportsForChips();
+    final selectedIndex = _safeSelectedSportIndex(sports.length);
 
     return StatefulBuilder(
       builder: (context, setModalState) {
@@ -580,13 +644,13 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
               const SizedBox(height: 24),
               // Sport-Specific Filters
               if (SportFiltersConfig.hasSportSpecificFilters(
-                _sports[_selectedSportIndex]['name'],
+                sports[selectedIndex]['name'],
               ))
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (SportSpecificFiltersFactory.create(
-                          sport: _sports[_selectedSportIndex]['name'],
+                          sport: sports[selectedIndex]['name'],
                           selectedFilters: _sportSpecificFilters,
                           onFilterChanged: (key, value) {
                             setModalState(() {
@@ -600,7 +664,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                         ) !=
                         null)
                       SportSpecificFiltersFactory.create(
-                        sport: _sports[_selectedSportIndex]['name'],
+                        sport: sports[selectedIndex]['name'],
                         selectedFilters: _sportSpecificFilters,
                         onFilterChanged: (key, value) {
                           setModalState(() {
@@ -861,6 +925,8 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
 
   Widget _buildGamesTabContent() {
     final publicGamesAsync = publicGamesProvider;
+    final sports = _sportsForChips();
+    final selectedIndex = _safeSelectedSportIndex(sports.length);
 
     return Padding(
       padding: const EdgeInsets.all(16),
@@ -872,8 +938,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             data: (allGames) {
               // Filter by sport (or show all when 'All' is selected)
               final selectedSportName =
-                  (_sports[_selectedSportIndex]['name'] as String)
-                      .toLowerCase();
+                  (sports[selectedIndex]['name'] as String).toLowerCase();
               final sportFilteredGames = selectedSportName == 'all'
                   ? allGames
                   : allGames
@@ -923,7 +988,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'No ${_sports[_selectedSportIndex]['name']} games found',
+                        'No ${sports[selectedIndex]['name']} games found',
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Theme.of(
                             context,
@@ -1249,10 +1314,12 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   }
 
   Widget _buildVenuesTabContent() {
+    final sports = _sportsForChips();
+    final selectedIndex = _safeSelectedSportIndex(sports.length);
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
       child: _buildVenuesTab(
-        _sports[_selectedSportIndex]['name'],
+        sports[selectedIndex]['name'],
         _searchQuery,
         sportSpecificFilters: _sportSpecificFilters,
         filterArea: _selectedArea,
@@ -1267,6 +1334,11 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final sportsScheme = context.getCategoryTheme('sports');
+
+    final profileState = ref.watch(profileControllerProvider);
+    final profileType = profileState.profile?.profileType;
+    final isOrganiser = profileType == 'organiser';
+    final isVenuesTab = _mainTabController.index == 1;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -1341,6 +1413,21 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
             ),
           ),
           const SizedBox(width: 12),
+          if (isOrganiser && isVenuesTab) ...[
+            IconButton.filledTonal(
+              onPressed: () => context.push(RoutePaths.createVenueSubmission),
+              icon: const Icon(Iconsax.add_copy),
+              tooltip: 'Add venue',
+              style: IconButton.styleFrom(
+                backgroundColor: colorScheme.categorySports.withValues(
+                  alpha: 0.0,
+                ),
+                foregroundColor: colorScheme.onSurface,
+                minimumSize: const Size(48, 48),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           IconButton.filledTonal(
             onPressed: () {
               Navigator.of(context).push(
@@ -1536,6 +1623,22 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
   Widget _buildSportsChips() {
     final textTheme = Theme.of(context).textTheme;
     final sportsScheme = context.getCategoryTheme('sports');
+    final isVenuesTab = _mainTabController.index == 1;
+    final sports = _sportsForChips();
+    final selectedIndex = _safeSelectedSportIndex(sports.length);
+
+    if (_selectedSportIndex != selectedIndex) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        setState(() {
+          _selectedSportIndex = selectedIndex;
+        });
+      });
+    }
+
+    final selectedSportKey = sports.isEmpty
+        ? 'football'
+        : (sports[selectedIndex]['name'] as String).trim().toLowerCase();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
@@ -1544,15 +1647,39 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
         child: Row(
           children: [
             const SizedBox(width: 24),
-            ...List.generate(_sports.length, (index) {
-              final sport = _sports[index];
-              final isSelected = _selectedSportIndex == index;
+            ...List.generate(sports.length, (index) {
+              final sport = sports[index];
+              final isSelected = selectedIndex == index;
               final chipBackground = isSelected
                   ? sportsScheme.primary
                   : sportsScheme.primary.withValues(alpha: 0.12);
               final chipForeground = isSelected
                   ? sportsScheme.onPrimary
                   : sportsScheme.primary;
+
+              // Get the actual venue count from the new provider when selected
+              int venueCount = 0;
+              if (isSelected && isVenuesTab) {
+                final sportName = (sport['name'] as String).trim();
+                final sportId = SportIdMapping.getSportId(
+                  sportName.toLowerCase(),
+                );
+
+                if (sportId != null) {
+                  final filters = VenuesBySportFilters(
+                    sportId: sportId,
+                    city: _selectedArea,
+                    isActive: true,
+                  );
+                  final venuesAsync = ref.watch(
+                    venuesBySportWithFiltersProvider(filters),
+                  );
+                  venueCount = venuesAsync.maybeWhen(
+                    data: (venues) => venues.length,
+                    orElse: () => 0,
+                  );
+                }
+              }
 
               return GestureDetector(
                 onTap: () {
@@ -1573,17 +1700,10 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      sport['name'] == 'Football'
-                          ? const Text('⚽️', style: TextStyle(fontSize: 18))
-                          : sport['name'] == 'Cricket'
-                          ? const Text('🏏', style: TextStyle(fontSize: 18))
-                          : sport['name'] == 'Padel'
-                          ? const Text('🎾', style: TextStyle(fontSize: 18))
-                          : Icon(
-                              sport['icon'] as IconData,
-                              size: 16,
-                              color: chipForeground,
-                            ),
+                      Text(
+                        _sportEmojiFor((sport['name'] as String?) ?? ''),
+                        style: const TextStyle(fontSize: 18),
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         sport['name'] as String,
@@ -1592,7 +1712,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      if (isSelected && sport['count'] != null) ...[
+                      if (isSelected && isVenuesTab) ...[
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -1606,7 +1726,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
-                            '${sport['count']}',
+                            '$venueCount',
                             style: textTheme.labelSmall?.copyWith(
                               color: sportsScheme.onPrimary,
                               fontWeight: FontWeight.w700,
@@ -1637,6 +1757,7 @@ class _ExploreScreenState extends ConsumerState<ExploreScreen>
     Set<String>? amenities,
   }) {
     return _VenuesTabContent(
+      key: ValueKey('venues_$selectedSport'),
       selectedSport: selectedSport,
       searchQuery: searchQuery,
       sportSpecificFilters: sportSpecificFilters,
@@ -1832,6 +1953,7 @@ class _VenuesTabContent extends ConsumerStatefulWidget {
   final Set<String>? amenities;
 
   const _VenuesTabContent({
+    super.key,
     required this.selectedSport,
     required this.searchQuery,
     this.sportSpecificFilters,
@@ -1861,7 +1983,8 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
   @override
   void didUpdateWidget(_VenuesTabContent oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.selectedSport != widget.selectedSport) {
+    if (oldWidget.selectedSport != widget.selectedSport ||
+        oldWidget.filterArea != widget.filterArea) {
       // Delay provider update to avoid modifying during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _applyFilter();
@@ -1880,22 +2003,23 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
   }
 
   void _applyFilter() {
-    // Update venues controller with sport filter
-    final isAll = widget.selectedSport.toLowerCase() == 'all';
-    final filters = vc.VenueFilters(
-      sports: isAll ? const [] : [widget.selectedSport],
-      minRating: widget.rating != null && widget.rating! > 0
-          ? widget.rating
-          : null,
-      minPricePerHour: widget.priceRange != null && widget.priceRange!.start > 0
-          ? widget.priceRange!.start
-          : null,
-      maxPricePerHour: widget.priceRange != null && widget.priceRange!.end < 500
-          ? widget.priceRange!.end
-          : null,
+    // Invalidate the provider to trigger a refetch with new filters
+    final selectedSportName = widget.selectedSport.trim();
+    final sportId = SportIdMapping.getSportId(selectedSportName.toLowerCase());
+
+    if (sportId == null) {
+      // If sport ID not found, do nothing
+      return;
+    }
+
+    final filters = VenuesBySportFilters(
+      sportId: sportId,
+      city: widget.filterArea,
+      isActive: true,
     );
 
-    ref.read(venuesControllerProvider.notifier).updateFilters(filters);
+    // Invalidate to force refetch
+    ref.invalidate(venuesBySportWithFiltersProvider(filters));
   }
 
   Future<void> _refreshVenues() async {
@@ -1912,73 +2036,89 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
 
   @override
   Widget build(BuildContext context) {
-    final venuesState = ref.watch(venuesControllerProvider);
-    final venues = venuesState.venues;
+    final selectedSportName = widget.selectedSport.trim();
+    final sportId = SportIdMapping.getSportId(selectedSportName.toLowerCase());
 
-    // Apply search query filter
-    final query = widget.searchQuery.toLowerCase();
-    final filteredVenues = query.isEmpty
-        ? venues
-        : venues.where((venueWithDistance) {
-            final name = venueWithDistance.venue.name.toLowerCase();
-            final city = venueWithDistance.venue.city.toLowerCase();
-            return name.contains(query) || city.contains(query);
-          }).toList();
+    // If sport ID not found, show empty state
+    if (sportId == null) {
+      return _buildEmptyState();
+    }
+
+    // Use the new v_venues_with_sports view provider
+    final filters = VenuesBySportFilters(
+      sportId: sportId,
+      city: widget.filterArea,
+      isActive: true,
+    );
+
+    final venuesAsync = ref.watch(venuesBySportWithFiltersProvider(filters));
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (venuesState.isLoading && filteredVenues.isEmpty)
-            _buildLoadingState()
-          else if (venuesState.error != null && filteredVenues.isEmpty)
-            _buildErrorState()
-          else if (filteredVenues.isEmpty)
-            _buildEmptyState()
-          else
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 0),
-              child: ListView.separated(
-                controller: _scrollController,
-                padding: const EdgeInsets.symmetric(vertical: 0),
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: filteredVenues.length,
-                separatorBuilder: (context, index) =>
-                    const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final venueWithDistance = filteredVenues[index];
-                  final venue = venueWithDistance.venue;
+      child: venuesAsync.when(
+        loading: () => _buildLoadingState(),
+        error: (error, stack) => _buildErrorState(),
+        data: (venues) {
+          // Apply search query filter
+          final query = widget.searchQuery.toLowerCase();
+          final filteredVenues = query.isEmpty
+              ? venues
+              : venues.where((venue) {
+                  final name = venue.nameEn.toLowerCase();
+                  final city = venue.city.toLowerCase();
+                  return name.contains(query) || city.contains(query);
+                }).toList();
 
-                  final venueMap = {
-                    'id': venue.id,
-                    'name': venue.name,
-                    'location': venue.state.isNotEmpty
-                        ? '${venue.state}, ${venue.city}'
-                        : '${venue.city}, ${venue.country}',
-                    'sports': venue.supportedSports,
-                    'images': [],
-                    'rating': venue.rating,
-                    'isOpen': true,
-                    'slots': [],
-                    'reviews': List.generate(venue.totalRatings, (_) => {}),
-                    'distance': venueWithDistance.formattedDistance,
-                    'price': venue.pricePerHour > 0
-                        ? '${venue.currency} ${venue.pricePerHour.toStringAsFixed(0)}/hr'
-                        : 'Free',
-                    'amenities': venue.amenities,
-                  };
+          if (filteredVenues.isEmpty) {
+            return _buildEmptyState();
+          }
 
-                  return VenueCard(
-                    venue: venueMap,
-                    onTap: () => _onVenueTap(venue.id),
-                    isLoading: false,
-                  );
-                },
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 0),
+                child: ListView.separated(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(vertical: 0),
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: filteredVenues.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final venue = filteredVenues[index];
+
+                    final venueMap = {
+                      'id': venue.id,
+                      'name': venue.nameEn,
+                      'location': venue.area != null
+                          ? '${venue.area}, ${venue.city}'
+                          : venue.city,
+                      'sports': <String>[selectedSportName],
+                      'images': [],
+                      'rating': venue.compositeScore ?? 0.0,
+                      'isOpen': true,
+                      'slots': [],
+                      'reviews': [],
+                      'distance': '', // Can add distance calculation
+                      'price': venue.pricePerHour != null
+                          ? 'AED ${venue.pricePerHour!.toStringAsFixed(0)}/hr'
+                          : 'Price N/A',
+                      'amenities': venue.amenities,
+                    };
+
+                    return VenueCard(
+                      venue: venueMap,
+                      onTap: () => _onVenueTap(venue.id),
+                      isLoading: false,
+                    );
+                  },
+                ),
               ),
-            ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }
@@ -2059,21 +2199,25 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: sportsScheme.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(16),
+            SvgPicture.asset(
+              'assets/images/undraw/walking-outside.svg',
+              height: 200,
+              width: 200,
+              colorFilter: ColorFilter.mode(
+                sportsScheme.primary,
+                BlendMode.srcIn,
               ),
-              child: Icon(
-                Iconsax.building_copy,
-                size: 48,
-                color: sportsScheme.primary,
+              placeholderBuilder: (context) => SizedBox(
+                height: 200,
+                width: 200,
+                child: Center(
+                  child: CircularProgressIndicator(color: sportsScheme.primary),
+                ),
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             Text(
-              'No ${widget.selectedSport} venues found',
+              'No ${widget.selectedSport} venues found around you',
               style: DS.headline.copyWith(
                 fontWeight: FontWeight.w700,
                 color: sportsScheme.onSurface,
@@ -2082,15 +2226,17 @@ class _VenuesTabContentState extends ConsumerState<_VenuesTabContent> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Try broadening your filters or check back later',
+              'Try a nearby location or add a new venue',
               style: DS.body.copyWith(color: sportsScheme.onSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
-              onPressed: _refreshVenues,
-              icon: const Icon(Iconsax.filter_copy),
-              label: const Text('Adjust Filters'),
+              onPressed: () {
+                // TODO: Navigate to add venue screen
+              },
+              icon: const Icon(Iconsax.add_circle_copy),
+              label: const Text('Add Venue'),
               style: FilledButton.styleFrom(
                 backgroundColor: sportsScheme.primary,
                 foregroundColor: sportsScheme.onPrimary,

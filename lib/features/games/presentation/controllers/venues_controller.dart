@@ -315,7 +315,9 @@ class VenuesController extends StateNotifier<VenuesState> {
 
   /// Update filters and reload venues
   Future<void> updateFilters(VenueFilters newFilters) async {
-    state = state.copyWith(filters: newFilters);
+    // Changing filters must force a reload; otherwise _shouldRefresh() can
+    // incorrectly short-circuit due to the cache window.
+    state = state.copyWith(filters: newFilters, lastUpdated: null);
     await loadVenues();
   }
 

@@ -72,7 +72,9 @@ class ProfilesRepositoryImpl extends BaseRepository
     }
 
     return guard(() async {
-      await svc.client.from(_table).upsert(profile.toJson()).eq('user_id', uid);
+      await svc.client
+          .from(_table)
+          .upsert(profile.toJson(), onConflict: 'user_id,profile_type');
     });
   }
 

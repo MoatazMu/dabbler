@@ -196,106 +196,115 @@ class _IntentSelectionScreenState extends ConsumerState<IntentSelectionScreen> {
                   const SizedBox(height: 40),
 
                   // Form Container
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Intent Options - Filtered by feature flags
-                      ..._intentOptions.map((option) {
-                        final isSelected = _selectedIntent == option['value'];
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        // Intent Options - Filtered by feature flags
+                        ..._intentOptions.map((option) {
+                          final isSelected = _selectedIntent == option['value'];
 
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () => _selectIntent(option['value']!),
-                              borderRadius: BorderRadius.circular(12),
-                              child: Ink(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 16,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.transparent,
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? Theme.of(context).colorScheme.primary
-                                        : Theme.of(context).colorScheme.outline,
-                                    width: isSelected ? 2 : 1.5,
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => _selectIntent(option['value']!),
+                                borderRadius: BorderRadius.circular(12),
+                                child: Ink(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 16,
                                   ),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      _getIntentIcon(option['icon']!),
-                                      size: 24,
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent,
+                                    border: Border.all(
                                       color: isSelected
                                           ? Theme.of(
                                               context,
                                             ).colorScheme.primary
-                                          : Theme.of(context)
-                                                .colorScheme
-                                                .onSurface
-                                                .withOpacity(0.7),
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.outline,
+                                      width: isSelected ? 2 : 1.5,
                                     ),
-                                    SizedBox(width: 12.0),
-                                    Expanded(
-                                      child: Text(
-                                        option['title']!,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyLarge
-                                            ?.copyWith(
-                                              color: Theme.of(
-                                                context,
-                                              ).colorScheme.onSurface,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                      ),
-                                    ),
-                                    if (isSelected)
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    children: [
                                       Icon(
-                                        Iconsax.tick_circle_copy,
-                                        size: 20,
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary,
+                                        _getIntentIcon(option['icon']!),
+                                        size: 24,
+                                        color: isSelected
+                                            ? Theme.of(
+                                                context,
+                                              ).colorScheme.primary
+                                            : Theme.of(context)
+                                                  .colorScheme
+                                                  .onSurface
+                                                  .withOpacity(0.7),
                                       ),
-                                  ],
+                                      SizedBox(width: 12.0),
+                                      Expanded(
+                                        child: Text(
+                                          option['title']!,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.copyWith(
+                                                color: Theme.of(
+                                                  context,
+                                                ).colorScheme.onSurface,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                        ),
+                                      ),
+                                      if (isSelected)
+                                        Icon(
+                                          Iconsax.tick_circle_copy,
+                                          size: 20,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
+                                        ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
+                          );
+                        }),
+
+                        SizedBox(height: 24.0),
+
+                        // Continue Button
+                        FilledButton(
+                          onPressed: (_isLoading || _selectedIntent == null)
+                              ? null
+                              : _handleSubmit,
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 56),
                           ),
-                        );
-                      }),
-
-                      SizedBox(height: 24.0),
-
-                      // Continue Button
-                      FilledButton(
-                        onPressed: (_isLoading || _selectedIntent == null)
-                            ? null
-                            : _handleSubmit,
-                        style: FilledButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 56),
+                          child: Text(
+                            _isLoading ? 'Continuing...' : 'Continue',
+                          ),
                         ),
-                        child: Text(_isLoading ? 'Continuing...' : 'Continue'),
-                      ),
 
-                      SizedBox(height: 12.0),
+                        SizedBox(height: 12.0),
 
-                      // Back Button
-                      TextButton(
-                        onPressed: () => context.pop(),
-                        style: TextButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 56),
+                        // Back Button
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          style: TextButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 56),
+                          ),
+                          child: const Text('Back'),
                         ),
-                        child: const Text('Back'),
-                      ),
 
-                      SizedBox(height: 24.0),
-                    ],
+                        SizedBox(height: 24.0),
+                      ],
+                    ),
                   ),
                 ],
               ),

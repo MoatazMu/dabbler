@@ -36,18 +36,40 @@ class VenueModel extends Venue {
           json['name'] as String? ??
           'Unnamed Venue';
 
-      // Extract sports from venue_spaces join
+      // Extract sports from venue_sports -> sports join (authoritative)
+      // Fallback to venue_spaces.sport (legacy) if join isn't present.
       final List<String> sports = [];
-      if (json['venue_spaces'] != null) {
+
+      final venueSports = json['venue_sports'] as List<dynamic>?;
+      if (venueSports != null) {
+        for (final item in venueSports) {
+          if (item is Map<String, dynamic>) {
+            final sportRow = item['sports'];
+            if (sportRow is Map<String, dynamic>) {
+              final isActive = sportRow['is_active'] as bool? ?? true;
+              final nameEn = sportRow['name_en'] as String?;
+              if (isActive && nameEn != null && nameEn.trim().isNotEmpty) {
+                final value = nameEn.trim();
+                if (!sports.contains(value)) {
+                  sports.add(value);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      if (sports.isEmpty && json['venue_spaces'] != null) {
         final spaces = json['venue_spaces'] as List<dynamic>?;
         if (spaces != null) {
           for (final space in spaces) {
             if (space is Map<String, dynamic>) {
               final sport = space['sport'] as String?;
               final isActive = space['is_active'] as bool? ?? true;
-              if (sport != null && sport.isNotEmpty && isActive) {
-                if (!sports.contains(sport)) {
-                  sports.add(sport);
+              if (sport != null && sport.trim().isNotEmpty && isActive) {
+                final value = sport.trim();
+                if (!sports.contains(value)) {
+                  sports.add(value);
                 }
               }
             }
@@ -166,9 +188,7 @@ class VenueModel extends Venue {
         totalRatings: totalRatings,
         pricePerHour: (json['price_per_hour'] as num?)?.toDouble() ?? 0.0,
         currency: json['currency'] as String? ?? 'AED',
-        supportedSports: sports.isNotEmpty
-            ? sports
-            : ['Football', 'Padel'], // Default sports
+        supportedSports: sports,
         amenities: amenitiesList,
         createdAt: DateTime.parse(json['created_at'] as String),
         updatedAt: DateTime.parse(json['updated_at'] as String),
@@ -333,17 +353,17 @@ class VenueModel extends Venue {
 
   // Check if venue has specific amenity
   @override
-  bool hasAmenity(String amenityName) {
+  bool hasAmenity(String amenity) {
     return amenities.any(
-      (amenity) => amenity.toLowerCase().contains(amenityName.toLowerCase()),
+      (value) => value.toLowerCase().contains(amenity.toLowerCase()),
     );
   }
 
   // Check if venue supports specific sport
   @override
-  bool supportsSport(String sportName) {
+  bool supportsSport(String sport) {
     return supportedSports.any(
-      (sport) => sport.toLowerCase().contains(sportName.toLowerCase()),
+      (value) => value.toLowerCase().contains(sport.toLowerCase()),
     );
   }
 

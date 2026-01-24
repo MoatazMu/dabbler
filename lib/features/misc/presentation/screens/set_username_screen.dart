@@ -256,81 +256,83 @@ class _SetUsernameScreenState extends ConsumerState<SetUsernameScreen> {
             const SizedBox(height: 40),
 
             // Form Container
-            Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Username Field
-                  // Text(
-                  //   'Username',
-                  //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  //     fontWeight: FontWeight.w600,
-                  //     color: Colors.white,
-                  //   ),
-                  // ),
-                  SizedBox(height: 8.0),
-                  TextFormField(
-                    controller: _usernameController,
-                    decoration: InputDecoration(
-                      labelText: 'Username',
-                      hintText: 'Choose a unique username',
-                      suffixIcon: _isCheckingUsername
-                          ? const Padding(
-                              padding: EdgeInsets.all(12.0),
-                              child: SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Username Field
+                    // Text(
+                    //   'Username',
+                    //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    //     fontWeight: FontWeight.w600,
+                    //     color: Colors.white,
+                    //   ),
+                    // ),
+                    SizedBox(height: 8.0),
+                    TextFormField(
+                      controller: _usernameController,
+                      decoration: InputDecoration(
+                        labelText: 'Username',
+                        hintText: 'Choose a unique username',
+                        suffixIcon: _isCheckingUsername
+                            ? const Padding(
+                                padding: EdgeInsets.all(12.0),
+                                child: SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 ),
-                              ),
-                            )
-                          : _usernameError == null &&
-                                _usernameController.text.isNotEmpty
-                          ? const Icon(
-                              Iconsax.tick_circle_copy,
-                              color: Colors.green,
-                            )
-                          : null,
+                              )
+                            : _usernameError == null &&
+                                  _usernameController.text.isNotEmpty
+                            ? const Icon(
+                                Iconsax.tick_circle_copy,
+                                color: Colors.green,
+                              )
+                            : null,
+                      ),
+                      onChanged: _checkUsernameAvailability,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Username is required';
+                        }
+                        if (value.trim().length < 3) {
+                          return 'Username must be at least 3 characters';
+                        }
+                        if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
+                          return 'Username can only contain letters, numbers, and underscores';
+                        }
+                        return null;
+                      },
                     ),
-                    onChanged: _checkUsernameAvailability,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Username is required';
-                      }
-                      if (value.trim().length < 3) {
-                        return 'Username must be at least 3 characters';
-                      }
-                      if (!RegExp(r'^[a-zA-Z0-9_]+$').hasMatch(value)) {
-                        return 'Username can only contain letters, numbers, and underscores';
-                      }
-                      return null;
-                    },
-                  ),
-                  if (_usernameError != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        _usernameError!,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFFD32F2F),
+                    if (_usernameError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          _usernameError!,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: const Color(0xFFD32F2F)),
                         ),
                       ),
-                    ),
 
-                  SizedBox(height: 24.0),
+                    SizedBox(height: 24.0),
 
-                  // Submit Button
-                  FilledButton(
-                    onPressed: _isLoading ? null : _handleSubmit,
-                    style: FilledButton.styleFrom(
-                      minimumSize: const Size(double.infinity, 56),
+                    // Submit Button
+                    FilledButton(
+                      onPressed: _isLoading ? null : _handleSubmit,
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size(double.infinity, 56),
+                      ),
+                      child: Text(_isLoading ? 'Completing...' : 'Complete'),
                     ),
-                    child: Text(_isLoading ? 'Completing...' : 'Complete'),
-                  ),
-                  SizedBox(height: 24.0),
-                ],
+                    SizedBox(height: 24.0),
+                  ],
+                ),
               ),
             ),
           ],
